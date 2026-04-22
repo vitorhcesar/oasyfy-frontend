@@ -1,0 +1,1 @@
+ALTER TABLE public.kyc_submissions ADD COLUMN company_type TEXT;

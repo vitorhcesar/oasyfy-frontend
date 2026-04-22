@@ -1,0 +1,1 @@
+ALTER TABLE public.acquirer_connections ADD COLUMN client_id text DEFAULT '' NULL;

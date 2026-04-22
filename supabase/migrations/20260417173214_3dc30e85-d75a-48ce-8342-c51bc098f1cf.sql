@@ -1,0 +1,2 @@
+-- Update handleReject to not require rejection reason
+-- This is a client-side function update, no DB migration needed
