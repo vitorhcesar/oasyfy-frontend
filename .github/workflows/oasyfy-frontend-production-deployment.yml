@@ -1,0 +1,99 @@
+name: Oasyfy Frontend Production Deployment
+
+on:
+  push:
+    tags:
+      - "*"
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  APPLICATION_NAME: oasyfy-frontend
+  REMOTE_APP_DIR: ~/oasyfy-frontend/oasyfy-frontend
+
+jobs:
+  validate-secrets:
+    runs-on: ubuntu-latest
+    environment: oasyfy-frontend-env
+    steps:
+      - name: Validate required secrets
+        shell: bash
+        env:
+          VPS_SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+          PROD_ENV: ${{ secrets.PROD_ENV }}
+        run: |
+          [ -n "${VPS_SSH_PRIVATE_KEY}" ] || { echo "::error::Missing required secret: VPS_SSH_PRIVATE_KEY"; exit 1; }
+          [ -n "${VPS_HOST}" ] || { echo "::error::Missing required secret: VPS_HOST"; exit 1; }
+          [ -n "${VPS_USER}" ] || { echo "::error::Missing required secret: VPS_USER"; exit 1; }
+          [ -n "${PROD_ENV}" ] || { echo "::error::Missing required secret: PROD_ENV"; exit 1; }
+
+  sync-files:
+    runs-on: ubuntu-latest
+    environment: oasyfy-frontend-env
+    needs: validate-secrets
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+
+      - name: Add VPS to known hosts
+        run: ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Create production env file
+        shell: bash
+        run: |
+          printf "%s" "${{ secrets.PROD_ENV }}" > prod.env
+
+      - name: Prepare destination on VPS
+        shell: bash
+        run: |
+          ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "
+            rm -rf ~/oasyfy-frontend/oasyfy-frontend &&
+            mkdir -p ~/oasyfy-frontend/oasyfy-frontend
+          "
+
+      - name: Sync application files to VPS
+        shell: bash
+        run: |
+          rsync -az --delete \
+            --exclude '.git' \
+            --exclude 'node_modules' \
+            --exclude 'backup' \
+            ./ "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${REMOTE_APP_DIR}/"
+
+      - name: Store production env in VPS
+        shell: bash
+        run: |
+          rsync -az ./prod.env "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${REMOTE_APP_DIR}/.env"
+
+  deploy-container:
+    runs-on: ubuntu-latest
+    environment: oasyfy-frontend-env
+    needs: sync-files
+
+    steps:
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
+
+      - name: Add VPS to known hosts
+        run: ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Build and restart container
+        shell: bash
+        run: |
+          ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "
+            cd ${REMOTE_APP_DIR} &&
+            APP_VERSION='${{ github.ref_name }}' sudo docker compose -f docker-compose.prod.yml down &&
+            APP_VERSION='${{ github.ref_name }}' sudo docker compose -f docker-compose.prod.yml up -d --build
+          "
