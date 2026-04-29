@@ -13,6 +13,7 @@ export const apiAxios: AxiosInstance = axios.create({
     "Content-Type": "application/json",
   },
   timeout: 60_000,
+  withCredentials: true,
 });
 
 // Encaixe futuro: ler token de sessão e definir Authorization aqui.

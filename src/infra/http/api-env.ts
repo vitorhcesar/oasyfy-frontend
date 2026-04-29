@@ -1,8 +1,11 @@
-/** Base URL da API (ex.: http://localhost:8080). Rotas REST ficam como `/api/v1/...`. */
+/**
+ * Origem da API REST + Better Auth (`/api/v1`, `/api/auth`).
+ * - Produção: `VITE_API_URL` explícito (ex.: https://api.seudominio.com).
+ * - Dev com proxy Vite em `/api`: deixe `VITE_API_URL` vazio para usar `window.location.origin`.
+ */
 export function getApiBaseUrl(): string {
-  const url = import.meta.env.VITE_API_URL ?? "";
-  if (import.meta.env.DEV && url === "") {
-    console.warn("[api] VITE_API_URL não está definido.");
-  }
-  return url;
+  const raw = import.meta.env.VITE_API_URL?.trim() ?? "";
+  if (raw !== "") return raw.replace(/\/$/, "");
+  if (typeof window !== "undefined") return window.location.origin;
+  return "";
 }
