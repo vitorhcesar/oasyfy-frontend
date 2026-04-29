@@ -1,5 +1,5 @@
 import cartwaveLogo from "@/assets/cartwave-logo.png";
-import { supabase } from "@/infrastructure/integrations/supabase/client";
+import { supabase } from "@/infra/integrations/supabase/client";
 import { AdminLayout } from "@/presentation/components/admin/AdminLayout";
 import { Badge } from "@/presentation/components/ui/badge";
 import { Button } from "@/presentation/components/ui/button";

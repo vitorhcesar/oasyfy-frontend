@@ -1,4 +1,4 @@
-import { supabase } from "@/infrastructure/integrations/supabase/client";
+import { supabase } from "@/infra/integrations/supabase/client";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import { WithdrawalModal } from "@/presentation/components/seller/WithdrawalModal";
 import { Calendar } from "@/presentation/components/ui/calendar";

@@ -1,4 +1,4 @@
-import { supabase } from "@/infrastructure/integrations/supabase/client";
+import { supabase } from "@/infra/integrations/supabase/client";
 import {
   Dialog,
   DialogContent,

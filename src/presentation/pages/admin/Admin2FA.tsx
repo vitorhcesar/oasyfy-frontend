@@ -1,6 +1,5 @@
-import { supabase } from "@/infrastructure/integrations/supabase/client";
+import { supabase } from "@/infra/integrations/supabase/client";
 import { AdminLayout } from "@/presentation/components/admin/AdminLayout";
-import { useAuthStore } from "@/presentation/stores/useAuthStore";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -16,7 +15,6 @@ import { toast } from "sonner";
 type TwoFAStatus = "loading" | "disabled" | "verifying" | "enabled";
 
 export default function Admin2FA() {
-  const { user } = useAuthStore();
   const [status, setStatus] = useState<TwoFAStatus>("loading");
   const [qrUri, setQrUri] = useState("");
   const [secret, setSecret] = useState("");

@@ -1,4 +1,4 @@
-import { supabase } from "@/infrastructure/integrations/supabase/client";
+import { supabase } from "@/infra/integrations/supabase/client";
 import { useAuthStore } from "@/presentation/stores/useAuthStore";
 import { useEffect, useRef } from "react";
 

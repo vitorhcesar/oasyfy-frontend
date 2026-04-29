@@ -1,11 +1,10 @@
 import { ClientIpService } from "@/app/modules/client/services/client-ip.service";
-import { supabase } from "@/infrastructure/integrations/supabase/client";
+import { supabase } from "@/infra/integrations/supabase/client";
 import { translateError } from "@/presentation/utils/translate-error";
 import {
   ArrowLeft,
   ArrowRight,
   Check,
-  CreditCard,
   Eye,
   EyeOff,
   KeyRound,
@@ -13,10 +12,8 @@ import {
   Lock,
   Mail,
   Phone,
-  Shield,
   User,
   X,
-  Zap,
 } from "lucide-react";
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -475,24 +472,6 @@ export default function LoginSeller() {
     setSignupVerifyLoading(false);
     if (!opened) return;
   };
-
-  const features = [
-    {
-      icon: Zap,
-      title: "Pagamentos instantâneos",
-      desc: "Receba via PIX em segundos",
-    },
-    {
-      icon: Shield,
-      title: "Segurança total",
-      desc: "Criptografia de ponta a ponta",
-    },
-    {
-      icon: CreditCard,
-      title: "Taxas competitivas",
-      desc: "As melhores taxas do mercado",
-    },
-  ];
 
   const inputClass =
     "w-full pl-9 pr-4 py-2.5 rounded-lg bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors";

@@ -1,4 +1,4 @@
-import { supabase } from "@/infrastructure/integrations/supabase/client";
+import { supabase } from "@/infra/integrations/supabase/client";
 import { NavLink } from "@/presentation/components/NavLink";
 import { useThemeContext } from "@/presentation/hooks/use-theme";
 import { useAuthStore } from "@/presentation/stores/useAuthStore";

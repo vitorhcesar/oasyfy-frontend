@@ -1,4 +1,4 @@
-import { supabase } from "@/infrastructure/integrations/supabase/client";
+import { supabase } from "@/infra/integrations/supabase/client";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import { useAuthStore } from "@/presentation/stores/useAuthStore";
 import { translateError } from "@/presentation/utils/translate-error";

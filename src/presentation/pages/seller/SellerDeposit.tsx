@@ -1,4 +1,4 @@
-import { supabase } from "@/infrastructure/integrations/supabase/client";
+import { supabase } from "@/infra/integrations/supabase/client";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import { Badge } from "@/presentation/components/ui/badge";
 import { Button } from "@/presentation/components/ui/button";

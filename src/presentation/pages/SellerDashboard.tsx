@@ -1,4 +1,16 @@
+import { supabase } from "@/infra/integrations/supabase/client";
+import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
+import { WithdrawalModal } from "@/presentation/components/seller/WithdrawalModal";
+import { Calendar } from "@/presentation/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/presentation/components/ui/popover";
 import { useAuthStore } from "@/presentation/stores/useAuthStore";
+import { cn } from "@/presentation/utils/cn";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import {
   ArrowDownLeft,
   ArrowLeftRight,
@@ -15,19 +27,6 @@ import {
   ShieldCheck,
   TrendingUp,
 } from "lucide-react";
-
-import { supabase } from "@/infrastructure/integrations/supabase/client";
-import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
-import { WithdrawalModal } from "@/presentation/components/seller/WithdrawalModal";
-import { Calendar } from "@/presentation/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/presentation/components/ui/popover";
-import { cn } from "@/presentation/utils/cn";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { useEffect, useMemo, useState } from "react";
 import { type DateRange } from "react-day-picker";
 import { useNavigate } from "react-router-dom";

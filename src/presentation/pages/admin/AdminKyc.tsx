@@ -1,4 +1,4 @@
-import { supabase } from "@/infrastructure/integrations/supabase/client";
+import { supabase } from "@/infra/integrations/supabase/client";
 import { AdminLayout } from "@/presentation/components/admin/AdminLayout";
 import { SellerDetail } from "@/presentation/components/admin/SellerDetail";
 import { Building2, ChevronRight, Search, User } from "lucide-react";

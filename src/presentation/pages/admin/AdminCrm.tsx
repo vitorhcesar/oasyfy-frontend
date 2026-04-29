@@ -1,4 +1,4 @@
-import { supabase } from "@/infrastructure/integrations/supabase/client";
+import { supabase } from "@/infra/integrations/supabase/client";
 import { AdminLayout } from "@/presentation/components/admin/AdminLayout";
 import { CheckCircle, Loader2, MessageSquare, Send } from "lucide-react";
 import { useEffect, useState } from "react";
