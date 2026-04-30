@@ -1,11 +1,9 @@
-/**
- * Origem da API REST + Better Auth (`/api/v1`, `/api/auth`).
- * - Produção: `VITE_API_URL` explícito (ex.: https://api.seudominio.com).
- * - Dev com proxy Vite em `/api`: deixe `VITE_API_URL` vazio para usar `window.location.origin`.
- */
+import { AppError } from "@/domain/errors/app.error";
+
 export function getApiBaseUrl(): string {
-  const raw = import.meta.env.VITE_API_URL?.trim() ?? "";
-  if (raw !== "") return raw.replace(/\/$/, "");
-  if (typeof window !== "undefined") return window.location.origin;
-  return "";
+  const baseUrl = import.meta.env.VITE_API_URL;
+  if (baseUrl === null) {
+    throw new AppError("VITE_API_URL is not set", 500);
+  }
+  return baseUrl.trim();
 }
