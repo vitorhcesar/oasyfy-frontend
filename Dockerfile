@@ -6,7 +6,7 @@ COPY package.json bun.lock* ./
 RUN bun install --frozen-lockfile
 
 COPY . .
-RUN cp prod.env .env.production && bun run build
+RUN cp prod.env .env && bun run build
 
 FROM nginx:alpine
 
