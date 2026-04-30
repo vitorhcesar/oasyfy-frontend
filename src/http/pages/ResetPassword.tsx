@@ -1,12 +1,6 @@
-import type { ApiEnvelope } from "@/infra/http/api-types";
+import type { IApiEnvelope } from "@/infra/http/api-types";
 import { httpClient } from "@/infra/http/http-client";
-import {
-  ArrowRight,
-  Check,
-  Lock,
-  ShieldCheck,
-  X,
-} from "lucide-react";
+import { ArrowRight, Check, Lock, ShieldCheck, X } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -67,7 +61,7 @@ export default function ResetPassword() {
     }
 
     try {
-      await httpClient.post<ApiEnvelope<{ success?: boolean }>>(
+      await httpClient.post<IApiEnvelope<{ success?: boolean }>>(
         "/api/v1/account/password-recovery/verify",
         {
           email: email.trim(),
@@ -183,7 +177,10 @@ export default function ResetPassword() {
               }
               required
               maxLength={6}
-              className={`${inputClass.replace("pl-10", "pl-3")} tracking-widest text-center font-mono`}
+              className={`${inputClass.replace(
+                "pl-10",
+                "pl-3"
+              )} tracking-widest text-center font-mono`}
               placeholder="Código de 6 dígitos"
             />
 

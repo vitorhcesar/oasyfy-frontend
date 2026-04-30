@@ -1,6 +1,9 @@
 import { ClientIpService } from "@/app/modules/client/services/client-ip.service";
+import { AppError } from "@/domain/errors/app.error";
+import { getErrorMessageOrDefault } from "@/http/utils/get-error-message-or-default";
 import { translateError } from "@/http/utils/translate-error";
-import { authClient, fetchSessionContext } from "@/infra/auth";
+import { tryOrToastError } from "@/http/utils/try-or-toast-error";
+import { authClient, ensureSellerPortalAccess } from "@/infra/auth";
 import { ArrowRight, Check, Eye, EyeOff, Lock, Mail, X } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -9,19 +12,25 @@ const clientIpService = new ClientIpService();
 
 interface ILoginFormProps {
   inputClass: string;
-  openSignupVerification: (message?: string) => Promise<boolean>;
+  email: string;
+  setEmail: (email: string) => void;
+  password: string;
+  setPassword: (password: string) => void;
+  openSignupVerification: () => Promise<void>;
   setView: (view: "login" | "signup" | "forgotPassword") => void;
 }
 
 export default function LoginForm({
   inputClass,
+  email,
+  setEmail,
+  password,
+  setPassword,
   openSignupVerification,
   setView,
 }: ILoginFormProps) {
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   const [error, setError] = useState("");
@@ -37,74 +46,76 @@ export default function LoginForm({
 
     setLoading(true);
 
-    const ip = await clientIpService.getClientIp();
-    if (!ip) {
-      setError(
-        "Erro ao identificar seu IP. Verifique sua conexão e tente novamente."
-      );
-      setLoading(false);
-      return;
-    }
-    void ip;
+    tryOrToastError(
+      async () => {
+        const ip = await clientIpService.getClientIp();
+        if (!ip) {
+          throw new AppError(
+            "Erro ao identificar seu IP. Verifique sua conexão e tente novamente.",
+            400
+          );
+        }
+        void ip;
 
-    const signInResult = await authClient.signIn.email({
-      email,
-      password,
-    });
+        const signInResult = await authClient.signIn.email({
+          email,
+          password,
+        });
 
-    if (signInResult.error) {
-      const raw = signInResult.error.message ?? "";
-      if (
-        raw.toLowerCase().includes("confirm") ||
-        raw.toLowerCase().includes("verified") ||
-        raw.toLowerCase().includes("verify")
-      ) {
-        const opened = await openSignupVerification();
-        setLoading(false);
-        if (!opened) return;
-        return;
+        if (signInResult.error) {
+          const raw = signInResult.error.message ?? "";
+          if (
+            raw.toLowerCase().includes("confirm") ||
+            raw.toLowerCase().includes("verified") ||
+            raw.toLowerCase().includes("verify")
+          ) {
+            await openSignupVerification();
+            return;
+          }
+
+          throw new AppError(translateError(raw), 400);
+        }
+
+        const gate = await ensureSellerPortalAccess();
+        if (gate.kind === "error") {
+          setError(gate.message);
+          return;
+        }
+        if (gate.kind === "needs_verification") {
+          await openSignupVerification();
+          return;
+        }
+
+        navigate("/seller");
+      },
+      {
+        errorFn: (error) => ({
+          title: "Erro ao entrar",
+          description: getErrorMessageOrDefault(error, "Erro ao entrar"),
+        }),
+        finallyFn: () => {
+          setLoading(false);
+        },
       }
-      setError(translateError(raw));
-      setLoading(false);
-      return;
-    }
+    );
+  };
 
-    const sess = await authClient.getSession();
-    const baUser = sess.data?.user;
-    let ctx;
-    try {
-      ctx = await fetchSessionContext();
-    } catch {
-      await authClient.signOut();
-      setError("Não foi possível validar permissões da conta.");
-      setLoading(false);
-      return;
-    }
+  const handleGoToSignup = () => {
+    setError("");
+    setSuccess("");
+    setView("signup");
+    setEmail("");
+    setPassword("");
+    setShowPassword(false);
+  };
 
-    if (ctx.role === "admin") {
-      await authClient.signOut();
-      setError("Esta conta é de administrador. Use o login de admin.");
-      setLoading(false);
-      return;
-    }
-
-    if (ctx.role !== "seller") {
-      await authClient.signOut();
-      setError("Esta conta não possui permissão de vendedor.");
-      setLoading(false);
-      return;
-    }
-
-    if (!baUser?.emailVerified && !ctx.emailManuallyApproved) {
-      await authClient.signOut();
-      const opened = await openSignupVerification();
-      setLoading(false);
-      if (!opened) return;
-      return;
-    }
-
-    navigate("/seller");
-    setLoading(false);
+  const handleGoToForgotPassword = () => {
+    setError("");
+    setSuccess("");
+    setView("forgotPassword");
+    setEmail("");
+    setPassword("");
+    setShowPassword(false);
   };
 
   return (
@@ -180,11 +191,7 @@ export default function LoginForm({
           <div className="text-right mt-1.5">
             <button
               type="button"
-              onClick={() => {
-                setView("forgotPassword");
-                setError("");
-                setSuccess("");
-              }}
+              onClick={handleGoToForgotPassword}
               className="text-xs text-primary hover:text-primary/80 font-medium transition-colors"
             >
               Esqueci minha senha
@@ -209,11 +216,7 @@ export default function LoginForm({
 
       <div className="text-center mt-6">
         <button
-          onClick={() => {
-            setError("");
-            setSuccess("");
-            setView("signup");
-          }}
+          onClick={handleGoToSignup}
           className="text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           Não tem conta?{" "}

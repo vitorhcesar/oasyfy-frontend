@@ -1,6 +1,11 @@
+import { AppError } from "@/domain/errors/app.error";
+import { PasswordStrengthHelper } from "@/http/helper/password-strength.helper";
+import { getErrorMessageOrDefault } from "@/http/utils/get-error-message-or-default";
 import { translateError } from "@/http/utils/translate-error";
+import { tryOrToastError } from "@/http/utils/try-or-toast-error";
+import { phoneValidationSchema } from "@/http/validation/schemas/phone-validation.schema";
 import { authClient } from "@/infra/auth";
-import { ApiEnvelope, httpClient } from "@/infra/http";
+import { IApiEnvelope, httpClient } from "@/infra/http";
 import {
   ArrowRight,
   Check,
@@ -12,23 +17,34 @@ import {
   User,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import z from "zod";
+
+const passwordStrengthHelper = new PasswordStrengthHelper();
+
+const emailValidationSchema = z.string().email("Insira um email válido");
 
 interface ISignUpFormProps {
   inputClass: string;
-  openSignupVerification: (message?: string) => Promise<boolean>;
+  email: string;
+  setEmail: (email: string) => void;
+  password: string;
+  setPassword: (password: string) => void;
+  openSignupVerification: () => Promise<void>;
   setView: (view: "login" | "signup") => void;
 }
 
 export default function SignUpForm({
   inputClass,
+  email,
+  setEmail,
+  password,
+  setPassword,
   openSignupVerification,
   setView,
 }: ISignUpFormProps) {
   const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const [showPassword, setShowPassword] = useState(false);
@@ -38,39 +54,22 @@ export default function SignUpForm({
 
   const [loading, setLoading] = useState(false);
 
-  const validateEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
-  const validatePhone = (v: string) =>
-    /^\(?\d{2}\)?\s?\d{4,5}-?\d{4}$/.test(v.replace(/\s/g, ""));
-
-  const passwordChecks = [
-    { label: "Mínimo 8 caracteres", ok: password.length >= 8 },
-    { label: "Letra maiúscula", ok: /[A-Z]/.test(password) },
-    { label: "Letra minúscula", ok: /[a-z]/.test(password) },
-    { label: "Número", ok: /\d/.test(password) },
-    { label: "Caractere especial", ok: /[^A-Za-z0-9]/.test(password) },
-  ];
-  const passwordStrong = passwordChecks.every((c) => c.ok);
-  const passwordScore = passwordChecks.filter((c) => c.ok).length;
-  const strengthLabel =
-    passwordScore <= 1
-      ? "Muito fraca"
-      : passwordScore <= 2
-      ? "Fraca"
-      : passwordScore <= 3
-      ? "Média"
-      : passwordScore <= 4
-      ? "Forte"
-      : "Muito forte";
-  const strengthColor =
-    passwordScore <= 1
-      ? "bg-destructive"
-      : passwordScore <= 2
-      ? "bg-destructive/70"
-      : passwordScore <= 3
-      ? "bg-warning"
-      : passwordScore <= 4
-      ? "bg-primary/70"
-      : "bg-primary";
+  const passwordScore = useMemo(
+    () => passwordStrengthHelper.getPasswordScore(password),
+    [password]
+  );
+  const strengthColor = useMemo(
+    () => passwordStrengthHelper.getStrengthColor(password),
+    [password]
+  );
+  const strengthLabel = useMemo(
+    () => passwordStrengthHelper.getStrengthLabel(password),
+    [password]
+  );
+  const passwordChecks = useMemo(
+    () => passwordStrengthHelper.getPasswordChecks(password),
+    [password]
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,63 +77,88 @@ export default function SignUpForm({
     setError("");
     setSuccess("");
 
-    setLoading(true);
+    const schema = z.object({
+      email: emailValidationSchema,
+      phone: phoneValidationSchema,
+    });
 
-    if (!validateEmail(email)) {
-      setError("Insira um email válido");
-      setLoading(false);
+    const result = schema.safeParse({ email, phone });
+    if (!result.success) {
+      setError(getErrorMessageOrDefault(result.error, "Dados inválidos"));
       return;
     }
-    if (!validatePhone(phone)) {
-      setError("Insira um telefone válido. Ex: (11) 99999-9999");
-      setLoading(false);
-      return;
-    }
+
+    const passwordStrong =
+      passwordStrengthHelper.checkPasswordIsStrong(password);
+
     if (!passwordStrong) {
       setError("Sua senha não atende todos os requisitos de segurança");
       setLoading(false);
       return;
     }
+
     if (password !== confirmPassword) {
       setError("As senhas não coincidem");
       setLoading(false);
       return;
     }
 
-    try {
-      const rl = await httpClient.post<
-        ApiEnvelope<{ allowed?: boolean; message?: string }>
-      >("/api/v1/rate-limit/check", { action: "signup" });
-      if (rl.data.allowed === false) {
-        setError(
-          rl.data.message || "Muitas tentativas. Tente novamente mais tarde."
-        );
-        setLoading(false);
-        return;
+    setLoading(true);
+
+    tryOrToastError(
+      async () => {
+        const rl = await httpClient.post<
+          IApiEnvelope<{ allowed?: boolean; message?: string }>
+        >("/api/v1/rate-limit/check", { action: "signup" });
+
+        if (rl.data.allowed === false) {
+          throw new AppError(
+            rl.data.message || "Muitas tentativas. Tente novamente mais tarde.",
+            429
+          );
+        }
+
+        const signUpResult = await authClient.signUp.email({
+          email,
+          password,
+          name: fullName,
+        });
+
+        if (signUpResult.error) {
+          throw new AppError(
+            translateError(
+              signUpResult.error.message ?? "Erro desconhecido ao cadastrar"
+            ),
+            400
+          );
+        }
+
+        await authClient.signOut();
+        await openSignupVerification();
+      },
+      {
+        errorFn: (error) => {
+          return {
+            title: "Erro ao cadastrar",
+            description: getErrorMessageOrDefault(error, "Erro ao cadastrar"),
+          };
+        },
+        finallyFn: () => {
+          setLoading(false);
+        },
       }
-    } catch {
-      console.error("rate-limit check failed");
-    }
-
-    const signUpResult = await authClient.signUp.email({
-      email,
-      password,
-      name: fullName,
-    });
-
-    if (signUpResult.error) {
-      setError(
-        translateError(signUpResult.error.message ?? "Erro ao cadastrar")
-      );
-      setLoading(false);
-      return;
-    }
-
-    await authClient.signOut();
-    await openSignupVerification(
-      "Código enviado! Verifique sua caixa de entrada."
     );
-    setLoading(false);
+  };
+
+  const handleGoToLogin = () => {
+    setView("login");
+    setError("");
+    setSuccess("");
+    setEmail("");
+    setPassword("");
+    setFullName("");
+    setPhone("");
+    setConfirmPassword("");
   };
 
   return (
@@ -200,7 +224,7 @@ export default function SignUpForm({
               placeholder="seu@email.com"
             />
           </div>
-          {email && !validateEmail(email) && (
+          {email && !emailValidationSchema.safeParse(email).success && (
             <p className="text-xs text-destructive flex items-center gap-1 mt-1.5 pl-1">
               <X size={11} /> Email inválido
             </p>
@@ -225,7 +249,7 @@ export default function SignUpForm({
               placeholder="(11) 99999-9999"
             />
           </div>
-          {phone && !validatePhone(phone) && (
+          {phone && !phoneValidationSchema.safeParse(phone).success && (
             <p className="text-xs text-destructive flex items-center gap-1 mt-1.5 pl-1">
               <X size={11} /> Telefone inválido
             </p>
@@ -331,11 +355,7 @@ export default function SignUpForm({
 
       <div className="text-center mt-6">
         <button
-          onClick={() => {
-            setView("login");
-            setError("");
-            setSuccess("");
-          }}
+          onClick={handleGoToLogin}
           className="text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           Já tem conta? <span className="text-primary font-medium">Entrar</span>
