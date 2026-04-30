@@ -12,8 +12,6 @@ import {
   Loader2,
   Lock,
   Mail,
-  Phone,
-  User,
   X,
 } from "lucide-react";
 import { useRef, useState } from "react";
@@ -870,272 +868,37 @@ export default function LoginSellerFormPanel() {
               </button>
             </div>
           </div>
-        ) : isForgotPassword ? (
-          <>
-            {renderRecoveryContent()}
-            <div className="text-center mt-8">
-              <button
-                onClick={resetRecoveryState}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5 mx-auto"
-              >
-                <ArrowLeft size={14} />
-                Voltar ao login
-              </button>
-            </div>
-          </>
         ) : (
-          <>
-            <div className="mb-7">
-              <h1 className="text-xl font-semibold text-foreground">
-                {isSignUp ? "Crie sua conta" : "Entrar"}
-              </h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                {isSignUp
-                  ? "Preencha seus dados para começar"
-                  : "Acesse sua conta para continuar"}
-              </p>
-            </div>
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <div className="px-3 py-2.5 rounded-lg bg-destructive/5 border border-destructive/15 text-destructive text-[13px] flex items-center gap-2">
-                  <X size={14} className="flex-shrink-0" />
-                  <span>{error}</span>
-                </div>
-              )}
-              {success && (
-                <div className="px-3 py-2.5 rounded-lg bg-primary/5 border border-primary/15 text-primary text-[13px] flex items-center gap-2">
-                  <Check size={14} className="flex-shrink-0" />
-                  <span>{success}</span>
-                </div>
-              )}
-
-              {isSignUp && (
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-                    Nome completo
-                  </label>
-                  <div className="relative">
-                    <User
-                      size={16}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50"
-                    />
-                    <input
-                      type="text"
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      required
-                      className={inputClass}
-                      placeholder="João Silva"
-                    />
-                  </div>
-                </div>
-              )}
-
-              <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-                  Email
-                </label>
-                <div className="relative">
-                  <Mail
-                    size={16}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50"
-                  />
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className={inputClass}
-                    placeholder="seu@email.com"
-                  />
-                </div>
-                {isSignUp && email && !validateEmail(email) && (
-                  <p className="text-xs text-destructive flex items-center gap-1 mt-1.5 pl-1">
-                    <X size={11} /> Email inválido
-                  </p>
-                )}
+          isForgotPassword && (
+            <>
+              {renderRecoveryContent()}
+              <div className="text-center mt-8">
+                <button
+                  onClick={resetRecoveryState}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5 mx-auto"
+                >
+                  <ArrowLeft size={14} />
+                  Voltar ao login
+                </button>
               </div>
-
-              {isSignUp && (
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-                    Telefone
-                  </label>
-                  <div className="relative">
-                    <Phone
-                      size={16}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50"
-                    />
-                    <input
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      required
-                      className={inputClass}
-                      placeholder="(11) 99999-9999"
-                    />
-                  </div>
-                  {phone && !validatePhone(phone) && (
-                    <p className="text-xs text-destructive flex items-center gap-1 mt-1.5 pl-1">
-                      <X size={11} /> Telefone inválido
-                    </p>
-                  )}
-                </div>
-              )}
-
-              <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-                  Senha
-                </label>
-                <div className="relative">
-                  <Lock
-                    size={16}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50"
-                  />
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    minLength={8}
-                    className={inputClass + " pr-10"}
-                    placeholder="••••••••"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-muted-foreground transition-colors"
-                  >
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </button>
-                </div>
-
-                {isSignUp && password && (
-                  <div className="mt-3 space-y-2">
-                    <div className="flex gap-1">
-                      {[...Array(5)].map((_, i) => (
-                        <div
-                          key={i}
-                          className={`h-1 flex-1 rounded-full transition-all duration-300 ${
-                            i < passwordScore ? strengthColor : "bg-border"
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <p className="text-[11px] text-muted-foreground">
-                      Força:{" "}
-                      <span className="font-medium text-foreground">
-                        {strengthLabel}
-                      </span>
-                    </p>
-                    <div className="grid grid-cols-2 gap-x-3 gap-y-0.5">
-                      {passwordChecks.map((c) => (
-                        <p
-                          key={c.label}
-                          className={`text-[11px] flex items-center gap-1 ${
-                            c.ok ? "text-primary" : "text-muted-foreground/40"
-                          }`}
-                        >
-                          {c.ok ? <Check size={10} /> : <X size={10} />}{" "}
-                          {c.label}
-                        </p>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {!isSignUp && (
-                  <div className="text-right mt-1.5">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsForgotPassword(true);
-                        setRecoveryEmail(email);
-                        setError("");
-                        setSuccess("");
-                      }}
-                      className="text-xs text-primary hover:text-primary/80 font-medium transition-colors"
-                    >
-                      Esqueci minha senha
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {isSignUp && (
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-                    Confirmar senha
-                  </label>
-                  <div className="relative">
-                    <Lock
-                      size={16}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50"
-                    />
-                    <input
-                      type="password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      required
-                      minLength={8}
-                      className={inputClass}
-                      placeholder="••••••••"
-                    />
-                  </div>
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full h-10 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 active:scale-[0.99] transition-all disabled:opacity-40 flex items-center justify-center gap-2 mt-1"
-              >
-                {loading ? (
-                  <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-                ) : (
-                  <>
-                    {isSignUp ? "Criar conta" : "Entrar"}{" "}
-                    <ArrowRight size={15} />
-                  </>
-                )}
-              </button>
-            </form>
-
-            <div className="text-center mt-6">
-              <button
-                onClick={() => {
-                  setIsSignUp(!isSignUp);
-                  setError("");
-                  setSuccess("");
-                }}
-                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-              >
-                {isSignUp ? (
-                  <>
-                    Já tem conta?{" "}
-                    <span className="text-primary font-medium">Entrar</span>
-                  </>
-                ) : (
-                  <>
-                    Não tem conta?{" "}
-                    <span className="text-primary font-medium">
-                      Cadastre-se
-                    </span>
-                  </>
-                )}
-              </button>
-            </div>
-          </>
+            </>
+          )
         )}
 
         {formView === "login" && (
           <LoginForm
             inputClass={inputClass}
             openSignupVerification={openSignupVerification}
+            setView={setFormView}
           />
         )}
-        {formView === "signup" && <SignUpForm />}
+        {formView === "signup" && (
+          <SignUpForm
+            inputClass={inputClass}
+            openSignupVerification={openSignupVerification}
+            setView={setFormView}
+          />
+        )}
         {formView === "forgotPassword" && <ForgotPasswordForm />}
 
         <p className="text-center text-[11px] text-muted-foreground/50 mt-8">

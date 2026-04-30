@@ -10,11 +10,13 @@ const clientIpService = new ClientIpService();
 interface ILoginFormProps {
   inputClass: string;
   openSignupVerification: (message?: string) => Promise<boolean>;
+  setView: (view: "login" | "signup" | "forgotPassword") => void;
 }
 
 export default function LoginForm({
   inputClass,
   openSignupVerification,
+  setView,
 }: ILoginFormProps) {
   const navigate = useNavigate();
 
@@ -179,6 +181,7 @@ export default function LoginForm({
             <button
               type="button"
               onClick={() => {
+                setView("forgotPassword");
                 setError("");
                 setSuccess("");
               }}
@@ -209,6 +212,7 @@ export default function LoginForm({
           onClick={() => {
             setError("");
             setSuccess("");
+            setView("signup");
           }}
           className="text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
