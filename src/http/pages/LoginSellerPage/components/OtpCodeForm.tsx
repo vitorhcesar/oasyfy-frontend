@@ -1,9 +1,10 @@
+import { OtpInput } from "@/http/components/OtpInput";
 import { getErrorMessageOrDefault } from "@/http/utils/get-error-message-or-default";
 import { tryOrToastError } from "@/http/utils/try-or-toast-error";
 import { authClient, ensureSellerPortalAccess } from "@/infra/auth";
 import { httpClient, type IApiEnvelope } from "@/infra/http";
 import { ArrowLeft, Check, Loader2, Mail, X } from "lucide-react";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 interface IOtpCodeFormProps {
@@ -21,25 +22,24 @@ export default function OtpCodeForm({
 }: IOtpCodeFormProps) {
   const navigate = useNavigate();
 
-  const [signupOtp, setSignupOtp] = useState(["", "", "", "", "", ""]);
+  const [otpCode, setOtpCode] = useState("");
   const [signupVerifyCountdown, setSignupVerifyCountdown] = useState(0);
-
-  const signupOtpRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
   const [loading, setLoading] = useState(false);
 
-  const handleVerifySignupCode = async (code: string) => {
+  const handleVerifySignupCode = async () => {
     setError("");
+
     setLoading(true);
 
     tryOrToastError(
       async () => {
         await httpClient.post<IApiEnvelope<{ success?: boolean }>>(
           "/api/v1/account/signup-verification/verify",
-          { email, code }
+          { email, code: otpCode.trim() }
         );
 
         setSuccess("E-mail verificado com sucesso! Redirecionando...");
@@ -82,31 +82,6 @@ export default function OtpCodeForm({
         },
       }
     );
-  };
-
-  const handleSignupOtpChange = (index: number, value: string) => {
-    if (value && !/^\d$/.test(value)) return;
-    const newOtp = [...signupOtp];
-    newOtp[index] = value;
-    setSignupOtp(newOtp);
-    if (value && index < 5) signupOtpRefs.current[index + 1]?.focus();
-    const full = newOtp.join("");
-    if (full.length === 6) handleVerifySignupCode(full);
-  };
-
-  const handleSignupOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === "Backspace" && !signupOtp[index] && index > 0) {
-      signupOtpRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handleSignupOtpPaste = (e: React.ClipboardEvent) => {
-    e.preventDefault();
-    const text = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
-    if (text.length === 6) {
-      setSignupOtp(text.split(""));
-      handleVerifySignupCode(text);
-    }
   };
 
   const startSignupVerifyCountdown = () => {
@@ -177,28 +152,12 @@ export default function OtpCodeForm({
         </div>
       )}
 
-      <div
-        className="flex items-center justify-center gap-2.5 mb-6"
-        onPaste={handleSignupOtpPaste}
-      >
-        {signupOtp.map((digit, i) => (
-          <input
-            key={i}
-            ref={(el) => {
-              signupOtpRefs.current[i] = el;
-            }}
-            type="text"
-            inputMode="numeric"
-            maxLength={1}
-            value={digit}
-            onChange={(e) => handleSignupOtpChange(i, e.target.value)}
-            onKeyDown={(e) => handleSignupOtpKeyDown(i, e)}
-            disabled={loading}
-            className="w-11 h-12 text-center text-lg font-semibold rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors disabled:opacity-50"
-            autoFocus={i === 0}
-          />
-        ))}
-      </div>
+      <OtpInput
+        value={otpCode}
+        onChange={setOtpCode}
+        onFullfilled={handleVerifySignupCode}
+        disabled={loading}
+      />
 
       {loading && (
         <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mb-4">
