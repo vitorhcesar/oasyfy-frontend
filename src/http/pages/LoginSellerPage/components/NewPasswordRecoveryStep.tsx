@@ -1,3 +1,4 @@
+import { AppError } from "@/domain/errors/app.error";
 import { Label } from "@/http/components/Label";
 import { PasswordChecks } from "@/http/components/PasswordChecks";
 import { PasswordInput } from "@/http/components/PasswordInput";
@@ -12,7 +13,7 @@ interface INewPasswordRecoveryStepProps {
   otpDigits: string[];
   loading: boolean;
   setLoading: (loading: boolean) => void;
-  resetRecoveryState: () => void;
+  onSuccess: () => void;
 }
 
 export default function NewPasswordRecoveryStep({
@@ -20,7 +21,7 @@ export default function NewPasswordRecoveryStep({
   otpDigits,
   loading,
   setLoading,
-  resetRecoveryState,
+  onSuccess,
 }: INewPasswordRecoveryStepProps) {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -32,60 +33,28 @@ export default function NewPasswordRecoveryStep({
   const handleVerifyAndReset = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    setError("");
-    setLoading(true);
-
     const code = otpDigits.join("");
 
     if (code.length !== 6) {
-      setError("Insira o código completo");
-      setLoading(false);
-      return;
+      throw new AppError("Insira o código completo", 400);
     }
     if (!passwordIsStrong) {
-      setError("A senha não atende os requisitos");
-      setLoading(false);
-      return;
+      throw new AppError("A senha não atende os requisitos", 400);
     }
     if (password !== confirmPassword) {
-      setError("As senhas não coincidem");
-      setLoading(false);
-      return;
+      throw new AppError("As senhas não coincidem", 400);
     }
 
-    try {
-      await httpClient.post<IApiEnvelope<{ success?: boolean }>>(
-        "/api/v1/account/password-recovery/verify",
-        {
-          email,
-          code,
-          new_password: password,
-        }
-      );
-    } catch (err: unknown) {
-      const msg =
-        err &&
-        typeof err === "object" &&
-        "response" in err &&
-        err.response &&
-        typeof err.response === "object" &&
-        "data" in err.response &&
-        err.response.data &&
-        typeof err.response.data === "object" &&
-        "message" in err.response.data &&
-        typeof (err.response.data as { message: unknown }).message === "string"
-          ? (err.response.data as { message: string }).message
-          : "Erro ao verificar código";
-      setError(msg);
-      setLoading(false);
-      return;
-    }
+    await httpClient.post<IApiEnvelope<{ success?: boolean }>>(
+      "/api/v1/account/password-recovery/verify",
+      {
+        email,
+        code,
+        new_password: password,
+      }
+    );
 
-    setSuccess("Senha atualizada com sucesso! Redirecionando...");
-    setLoading(false);
-    setTimeout(() => {
-      resetRecoveryState();
-    }, 2000);
+    onSuccess();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

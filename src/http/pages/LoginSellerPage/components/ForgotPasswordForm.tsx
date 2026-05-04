@@ -59,7 +59,7 @@ export default function ForgotPasswordForm({
           otpDigits={otpDigits}
           loading={loading}
           setLoading={setLoading}
-          resetRecoveryState={resetRecoveryState}
+          onSuccess={resetRecoveryState}
         />
       )}
 
