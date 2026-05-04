@@ -32,9 +32,6 @@ export default function LoginSellerFormPanel() {
     }
   };
 
-  const inputClass =
-    "w-full pl-9 pr-4 py-2.5 rounded-lg bg-background border border-border text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors";
-
   return (
     <div className="flex-1 flex items-center justify-center px-6 py-8">
       <div className="w-full max-w-[400px]">
@@ -51,34 +48,31 @@ export default function LoginSellerFormPanel() {
 
         {formView === "login" && (
           <LoginForm
-            inputClass={inputClass}
             email={email}
             setEmail={setEmail}
             password={password}
+            setView={setFormView}
             setPassword={setPassword}
             openSignupVerification={openSignupVerification}
-            setView={setFormView}
           />
         )}
 
         {formView === "signup" && (
           <SignUpForm
-            inputClass={inputClass}
             email={email}
             setEmail={setEmail}
             password={password}
+            setView={setFormView}
             setPassword={setPassword}
             openSignupVerification={openSignupVerification}
-            setView={setFormView}
           />
         )}
 
         {formView === "forgotPassword" && (
           <ForgotPasswordForm
-            inputClass={inputClass}
-            setFormView={setFormView}
             email={email}
             setEmail={setEmail}
+            setFormView={setFormView}
           />
         )}
 

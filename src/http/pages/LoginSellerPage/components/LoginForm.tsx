@@ -1,17 +1,19 @@
 import { ClientIpService } from "@/app/modules/client/services/client-ip.service";
 import { AppError } from "@/domain/errors/app.error";
+import { Input } from "@/http/components/Input";
+import { Label } from "@/http/components/Label";
+import { PasswordInput } from "@/http/components/PasswordInput";
 import { getErrorMessageOrDefault } from "@/http/utils/get-error-message-or-default";
 import { translateError } from "@/http/utils/translate-error";
 import { tryOrToastError } from "@/http/utils/try-or-toast-error";
 import { authClient, ensureSellerPortalAccess } from "@/infra/auth";
-import { ArrowRight, Check, Eye, EyeOff, Lock, Mail, X } from "lucide-react";
+import { ArrowRight, Check, Mail, X } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const clientIpService = new ClientIpService();
 
 interface ILoginFormProps {
-  inputClass: string;
   email: string;
   setEmail: (email: string) => void;
   password: string;
@@ -21,7 +23,6 @@ interface ILoginFormProps {
 }
 
 export default function LoginForm({
-  inputClass,
   email,
   setEmail,
   password,
@@ -30,8 +31,6 @@ export default function LoginForm({
   setView,
 }: ILoginFormProps) {
   const navigate = useNavigate();
-
-  const [showPassword, setShowPassword] = useState(false);
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -106,7 +105,6 @@ export default function LoginForm({
     setView("signup");
     setEmail("");
     setPassword("");
-    setShowPassword(false);
   };
 
   const handleGoToForgotPassword = () => {
@@ -115,7 +113,6 @@ export default function LoginForm({
     setView("forgotPassword");
     setEmail("");
     setPassword("");
-    setShowPassword(false);
   };
 
   return (
@@ -142,51 +139,30 @@ export default function LoginForm({
         )}
 
         <div>
-          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-            Email
-          </label>
-          <div className="relative">
-            <Mail
-              size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50"
-            />
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className={inputClass}
-              placeholder="seu@email.com"
-            />
-          </div>
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            placeholder="seu@email.com"
+            startComponent={
+              <Mail size={16} className="text-muted-foreground/50" />
+            }
+          />
         </div>
 
         <div>
-          <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
-            Senha
-          </label>
-          <div className="relative">
-            <Lock
-              size={16}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50"
-            />
-            <input
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={8}
-              className={inputClass + " pr-10"}
-              placeholder="••••••••"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-muted-foreground transition-colors"
-            >
-              {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-            </button>
-          </div>
+          <Label htmlFor="password">Senha</Label>
+          <PasswordInput
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={8}
+            placeholder="••••••••"
+          />
 
           <div className="text-right mt-1.5">
             <button

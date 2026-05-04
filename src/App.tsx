@@ -8,7 +8,7 @@ import { useGatewayTheme } from "@/http/hooks/use-gateway-theme";
 import { ThemeProvider } from "@/http/hooks/use-theme";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
-import LoginAdmin from "./http/pages/LoginAdmin";
+import LoginAdmin from "./http/pages/LoginAdminPage";
 import LoginSellerPage from "./http/pages/LoginSellerPage";
 import ResetPassword from "./http/pages/ResetPassword";
 import SellerDashboard from "./http/pages/SellerDashboard";

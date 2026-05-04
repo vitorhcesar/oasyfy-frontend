@@ -1,66 +1,71 @@
 import { ClientIpService } from "@/app/modules/client/services/client-ip.service";
+import { AppError } from "@/domain/errors/app.error";
+import { getErrorMessageOrDefault } from "@/http/utils/get-error-message-or-default";
+import { tryOrToastError } from "@/http/utils/try-or-toast-error";
 import { authClient } from "@/infra/auth/auth-client";
 import { fetchSessionContext } from "@/infra/auth/session-context-api";
-import {
-  ArrowRight,
-  Lock,
-  Mail,
-  Shield,
-} from "lucide-react";
+import { ArrowRight, Lock, Mail, Shield } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const clientIpService = new ClientIpService();
 
 export default function LoginAdmin() {
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+
     setError("");
+
     setLoading(true);
 
-    const ip = await clientIpService.getClientIp();
-    if (!ip) {
-      setError(
-        "Erro ao identificar seu IP. Verifique sua conexão e tente novamente."
-      );
-      setLoading(false);
-      return;
-    }
+    tryOrToastError(
+      async () => {
+        const ip = await clientIpService.getClientIp();
+        if (!ip) {
+          throw new AppError(
+            "Erro ao identificar seu IP. Verifique sua conexão e tente novamente.",
+            400
+          );
+        }
 
-    const signInResult = await authClient.signIn.email({
-      email,
-      password,
-    });
+        const signInResult = await authClient.signIn.email({
+          email,
+          password,
+        });
 
-    if (signInResult.error) {
-      setError("Email ou senha inválidos");
-      setLoading(false);
-      return;
-    }
+        if (signInResult.error) {
+          setError("Email ou senha inválidos");
+          return;
+        }
 
-    try {
-      const ctx = await fetchSessionContext();
+        const ctx = await fetchSessionContext();
 
-      if (ctx.role !== "admin") {
-        await authClient.signOut();
-        setError("Acesso restrito a administradores");
-        setLoading(false);
-        return;
+        if (ctx.role !== "admin") {
+          throw new AppError("Acesso restrito a administradores", 403);
+        }
+
+        navigate("/admin");
+      },
+      {
+        errorFn: (error) => {
+          authClient.signOut();
+          return {
+            title: "Erro ao entrar",
+            description: getErrorMessageOrDefault(error, "Erro ao entrar"),
+          };
+        },
+        finallyFn: () => {
+          setLoading(false);
+        },
       }
-
-      navigate("/admin");
-    } catch {
-      await authClient.signOut();
-      setError("Não foi possível validar sua sessão.");
-    }
-
-    setLoading(false);
+    );
   };
 
   const inputClass =
