@@ -39,12 +39,12 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import KycOnboarding from "./KycOnboarding";
+import KycOnboarding from "../KycOnboarding";
 
-type KycStatus = "none" | "pending" | "under_review" | "approved" | "rejected";
-type DocReview = Record<string, { status: string; reason?: string }>;
+type TKycStatus = "none" | "pending" | "under_review" | "approved" | "rejected";
+type TDocReview = Record<string, { status: string; reason?: string }>;
 
-interface Transaction {
+interface ITransaction {
   id: string;
   amount: number;
   method: string;
@@ -53,14 +53,14 @@ interface Transaction {
   created_at: string;
 }
 
-interface SellerFees {
+interface ISellerFees {
   pix_retention_days: number;
   card_retention_days: number;
   boleto_retention_days: number;
   crypto_retention_days: number;
 }
 
-type TimeRange = "7d" | "30d" | "custom";
+type TTimeRange = "7d" | "30d" | "custom";
 
 function isPaid(status: string) {
   return status === "paid" || status === "completed";
@@ -121,14 +121,14 @@ export default function SellerDashboard() {
   const navigate = useNavigate();
   const name = user?.name || user?.email?.split("@")[0] || "Seller";
 
-  const [kycStatus, setKycStatus] = useState<KycStatus>("none");
+  const [kycStatus, setKycStatus] = useState<TKycStatus>("none");
   const [kycLoading, setKycLoading] = useState(true);
   const [fullyApproved, setFullyApproved] = useState(false);
-  const [documentsReview, setDocumentsReview] = useState<DocReview>({});
+  const [documentsReview, setDocumentsReview] = useState<TDocReview>({});
 
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [fees, setFees] = useState<SellerFees | null>(null);
-  const [timeRange, setTimeRange] = useState<TimeRange>("7d");
+  const [transactions, setTransactions] = useState<ITransaction[]>([]);
+  const [fees, setFees] = useState<ISellerFees | null>(null);
+  const [timeRange, setTimeRange] = useState<TTimeRange>("7d");
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [dataLoading, setDataLoading] = useState(true);
   const [withdrawalOpen, setWithdrawalOpen] = useState(false);
@@ -150,8 +150,8 @@ export default function SellerDashboard() {
       .limit(1)
       .then(({ data }) => {
         if (data && data.length > 0) {
-          setKycStatus(data[0].status as KycStatus);
-          setDocumentsReview((data[0].documents_review as DocReview) || {});
+          setKycStatus(data[0].status as TKycStatus);
+          setDocumentsReview((data[0].documents_review as TDocReview) || {});
           setFullyApproved(
             data[0].status === "approved" &&
               data[0].documents_status === "approved" &&
@@ -194,8 +194,8 @@ export default function SellerDashboard() {
         .eq("seller_id", user.id)
         .limit(1),
     ]);
-    setTransactions((txRes.data as Transaction[]) || []);
-    setFees((feeRes.data?.[0] as SellerFees) || null);
+    setTransactions((txRes.data as ITransaction[]) || []);
+    setFees((feeRes.data?.[0] as ISellerFees) || null);
     setDataLoading(false);
   };
 
@@ -218,11 +218,13 @@ export default function SellerDashboard() {
   }, [kycLoading, showKycPending, showDocResubmit, navigate]);
 
   const now = new Date();
+
   const rangeStart = useMemo(() => {
     if (timeRange === "custom" && dateRange?.from) return dateRange.from;
     const rangeMs = timeRange === "30d" ? 30 * 86400000 : 7 * 86400000;
     return new Date(now.getTime() - rangeMs);
   }, [timeRange, dateRange]);
+
   const rangeEnd = useMemo(() => {
     if (timeRange === "custom" && dateRange?.to) {
       const end = new Date(dateRange.to);
@@ -245,6 +247,7 @@ export default function SellerDashboard() {
     () => filteredTx.filter((t) => isPaid(t.status)),
     [filteredTx]
   );
+
   const allPositiveTx = useMemo(
     () => transactions.filter((t) => t.amount > 0),
     [transactions]
@@ -257,6 +260,7 @@ export default function SellerDashboard() {
         .reduce((s, t) => s + t.amount, 0),
     [allPositiveTx]
   );
+
   const totalPending = useMemo(
     () =>
       allPositiveTx
@@ -264,6 +268,7 @@ export default function SellerDashboard() {
         .reduce((s, t) => s + t.amount, 0),
     [allPositiveTx]
   );
+
   const totalWithdrawn = useMemo(
     () =>
       Math.abs(
@@ -318,6 +323,7 @@ export default function SellerDashboard() {
         .reduce((s, t) => s + t.amount, 0),
     [allPositiveTx]
   );
+
   const cardRetained = useMemo(() => {
     if (!fees) return 0;
     return allPositiveTx
@@ -333,6 +339,7 @@ export default function SellerDashboard() {
       )
       .reduce((s, t) => s + t.amount, 0);
   }, [allPositiveTx, fees]);
+
   const pixBoletoRetained = useMemo(() => {
     if (!fees) return 0;
     return allPositiveTx

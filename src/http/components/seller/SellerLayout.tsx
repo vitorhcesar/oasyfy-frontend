@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { SellerSidebar } from './SellerSidebar';
-import { SellerTopbar } from './SellerTopbar';
+import { PropsWithChildren, useState } from "react";
+import { SellerSidebar } from "./SellerSidebar";
+import { SellerTopbar } from "./SellerTopbar";
 
-export function SellerLayout({ children }: { children: React.ReactNode }) {
+export function SellerLayout({ children }: PropsWithChildren) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
@@ -12,7 +12,12 @@ export function SellerLayout({ children }: { children: React.ReactNode }) {
         <div className="absolute top-1/4 right-[-100px] w-[500px] h-[500px] rounded-full bg-primary/12 blur-[120px]" />
         <div className="absolute bottom-[-80px] left-1/3 w-[550px] h-[550px] rounded-full bg-primary/15 blur-[140px]" />
       </div>
-      <SellerSidebar mobileOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+
+      <SellerSidebar
+        mobileOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
+
       <main className="flex-1 min-w-0 relative z-10 flex flex-col">
         <SellerTopbar onMenuToggle={() => setSidebarOpen(!sidebarOpen)} />
         <div className="flex-1">{children}</div>

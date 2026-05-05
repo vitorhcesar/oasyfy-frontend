@@ -24,19 +24,23 @@ function formatCompact(cents: number) {
   return val.toFixed(0);
 }
 
-interface SellerTopbarProps {
+interface ISellerTopbarProps {
   onMenuToggle?: () => void;
 }
 
-export function SellerTopbar({ onMenuToggle }: SellerTopbarProps) {
-  const { user, signOut } = useAuthStore();
+export function SellerTopbar({ onMenuToggle }: ISellerTopbarProps) {
   const navigate = useNavigate();
+
+  const { user, signOut } = useAuthStore();
   const { theme, toggleTheme } = useThemeContext();
+
   const [open, setOpen] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [billingGoal, setBillingGoal] = useState(0);
+
   const ref = useRef<HTMLDivElement>(null);
+
   const name = user?.name || user?.email?.split("@")[0] || "Seller";
   const initials = name
     .split(" ")

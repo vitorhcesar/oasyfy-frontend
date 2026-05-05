@@ -1,5 +1,4 @@
 import { NavLink } from "@/http/components/NavLink";
-import { useThemeContext } from "@/http/hooks/use-theme";
 import { useAuthStore } from "@/http/stores/useAuthStore";
 import { cn } from "@/http/utils/cn";
 import { supabase } from "@/infra/integrations/supabase/client";
@@ -24,31 +23,25 @@ import {
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-interface SellerSidebarProps {
+interface ISellerSidebarProps {
   mobileOpen?: boolean;
   onClose?: () => void;
 }
 
-export function SellerSidebar({ mobileOpen, onClose }: SellerSidebarProps) {
-  const { user, signOut } = useAuthStore();
+export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
   const navigate = useNavigate();
-  const { theme, toggleTheme } = useThemeContext();
-  const [collapsed, setCollapsed] = useState(false);
-  const [kycApproved, setKycApproved] = useState<boolean | null>(null);
+
   const location = useLocation();
   const isOnSettingsPage =
     location.pathname.startsWith("/seller/settings") ||
     location.pathname.startsWith("/seller/kyc") ||
     location.pathname.startsWith("/seller/2fa");
-  const [settingsOpen, setSettingsOpen] = useState(isOnSettingsPage);
 
-  const name = user?.name || user?.email?.split("@")[0] || "Seller";
-  const initials = name
-    .split(" ")
-    .map((n: string) => n[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  const { user, signOut } = useAuthStore();
+
+  const [collapsed, setCollapsed] = useState(false);
+  const [kycApproved, setKycApproved] = useState<boolean | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(isOnSettingsPage);
 
   useEffect(() => {
     if (!user) return;
