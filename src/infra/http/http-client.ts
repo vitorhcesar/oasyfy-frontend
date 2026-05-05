@@ -1,21 +1,33 @@
-import type {
-  AxiosInstance,
-  AxiosRequestConfig,
-  AxiosResponse,
-} from "axios";
-
+import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
 import { apiAxios } from "./axios-instance";
 
-/**
- * Cliente HTTP fino sobre Axios: devolve `response.data` tipado para uso por camadas internas (repositórios).
- */
-export class HttpClient {
+export interface IHttpClient {
+  get<T>(url: string, config?: AxiosRequestConfig): Promise<T>;
+  post<T, B = unknown>(
+    url: string,
+    body?: B,
+    config?: AxiosRequestConfig
+  ): Promise<T>;
+  put<T, B = unknown>(
+    url: string,
+    body?: B,
+    config?: AxiosRequestConfig
+  ): Promise<T>;
+  patch<T, B = unknown>(
+    url: string,
+    body?: B,
+    config?: AxiosRequestConfig
+  ): Promise<T>;
+  delete<T>(url: string, config?: AxiosRequestConfig): Promise<T>;
+  rawRequest<T = unknown>(
+    config: AxiosRequestConfig
+  ): Promise<AxiosResponse<T>>;
+}
+
+export class HttpClient implements IHttpClient {
   constructor(private readonly client: AxiosInstance = apiAxios) {}
 
-  async get<T>(
-    url: string,
-    config?: AxiosRequestConfig
-  ): Promise<T> {
+  async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
     const { data } = await this.client.get<T>(url, config);
     return data;
   }
@@ -52,9 +64,6 @@ export class HttpClient {
     return data;
   }
 
-  /**
-   * Acesso bruto ao Axios quando precisar de `AxiosResponse` completa, stream, ou config avançada.
-   */
   rawRequest<T = unknown>(
     config: AxiosRequestConfig
   ): Promise<AxiosResponse<T>> {

@@ -1,15 +1,8 @@
-import type { IApiEnvelope } from "../http/api-types";
-import { httpClient } from "../http/http-client";
+import { apiService } from "../http/services/api/api.service";
+import type { ISessionContextDto } from "../http/services/api/modules/session.module";
 
-export interface ISessionContextDto {
-  role: "admin" | "seller" | null;
-  isBanned: boolean;
-  emailManuallyApproved: boolean;
-}
+export type { ISessionContextDto } from "../http/services/api/modules/session.module";
 
 export async function fetchSessionContext(): Promise<ISessionContextDto> {
-  const body = await httpClient.get<IApiEnvelope<ISessionContextDto>>(
-    "/api/v1/session/context"
-  );
-  return body.data;
+  return apiService.session.getContext();
 }

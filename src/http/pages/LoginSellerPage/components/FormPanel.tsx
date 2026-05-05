@@ -1,5 +1,6 @@
-import { toast } from "@/http/hooks/use-toast";
-import { IApiEnvelope, httpClient } from "@/infra/http";
+import { getErrorMessageOrDefault } from "@/http/utils/get-error-message-or-default";
+import { tryOrToastError } from "@/http/utils/try-or-toast-error";
+import { apiService } from "@/infra/http";
 import { useState } from "react";
 import ForgotPasswordForm from "./ForgotPasswordForm";
 import LoginForm from "./LoginForm";
@@ -16,20 +17,23 @@ export default function LoginSellerFormPanel() {
   const [password, setPassword] = useState("");
 
   const openSignupVerification = async () => {
-    try {
-      await httpClient.post<IApiEnvelope<unknown>>(
-        "/api/v1/account/signup-verification/send",
-        { email }
-      );
-      setFormView("code");
-    } catch (error) {
-      console.error(error);
-      toast({
-        title: "Erro ao enviar código de verificação",
-        description: "Tente novamente mais tarde",
-        variant: "destructive",
-      });
-    }
+    tryOrToastError(
+      async () => {
+        await apiService.account.sendSignupVerificationCode(email);
+        setFormView("code");
+      },
+      {
+        errorFn: (error) => {
+          return {
+            title: "Erro ao enviar código de verificação",
+            description: getErrorMessageOrDefault(
+              error,
+              "Erro desconhecido ao enviar código de verificação"
+            ),
+          };
+        },
+      }
+    );
   };
 
   return (

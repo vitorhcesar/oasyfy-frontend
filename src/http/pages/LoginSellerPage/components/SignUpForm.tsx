@@ -10,7 +10,7 @@ import { translateError } from "@/http/utils/translate-error";
 import { tryOrToastError } from "@/http/utils/try-or-toast-error";
 import { phoneValidationSchema } from "@/http/validation/schemas/phone-validation.schema";
 import { authClient } from "@/infra/auth";
-import { IApiEnvelope, httpClient } from "@/infra/http";
+import { apiService } from "@/infra/http";
 import { ArrowRight, Check, Mail, Phone, User, X } from "lucide-react";
 import { useState } from "react";
 import z from "zod";
@@ -81,9 +81,7 @@ export default function SignUpForm({
 
     tryOrToastError(
       async () => {
-        const rl = await httpClient.post<
-          IApiEnvelope<{ allowed?: boolean; message?: string }>
-        >("/api/v1/rate-limit/check", { action: "signup" });
+        const rl = await apiService.rateLimit.checkSignup();
 
         if (rl.data.allowed === false) {
           throw new AppError(

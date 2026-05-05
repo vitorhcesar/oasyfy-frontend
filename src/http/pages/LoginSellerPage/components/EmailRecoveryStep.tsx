@@ -4,7 +4,7 @@ import { Button } from "@/http/components/ui/button";
 import { toast } from "@/http/hooks/use-toast";
 import { getErrorMessageOrDefault } from "@/http/utils/get-error-message-or-default";
 import { tryOrToastError } from "@/http/utils/try-or-toast-error";
-import { httpClient, IApiEnvelope } from "@/infra/http";
+import { apiService } from "@/infra/http";
 import { ArrowRight, Check, Mail, X } from "lucide-react";
 import { useState } from "react";
 import z from "zod";
@@ -49,12 +49,7 @@ export default function EmailRecoveryStep({
 
     tryOrToastError(
       async () => {
-        await httpClient.post<IApiEnvelope<unknown>>(
-          "/api/v1/account/password-recovery/send",
-          {
-            email: targetEmail,
-          }
-        );
+        await apiService.account.sendPasswordRecoveryCode(targetEmail);
         setEmail(targetEmail);
         onSuccess();
       },

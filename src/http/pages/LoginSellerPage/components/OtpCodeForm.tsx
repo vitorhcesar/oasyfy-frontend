@@ -3,7 +3,7 @@ import { Button } from "@/http/components/ui/button";
 import { getErrorMessageOrDefault } from "@/http/utils/get-error-message-or-default";
 import { tryOrToastError } from "@/http/utils/try-or-toast-error";
 import { authClient, ensureSellerPortalAccess } from "@/infra/auth";
-import { httpClient, type IApiEnvelope } from "@/infra/http";
+import { apiService } from "@/infra/http";
 import { ArrowLeft, Check, Loader2, Mail, X } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -38,9 +38,9 @@ export default function OtpCodeForm({
 
     tryOrToastError(
       async () => {
-        await httpClient.post<IApiEnvelope<{ success?: boolean }>>(
-          "/api/v1/account/signup-verification/verify",
-          { email, code: otpCode.trim() }
+        await apiService.account.verifySignupVerification(
+          email,
+          otpCode.trim()
         );
 
         setSuccess("E-mail verificado com sucesso! Redirecionando...");

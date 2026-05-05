@@ -1,5 +1,4 @@
-import type { IApiEnvelope } from "@/infra/http/api-types";
-import { httpClient } from "@/infra/http/http-client";
+import { apiService } from "@/infra/http";
 import { ArrowRight, Check, Lock, ShieldCheck, X } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -61,14 +60,11 @@ export default function ResetPassword() {
     }
 
     try {
-      await httpClient.post<IApiEnvelope<{ success?: boolean }>>(
-        "/api/v1/account/password-recovery/verify",
-        {
-          email: email.trim(),
-          code: code.trim(),
-          new_password: password,
-        }
-      );
+      await apiService.account.verifyPasswordRecovery({
+        email: email.trim(),
+        code: code.trim(),
+        new_password: password,
+      });
     } catch (err: unknown) {
       const msg =
         err &&

@@ -4,7 +4,7 @@ import { PasswordChecks } from "@/http/components/PasswordChecks";
 import { PasswordInput } from "@/http/components/PasswordInput";
 import { getErrorMessageOrDefault } from "@/http/utils/get-error-message-or-default";
 import { tryOrToastError } from "@/http/utils/try-or-toast-error";
-import { httpClient, IApiEnvelope } from "@/infra/http";
+import { apiService } from "@/infra/http";
 import { ArrowRight, Check, Lock, X } from "lucide-react";
 import { useState } from "react";
 
@@ -43,14 +43,11 @@ export default function NewPasswordRecoveryStep({
       throw new AppError("As senhas não coincidem", 400);
     }
 
-    await httpClient.post<IApiEnvelope<{ success?: boolean }>>(
-      "/api/v1/account/password-recovery/verify",
-      {
-        email,
-        code: otpCode,
-        new_password: password,
-      }
-    );
+    await apiService.account.verifyPasswordRecovery({
+      email,
+      code: otpCode,
+      new_password: password,
+    });
 
     onSuccess();
   };

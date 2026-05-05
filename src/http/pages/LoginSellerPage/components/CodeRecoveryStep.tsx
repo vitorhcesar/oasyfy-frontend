@@ -3,7 +3,7 @@ import { Button } from "@/http/components/ui/button";
 import { cn } from "@/http/utils/cn";
 import { getErrorMessageOrDefault } from "@/http/utils/get-error-message-or-default";
 import { tryOrToastError } from "@/http/utils/try-or-toast-error";
-import { httpClient, IApiEnvelope } from "@/infra/http";
+import { apiService } from "@/infra/http";
 import { ArrowRight, KeyRound, X } from "lucide-react";
 import { useState } from "react";
 import { z } from "zod";
@@ -48,12 +48,7 @@ export default function CodeRecoveryStep({
 
     tryOrToastError(
       async () => {
-        await httpClient.post<IApiEnvelope<unknown>>(
-          "/api/v1/account/password-recovery/send",
-          {
-            email: targetEmail,
-          }
-        );
+        await apiService.account.sendPasswordRecoveryCode(targetEmail);
       },
       {
         errorFn: (error) => {
