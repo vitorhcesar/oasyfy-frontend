@@ -5,7 +5,7 @@ import * as React from "react";
 import { cn } from "@/http/utils/cn";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm !m-0 font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -47,6 +47,7 @@ export interface ButtonProps
   ripple?: boolean;
   rippleColor?: string;
   rippleDuration?: number;
+  loading?: boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
@@ -61,6 +62,8 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       rippleDuration = 600,
       onClick,
       children,
+      loading = false,
+      disabled = false,
       ...props
     },
     ref
@@ -68,7 +71,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const [ripples, setRipples] = React.useState<RippleState[]>([]);
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-      if (ripple && !asChild && !props.disabled) {
+      if (ripple && !asChild && !disabled && !loading) {
         const button = event.currentTarget;
         const rect = button.getBoundingClientRect();
         const rippleSize = Math.max(rect.width, rect.height) * 2;
@@ -111,9 +114,14 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         )}
         ref={ref}
         onClick={handleClick}
+        disabled={loading || disabled}
         {...props}
       >
-        {children}
+        {loading ? (
+          <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+        ) : (
+          children
+        )}
         {ripples.map((r) => (
           <span
             key={r.key}

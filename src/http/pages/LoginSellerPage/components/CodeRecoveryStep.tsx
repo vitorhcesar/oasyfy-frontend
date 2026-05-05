@@ -1,4 +1,6 @@
 import { OtpInput } from "@/http/components/OtpInput";
+import { Button } from "@/http/components/ui/button";
+import { cn } from "@/http/utils/cn";
 import { getErrorMessageOrDefault } from "@/http/utils/get-error-message-or-default";
 import { tryOrToastError } from "@/http/utils/try-or-toast-error";
 import { httpClient, IApiEnvelope } from "@/infra/http";
@@ -105,17 +107,19 @@ export default function CodeRecoveryStep({
         <OtpInput
           value={otpCode}
           onChange={setOtpCode}
-          onFullfilled={onSuccess}
+          onPasteFullfilled={onSuccess}
           disabled={loading}
+          className={cn("size-[37px] sm:size-[55px]")}
         />
 
-        <button
+        <Button
           type="submit"
           disabled={otpCode.length !== 6 || loading}
-          className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-200 disabled:opacity-40 flex items-center justify-center gap-2 shadow-lg shadow-primary/20"
+          className="w-full py-[25px]"
+          loading={loading}
         >
           Continuar <ArrowRight size={16} />
-        </button>
+        </Button>
 
         <div className="text-center">
           <button

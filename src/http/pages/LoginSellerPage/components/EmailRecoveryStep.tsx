@@ -1,5 +1,6 @@
 import { Input } from "@/http/components/Input";
 import { Label } from "@/http/components/Label";
+import { Button } from "@/http/components/ui/button";
 import { toast } from "@/http/hooks/use-toast";
 import { getErrorMessageOrDefault } from "@/http/utils/get-error-message-or-default";
 import { tryOrToastError } from "@/http/utils/try-or-toast-error";
@@ -141,19 +142,14 @@ export default function EmailRecoveryStep({
           />
         </div>
 
-        <button
+        <Button
           type="submit"
           disabled={loading}
-          className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-200 disabled:opacity-40 flex items-center justify-center gap-2 mt-2 shadow-lg shadow-primary/20"
+          className="w-full !py-[25px] !mt-4"
+          loading={loading}
         >
-          {loading ? (
-            <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-          ) : (
-            <>
-              Enviar código <ArrowRight size={16} />
-            </>
-          )}
-        </button>
+          Enviar código <ArrowRight size={16} />
+        </Button>
       </form>
     </>
   );

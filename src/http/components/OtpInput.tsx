@@ -2,12 +2,21 @@ import { isNil } from "@/shared/utils/is-nil";
 import { useRef } from "react";
 import { cn } from "../utils/cn";
 
+function getNewValue(value: string, index: number, char: string): string {
+  const valueIndexExists = !isNil(value[index]);
+  if (valueIndexExists) {
+    return value.slice(0, index) + char + value.slice(index + 1);
+  }
+
+  return value + char;
+}
+
 interface IOtpInputProps {
   value?: string;
   onChange?: (value: string) => void;
   length?: number;
   className?: string;
-  onFullfilled?: (value: string) => void;
+  onPasteFullfilled?: (value: string) => void;
   disabled?: boolean;
 }
 
@@ -16,28 +25,54 @@ export function OtpInput({
   onChange,
   length = 6,
   className,
-  onFullfilled,
+  onPasteFullfilled,
   disabled = false,
 }: IOtpInputProps) {
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
 
-  const handleOtpChange = (index: number, newValue: string) => {
-    if (newValue && !/^\d$/.test(newValue)) return;
+  const handleOtpChange = (index: number, char: string) => {
+    if (char && !/^\d$/.test(char)) return;
+
+    const newValue = value ? getNewValue(value, index, char) : char;
 
     onChange?.(newValue);
-
-    if (index < length - 1) {
-      otpRefs.current[index + 1]?.focus();
-    }
-
-    if (newValue.length === length) onFullfilled?.(newValue);
   };
 
   const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
     if (isNil(value)) return;
 
-    if (e.key === "Backspace" && !value[index] && index > 0) {
-      otpRefs.current[index - 1]?.focus();
+    const isBackspaceAndIndexIsBiggerThan0 = e.key === "Backspace" && index > 0;
+    const isBackspaceAndIndexIs0 = e.key === "Backspace" && index === 0;
+    const isArrowLeft = e.key === "ArrowLeft";
+    const isArrowRight = e.key === "ArrowRight";
+
+    if (isBackspaceAndIndexIsBiggerThan0 && isNil(value[index])) {
+      const otpRef = otpRefs.current[index - 1];
+      if (otpRef) {
+        console.log("focusing previous input");
+        otpRef.focus();
+        otpRef.setSelectionRange(0, otpRef.value.length);
+      }
+    } else if (isBackspaceAndIndexIs0) {
+      return;
+    } else if (isArrowLeft) {
+      const previousOtpRef = otpRefs.current[index - 1];
+      if (previousOtpRef) {
+        previousOtpRef.focus();
+        previousOtpRef.setSelectionRange(0, previousOtpRef.value.length);
+      }
+    } else if (isArrowRight) {
+      const nextOtpRef = otpRefs.current[index + 1];
+      if (nextOtpRef) {
+        nextOtpRef.focus();
+        nextOtpRef.setSelectionRange(0, nextOtpRef.value.length);
+      }
+    } else {
+      const nextOtpRef = otpRefs.current[index + 1];
+      if (nextOtpRef) {
+        nextOtpRef.focus();
+        nextOtpRef.setSelectionRange(0, nextOtpRef.value.length);
+      }
     }
   };
 
@@ -50,7 +85,7 @@ export function OtpInput({
 
     onChange?.(pastedText);
 
-    if (pastedText.length === length) onFullfilled?.(pastedText);
+    if (pastedText.length === length) onPasteFullfilled?.(pastedText);
   };
 
   return (

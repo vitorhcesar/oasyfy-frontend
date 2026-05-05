@@ -155,7 +155,7 @@ export default function OtpCodeForm({
       <OtpInput
         value={otpCode}
         onChange={setOtpCode}
-        onFullfilled={handleVerifySignupCode}
+        onPasteFullfilled={handleVerifySignupCode}
         disabled={loading}
       />
 

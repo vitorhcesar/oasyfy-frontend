@@ -1,3 +1,4 @@
+import { Button } from "@/http/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import CodeRecoveryStep from "./CodeRecoveryStep";
@@ -63,15 +64,16 @@ export default function ForgotPasswordForm({
         />
       )}
 
-      <div className="text-center mt-8">
-        <button
+      <div className="flex items-center justify-center mt-8">
+        <Button
+          variant="ghost"
           onClick={resetRecoveryState}
           className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5 mx-auto"
           disabled={loading}
         >
           <ArrowLeft size={14} />
           Voltar ao login
-        </button>
+        </Button>
       </div>
     </>
   );

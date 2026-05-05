@@ -1,10 +1,13 @@
 import { ClientIpService } from "@/app/modules/client/services/client-ip.service";
 import { AppError } from "@/domain/errors/app.error";
+import { Input } from "@/http/components/Input";
+import { PasswordInput } from "@/http/components/PasswordInput";
+import { Button } from "@/http/components/ui/button";
 import { getErrorMessageOrDefault } from "@/http/utils/get-error-message-or-default";
 import { tryOrToastError } from "@/http/utils/try-or-toast-error";
 import { authClient } from "@/infra/auth/auth-client";
 import { fetchSessionContext } from "@/infra/auth/session-context-api";
-import { ArrowRight, Lock, Mail, Shield } from "lucide-react";
+import { ArrowRight, Mail, Shield } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -143,41 +146,25 @@ export default function LoginAdmin() {
               </div>
             )}
 
-            <div className="relative">
-              <Mail
-                size={15}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40"
-              />
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className={inputClass}
-                placeholder="admin@oasyfy.com"
-              />
-            </div>
+            <Input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              placeholder="admin@oasyfy.com"
+              startComponent={
+                <Mail size={15} className="text-muted-foreground/40" />
+              }
+            />
 
-            <div className="relative">
-              <Lock
-                size={15}
-                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40"
-              />
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className={inputClass}
-                placeholder="Senha"
-              />
-            </div>
+            <PasswordInput
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              placeholder="Senha"
+            />
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-3 rounded-xl bg-primary text-primary-foreground text-[13px] font-semibold hover:brightness-110 transition-all duration-300 disabled:opacity-40 flex items-center justify-center gap-2 mt-1"
-            >
+            <Button disabled={loading} className="w-full">
               {loading ? (
                 <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
               ) : (
@@ -185,7 +172,7 @@ export default function LoginAdmin() {
                   Entrar como Admin <ArrowRight size={15} />
                 </>
               )}
-            </button>
+            </Button>
           </form>
 
           <p className="text-center text-[13px] text-muted-foreground mt-6">
