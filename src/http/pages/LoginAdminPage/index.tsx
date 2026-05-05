@@ -164,14 +164,12 @@ export default function LoginAdmin() {
               placeholder="Senha"
             />
 
-            <Button disabled={loading} className="w-full">
-              {loading ? (
-                <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-              ) : (
-                <>
-                  Entrar como Admin <ArrowRight size={15} />
-                </>
-              )}
+            <Button
+              disabled={loading}
+              className="w-full !mt-3"
+              loading={loading}
+            >
+              Entrar como Admin <ArrowRight size={15} />
             </Button>
           </form>
 
