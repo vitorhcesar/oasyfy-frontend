@@ -71,9 +71,6 @@ export default function LoginAdmin() {
     );
   };
 
-  const inputClass =
-    "w-full pl-10 pr-3 py-3 rounded-xl bg-background border border-border/60 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all duration-300";
-
   return (
     <div className="min-h-screen bg-background flex">
       <div className="hidden lg:flex lg:w-[45%] relative items-center justify-center overflow-hidden">
