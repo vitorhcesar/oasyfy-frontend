@@ -10,7 +10,7 @@ import { useState } from "react";
 
 interface INewPasswordRecoveryStepProps {
   email: string;
-  otpDigits: string[];
+  otpCode: string;
   loading: boolean;
   setLoading: (loading: boolean) => void;
   onSuccess: () => void;
@@ -18,7 +18,7 @@ interface INewPasswordRecoveryStepProps {
 
 export default function NewPasswordRecoveryStep({
   email,
-  otpDigits,
+  otpCode,
   loading,
   setLoading,
   onSuccess,
@@ -33,9 +33,7 @@ export default function NewPasswordRecoveryStep({
   const handleVerifyAndReset = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const code = otpDigits.join("");
-
-    if (code.length !== 6) {
+    if (otpCode.length !== 6) {
       throw new AppError("Insira o código completo", 400);
     }
     if (!passwordIsStrong) {
@@ -49,7 +47,7 @@ export default function NewPasswordRecoveryStep({
       "/api/v1/account/password-recovery/verify",
       {
         email,
-        code,
+        code: otpCode,
         new_password: password,
       }
     );

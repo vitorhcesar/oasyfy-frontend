@@ -18,14 +18,14 @@ export default function ForgotPasswordForm({
   setEmail,
 }: IForgotPasswordFormProps) {
   const [recoveryStep, setRecoveryStep] = useState<TRecoveryStep>("email");
-  const [otpDigits, setOtpDigits] = useState(["", "", "", "", "", ""]);
+  const [otpCode, setOtpCode] = useState<string>("");
 
   const [loading, setLoading] = useState(false);
 
   const resetRecoveryState = () => {
     setRecoveryStep("email");
     setEmail("");
-    setOtpDigits(["", "", "", "", "", ""]);
+    setOtpCode("");
 
     setFormView("login");
   };
@@ -45,8 +45,8 @@ export default function ForgotPasswordForm({
       {recoveryStep === "code" && (
         <CodeRecoveryStep
           email={email}
-          otpDigits={otpDigits}
-          setOtpDigits={setOtpDigits}
+          otpCode={otpCode}
+          setOtpCode={setOtpCode}
           loading={loading}
           setLoading={setLoading}
           onSuccess={() => setRecoveryStep("newPassword")}
@@ -56,7 +56,7 @@ export default function ForgotPasswordForm({
       {recoveryStep === "newPassword" && (
         <NewPasswordRecoveryStep
           email={email}
-          otpDigits={otpDigits}
+          otpCode={otpCode}
           loading={loading}
           setLoading={setLoading}
           onSuccess={resetRecoveryState}
