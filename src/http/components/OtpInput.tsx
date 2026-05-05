@@ -16,6 +16,7 @@ interface IOtpInputProps {
   onChange?: (value: string) => void;
   length?: number;
   className?: string;
+  onFullfilled?: (value: string) => void;
   onPasteFullfilled?: (value: string) => void;
   disabled?: boolean;
 }
@@ -25,6 +26,7 @@ export function OtpInput({
   onChange,
   length = 6,
   className,
+  onFullfilled,
   onPasteFullfilled,
   disabled = false,
 }: IOtpInputProps) {
@@ -36,6 +38,8 @@ export function OtpInput({
     const newValue = value ? getNewValue(value, index, char) : char;
 
     onChange?.(newValue);
+
+    if (newValue.length === length) onFullfilled?.(newValue);
   };
 
   const handleKeyDown = (index: number, e: React.KeyboardEvent) => {

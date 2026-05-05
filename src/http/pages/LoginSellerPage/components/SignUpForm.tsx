@@ -3,6 +3,7 @@ import { Input } from "@/http/components/Input";
 import { Label } from "@/http/components/Label";
 import { PasswordChecks } from "@/http/components/PasswordChecks";
 import { PasswordInput } from "@/http/components/PasswordInput";
+import { Button } from "@/http/components/ui/button";
 import { PasswordStrengthHelper } from "@/http/helper/password-strength.helper";
 import { getErrorMessageOrDefault } from "@/http/utils/get-error-message-or-default";
 import { translateError } from "@/http/utils/translate-error";
@@ -239,19 +240,14 @@ export default function SignUpForm({
           />
         </div>
 
-        <button
+        <Button
           type="submit"
           disabled={loading}
-          className="w-full h-10 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 active:scale-[0.99] transition-all disabled:opacity-40 flex items-center justify-center gap-2 mt-1"
+          className="w-full h-10 !mt-3"
+          loading={loading}
         >
-          {loading ? (
-            <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-          ) : (
-            <>
-              Criar conta <ArrowRight size={15} />
-            </>
-          )}
-        </button>
+          Criar conta <ArrowRight size={15} />
+        </Button>
       </form>
 
       <div className="text-center mt-6">

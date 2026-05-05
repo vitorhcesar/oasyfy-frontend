@@ -1,4 +1,5 @@
 import { OtpInput } from "@/http/components/OtpInput";
+import { Button } from "@/http/components/ui/button";
 import { getErrorMessageOrDefault } from "@/http/utils/get-error-message-or-default";
 import { tryOrToastError } from "@/http/utils/try-or-toast-error";
 import { authClient, ensureSellerPortalAccess } from "@/infra/auth";
@@ -155,7 +156,7 @@ export default function OtpCodeForm({
       <OtpInput
         value={otpCode}
         onChange={setOtpCode}
-        onPasteFullfilled={handleVerifySignupCode}
+        onFullfilled={handleVerifySignupCode}
         disabled={loading}
       />
 
@@ -179,6 +180,7 @@ export default function OtpCodeForm({
             "Não recebeu o código?"
           )}
         </p>
+
         <button
           type="button"
           onClick={handleResendSignupCode}
@@ -189,18 +191,19 @@ export default function OtpCodeForm({
         </button>
       </div>
 
-      <div className="text-center mt-6">
-        <button
+      <div className="flex items-center justify-center mt-6">
+        <Button
+          variant="ghost"
           onClick={() => {
             setView("login");
             setError("");
             setSuccess("");
           }}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5 mx-auto"
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
         >
           <ArrowLeft size={14} />
           Voltar ao login
-        </button>
+        </Button>
       </div>
     </div>
   );
