@@ -3,21 +3,21 @@ import { fetchSessionContext } from "@/infra/auth/session-context-api";
 import type { Session, User } from "better-auth/types";
 import { create } from "zustand";
 
-type AppRole = "admin" | "seller";
+type TAppRole = "admin" | "seller";
 
-interface AuthState {
+interface IAuthState {
   user: User | null;
   session: Session | null;
-  role: AppRole | null;
+  role: TAppRole | null;
   loading: boolean;
   isBanned: boolean;
   setAuthSession: (session: Session | null, user: User | null) => void;
   setLoading: (loading: boolean) => void;
-  fetchRole: () => Promise<AppRole | null>;
+  fetchRole: () => Promise<TAppRole | null>;
   signOut: () => Promise<void>;
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
+export const useAuthStore = create<IAuthState>((set, get) => ({
   user: null,
   session: null,
   role: null,

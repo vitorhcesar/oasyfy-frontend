@@ -124,7 +124,6 @@ export default function AdminAcquirer() {
   // Routing state
   const [routingRules, setRoutingRules] = useState<IRoutingRule[]>([]);
   const [loadingRouting, setLoadingRouting] = useState(true);
-  const [savingRouting, setSavingRouting] = useState(false);
 
   // Cost state
   const [costs, setCosts] = useState<IAcquirerCost[]>([]);
@@ -1096,22 +1095,22 @@ export default function AdminAcquirer() {
     );
   };
 
-  const renderPlaceholder = () => {
-    const current = tabs.find((t) => t.key === activeTab)!;
-    return (
-      <div className="rounded-xl border border-border/40 bg-card p-8 text-center">
-        <div className="w-10 h-10 rounded-lg bg-muted/50 flex items-center justify-center mx-auto mb-3">
-          <current.icon size={18} className="text-muted-foreground/40" />
-        </div>
-        <p className="text-sm font-medium text-foreground mb-1">
-          {current.label}
-        </p>
-        <p className="text-xs text-muted-foreground">
-          Em breve esta seção estará disponível.
-        </p>
-      </div>
-    );
-  };
+  // const renderPlaceholder = () => {
+  //   const current = tabs.find((t) => t.key === activeTab)!;
+  //   return (
+  //     <div className="rounded-xl border border-border/40 bg-card p-8 text-center">
+  //       <div className="w-10 h-10 rounded-lg bg-muted/50 flex items-center justify-center mx-auto mb-3">
+  //         <current.icon size={18} className="text-muted-foreground/40" />
+  //       </div>
+  //       <p className="text-sm font-medium text-foreground mb-1">
+  //         {current.label}
+  //       </p>
+  //       <p className="text-xs text-muted-foreground">
+  //         Em breve esta seção estará disponível.
+  //       </p>
+  //     </div>
+  //   );
+  // };
 
   const COST_METHODS_DEPOSIT = ["pix", "card", "boleto", "crypto"];
   const COST_METHODS_WITHDRAWAL = ["pix", "ted", "crypto"];

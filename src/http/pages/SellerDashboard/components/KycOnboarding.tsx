@@ -11,7 +11,6 @@ import {
   FileText,
   Landmark,
   Loader2,
-  MapPin,
   Pencil,
   Shield,
   Upload,
@@ -20,10 +19,10 @@ import {
 } from "lucide-react";
 import { useCallback, useState } from "react";
 
-type PersonType = "pf" | "pj";
-type Step = "type" | "personal" | "address" | "documents" | "bank" | "review";
+type TPersonType = "pf" | "pj";
+type TStep = "type" | "personal" | "address" | "documents" | "bank" | "review";
 
-const STEPS: Step[] = [
+const STEPS: TStep[] = [
   "type",
   "personal",
   "address",
@@ -31,7 +30,7 @@ const STEPS: Step[] = [
   "bank",
   "review",
 ];
-const STEP_LABELS: Record<Step, string> = {
+const STEP_LABELS: Record<TStep, string> = {
   type: "Tipo",
   personal: "Dados",
   address: "Endereço",
@@ -39,14 +38,14 @@ const STEP_LABELS: Record<Step, string> = {
   bank: "Banco",
   review: "Revisão",
 };
-const STEP_ICONS: Record<Step, typeof User> = {
-  type: User,
-  personal: FileText,
-  address: MapPin,
-  documents: Camera,
-  bank: Landmark,
-  review: CheckCircle2,
-};
+// const STEP_ICONS: Record<Step, typeof User> = {
+//   type: User,
+//   personal: FileText,
+//   address: MapPin,
+//   documents: Camera,
+//   bank: Landmark,
+//   review: CheckCircle2,
+// };
 
 const COMPANY_TYPE_OPTIONS = [
   { value: "mei", label: "MEI — Microempreendedor Individual" },
@@ -109,7 +108,7 @@ interface BankData {
 }
 
 interface FormData {
-  personType: PersonType | null;
+  personType: TPersonType | null;
   fullName: string;
   cpf: string;
   dateOfBirth: string;
@@ -220,7 +219,7 @@ export default function KycOnboarding({
 }) {
   const { user } = useAuthStore();
 
-  const [step, setStep] = useState<Step>("type");
+  const [step, setStep] = useState<TStep>("type");
   const [form, setForm] = useState<FormData>(initialForm);
   const [files, setFiles] = useState<Record<string, UploadedFile>>({});
   const [error, setError] = useState("");

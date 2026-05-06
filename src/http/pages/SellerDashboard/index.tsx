@@ -6,6 +6,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/http/components/ui/popover";
+import { useSellerKycSubmissionQuery } from "@/http/hooks/use-seller-kyc-submission-query";
 import { useAuthStore } from "@/http/stores/useAuthStore";
 import { cn } from "@/http/utils/cn";
 import { supabase } from "@/infra/integrations/supabase/client";
@@ -39,10 +40,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import KycOnboarding from "../KycOnboarding";
-
-type TKycStatus = "none" | "pending" | "under_review" | "approved" | "rejected";
-type TDocReview = Record<string, { status: string; reason?: string }>;
+import KycOnboarding from "./components/KycOnboarding";
 
 interface ITransaction {
   id: string;
@@ -117,14 +115,18 @@ function getMethodColor(method: string) {
 }
 
 export default function SellerDashboard() {
-  const { user } = useAuthStore();
   const navigate = useNavigate();
+
+  const { user } = useAuthStore();
   const name = user?.name || user?.email?.split("@")[0] || "Seller";
 
-  const [kycStatus, setKycStatus] = useState<TKycStatus>("none");
-  const [kycLoading, setKycLoading] = useState(true);
-  const [fullyApproved, setFullyApproved] = useState(false);
-  const [documentsReview, setDocumentsReview] = useState<TDocReview>({});
+  const {
+    kycStatus,
+    isLoading: kycLoading,
+    fullyApproved,
+    documentsReview,
+    invalidateQuery: invalidateKycSubmissionQuery,
+  } = useSellerKycSubmissionQuery();
 
   const [transactions, setTransactions] = useState<ITransaction[]>([]);
   const [fees, setFees] = useState<ISellerFees | null>(null);
@@ -138,32 +140,6 @@ export default function SellerDashboard() {
   const [hideBalance, setHideBalance] = useState(
     () => localStorage.getItem("hideBalance") === "true"
   );
-
-  useEffect(() => {
-    if (!user) return;
-    supabase
-      .from("kyc_submissions")
-      .select(
-        "id, status, rejection_reason, documents_status, bank_status, documents_review, address_status"
-      )
-      .eq("user_id", user.id)
-      .limit(1)
-      .then(({ data }) => {
-        if (data && data.length > 0) {
-          setKycStatus(data[0].status as TKycStatus);
-          setDocumentsReview((data[0].documents_review as TDocReview) || {});
-          setFullyApproved(
-            data[0].status === "approved" &&
-              data[0].documents_status === "approved" &&
-              data[0].bank_status === "approved" &&
-              data[0].address_status === "approved"
-          );
-        } else {
-          setKycStatus("none");
-        }
-        setKycLoading(false);
-      });
-  }, [user]);
 
   useEffect(() => {
     supabase
@@ -491,6 +467,22 @@ export default function SellerDashboard() {
 
   return (
     <SellerLayout>
+      {showKycForm && (
+        <KycOnboarding onComplete={invalidateKycSubmissionQuery} />
+      )}
+
+      {user && (
+        <WithdrawalModal
+          open={withdrawalOpen}
+          onOpenChange={setWithdrawalOpen}
+          availableBalance={Math.max(0, availableBalance)}
+          cardBalance={cardBalance}
+          pixBoletoBalance={pixBoletoBalance}
+          userId={user.id}
+          onSuccess={fetchData}
+        />
+      )}
+
       <div
         className={`w-full max-w-4xl mx-auto px-4 md:px-8 lg:px-10 py-6 ${
           dashboardBlocked ? "blur-sm pointer-events-none select-none" : ""
@@ -891,26 +883,6 @@ export default function SellerDashboard() {
           )}
         </div>
       </div>
-
-      {showKycForm && (
-        <KycOnboarding
-          onComplete={() => {
-            setKycStatus("under_review");
-          }}
-        />
-      )}
-
-      {user && (
-        <WithdrawalModal
-          open={withdrawalOpen}
-          onOpenChange={setWithdrawalOpen}
-          availableBalance={Math.max(0, availableBalance)}
-          cardBalance={cardBalance}
-          pixBoletoBalance={pixBoletoBalance}
-          userId={user.id}
-          onSuccess={fetchData}
-        />
-      )}
     </SellerLayout>
   );
 }

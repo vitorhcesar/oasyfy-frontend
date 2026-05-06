@@ -10,7 +10,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import LoginAdmin from "./http/pages/LoginAdminPage";
 import LoginSellerPage from "./http/pages/LoginSellerPage";
-import ResetPassword from "./http/pages/ResetPassword";
+import ResetPasswordPage from "./http/pages/ResetPasswordPage";
 import SellerDashboard from "./http/pages/SellerDashboard";
 import Admin2FA from "./http/pages/admin/Admin2FA";
 import AdminAcquirer from "./http/pages/admin/AdminAcquirer";
@@ -38,7 +38,13 @@ import SellerSettings from "./http/pages/seller/SellerSettings";
 import SellerTransactions from "./http/pages/seller/SellerTransactions";
 import SellerTransfers from "./http/pages/seller/SellerTransfers";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 function ThemeLoader() {
   useGatewayTheme();
@@ -59,7 +65,7 @@ export default function App() {
               <Routes>
                 <Route path="/login/admin" element={<LoginAdmin />} />
                 <Route path="/login/seller" element={<LoginSellerPage />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route
                   path="/seller"
                   element={

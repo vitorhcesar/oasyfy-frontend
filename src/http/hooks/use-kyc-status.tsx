@@ -1,5 +1,5 @@
+import { apiService } from "@/infra/http/services/api/api.service";
 import { useAuthStore } from "@/http/stores/useAuthStore";
-import { supabase } from "@/infra/integrations/supabase/client";
 import { useEffect, useState } from "react";
 
 export function useKycStatus() {
@@ -8,17 +8,31 @@ export function useKycStatus() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!user) return;
-    supabase
-      .from("kyc_submissions")
-      .select("status")
-      .eq("user_id", user.id)
-      .limit(1)
-      .single()
-      .then(({ data }) => {
-        setKycApproved(data?.status === "approved");
-        setLoading(false);
+    if (!user) {
+      setKycApproved(null);
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    apiService.kycSubmission
+      .getSellerSubmission()
+      .then(({ submission }) => {
+        if (!cancelled) {
+          setKycApproved(submission?.status === "approved");
+          setLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setKycApproved(false);
+          setLoading(false);
+        }
       });
+
+    return () => {
+      cancelled = true;
+    };
   }, [user]);
 
   return { kycApproved, loading };

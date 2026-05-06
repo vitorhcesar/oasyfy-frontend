@@ -61,7 +61,7 @@ function AnimatedBalance({ cents }: { cents: number }) {
   );
 }
 
-interface BankData {
+interface IBankData {
   bankName?: string;
   agency?: string;
   agencyDigit?: string;
@@ -72,7 +72,7 @@ interface BankData {
   pixKeyType?: string;
 }
 
-interface WithdrawalModalProps {
+interface IWithdrawalModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   availableBalance: number;
@@ -82,10 +82,10 @@ interface WithdrawalModalProps {
   onSuccess: () => void;
 }
 
-type Step = "amount" | "confirm" | "success";
-type BalanceTab = "card" | "pix_boleto";
+type TStep = "amount" | "confirm" | "success";
+type TBalanceTab = "card" | "pix_boleto";
 
-interface WithdrawalLimits {
+interface IWithdrawalLimits {
   min: number; // cents
   max: number; // cents (0 = no limit)
   dailyMax: number; // cents (0 = no limit)
@@ -96,19 +96,18 @@ const DEFAULT_MIN = 200; // R$ 2,00
 export function WithdrawalModal({
   open,
   onOpenChange,
-  availableBalance,
   cardBalance,
   pixBoletoBalance,
   userId,
   onSuccess,
-}: WithdrawalModalProps) {
-  const [step, setStep] = useState<Step>("amount");
-  const [tab, setTab] = useState<BalanceTab>("card");
+}: IWithdrawalModalProps) {
+  const [step, setStep] = useState<TStep>("amount");
+  const [tab, setTab] = useState<TBalanceTab>("card");
   const [rawValue, setRawValue] = useState("");
   const [loading, setLoading] = useState(false);
-  const [bankAccounts, setBankAccounts] = useState<BankData[]>([]);
+  const [bankAccounts, setBankAccounts] = useState<IBankData[]>([]);
   const [selectedAccountIdx, setSelectedAccountIdx] = useState(0);
-  const [limits, setLimits] = useState<WithdrawalLimits>({
+  const [limits, setLimits] = useState<IWithdrawalLimits>({
     min: DEFAULT_MIN,
     max: 0,
     dailyMax: 0,
@@ -153,7 +152,7 @@ export function WithdrawalModal({
   const fmt = (cents: number) =>
     `R$ ${(cents / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
 
-  const getAccountLabel = (b: BankData) => {
+  const getAccountLabel = (b: IBankData) => {
     const bank = b.bankName
       ? b.bankName.charAt(0).toUpperCase() + b.bankName.slice(1)
       : "";
@@ -176,13 +175,13 @@ export function WithdrawalModal({
           if (data?.bank_data) {
             const raw = data.bank_data as unknown;
             const accounts = Array.isArray(raw)
-              ? (raw as BankData[])
-              : [raw as BankData];
+              ? (raw as IBankData[])
+              : [raw as IBankData];
             setBankAccounts(accounts);
             setSelectedAccountIdx(0);
           }
           setWithdrawalBlocked(data?.withdrawals_blocked || false);
-          setBlockReason((data as any)?.withdrawal_block_reason || null);
+          setBlockReason(data?.withdrawal_block_reason || null);
         });
 
       // Fetch withdrawal limits

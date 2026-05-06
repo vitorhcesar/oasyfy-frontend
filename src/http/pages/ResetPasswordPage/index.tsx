@@ -3,7 +3,9 @@ import { ArrowRight, Check, Lock, ShieldCheck, X } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-export default function ResetPassword() {
+export default function ResetPasswordPage() {
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [password, setPassword] = useState("");
@@ -11,7 +13,6 @@ export default function ResetPassword() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   const passwordChecks = [
     { label: "8+ caracteres", ok: password.length >= 8 },
@@ -142,7 +143,7 @@ export default function ResetPassword() {
             </div>
             <h1 className="text-2xl font-bold text-foreground">Nova senha</h1>
             <p className="text-sm text-muted-foreground mt-2">
-              Better Auth — confirme e-mail, código e nova senha
+              Confirme e-mail, código e nova senha
             </p>
           </div>
 
