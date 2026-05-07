@@ -96,7 +96,7 @@ const STATES = [
   "TO",
 ];
 
-interface BankData {
+interface IBankData {
   bankName: string;
   agency: string;
   agencyDigit: string;
@@ -107,7 +107,7 @@ interface BankData {
   pixKey: string;
 }
 
-interface FormData {
+interface IFormData {
   personType: TPersonType | null;
   fullName: string;
   cpf: string;
@@ -126,17 +126,17 @@ interface FormData {
   neighborhood: string;
   city: string;
   state: string;
-  bank: BankData;
+  bank: IBankData;
 }
 
-interface UploadedFile {
+interface IUploadedFile {
   file: File;
   preview: string;
   uploading: boolean;
   url: string | null;
 }
 
-const initialBank: BankData = {
+const initialBank: IBankData = {
   bankName: "",
   agency: "",
   agencyDigit: "",
@@ -147,7 +147,7 @@ const initialBank: BankData = {
   pixKey: "",
 };
 
-const initialForm: FormData = {
+const initialForm: IFormData = {
   personType: null,
   fullName: "",
   cpf: "",
@@ -212,16 +212,16 @@ function isValidCnpj(cnpj: string): boolean {
   return true;
 }
 
-export default function KycOnboarding({
-  onComplete,
-}: {
+interface IKycOnboardingProps {
   onComplete: () => void;
-}) {
+}
+
+export default function KycOnboarding({ onComplete }: IKycOnboardingProps) {
   const { user } = useAuthStore();
 
   const [step, setStep] = useState<TStep>("type");
-  const [form, setForm] = useState<FormData>(initialForm);
-  const [files, setFiles] = useState<Record<string, UploadedFile>>({});
+  const [form, setForm] = useState<IFormData>(initialForm);
+  const [files, setFiles] = useState<Record<string, IUploadedFile>>({});
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [cpfValid, setCpfValid] = useState<boolean | null>(null);
@@ -230,12 +230,12 @@ export default function KycOnboarding({
   const currentIndex = STEPS.indexOf(step);
   const isPj = form.personType === "pj";
 
-  const set = (field: keyof FormData, value: string) => {
+  const set = (field: keyof IFormData, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
     setError("");
   };
 
-  const setBank = (field: keyof BankData, value: string) => {
+  const setBank = (field: keyof IBankData, value: string) => {
     setForm((prev) => ({ ...prev, bank: { ...prev.bank, [field]: value } }));
     setError("");
   };
@@ -509,6 +509,7 @@ export default function KycOnboarding({
 
   const handleSubmit = async () => {
     if (!user) return;
+
     setSubmitting(true);
     setError("");
 
