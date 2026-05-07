@@ -20,7 +20,7 @@ export type TSellerKycDocumentsReview = Record<
 >;
 
 export interface IKycSubmissionSummaryDto {
-  id: string;
+  id: number;
   status: Exclude<TSellerDashboardKycStatus, "none">;
   rejectionReason: string | null;
   documentsStatus: string;
@@ -42,10 +42,9 @@ export class KycSubmissionModule implements IKycSubmissionModule {
   constructor(private readonly httpClient: IHttpClient) {}
 
   async getSellerSubmission(): Promise<ISellerKycSubmissionResponseDto> {
-    const body =
-      await this.httpClient.get<IApiEnvelope<ISellerKycSubmissionResponseDto>>(
-        "/api/v1/seller/kyc-submission"
-      );
+    const body = await this.httpClient.get<
+      IApiEnvelope<ISellerKycSubmissionResponseDto>
+    >("/api/v1/seller/kyc-submission");
     return body.data;
   }
 }
