@@ -1,4 +1,5 @@
 import { AppError } from "@/domain/errors/app.error";
+import { AxiosError } from "axios";
 import { ZodError } from "zod";
 
 function zodErrorToMessage(error: ZodError): string {
@@ -13,6 +14,31 @@ export function getErrorMessageOrDefault(
   error: unknown,
   defaultMessage: string
 ): string {
+  if (error instanceof AxiosError) {
+    if (error.response) {
+      if (error.response?.data && typeof error.response.data === "object") {
+        const existsMessage =
+          "message" in error.response.data &&
+          typeof error.response.data.message === "string";
+        if (existsMessage) {
+          if (
+            "error" in error.response.data &&
+            typeof error.response.data.error === "object"
+          ) {
+            const existsMessageInError =
+              "message" in error.response.data.error &&
+              typeof error.response.data.error.message === "string";
+            if (existsMessageInError) {
+              return error.response.data.error.message;
+            }
+          }
+
+          return error.response.data.message;
+        }
+      }
+    }
+  }
+
   if (error instanceof AppError) {
     return error.message;
   }
