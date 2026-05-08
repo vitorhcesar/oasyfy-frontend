@@ -109,12 +109,8 @@ export default function SignUpForm({
         await openSignupVerification();
       },
       {
-        errorFn: (error) => {
-          return {
-            title: "Erro ao cadastrar",
-            description: getErrorMessageOrDefault(error, "Erro ao cadastrar"),
-          };
-        },
+        defaultErrorMessage: "Erro ao cadastrar",
+        defaultErrorTitle: "Erro ao cadastrar",
         finallyFn: () => {
           setLoading(false);
         },

@@ -4,7 +4,6 @@ import { Input } from "@/http/components/Input";
 import { Label } from "@/http/components/Label";
 import { PasswordInput } from "@/http/components/PasswordInput";
 import { Button } from "@/http/components/ui/button";
-import { getErrorMessageOrDefault } from "@/http/utils/get-error-message-or-default";
 import { translateError } from "@/http/utils/translate-error";
 import { tryOrToastError } from "@/http/utils/try-or-toast-error";
 import { authClient, ensureSellerPortalAccess } from "@/infra/auth";
@@ -89,10 +88,8 @@ export default function LoginForm({
         navigate("/seller");
       },
       {
-        errorFn: (error) => ({
-          title: "Erro ao entrar",
-          description: getErrorMessageOrDefault(error, "Erro ao entrar"),
-        }),
+        defaultErrorMessage: "Erro ao entrar",
+        defaultErrorTitle: "Erro ao entrar",
         finallyFn: () => {
           setLoading(false);
         },

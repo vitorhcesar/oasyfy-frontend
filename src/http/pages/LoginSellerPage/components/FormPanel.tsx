@@ -1,4 +1,3 @@
-import { getErrorMessageOrDefault } from "@/http/utils/get-error-message-or-default";
 import { tryOrToastError } from "@/http/utils/try-or-toast-error";
 import { apiService } from "@/infra/http";
 import { useState } from "react";
@@ -23,15 +22,8 @@ export default function LoginSellerFormPanel() {
         setFormView("code");
       },
       {
-        errorFn: (error) => {
-          return {
-            title: "Erro ao enviar código de verificação",
-            description: getErrorMessageOrDefault(
-              error,
-              "Erro desconhecido ao enviar código de verificação"
-            ),
-          };
-        },
+        defaultErrorMessage: "Erro ao enviar código de verificação",
+        defaultErrorTitle: "Erro ao enviar código de verificação",
       }
     );
   };

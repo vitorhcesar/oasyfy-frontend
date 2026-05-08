@@ -2,7 +2,6 @@ import { AppError } from "@/domain/errors/app.error";
 import { Label } from "@/http/components/Label";
 import { PasswordChecks } from "@/http/components/PasswordChecks";
 import { PasswordInput } from "@/http/components/PasswordInput";
-import { getErrorMessageOrDefault } from "@/http/utils/get-error-message-or-default";
 import { tryOrToastError } from "@/http/utils/try-or-toast-error";
 import { apiService } from "@/infra/http";
 import { ArrowRight, Check, Lock, X } from "lucide-react";
@@ -65,15 +64,8 @@ export default function NewPasswordRecoveryStep({
         await handleVerifyAndReset(e);
       },
       {
-        errorFn: (error) => {
-          return {
-            title: "Erro ao atualizar senha",
-            description: getErrorMessageOrDefault(
-              error,
-              "Erro ao atualizar senha"
-            ),
-          };
-        },
+        defaultErrorMessage: "Erro ao atualizar senha",
+        defaultErrorTitle: "Erro ao atualizar senha",
         finallyFn: () => {
           setLoading(false);
         },

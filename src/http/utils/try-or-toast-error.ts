@@ -1,40 +1,32 @@
 import { toast } from "../hooks/use-toast";
-
-interface IErrorProps {
-  title: string;
-  description: string;
-}
+import { getErrorMessageOrDefault } from "./get-error-message-or-default";
 
 interface IOptions {
-  errorFn?: (error: unknown) => IErrorProps;
+  defaultErrorTitle?: string;
+  defaultErrorMessage?: string;
+  errorFn?: (error: unknown) => void;
   finallyFn?: () => void;
 }
 
-function getErrorProps(error: unknown, options?: IOptions): IErrorProps {
-  if (options?.errorFn) {
-    return options.errorFn(error);
-  }
-
-  return {
-    title: "Erro inesperado",
-    description: "Ocorreu um erro inesperado, tente novamente mais tarde",
-  };
-}
-
-export async function tryOrToastError(
-  fn: () => Promise<void> | void,
-  options?: IOptions
-) {
-  const finallyFn = options?.finallyFn ?? undefined;
+export function tryOrToastError<T>(fn: () => T, options?: IOptions) {
+  const {
+    finallyFn,
+    errorFn,
+    defaultErrorMessage = "Erro desconhecido, tente novamente mais tarde",
+    defaultErrorTitle = "Erro inesperado",
+  } = options ?? {};
 
   try {
-    await fn();
+    return fn();
   } catch (error) {
     console.error(error);
-    const errorProps = getErrorProps(error, options);
+    if (errorFn) {
+      errorFn(error);
+    }
+
     toast({
-      title: errorProps.title,
-      description: errorProps.description,
+      title: defaultErrorTitle,
+      description: getErrorMessageOrDefault(error, defaultErrorMessage),
       variant: "destructive",
     });
   } finally {

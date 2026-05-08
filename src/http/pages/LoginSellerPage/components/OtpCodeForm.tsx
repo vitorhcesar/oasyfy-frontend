@@ -1,6 +1,5 @@
 import { OtpInput } from "@/http/components/OtpInput";
 import { Button } from "@/http/components/ui/button";
-import { getErrorMessageOrDefault } from "@/http/utils/get-error-message-or-default";
 import { tryOrToastError } from "@/http/utils/try-or-toast-error";
 import { authClient, ensureSellerPortalAccess } from "@/infra/auth";
 import { apiService } from "@/infra/http";
@@ -69,15 +68,8 @@ export default function OtpCodeForm({
         navigate("/seller");
       },
       {
-        errorFn: (error) => {
-          return {
-            title: "Erro ao verificar código",
-            description: getErrorMessageOrDefault(
-              error,
-              "Erro ao verificar código"
-            ),
-          };
-        },
+        defaultErrorTitle: "Erro ao verificar código",
+        defaultErrorMessage: "Erro ao verificar código",
         finallyFn: () => {
           setLoading(false);
         },
@@ -109,15 +101,8 @@ export default function OtpCodeForm({
         startSignupVerifyCountdown();
       },
       {
-        errorFn: (error) => {
-          return {
-            title: "Erro ao reenviar código",
-            description: getErrorMessageOrDefault(
-              error,
-              "Erro ao reenviar código"
-            ),
-          };
-        },
+        defaultErrorMessage: "Erro ao reenviar código",
+        defaultErrorTitle: "Erro ao reenviar código",
         finallyFn: () => {
           setLoading(false);
         },

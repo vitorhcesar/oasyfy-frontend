@@ -2,7 +2,6 @@ import { Input } from "@/http/components/Input";
 import { Label } from "@/http/components/Label";
 import { Button } from "@/http/components/ui/button";
 import { toast } from "@/http/hooks/use-toast";
-import { getErrorMessageOrDefault } from "@/http/utils/get-error-message-or-default";
 import { tryOrToastError } from "@/http/utils/try-or-toast-error";
 import { apiService } from "@/infra/http";
 import { ArrowRight, Check, Mail, X } from "lucide-react";
@@ -54,15 +53,8 @@ export default function EmailRecoveryStep({
         onSuccess();
       },
       {
-        errorFn: (error) => {
-          return {
-            title: "Erro ao enviar código",
-            description: getErrorMessageOrDefault(
-              error,
-              "Tente novamente mais tarde"
-            ),
-          };
-        },
+        defaultErrorMessage: "Erro ao enviar código",
+        defaultErrorTitle: "Erro ao enviar código",
         finallyFn: () => {
           setLoading(false);
         },

@@ -1,7 +1,6 @@
 import { OtpInput } from "@/http/components/OtpInput";
 import { Button } from "@/http/components/ui/button";
 import { cn } from "@/http/utils/cn";
-import { getErrorMessageOrDefault } from "@/http/utils/get-error-message-or-default";
 import { tryOrToastError } from "@/http/utils/try-or-toast-error";
 import { apiService } from "@/infra/http";
 import { ArrowRight, KeyRound, X } from "lucide-react";
@@ -51,15 +50,8 @@ export default function CodeRecoveryStep({
         await apiService.account.sendPasswordRecoveryCode(targetEmail);
       },
       {
-        errorFn: (error) => {
-          return {
-            title: "Erro ao enviar código",
-            description: getErrorMessageOrDefault(
-              error,
-              "Tente novamente mais tarde"
-            ),
-          };
-        },
+        defaultErrorMessage: "Erro ao enviar código",
+        defaultErrorTitle: "Erro ao enviar código",
         finallyFn: () => {
           setLoading(false);
         },

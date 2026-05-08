@@ -3,7 +3,6 @@ import { AppError } from "@/domain/errors/app.error";
 import { Input } from "@/http/components/Input";
 import { PasswordInput } from "@/http/components/PasswordInput";
 import { Button } from "@/http/components/ui/button";
-import { getErrorMessageOrDefault } from "@/http/utils/get-error-message-or-default";
 import { tryOrToastError } from "@/http/utils/try-or-toast-error";
 import { authClient } from "@/infra/auth/auth-client";
 import { fetchSessionContext } from "@/infra/auth/session-context-api";
@@ -57,12 +56,10 @@ export default function LoginAdmin() {
         navigate("/admin");
       },
       {
-        errorFn: (error) => {
+        defaultErrorMessage: "Erro ao entrar",
+        defaultErrorTitle: "Erro ao entrar",
+        errorFn: () => {
           authClient.signOut();
-          return {
-            title: "Erro ao entrar",
-            description: getErrorMessageOrDefault(error, "Erro ao entrar"),
-          };
         },
         finallyFn: () => {
           setLoading(false);

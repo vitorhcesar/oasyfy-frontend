@@ -3,7 +3,6 @@ import { OtpInput } from "@/http/components/OtpInput";
 import { PasswordChecks } from "@/http/components/PasswordChecks";
 import { PasswordInput } from "@/http/components/PasswordInput";
 import { Button } from "@/http/components/ui/button";
-import { getErrorMessageOrDefault } from "@/http/utils/get-error-message-or-default";
 import { tryOrToastError } from "@/http/utils/try-or-toast-error";
 import { apiService } from "@/infra/http";
 import { ArrowRight, Lock } from "lucide-react";
@@ -75,15 +74,8 @@ export default function NewPasswordStep() {
         setTimeout(() => navigate("/login/seller"), 2500);
       },
       {
-        errorFn: (error) => {
-          return {
-            title: "Erro ao atualizar senha",
-            description: getErrorMessageOrDefault(
-              error,
-              "Erro ao atualizar senha"
-            ),
-          };
-        },
+        defaultErrorMessage: "Erro ao atualizar senha",
+        defaultErrorTitle: "Erro ao atualizar senha",
         finallyFn: () => {
           setLoading(false);
         },

@@ -1,7 +1,6 @@
 import { Input } from "@/http/components/Input";
 import { Label } from "@/http/components/Label";
 import { Button } from "@/http/components/ui/button";
-import { getErrorMessageOrDefault } from "@/http/utils/get-error-message-or-default";
 import { tryOrToastError } from "@/http/utils/try-or-toast-error";
 import { apiService } from "@/infra/http";
 import { ArrowRight, Lock, Mail } from "lucide-react";
@@ -38,15 +37,8 @@ export default function EmailStep() {
         setStep("new-password");
       },
       {
-        errorFn: (error) => {
-          return {
-            title: "Erro ao enviar código",
-            description: getErrorMessageOrDefault(
-              error,
-              "Erro ao enviar código"
-            ),
-          };
-        },
+        defaultErrorMessage: "Erro ao enviar código",
+        defaultErrorTitle: "Erro ao enviar código",
         finallyFn: () => {
           setLoading(false);
         },
