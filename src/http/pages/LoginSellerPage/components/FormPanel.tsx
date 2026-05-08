@@ -15,11 +15,14 @@ export default function LoginSellerFormPanel() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const openSignupVerification = async () => {
+  const sendSignUpVerificationCodeAndOpenCodeFormView = async () => {
     tryOrToastError(
       async () => {
         await apiService.account.sendSignupVerificationCode(email);
-        setFormView("code");
+
+        if (formView !== "code") {
+          setFormView("code");
+        }
       },
       {
         defaultErrorMessage: "Erro ao enviar código de verificação",
@@ -38,7 +41,9 @@ export default function LoginSellerFormPanel() {
             email={email}
             password={password}
             setView={setFormView}
-            openSignupVerification={openSignupVerification}
+            resendSignUpVerificationCode={
+              sendSignUpVerificationCodeAndOpenCodeFormView
+            }
           />
         )}
 
@@ -49,7 +54,9 @@ export default function LoginSellerFormPanel() {
             password={password}
             setView={setFormView}
             setPassword={setPassword}
-            openSignupVerification={openSignupVerification}
+            openSignupVerification={
+              sendSignUpVerificationCodeAndOpenCodeFormView
+            }
           />
         )}
 
@@ -60,7 +67,7 @@ export default function LoginSellerFormPanel() {
             password={password}
             setView={setFormView}
             setPassword={setPassword}
-            openSignupVerification={openSignupVerification}
+            onSuccess={sendSignUpVerificationCodeAndOpenCodeFormView}
           />
         )}
 

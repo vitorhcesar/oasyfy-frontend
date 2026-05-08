@@ -1,9 +1,10 @@
 import { OtpInput } from "@/http/components/OtpInput";
 import { Button } from "@/http/components/ui/button";
+import { toast } from "@/http/hooks/use-toast";
 import { tryOrToastError } from "@/http/utils/try-or-toast-error";
-import { authClient, ensureSellerPortalAccess } from "@/infra/auth";
+import { authClient } from "@/infra/auth";
 import { apiService } from "@/infra/http";
-import { ArrowLeft, Check, Loader2, Mail, X } from "lucide-react";
+import { ArrowLeft, Loader2, Mail, X } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -11,14 +12,14 @@ interface IOtpCodeFormProps {
   email: string;
   password: string;
   setView: (view: "login" | "signup" | "forgotPassword") => void;
-  openSignupVerification: () => Promise<void>;
+  resendSignUpVerificationCode: () => Promise<void>;
 }
 
 export default function OtpCodeForm({
   email,
   password,
   setView,
-  openSignupVerification,
+  resendSignUpVerificationCode,
 }: IOtpCodeFormProps) {
   const navigate = useNavigate();
 
@@ -26,8 +27,6 @@ export default function OtpCodeForm({
   const [signupVerifyCountdown, setSignupVerifyCountdown] = useState(0);
 
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-
   const [loading, setLoading] = useState(false);
 
   const handleVerifySignupCode = async () => {
@@ -42,28 +41,34 @@ export default function OtpCodeForm({
           otpCode.trim()
         );
 
-        setSuccess("E-mail verificado com sucesso! Redirecionando...");
-
         const loginResult = await authClient.signIn.email({
           email,
           password,
         });
 
         if (loginResult.error) {
-          setError("E-mail verificado! Faça login para continuar.");
+          toast({
+            title: "E-mail verificado com sucesso!",
+            description: "Faça login para continuar",
+          });
           setView("login");
           return;
         }
 
-        const gate = await ensureSellerPortalAccess();
-        if (gate.kind === "error") {
-          setError(gate.message);
-          return;
-        }
-        if (gate.kind === "needs_verification") {
-          await openSignupVerification();
-          return;
-        }
+        toast({
+          title: "E-mail verificado com sucesso!",
+          description: "Redirecionando você para o painel de vendas...",
+        });
+
+        // const gate = await ensureSellerPortalAccess();
+        // if (gate.kind === "error") {
+        //   setError(gate.message);
+        //   return;
+        // }
+        // if (gate.kind === "needs_verification") {
+        //   await openSignupVerification();
+        //   return;
+        // }
 
         navigate("/seller");
       },
@@ -96,8 +101,11 @@ export default function OtpCodeForm({
 
     tryOrToastError(
       async () => {
-        await openSignupVerification();
-        setSuccess("Código reenviado! Verifique sua caixa de entrada.");
+        await resendSignUpVerificationCode();
+        toast({
+          title: "Código reenviado!",
+          description: "Verifique sua caixa de entrada",
+        });
         startSignupVerifyCountdown();
       },
       {
@@ -129,12 +137,6 @@ export default function OtpCodeForm({
         <div className="mb-4 px-3 py-2.5 rounded-lg bg-destructive/5 border border-destructive/15 text-destructive text-[13px] flex items-center gap-2">
           <X size={14} className="flex-shrink-0" />
           <span>{error}</span>
-        </div>
-      )}
-      {success && (
-        <div className="mb-4 px-3 py-2.5 rounded-lg bg-primary/5 border border-primary/15 text-primary text-[13px] flex items-center gap-2">
-          <Check size={14} className="flex-shrink-0" />
-          <span>{success}</span>
         </div>
       )}
 
@@ -182,7 +184,6 @@ export default function OtpCodeForm({
           onClick={() => {
             setView("login");
             setError("");
-            setSuccess("");
           }}
           className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
         >

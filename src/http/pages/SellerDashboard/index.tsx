@@ -40,7 +40,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import KycOnboarding from "./components/KycOnboarding";
+import KycOnboarding from "../../components/KycOnboarding";
 
 interface ITransaction {
   id: string;

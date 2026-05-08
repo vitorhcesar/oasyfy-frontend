@@ -24,8 +24,8 @@ interface ISignUpFormProps {
   setEmail: (email: string) => void;
   password: string;
   setPassword: (password: string) => void;
-  openSignupVerification: () => Promise<void>;
   setView: (view: "login" | "signup") => void;
+  onSuccess: () => Promise<void>;
 }
 
 export default function SignUpForm({
@@ -33,8 +33,8 @@ export default function SignUpForm({
   setEmail,
   password,
   setPassword,
-  openSignupVerification,
   setView,
+  onSuccess,
 }: ISignUpFormProps) {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
@@ -106,7 +106,7 @@ export default function SignUpForm({
         }
 
         await authClient.signOut();
-        await openSignupVerification();
+        await onSuccess();
       },
       {
         defaultErrorMessage: "Erro ao cadastrar",

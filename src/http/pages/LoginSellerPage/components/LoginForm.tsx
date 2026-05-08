@@ -7,7 +7,7 @@ import { Button } from "@/http/components/ui/button";
 import { translateError } from "@/http/utils/translate-error";
 import { tryOrToastError } from "@/http/utils/try-or-toast-error";
 import { authClient, ensureSellerPortalAccess } from "@/infra/auth";
-import { ArrowRight, Check, Mail, X } from "lucide-react";
+import { ArrowRight, Mail, X } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -33,7 +33,6 @@ export default function LoginForm({
   const navigate = useNavigate();
 
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   const [loading, setLoading] = useState(false);
 
@@ -41,7 +40,6 @@ export default function LoginForm({
     e.preventDefault();
 
     setError("");
-    setSuccess("");
 
     setLoading(true);
 
@@ -99,7 +97,6 @@ export default function LoginForm({
 
   const handleGoToSignup = () => {
     setError("");
-    setSuccess("");
     setView("signup");
     setEmail("");
     setPassword("");
@@ -107,7 +104,6 @@ export default function LoginForm({
 
   const handleGoToForgotPassword = () => {
     setError("");
-    setSuccess("");
     setView("forgotPassword");
     setEmail("");
     setPassword("");
@@ -127,12 +123,6 @@ export default function LoginForm({
           <div className="px-3 py-2.5 rounded-lg bg-destructive/5 border border-destructive/15 text-destructive text-[13px] flex items-center gap-2">
             <X size={14} className="flex-shrink-0" />
             <span>{error}</span>
-          </div>
-        )}
-        {success && (
-          <div className="px-3 py-2.5 rounded-lg bg-primary/5 border border-primary/15 text-primary text-[13px] flex items-center gap-2">
-            <Check size={14} className="flex-shrink-0" />
-            <span>{success}</span>
           </div>
         )}
 
