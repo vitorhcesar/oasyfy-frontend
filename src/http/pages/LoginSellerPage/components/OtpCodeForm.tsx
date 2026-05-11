@@ -29,16 +29,16 @@ export default function OtpCodeForm({
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleVerifySignupCode = async () => {
+  const handleVerifySignupCode = async (code: string) => {
     setError("");
 
     setLoading(true);
 
     tryOrToastError(
       async () => {
-        await apiService.account.verifySignupVerification(
+        await apiService.modules.account.verifySignupVerification(
           email,
-          otpCode.trim()
+          code.trim()
         );
 
         const loginResult = await authClient.signIn.email({
@@ -70,7 +70,10 @@ export default function OtpCodeForm({
         //   return;
         // }
 
-        navigate("/seller");
+        setTimeout(() => {
+          console.log("navigate to seller");
+          navigate("/seller");
+        }, 1000);
       },
       {
         defaultErrorTitle: "Erro ao verificar código",

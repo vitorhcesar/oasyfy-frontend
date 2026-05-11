@@ -47,7 +47,7 @@ export default function CodeRecoveryStep({
 
     tryOrToastError(
       async () => {
-        await apiService.account.sendPasswordRecoveryCode(targetEmail);
+        await apiService.modules.account.sendPasswordRecoveryCode(targetEmail);
       },
       {
         defaultErrorMessage: "Erro ao enviar código",

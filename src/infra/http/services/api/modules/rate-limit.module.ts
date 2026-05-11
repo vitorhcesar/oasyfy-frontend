@@ -1,19 +1,18 @@
 import type { IApiEnvelope } from "@/infra/http/api-types";
-import type { IHttpClient } from "@/infra/http/http-client";
+import { BaseApiModule } from "./base-api.module";
 
-export interface IRateLimitModule {
-  checkSignup: () => Promise<
-    IApiEnvelope<{ allowed?: boolean; message?: string }>
-  >;
+interface ICheckSignupResponseDto {
+  allowed?: boolean;
+  message?: string;
 }
 
-export class RateLimitModule implements IRateLimitModule {
-  constructor(private readonly httpClient: IHttpClient) {}
+export interface IRateLimitModule {
+  checkSignup: () => Promise<IApiEnvelope<ICheckSignupResponseDto>>;
+}
 
-  checkSignup(): Promise<
-    IApiEnvelope<{ allowed?: boolean; message?: string }>
-  > {
-    return this.httpClient.post("/api/v1/rate-limit/check", {
+export class RateLimitModule extends BaseApiModule implements IRateLimitModule {
+  checkSignup(): Promise<IApiEnvelope<ICheckSignupResponseDto>> {
+    return this.getClient().post("/api/v1/rate-limit/check", {
       action: "signup",
     });
   }

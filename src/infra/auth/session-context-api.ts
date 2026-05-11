@@ -3,5 +3,5 @@ import type { ISessionContextDto } from "../http/services/api/modules/session.mo
 export type { ISessionContextDto } from "../http/services/api/modules/session.module";
 
 export async function fetchSessionContext(): Promise<ISessionContextDto> {
-  return apiService.session.getContext();
+  return apiService.modules.session.getContext();
 }

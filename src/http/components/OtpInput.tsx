@@ -89,7 +89,10 @@ export function OtpInput({
 
     onChange?.(pastedText);
 
-    if (pastedText.length === length) onPasteFullfilled?.(pastedText);
+    if (pastedText.length === length) {
+      onPasteFullfilled?.(pastedText);
+      onFullfilled?.(pastedText);
+    }
   };
 
   return (

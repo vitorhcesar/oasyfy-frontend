@@ -1,5 +1,5 @@
-import { apiService } from "@/infra/http/services/api/api.service";
 import { useAuthStore } from "@/http/stores/useAuthStore";
+import { apiService } from "@/infra/http/services/api/api.service";
 import { useEffect, useState } from "react";
 
 export function useKycStatus() {
@@ -15,7 +15,7 @@ export function useKycStatus() {
     }
 
     let cancelled = false;
-    apiService.kycSubmission
+    apiService.modules.kycSubmission
       .getSellerSubmission()
       .then(({ submission }) => {
         if (!cancelled) {

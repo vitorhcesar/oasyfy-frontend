@@ -1,5 +1,5 @@
 import type { IApiEnvelope } from "@/infra/http/api-types";
-import type { IHttpClient } from "@/infra/http/http-client";
+import { BaseApiModule } from "./base-api.module";
 
 export interface ISessionContextDto {
   role: "admin" | "seller" | null;
@@ -11,11 +11,9 @@ export interface ISessionModule {
   getContext: () => Promise<ISessionContextDto>;
 }
 
-export class SessionModule implements ISessionModule {
-  constructor(private readonly httpClient: IHttpClient) {}
-
+export class SessionModule extends BaseApiModule implements ISessionModule {
   async getContext(): Promise<ISessionContextDto> {
-    const body = await this.httpClient.get<IApiEnvelope<ISessionContextDto>>(
+    const body = await this.getClient().get<IApiEnvelope<ISessionContextDto>>(
       "/api/v1/session/context"
     );
     return body.data;

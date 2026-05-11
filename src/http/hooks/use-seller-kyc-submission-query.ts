@@ -52,7 +52,7 @@ export function useSellerKycSubmissionQuery(): IUseSellerKycSubmissionResult {
   const { isLoading } = useQuery({
     queryKey: QUERY_KEY,
     queryFn: async () => {
-      const data = await apiService.kycSubmission.getSellerSubmission();
+      const data = await apiService.modules.kycSubmission.getSellerSubmission();
       extractDataFromQueryResponse(data);
       return data;
     },

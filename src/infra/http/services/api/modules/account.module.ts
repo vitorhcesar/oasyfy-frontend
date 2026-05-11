@@ -1,5 +1,5 @@
 import type { IApiEnvelope } from "@/infra/http/api-types";
-import type { IHttpClient } from "@/infra/http/http-client";
+import { BaseApiModule } from "./base-api.module";
 
 export interface IAccountModule {
   sendSignupVerificationCode: (email: string) => Promise<void>;
@@ -7,9 +7,7 @@ export interface IAccountModule {
     email: string,
     code: string
   ) => Promise<IApiEnvelope<{ success?: boolean }>>;
-  sendPasswordRecoveryCode: (
-    email: string
-  ) => Promise<IApiEnvelope<unknown>>;
+  sendPasswordRecoveryCode: (email: string) => Promise<IApiEnvelope<unknown>>;
   verifyPasswordRecovery: (params: {
     email: string;
     code: string;
@@ -17,11 +15,9 @@ export interface IAccountModule {
   }) => Promise<IApiEnvelope<{ success?: boolean }>>;
 }
 
-export class AccountModule implements IAccountModule {
-  constructor(private readonly httpClient: IHttpClient) {}
-
+export class AccountModule extends BaseApiModule implements IAccountModule {
   async sendSignupVerificationCode(email: string): Promise<void> {
-    await this.httpClient.post("/api/v1/account/signup-verification/send", {
+    await this.getClient().post("/api/v1/account/signup-verification/send", {
       email,
     });
   }
@@ -30,19 +26,14 @@ export class AccountModule implements IAccountModule {
     email: string,
     code: string
   ): Promise<IApiEnvelope<{ success?: boolean }>> {
-    return this.httpClient.post(
-      "/api/v1/account/signup-verification/verify",
-      {
-        email,
-        code,
-      }
-    );
+    return this.getClient().post("/api/v1/account/signup-verification/verify", {
+      email,
+      code,
+    });
   }
 
-  sendPasswordRecoveryCode(
-    email: string
-  ): Promise<IApiEnvelope<unknown>> {
-    return this.httpClient.post("/api/v1/account/password-recovery/send", {
+  sendPasswordRecoveryCode(email: string): Promise<IApiEnvelope<unknown>> {
+    return this.getClient().post("/api/v1/account/password-recovery/send", {
       email,
     });
   }
@@ -52,7 +43,7 @@ export class AccountModule implements IAccountModule {
     code: string;
     new_password: string;
   }): Promise<IApiEnvelope<{ success?: boolean }>> {
-    return this.httpClient.post(
+    return this.getClient().post(
       "/api/v1/account/password-recovery/verify",
       params
     );

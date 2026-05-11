@@ -1,5 +1,5 @@
 import type { IApiEnvelope } from "@/infra/http/api-types";
-import type { IHttpClient } from "@/infra/http/http-client";
+import { BaseApiModule } from "./base-api.module";
 
 /** Alinhado ao enum Prisma `KycStatus` + `none` quando não existe envio */
 export type TSellerDashboardKycStatus =
@@ -38,13 +38,14 @@ export interface IKycSubmissionModule {
   getSellerSubmission: () => Promise<ISellerKycSubmissionResponseDto>;
 }
 
-export class KycSubmissionModule implements IKycSubmissionModule {
-  constructor(private readonly httpClient: IHttpClient) {}
-
+export class KycSubmissionModule
+  extends BaseApiModule
+  implements IKycSubmissionModule
+{
   async getSellerSubmission(): Promise<ISellerKycSubmissionResponseDto> {
-    const body = await this.httpClient.get<
+    const response = await this.getClient().get<
       IApiEnvelope<ISellerKycSubmissionResponseDto>
     >("/api/v1/seller/kyc-submission");
-    return body.data;
+    return response.data;
   }
 }

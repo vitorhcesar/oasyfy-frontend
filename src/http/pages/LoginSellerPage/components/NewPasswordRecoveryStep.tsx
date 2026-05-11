@@ -42,7 +42,7 @@ export default function NewPasswordRecoveryStep({
       throw new AppError("As senhas não coincidem", 400);
     }
 
-    await apiService.account.verifyPasswordRecovery({
+    await apiService.modules.account.verifyPasswordRecovery({
       email,
       code: otpCode,
       new_password: password,

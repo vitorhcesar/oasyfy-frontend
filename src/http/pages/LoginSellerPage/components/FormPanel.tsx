@@ -16,9 +16,9 @@ export default function LoginSellerFormPanel() {
   const [password, setPassword] = useState("");
 
   const sendSignUpVerificationCodeAndOpenCodeFormView = async () => {
-    tryOrToastError(
+    await tryOrToastError(
       async () => {
-        await apiService.account.sendSignupVerificationCode(email);
+        await apiService.modules.account.sendSignupVerificationCode(email);
 
         if (formView !== "code") {
           setFormView("code");

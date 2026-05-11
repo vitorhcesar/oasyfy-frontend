@@ -8,7 +8,10 @@ interface IOptions {
   finallyFn?: () => void;
 }
 
-export function tryOrToastError<T>(fn: () => T, options?: IOptions) {
+export async function tryOrToastError<T>(
+  fn: () => T | Promise<T>,
+  options?: IOptions
+) {
   const {
     finallyFn,
     errorFn,
@@ -17,7 +20,7 @@ export function tryOrToastError<T>(fn: () => T, options?: IOptions) {
   } = options ?? {};
 
   try {
-    return fn();
+    return await fn();
   } catch (error) {
     console.error(error);
     if (errorFn) {

@@ -33,7 +33,7 @@ export default function EmailStep() {
 
     tryOrToastError(
       async () => {
-        await apiService.account.sendPasswordRecoveryCode(email.trim());
+        await apiService.modules.account.sendPasswordRecoveryCode(email.trim());
         setStep("new-password");
       },
       {

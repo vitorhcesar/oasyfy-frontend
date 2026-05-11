@@ -65,7 +65,7 @@ export default function NewPasswordStep() {
 
     tryOrToastError(
       async () => {
-        await apiService.account.verifyPasswordRecovery({
+        await apiService.modules.account.verifyPasswordRecovery({
           email: email.trim(),
           code: code.trim(),
           new_password: password,

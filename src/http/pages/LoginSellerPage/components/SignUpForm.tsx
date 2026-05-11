@@ -11,7 +11,7 @@ import { tryOrToastError } from "@/http/utils/try-or-toast-error";
 import { phoneValidationSchema } from "@/http/validation/schemas/phone-validation.schema";
 import { authClient } from "@/infra/auth";
 import { apiService } from "@/infra/http";
-import { ArrowRight, Check, Mail, Phone, User, X } from "lucide-react";
+import { ArrowRight, Mail, Phone, User, X } from "lucide-react";
 import { useState } from "react";
 import z from "zod";
 
@@ -41,7 +41,6 @@ export default function SignUpForm({
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   const [loading, setLoading] = useState(false);
 
@@ -49,7 +48,6 @@ export default function SignUpForm({
     e.preventDefault();
 
     setError("");
-    setSuccess("");
 
     const schema = z.object({
       email: emailValidationSchema,
@@ -67,13 +65,11 @@ export default function SignUpForm({
 
     if (!passwordStrong) {
       setError("Sua senha não atende todos os requisitos de segurança");
-      setLoading(false);
       return;
     }
 
     if (password !== confirmPassword) {
       setError("As senhas não coincidem");
-      setLoading(false);
       return;
     }
 
@@ -81,7 +77,7 @@ export default function SignUpForm({
 
     tryOrToastError(
       async () => {
-        const rl = await apiService.rateLimit.checkSignup();
+        const rl = await apiService.modules.rateLimit.checkSignup();
 
         if (rl.data.allowed === false) {
           throw new AppError(
@@ -105,6 +101,10 @@ export default function SignUpForm({
           );
         }
 
+        await apiService.modules.user.setUserToSeller(
+          Number(signUpResult.data.user.id)
+        );
+
         await authClient.signOut();
         await onSuccess();
       },
@@ -121,7 +121,6 @@ export default function SignUpForm({
   const handleGoToLogin = () => {
     setView("login");
     setError("");
-    setSuccess("");
     setEmail("");
     setPassword("");
     setFullName("");
@@ -145,12 +144,6 @@ export default function SignUpForm({
           <div className="px-3 py-2.5 rounded-lg bg-destructive/5 border border-destructive/15 text-destructive text-[13px] flex items-center gap-2">
             <X size={14} className="flex-shrink-0" />
             <span>{error}</span>
-          </div>
-        )}
-        {success && (
-          <div className="px-3 py-2.5 rounded-lg bg-primary/5 border border-primary/15 text-primary text-[13px] flex items-center gap-2">
-            <Check size={14} className="flex-shrink-0" />
-            <span>{success}</span>
           </div>
         )}
 

@@ -48,7 +48,7 @@ export default function EmailRecoveryStep({
 
     tryOrToastError(
       async () => {
-        await apiService.account.sendPasswordRecoveryCode(targetEmail);
+        await apiService.modules.account.sendPasswordRecoveryCode(targetEmail);
         setEmail(targetEmail);
         onSuccess();
       },
