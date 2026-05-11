@@ -1,7 +1,10 @@
 import { AppError } from "@/domain/errors/app.error";
 import { Label } from "@/http/components/Label";
+import { OtpInput } from "@/http/components/OtpInput";
 import { PasswordChecks } from "@/http/components/PasswordChecks";
 import { PasswordInput } from "@/http/components/PasswordInput";
+import { toast } from "@/http/hooks/use-toast";
+import { cn } from "@/http/utils/cn";
 import { tryOrToastError } from "@/http/utils/try-or-toast-error";
 import { apiService } from "@/infra/http";
 import { ArrowRight, Check, Lock, X } from "lucide-react";
@@ -9,7 +12,6 @@ import { useState } from "react";
 
 interface INewPasswordRecoveryStepProps {
   email: string;
-  otpCode: string;
   loading: boolean;
   setLoading: (loading: boolean) => void;
   onSuccess: () => void;
@@ -17,11 +19,11 @@ interface INewPasswordRecoveryStepProps {
 
 export default function NewPasswordRecoveryStep({
   email,
-  otpCode,
   loading,
   setLoading,
   onSuccess,
 }: INewPasswordRecoveryStepProps) {
+  const [otpCode, setOtpCode] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordIsStrong, setPasswordIsStrong] = useState(false);
@@ -46,6 +48,11 @@ export default function NewPasswordRecoveryStep({
       email,
       code: otpCode,
       new_password: password,
+    });
+
+    toast({
+      title: "Senha atualizada com sucesso!",
+      description: "Você pode fazer login com sua nova senha",
     });
 
     onSuccess();
@@ -105,6 +112,16 @@ export default function NewPasswordRecoveryStep({
             <span>{success}</span>
           </div>
         )}
+
+        <div>
+          <Label>Código de 6 dígitos</Label>
+          <OtpInput
+            value={otpCode}
+            onChange={setOtpCode}
+            disabled={loading}
+            className={cn("size-[37px] sm:size-[55px]")}
+          />
+        </div>
 
         <div>
           <Label htmlFor="new-password">Nova senha</Label>

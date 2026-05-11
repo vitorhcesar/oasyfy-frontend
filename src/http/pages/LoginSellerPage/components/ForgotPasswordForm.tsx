@@ -1,11 +1,10 @@
 import { Button } from "@/http/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
-import CodeRecoveryStep from "./CodeRecoveryStep";
 import EmailRecoveryStep from "./EmailRecoveryStep";
 import NewPasswordRecoveryStep from "./NewPasswordRecoveryStep";
 
-type TRecoveryStep = "email" | "code" | "newPassword";
+type TRecoveryStep = "email" | "newPassword";
 
 interface IForgotPasswordFormProps {
   setFormView: (view: "login" | "signup" | "forgotPassword") => void;
@@ -19,14 +18,12 @@ export default function ForgotPasswordForm({
   setEmail,
 }: IForgotPasswordFormProps) {
   const [recoveryStep, setRecoveryStep] = useState<TRecoveryStep>("email");
-  const [otpCode, setOtpCode] = useState<string>("");
 
   const [loading, setLoading] = useState(false);
 
   const resetRecoveryState = () => {
     setRecoveryStep("email");
     setEmail("");
-    setOtpCode("");
 
     setFormView("login");
   };
@@ -39,17 +36,6 @@ export default function ForgotPasswordForm({
           setEmail={setEmail}
           loading={loading}
           setLoading={setLoading}
-          onSuccess={() => setRecoveryStep("code")}
-        />
-      )}
-
-      {recoveryStep === "code" && (
-        <CodeRecoveryStep
-          email={email}
-          otpCode={otpCode}
-          setOtpCode={setOtpCode}
-          loading={loading}
-          setLoading={setLoading}
           onSuccess={() => setRecoveryStep("newPassword")}
         />
       )}
@@ -57,7 +43,6 @@ export default function ForgotPasswordForm({
       {recoveryStep === "newPassword" && (
         <NewPasswordRecoveryStep
           email={email}
-          otpCode={otpCode}
           loading={loading}
           setLoading={setLoading}
           onSuccess={resetRecoveryState}
