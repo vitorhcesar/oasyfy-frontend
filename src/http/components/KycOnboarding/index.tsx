@@ -1,6 +1,6 @@
 import { useAuthStore } from "@/http/stores/useAuthStore";
 import { getErrorMessageOrDefault } from "@/http/utils/get-error-message-or-default";
-import { supabase } from "@/infra/integrations/supabase/client";
+import { apiService } from "@/infra/http/services/api/api.service";
 import { useState } from "react";
 import KycOnboardingContent from "./KycOnboardingContent";
 import KycOnboardingFooter from "./KycOnboardingFooter";
@@ -51,43 +51,39 @@ export default function KycOnboarding({ onComplete }: IKycOnboardingProps) {
     setSubmitting(true);
     setError("");
 
-    const { error: dbErr } = await supabase.from("kyc_submissions").insert({
-      user_id: user.id,
-      email: user.email || null,
-      person_type: form.personType!,
-      full_name: form.fullName,
-      cpf: form.cpf || null,
-      date_of_birth: form.dateOfBirth || null,
-      phone: form.phone,
-      company_name: form.companyName || null,
-      company_type: form.companyType || null,
-      cnpj: form.cnpj || null,
-      trading_name: form.tradingName || null,
-      business_activity: form.businessActivity || null,
-      monthly_revenue: form.monthlyRevenue || null,
-      zip_code: form.zipCode,
-      street: form.street,
-      number: form.number,
-      complement: form.complement || null,
-      neighborhood: form.neighborhood,
-      city: form.city,
-      state: form.state,
-      document_front_url: files.document_front?.url || null,
-      document_back_url: files.document_back?.url || null,
-      selfie_url: files.selfie?.url || null,
-      proof_of_address_url: files.proof_of_address?.url || null,
-      company_contract_url: files.company_contract?.url || null,
-      bank_data: form.bank as any,
-      status: "under_review",
-    });
-
-    if (dbErr) {
-      setError(dbErr.message);
+    try {
+      await apiService.modules.kycSubmission.submitSellerSubmission({
+        personType: form.personType!,
+        fullName: form.fullName,
+        cpf: form.cpf || null,
+        dateOfBirth: form.dateOfBirth || null,
+        phone: form.phone,
+        companyName: form.companyName || null,
+        companyType: form.companyType || null,
+        cnpj: form.cnpj || null,
+        tradingName: form.tradingName || null,
+        businessActivity: form.businessActivity || null,
+        monthlyRevenue: form.monthlyRevenue || null,
+        zipCode: form.zipCode,
+        street: form.street,
+        number: form.number,
+        complement: form.complement || null,
+        neighborhood: form.neighborhood,
+        city: form.city,
+        state: form.state,
+        documentFrontUrl: files.document_front?.url ?? null,
+        documentBackUrl: files.document_back?.url ?? null,
+        selfieUrl: files.selfie?.url ?? null,
+        proofOfAddressUrl: files.proof_of_address?.url ?? null,
+        companyContractUrl: files.company_contract?.url ?? null,
+        bank: form.bank,
+      });
+      onComplete();
+    } catch (error) {
+      setError(getErrorMessageOrDefault(error, "Erro ao enviar KYC"));
+    } finally {
       setSubmitting(false);
-      return;
     }
-
-    onComplete();
   };
 
   return (

@@ -11,7 +11,7 @@ export interface IKycOnboardingStore {
   ) => void;
   setBank: (field: keyof KycOnboardingTypes.IBankData, value: string) => void;
 
-  isPj: boolean;
+  isPj: () => boolean;
 
   error: string;
   setError: (error: string) => void;
@@ -69,7 +69,7 @@ export const useKycOnboardingStore = create<IKycOnboardingStore>(
       }));
     },
 
-    isPj: get().form.personType === "pj",
+    isPj: () => get().form.personType === "pj",
 
     error: "",
     setError: (error) => set({ error }),

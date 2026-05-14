@@ -29,7 +29,7 @@ export default function ReviewStep() {
           />
         </div>
         <p className="text-sm font-medium text-foreground">
-          {isPj ? "🏢 Pessoa Jurídica" : "👤 Pessoa Física"}
+          {isPj() ? "🏢 Pessoa Jurídica" : "👤 Pessoa Física"}
         </p>
       </div>
 
@@ -51,7 +51,7 @@ export default function ReviewStep() {
             <span className="text-muted-foreground text-xs">Nome</span>
             <p className="font-medium text-foreground">{form.fullName}</p>
           </div>
-          {isPj ? (
+          {isPj() ? (
             <>
               <div>
                 <span className="text-muted-foreground text-xs">CNPJ</span>

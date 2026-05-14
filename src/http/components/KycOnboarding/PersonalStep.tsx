@@ -64,7 +64,7 @@ export default function PersonalStep({
         />
       </div>
 
-      {isPj ? (
+      {isPj() ? (
         <>
           <div className="grid grid-cols-2 gap-4">
             <div>

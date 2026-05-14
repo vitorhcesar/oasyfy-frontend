@@ -185,13 +185,15 @@ export default function DocumentsStep({ labelClass }: IDocumentsStepProps) {
         <FileUploadBox
           id="document_front"
           label={
-            isPj ? "RG/CNH do Representante (Frente)" : "RG ou CNH (Frente)"
+            isPj() ? "RG/CNH do Representante (Frente)" : "RG ou CNH (Frente)"
           }
           labelClass={labelClass}
         />
         <FileUploadBox
           id="document_back"
-          label={isPj ? "RG/CNH do Representante (Verso)" : "RG ou CNH (Verso)"}
+          label={
+            isPj() ? "RG/CNH do Representante (Verso)" : "RG ou CNH (Verso)"
+          }
           labelClass={labelClass}
         />
       </div>
@@ -207,7 +209,7 @@ export default function DocumentsStep({ labelClass }: IDocumentsStepProps) {
         labelClass={labelClass}
       />
 
-      {isPj && (
+      {isPj() && (
         <FileUploadBox
           id="company_contract"
           label="Contrato Social ou Requerimento de Empresário"
