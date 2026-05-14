@@ -3,10 +3,10 @@ import { Label } from "@/http/components/Label";
 import { OtpInput } from "@/http/components/OtpInput";
 import { PasswordChecks } from "@/http/components/PasswordChecks";
 import { PasswordInput } from "@/http/components/PasswordInput";
+import { useApiService } from "@/http/hooks/use-api-service";
 import { toast } from "@/http/hooks/use-toast";
 import { cn } from "@/http/utils/cn";
 import { tryOrToastError } from "@/http/utils/try-or-toast-error";
-import { apiService } from "@/infra/http";
 import { ArrowRight, Check, Lock, X } from "lucide-react";
 import { useState } from "react";
 
@@ -23,6 +23,8 @@ export default function NewPasswordRecoveryStep({
   setLoading,
   onSuccess,
 }: INewPasswordRecoveryStepProps) {
+  const apiService = useApiService();
+
   const [otpCode, setOtpCode] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");

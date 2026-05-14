@@ -1,9 +1,12 @@
 import { useAuthStore } from "@/http/stores/useAuthStore";
-import { apiService } from "@/infra/http/services/api/api.service";
 import { useEffect, useState } from "react";
+import { useApiService } from "./use-api-service";
 
 export function useKycStatus() {
   const { user } = useAuthStore();
+
+  const apiService = useApiService();
+
   const [kycApproved, setKycApproved] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -33,7 +36,7 @@ export function useKycStatus() {
     return () => {
       cancelled = true;
     };
-  }, [user]);
+  }, [user, apiService]);
 
   return { kycApproved, loading };
 }

@@ -1,8 +1,8 @@
 import { Input } from "@/http/components/Input";
 import { Label } from "@/http/components/Label";
 import { Button } from "@/http/components/ui/button";
+import { useApiService } from "@/http/hooks/use-api-service";
 import { tryOrToastError } from "@/http/utils/try-or-toast-error";
-import { apiService } from "@/infra/http";
 import { ArrowRight, Lock, Mail } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -13,6 +13,8 @@ const emailSchema = z.string().email("Insira um e-mail válido");
 
 export default function EmailStep() {
   const navigate = useNavigate();
+
+  const apiService = useApiService();
 
   const { email, setEmail, loading, setLoading, setStep } =
     useResetPasswordPageStore();

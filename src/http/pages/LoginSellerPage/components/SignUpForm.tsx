@@ -5,12 +5,12 @@ import { PasswordChecks } from "@/http/components/PasswordChecks";
 import { PasswordInput } from "@/http/components/PasswordInput";
 import { Button } from "@/http/components/ui/button";
 import { PasswordStrengthHelper } from "@/http/helper/password-strength.helper";
+import { useApiService } from "@/http/hooks/use-api-service";
 import { getErrorMessageOrDefault } from "@/http/utils/get-error-message-or-default";
 import { translateError } from "@/http/utils/translate-error";
 import { tryOrToastError } from "@/http/utils/try-or-toast-error";
 import { phoneValidationSchema } from "@/http/validation/schemas/phone-validation.schema";
 import { authClient } from "@/infra/auth";
-import { apiService } from "@/infra/http";
 import { ArrowRight, Mail, Phone, User, X } from "lucide-react";
 import { useState } from "react";
 import z from "zod";
@@ -36,6 +36,8 @@ export default function SignUpForm({
   setView,
   onSuccess,
 }: ISignUpFormProps) {
+  const apiService = useApiService();
+
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");

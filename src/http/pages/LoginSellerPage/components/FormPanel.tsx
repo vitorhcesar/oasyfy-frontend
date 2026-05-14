@@ -1,5 +1,5 @@
+import { useApiService } from "@/http/hooks/use-api-service";
 import { tryOrToastError } from "@/http/utils/try-or-toast-error";
-import { apiService } from "@/infra/http";
 import { useState } from "react";
 import ForgotPasswordForm from "./ForgotPasswordForm";
 import LoginForm from "./LoginForm";
@@ -10,6 +10,8 @@ import SignUpForm from "./SignUpForm";
 type TFormView = "login" | "signup" | "forgotPassword" | "code";
 
 export default function LoginSellerFormPanel() {
+  const apiService = useApiService();
+
   const [formView, setFormView] = useState<TFormView>("login");
 
   const [email, setEmail] = useState("");

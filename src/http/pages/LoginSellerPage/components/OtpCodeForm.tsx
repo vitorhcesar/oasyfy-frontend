@@ -1,9 +1,9 @@
 import { OtpInput } from "@/http/components/OtpInput";
 import { Button } from "@/http/components/ui/button";
+import { useApiService } from "@/http/hooks/use-api-service";
 import { toast } from "@/http/hooks/use-toast";
 import { tryOrToastError } from "@/http/utils/try-or-toast-error";
 import { authClient } from "@/infra/auth";
-import { apiService } from "@/infra/http";
 import { ArrowLeft, Loader2, Mail, X } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -22,6 +22,8 @@ export default function OtpCodeForm({
   resendSignUpVerificationCode,
 }: IOtpCodeFormProps) {
   const navigate = useNavigate();
+
+  const apiService = useApiService();
 
   const [otpCode, setOtpCode] = useState("");
   const [signupVerifyCountdown, setSignupVerifyCountdown] = useState(0);

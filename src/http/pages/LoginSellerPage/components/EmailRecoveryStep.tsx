@@ -1,8 +1,8 @@
 import { Input } from "@/http/components/Input";
 import { Label } from "@/http/components/Label";
 import { Button } from "@/http/components/ui/button";
+import { useApiService } from "@/http/hooks/use-api-service";
 import { tryOrToastError } from "@/http/utils/try-or-toast-error";
-import { apiService } from "@/infra/http";
 import { ArrowRight, Mail, X } from "lucide-react";
 import { useState } from "react";
 import z from "zod";
@@ -24,6 +24,8 @@ export default function EmailRecoveryStep({
   setLoading,
   onSuccess,
 }: IEmailRecoveryStepProps) {
+  const apiService = useApiService();
+
   const [error, setError] = useState("");
 
   const handleSendCode = async (e?: React.FormEvent) => {

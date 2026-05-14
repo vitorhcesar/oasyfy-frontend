@@ -1,6 +1,6 @@
+import { useApiService } from "@/http/hooks/use-api-service";
 import { useAuthStore } from "@/http/stores/useAuthStore";
 import { getErrorMessageOrDefault } from "@/http/utils/get-error-message-or-default";
-import { apiService } from "@/infra/http/services/api/api.service";
 import { useState } from "react";
 import KycOnboardingContent from "./KycOnboardingContent";
 import KycOnboardingFooter from "./KycOnboardingFooter";
@@ -24,6 +24,7 @@ interface IKycOnboardingProps {
 
 export default function KycOnboarding({ onComplete }: IKycOnboardingProps) {
   const { user } = useAuthStore();
+  const apiService = useApiService();
 
   const { form, files, setError, step, setStep } = useKycOnboardingStore();
 

@@ -1,5 +1,4 @@
 import { useAuthStore } from "@/http/stores/useAuthStore";
-import { apiService } from "@/infra/http/services/api/api.service";
 import type {
   IKycSubmissionSummaryDto,
   ISellerKycSubmissionResponseDto,
@@ -8,6 +7,7 @@ import type {
 } from "@/infra/http/services/api/modules/kyc-submission.module";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { useApiService } from "./use-api-service";
 
 export interface IUseSellerKycSubmissionResult {
   kycStatus: TSellerDashboardKycStatus;
@@ -22,6 +22,9 @@ export interface IUseSellerKycSubmissionResult {
 
 export function useSellerKycSubmissionQuery(): IUseSellerKycSubmissionResult {
   const { user } = useAuthStore();
+
+  const apiService = useApiService();
+
   const queryClient = useQueryClient();
 
   const QUERY_KEY = ["seller-kyc-submission"];

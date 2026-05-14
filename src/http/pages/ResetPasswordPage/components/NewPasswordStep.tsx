@@ -3,8 +3,8 @@ import { OtpInput } from "@/http/components/OtpInput";
 import { PasswordChecks } from "@/http/components/PasswordChecks";
 import { PasswordInput } from "@/http/components/PasswordInput";
 import { Button } from "@/http/components/ui/button";
+import { useApiService } from "@/http/hooks/use-api-service";
 import { tryOrToastError } from "@/http/utils/try-or-toast-error";
-import { apiService } from "@/infra/http";
 import { ArrowRight, Lock } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -18,6 +18,8 @@ const codeRegex = z
 
 export default function NewPasswordStep() {
   const navigate = useNavigate();
+
+  const apiService = useApiService();
 
   const {
     email,
