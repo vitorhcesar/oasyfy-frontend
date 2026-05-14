@@ -1,4 +1,5 @@
 import { HttpClient, IHttpClient } from "../../http-client";
+import { apiAxios } from "./axios-instance";
 import { AccountModule, IAccountModule } from "./modules/account.module";
 import {
   IKycSubmissionModule,
@@ -32,7 +33,7 @@ export class ApiService implements IApiService {
   };
 
   constructor() {
-    this.httpClient = new HttpClient();
+    this.httpClient = new HttpClient(apiAxios);
 
     // modules
     this.modules = {

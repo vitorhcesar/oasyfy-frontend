@@ -1,4 +1,4 @@
-import { IApiEnvelope } from "@/infra/http/api-types";
+import { IApiEnvelope } from "@/infra/http/services/api/api-types";
 import { BaseApiModule } from "./base-api.module";
 
 export interface ISetUserToSellerResponseDto {

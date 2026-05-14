@@ -1,4 +1,4 @@
-import type { IApiEnvelope } from "@/infra/http/api-types";
+import type { IApiEnvelope } from "@/infra/http/services/api/api-types";
 import { BaseApiModule } from "./base-api.module";
 
 export interface IAccountModule {

@@ -1,5 +1,5 @@
 import { createAuthClient } from "better-auth/react";
-import { getApiBaseUrl } from "../http/api-env";
+import { getApiBaseUrl } from "../http/services/api/api-env";
 
 /**
  * Cliente Better Auth para React (`baseURL` + `/api/auth`).

@@ -1,5 +1,4 @@
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from "axios";
-import { apiAxios } from "./axios-instance";
 
 export interface IHttpClient {
   get<T>(url: string, config?: AxiosRequestConfig): Promise<T>;
@@ -25,7 +24,7 @@ export interface IHttpClient {
 }
 
 export class HttpClient implements IHttpClient {
-  constructor(private readonly client: AxiosInstance = apiAxios) {}
+  constructor(private readonly client: AxiosInstance) {}
 
   async get<T>(url: string, config?: AxiosRequestConfig): Promise<T> {
     const { data } = await this.client.get<T>(url, config);
@@ -70,5 +69,3 @@ export class HttpClient implements IHttpClient {
     return this.client.request<T>(config);
   }
 }
-
-export const httpClient = new HttpClient();
