@@ -7,6 +7,7 @@ import {
   KycSubmissionModule,
 } from "./modules/kyc-submission.module";
 import { IRateLimitModule, RateLimitModule } from "./modules/rate-limit.module";
+import { ISellerFeeModule, SellerFeeModule } from "./modules/seller-fee.module";
 import { ISessionModule, SessionModule } from "./modules/session.module";
 import {
   ITransactionModule,
@@ -22,6 +23,7 @@ export interface IApiServiceModules {
   user: IUserModule;
   banner: IBannerModule;
   transaction: ITransactionModule;
+  sellerFee: ISellerFeeModule;
 }
 
 export interface IApiService {
@@ -45,6 +47,7 @@ export class ApiService implements IApiService {
       user: new UserModule(this.httpClient),
       banner: new BannerModule(this.httpClient),
       transaction: new TransactionModule(this.httpClient),
+      sellerFee: new SellerFeeModule(this.httpClient),
     };
   }
 }

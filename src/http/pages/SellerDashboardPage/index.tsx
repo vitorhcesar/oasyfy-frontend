@@ -7,11 +7,11 @@ import {
   PopoverTrigger,
 } from "@/http/components/ui/popover";
 import useBannersQuery from "@/http/hooks/use-banners-query";
+import useSellerFeesQuery from "@/http/hooks/use-seller-fees-query";
 import { useSellerKycSubmissionQuery } from "@/http/hooks/use-seller-kyc-submission-query";
 import useSellerTransactionsQuery from "@/http/hooks/use-seller-transactions-query";
 import { useAuthStore } from "@/http/stores/useAuthStore";
 import { cn } from "@/http/utils/cn";
-import { supabase } from "@/infra/integrations/supabase/client";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
@@ -43,22 +43,6 @@ import {
   YAxis,
 } from "recharts";
 import KycOnboarding from "../../components/KycOnboarding";
-
-interface ITransaction {
-  id: string;
-  amount: number;
-  method: string;
-  status: string;
-  customer_name: string;
-  created_at: string;
-}
-
-interface ISellerFees {
-  pix_retention_days: number;
-  card_retention_days: number;
-  boleto_retention_days: number;
-  crypto_retention_days: number;
-}
 
 type TTimeRange = "7d" | "30d" | "custom";
 
@@ -132,39 +116,32 @@ export default function SellerDashboardPage() {
 
   const { data: banners } = useBannersQuery();
 
-  const { data: transactions, isLoading: transactionsLoading } =
-    useSellerTransactionsQuery();
+  const {
+    data: transactions,
+    isLoading: transactionsLoading,
+    invalidateQuery: invalidateSellerTransactionsQuery,
+  } = useSellerTransactionsQuery();
+  const {
+    data: fees,
+    isLoading: feesLoading,
+    invalidateQuery: invalidateSellerFeesQuery,
+  } = useSellerFeesQuery();
 
-  const [fees, setFees] = useState<ISellerFees | null>(null);
+  const dataLoading = transactionsLoading || feesLoading;
+  const invalidateSellerData = async () => {
+    await Promise.all([
+      invalidateSellerTransactionsQuery(),
+      invalidateSellerFeesQuery(),
+    ]);
+  };
+
   const [timeRange, setTimeRange] = useState<TTimeRange>("7d");
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [withdrawalOpen, setWithdrawalOpen] = useState(false);
 
-  const [dataLoading, setDataLoading] = useState(true);
-
   const [hideBalance, setHideBalance] = useState(
     () => localStorage.getItem("hideBalance") === "true"
   );
-
-  const fetchData = async () => {
-    if (!user) return;
-    setDataLoading(true);
-    const [feeRes] = await Promise.all([
-      supabase
-        .from("seller_fees")
-        .select(
-          "pix_retention_days, card_retention_days, boleto_retention_days, crypto_retention_days"
-        )
-        .eq("seller_id", user.id)
-        .limit(1),
-    ]);
-    setFees((feeRes.data?.[0] as ISellerFees) || null);
-    setDataLoading(false);
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, [user]);
 
   const showKycForm = kycStatus === "none" || kycStatus === "rejected";
   const hasRejectedDocs = Object.values(documentsReview).some(
@@ -249,12 +226,12 @@ export default function SellerDashboardPage() {
         if (!isPaid(t.status)) return false;
         const retentionDays =
           t.method === "pix"
-            ? fees.pix_retention_days
+            ? fees.pixRetentionDays
             : t.method === "card"
-            ? fees.card_retention_days
+            ? fees.cardRetentionDays
             : t.method === "boleto"
-            ? fees.boleto_retention_days
-            : fees.crypto_retention_days;
+            ? fees.boletoRetentionDays
+            : fees.cryptoRetentionDays;
         if (!retentionDays) return false;
         const txDate = new Date(t.createdAt);
         const releaseDate = new Date(
@@ -294,10 +271,9 @@ export default function SellerDashboardPage() {
         (t) =>
           isPaid(t.status) &&
           t.method === "card" &&
-          fees.card_retention_days > 0 &&
+          fees.cardRetentionDays > 0 &&
           new Date(
-            new Date(t.createdAt).getTime() +
-              fees.card_retention_days * 86400000
+            new Date(t.createdAt).getTime() + fees.cardRetentionDays * 86400000
           ) > now
       )
       .reduce((s, t) => s + t.amount, 0);
@@ -310,18 +286,17 @@ export default function SellerDashboardPage() {
         if (!isPaid(t.status)) return false;
         if (t.method === "pix")
           return (
-            fees.pix_retention_days > 0 &&
+            fees.pixRetentionDays > 0 &&
             new Date(
-              new Date(t.createdAt).getTime() +
-                fees.pix_retention_days * 86400000
+              new Date(t.createdAt).getTime() + fees.pixRetentionDays * 86400000
             ) > now
           );
         if (t.method === "boleto")
           return (
-            fees.boleto_retention_days > 0 &&
+            fees.boletoRetentionDays > 0 &&
             new Date(
               new Date(t.createdAt).getTime() +
-                fees.boleto_retention_days * 86400000
+                fees.boletoRetentionDays * 86400000
             ) > now
           );
         return false;
@@ -466,7 +441,7 @@ export default function SellerDashboardPage() {
           cardBalance={cardBalance}
           pixBoletoBalance={pixBoletoBalance}
           userId={user.id}
-          onSuccess={fetchData}
+          onSuccess={() => invalidateSellerData()}
         />
       )}
 
