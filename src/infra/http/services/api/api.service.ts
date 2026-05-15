@@ -1,6 +1,7 @@
 import { HttpClient, IHttpClient } from "../../http-client";
 import { apiAxios } from "./axios-instance";
 import { AccountModule, IAccountModule } from "./modules/account.module";
+import { BannerModule, IBannerModule } from "./modules/banner.module";
 import {
   IKycSubmissionModule,
   KycSubmissionModule,
@@ -15,6 +16,7 @@ export interface IApiServiceModules {
   session: ISessionModule;
   kycSubmission: IKycSubmissionModule;
   user: IUserModule;
+  banner: IBannerModule;
 }
 
 export interface IApiService {
@@ -30,6 +32,7 @@ export class ApiService implements IApiService {
     session: ISessionModule;
     kycSubmission: IKycSubmissionModule;
     user: IUserModule;
+    banner: IBannerModule;
   };
 
   constructor() {
@@ -42,6 +45,7 @@ export class ApiService implements IApiService {
       session: new SessionModule(this.httpClient),
       kycSubmission: new KycSubmissionModule(this.httpClient),
       user: new UserModule(this.httpClient),
+      banner: new BannerModule(this.httpClient),
     };
   }
 }

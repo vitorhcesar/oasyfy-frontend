@@ -6,6 +6,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/http/components/ui/popover";
+import useBannersQuery from "@/http/hooks/use-banners-query";
 import { useSellerKycSubmissionQuery } from "@/http/hooks/use-seller-kyc-submission-query";
 import { useAuthStore } from "@/http/stores/useAuthStore";
 import { cn } from "@/http/utils/cn";
@@ -114,7 +115,7 @@ function getMethodColor(method: string) {
   }
 }
 
-export default function SellerDashboard() {
+export default function SellerDashboardPage() {
   const navigate = useNavigate();
 
   const { user } = useAuthStore();
@@ -128,29 +129,18 @@ export default function SellerDashboard() {
     invalidateQuery: invalidateKycSubmissionQuery,
   } = useSellerKycSubmissionQuery();
 
+  const { data: banners } = useBannersQuery();
+
   const [transactions, setTransactions] = useState<ITransaction[]>([]);
   const [fees, setFees] = useState<ISellerFees | null>(null);
   const [timeRange, setTimeRange] = useState<TTimeRange>("7d");
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [dataLoading, setDataLoading] = useState(true);
   const [withdrawalOpen, setWithdrawalOpen] = useState(false);
-  const [banners, setBanners] = useState<
-    { id: string; image_url: string; link_url: string | null }[]
-  >([]);
+
   const [hideBalance, setHideBalance] = useState(
     () => localStorage.getItem("hideBalance") === "true"
   );
-
-  useEffect(() => {
-    supabase
-      .from("banners")
-      .select("id, image_url, link_url")
-      .eq("is_active", true)
-      .order("display_order")
-      .then(({ data }) => {
-        setBanners((data as any[]) ?? []);
-      });
-  }, []);
 
   const fetchData = async () => {
     if (!user) return;

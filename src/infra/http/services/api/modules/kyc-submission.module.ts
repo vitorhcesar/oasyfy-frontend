@@ -82,10 +82,12 @@ export class KycSubmissionModule
   extends BaseApiModule
   implements IKycSubmissionModule
 {
+  private readonly baseUrl = "/api/v1/seller/kyc-submission";
+
   async getSellerSubmission(): Promise<ISellerKycSubmissionResponseDto> {
     const response = await this.getClient().get<
       IApiEnvelope<ISellerKycSubmissionResponseDto>
-    >("/api/v1/seller/kyc-submission");
+    >(this.baseUrl);
     return response.data;
   }
 
@@ -95,7 +97,7 @@ export class KycSubmissionModule
     const envelope = await this.getClient().post<
       IApiEnvelope<ISellerKycSubmissionResponseDto>,
       ISubmitSellerKycBody
-    >("/api/v1/seller/kyc-submission", body);
+    >(this.baseUrl, body);
     return envelope.data;
   }
 }

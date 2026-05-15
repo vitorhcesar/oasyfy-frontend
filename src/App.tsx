@@ -11,7 +11,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import LoginAdmin from "./http/pages/LoginAdminPage";
 import LoginSellerPage from "./http/pages/LoginSellerPage";
 import ResetPasswordPage from "./http/pages/ResetPasswordPage";
-import SellerDashboard from "./http/pages/SellerDashboard";
+import SellerDashboardPage from "./http/pages/SellerDashboardPage";
 import Admin2FA from "./http/pages/admin/Admin2FA";
 import AdminAcquirer from "./http/pages/admin/AdminAcquirer";
 import AdminBanners from "./http/pages/admin/AdminBanners";
@@ -70,7 +70,7 @@ export default function App() {
                   path="/seller"
                   element={
                     <ProtectedRoute requiredRole="seller">
-                      <SellerDashboard />
+                      <SellerDashboardPage />
                     </ProtectedRoute>
                   }
                 />
