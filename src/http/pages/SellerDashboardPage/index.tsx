@@ -8,6 +8,7 @@ import {
 } from "@/http/components/ui/popover";
 import useBannersQuery from "@/http/hooks/use-banners-query";
 import { useSellerKycSubmissionQuery } from "@/http/hooks/use-seller-kyc-submission-query";
+import useSellerTransactionsQuery from "@/http/hooks/use-seller-transactions-query";
 import { useAuthStore } from "@/http/stores/useAuthStore";
 import { cn } from "@/http/utils/cn";
 import { supabase } from "@/infra/integrations/supabase/client";
@@ -131,12 +132,15 @@ export default function SellerDashboardPage() {
 
   const { data: banners } = useBannersQuery();
 
-  const [transactions, setTransactions] = useState<ITransaction[]>([]);
+  const { data: transactions, isLoading: transactionsLoading } =
+    useSellerTransactionsQuery();
+
   const [fees, setFees] = useState<ISellerFees | null>(null);
   const [timeRange, setTimeRange] = useState<TTimeRange>("7d");
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
-  const [dataLoading, setDataLoading] = useState(true);
   const [withdrawalOpen, setWithdrawalOpen] = useState(false);
+
+  const [dataLoading, setDataLoading] = useState(true);
 
   const [hideBalance, setHideBalance] = useState(
     () => localStorage.getItem("hideBalance") === "true"
@@ -145,13 +149,7 @@ export default function SellerDashboardPage() {
   const fetchData = async () => {
     if (!user) return;
     setDataLoading(true);
-    const [txRes, feeRes] = await Promise.all([
-      supabase
-        .from("transactions")
-        .select("*")
-        .eq("seller_id", user.id)
-        .neq("customer_name", "Ajuste administrativo")
-        .order("created_at", { ascending: false }),
+    const [feeRes] = await Promise.all([
       supabase
         .from("seller_fees")
         .select(
@@ -160,7 +158,6 @@ export default function SellerDashboardPage() {
         .eq("seller_id", user.id)
         .limit(1),
     ]);
-    setTransactions((txRes.data as ITransaction[]) || []);
     setFees((feeRes.data?.[0] as ISellerFees) || null);
     setDataLoading(false);
   };
@@ -203,7 +200,7 @@ export default function SellerDashboardPage() {
   const filteredTx = useMemo(
     () =>
       transactions.filter((t) => {
-        const d = new Date(t.created_at);
+        const d = new Date(t.createdAt);
         return d >= rangeStart && d <= rangeEnd && t.method !== "withdrawal";
       }),
     [transactions, timeRange, dateRange]
@@ -259,7 +256,7 @@ export default function SellerDashboardPage() {
             ? fees.boleto_retention_days
             : fees.crypto_retention_days;
         if (!retentionDays) return false;
-        const txDate = new Date(t.created_at);
+        const txDate = new Date(t.createdAt);
         const releaseDate = new Date(
           txDate.getTime() + retentionDays * 86400000
         );
@@ -299,7 +296,7 @@ export default function SellerDashboardPage() {
           t.method === "card" &&
           fees.card_retention_days > 0 &&
           new Date(
-            new Date(t.created_at).getTime() +
+            new Date(t.createdAt).getTime() +
               fees.card_retention_days * 86400000
           ) > now
       )
@@ -315,7 +312,7 @@ export default function SellerDashboardPage() {
           return (
             fees.pix_retention_days > 0 &&
             new Date(
-              new Date(t.created_at).getTime() +
+              new Date(t.createdAt).getTime() +
                 fees.pix_retention_days * 86400000
             ) > now
           );
@@ -323,7 +320,7 @@ export default function SellerDashboardPage() {
           return (
             fees.boleto_retention_days > 0 &&
             new Date(
-              new Date(t.created_at).getTime() +
+              new Date(t.createdAt).getTime() +
                 fees.boleto_retention_days * 86400000
             ) > now
           );
@@ -377,7 +374,7 @@ export default function SellerDashboardPage() {
       const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate());
       const dayEnd = new Date(dayStart.getTime() + 86400000);
       const dayTx = paidTx.filter((t) => {
-        const td = new Date(t.created_at);
+        const td = new Date(t.createdAt);
         return td >= dayStart && td < dayEnd;
       });
       const dayTotal = dayTx.reduce((s, t) => s + t.amount, 0);
@@ -846,7 +843,7 @@ export default function SellerDashboardPage() {
                         {getMethodLabel(tx.method)}
                       </p>
                       <p className="text-[11px] md:text-xs text-muted-foreground">
-                        {formatDateTime(tx.created_at)}
+                        {formatDateTime(tx.createdAt.toISOString())}
                       </p>
                     </div>
                   </div>

@@ -8,6 +8,10 @@ import {
 } from "./modules/kyc-submission.module";
 import { IRateLimitModule, RateLimitModule } from "./modules/rate-limit.module";
 import { ISessionModule, SessionModule } from "./modules/session.module";
+import {
+  ITransactionModule,
+  TransactionModule,
+} from "./modules/transaction.module";
 import { IUserModule, UserModule } from "./modules/user.module";
 
 export interface IApiServiceModules {
@@ -17,6 +21,7 @@ export interface IApiServiceModules {
   kycSubmission: IKycSubmissionModule;
   user: IUserModule;
   banner: IBannerModule;
+  transaction: ITransactionModule;
 }
 
 export interface IApiService {
@@ -26,14 +31,7 @@ export interface IApiService {
 export class ApiService implements IApiService {
   private readonly httpClient: IHttpClient;
 
-  modules: {
-    account: IAccountModule;
-    rateLimit: IRateLimitModule;
-    session: ISessionModule;
-    kycSubmission: IKycSubmissionModule;
-    user: IUserModule;
-    banner: IBannerModule;
-  };
+  modules: IApiServiceModules;
 
   constructor() {
     this.httpClient = new HttpClient(apiAxios);
@@ -46,6 +44,7 @@ export class ApiService implements IApiService {
       kycSubmission: new KycSubmissionModule(this.httpClient),
       user: new UserModule(this.httpClient),
       banner: new BannerModule(this.httpClient),
+      transaction: new TransactionModule(this.httpClient),
     };
   }
 }
