@@ -3,8 +3,8 @@ import { BaseApiModule } from "./base-api.module";
 
 export interface IBannerDto {
   id: number;
-  image_url: string;
-  link_url: string | null;
+  imageUrl: string;
+  linkUrl: string | null;
 }
 
 export interface IBannerModule {
