@@ -7,15 +7,25 @@ import {
 import { useHideBalance } from "@/http/hooks/use-hide-balance";
 import { useAuthStore } from "@/http/stores/useAuthStore";
 import { cn } from "@/http/utils/cn";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import { ArrowUpRight, CalendarIcon, Eye, EyeOff } from "lucide-react";
+import { useSellerDashboardStore } from "../stores/seller-dashboard.store";
 
-interface ISellerDashboardHeaderProps {}
+interface ISellerDashboardHeaderProps {
+  onClickWithdrawal: () => void;
+}
 
-export default function SellerDashboardHeader({}: ISellerDashboardHeaderProps) {
+export default function SellerDashboardHeader({
+  onClickWithdrawal,
+}: ISellerDashboardHeaderProps) {
   const { user } = useAuthStore();
   const name = user?.name || user?.email?.split("@")[0] || "Seller";
 
   const { hideBalance, toggleHideBalance } = useHideBalance();
+
+  const { timeRange, setTimeRange, dateRange, setDateRange } =
+    useSellerDashboardStore();
 
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
@@ -36,7 +46,7 @@ export default function SellerDashboardHeader({}: ISellerDashboardHeaderProps) {
           {hideBalance ? <EyeOff size={12} /> : <Eye size={12} />}
         </button>
         <button
-          onClick={() => setWithdrawalOpen(true)}
+          onClick={onClickWithdrawal}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs md:text-sm font-medium hover:opacity-90 transition-opacity"
         >
           <ArrowUpRight size={12} />

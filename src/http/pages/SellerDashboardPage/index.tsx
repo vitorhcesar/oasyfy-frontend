@@ -8,7 +8,6 @@ import { useAuthStore } from "@/http/stores/useAuthStore";
 import { cn } from "@/http/utils/cn";
 import { Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { type DateRange } from "react-day-picker";
 import { useNavigate } from "react-router-dom";
 import {
   Area,
@@ -26,8 +25,7 @@ import RecentTransactions from "./components/RecentTransactions";
 import SellerDashboardHeader from "./components/SellerDashboardHeader";
 import Stats from "./components/Stats";
 import useSellerStatsQuery from "./hooks/use-seller-stats-query";
-
-type TTimeRange = "7d" | "30d" | "custom";
+import { useSellerDashboardStore } from "./stores/seller-dashboard.store";
 
 function isPaid(status: string) {
   return status === "paid" || status === "completed";
@@ -58,8 +56,7 @@ export default function SellerDashboardPage() {
     invalidateQuery: invalidateSellerFeesQuery,
   } = useSellerFeesQuery();
 
-  const [timeRange, setTimeRange] = useState<TTimeRange>("7d");
-  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const { timeRange, dateRange } = useSellerDashboardStore();
 
   const now = useMemo(() => new Date(), []);
 
@@ -270,13 +267,17 @@ export default function SellerDashboardPage() {
       )}
 
       <div
-        className={`w-full max-w-4xl mx-auto px-4 md:px-8 lg:px-10 py-6 ${
-          dashboardBlocked ? "blur-sm pointer-events-none select-none" : ""
-        }`}
+        className={cn(
+          "w-full max-w-4xl",
+          "mx-auto px-4 md:px-8 lg:px-10 py-6",
+          dashboardBlocked && "blur-sm pointer-events-none select-none"
+        )}
       >
         <Banners />
 
-        <SellerDashboardHeader />
+        <SellerDashboardHeader
+          onClickWithdrawal={() => setWithdrawalOpen(true)}
+        />
 
         <Stats />
 
@@ -424,7 +425,6 @@ export default function SellerDashboardPage() {
           </div>
         </div>
 
-        {/* Recent transactions */}
         <RecentTransactions transactions={transactions} loading={dataLoading} />
       </div>
     </SellerLayout>
