@@ -1,3 +1,4 @@
+import { useBrazilZipCodeService } from "@/http/hooks/use-brazil-zip-code-service";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import ValidationBadge from "./ValidationBadge";
@@ -43,7 +44,10 @@ export default function AddressStep({
   labelClass,
   inputClass,
 }: IAddressStepProps) {
-  const { form, setFormDataValue, setFormData } = useKycOnboardingStore();
+  const brazilZipCodeService = useBrazilZipCodeService();
+
+  const { form, setFormDataValue, setFormDataAddress } =
+    useKycOnboardingStore();
 
   const [cepLoading, setCepLoading] = useState(false);
   const [cepValid, setCepValid] = useState<boolean | null>(null);
@@ -57,21 +61,12 @@ export default function AddressStep({
     setCepLoading(true);
 
     try {
-      const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
-      const data = await res.json();
-      if (!data.erro) {
-        setFormData({
-          ...form,
-          street: data.logradouro || form.street,
-          neighborhood: data.bairro || form.neighborhood,
-          city: data.localidade || form.city,
-          state: data.uf || form.state,
-        });
-        setCepValid(true);
-      } else {
-        setCepValid(false);
-      }
-    } catch {
+      const address =
+        await brazilZipCodeService.modules.address.getAddressByZipCode(digits);
+      setFormDataAddress(address);
+      setCepValid(true);
+    } catch (error) {
+      console.error(error);
       setCepValid(false);
     } finally {
       setCepLoading(false);

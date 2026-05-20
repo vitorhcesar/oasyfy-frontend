@@ -24,6 +24,7 @@ interface IKycOnboardingProps {
 
 export default function KycOnboarding({ onComplete }: IKycOnboardingProps) {
   const { user } = useAuthStore();
+
   const apiService = useApiService();
 
   const { form, files, setError, step, setStep } = useKycOnboardingStore();

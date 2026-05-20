@@ -23,5 +23,3 @@ export class BrazilZipCodeService implements IBrazilZipCodeService {
     };
   }
 }
-
-export const brazilZipCodeService = new BrazilZipCodeService();

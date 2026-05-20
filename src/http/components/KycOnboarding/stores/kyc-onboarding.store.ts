@@ -1,3 +1,4 @@
+import { IAddress } from "@/infra/http/services/brazil-zip-code/modules/address.module";
 import { create } from "zustand/react";
 import { KycOnboardingTypes } from "../types";
 
@@ -5,6 +6,7 @@ export interface IKycOnboardingStore {
   // state
   form: KycOnboardingTypes.IFormData;
   setFormData: (form: KycOnboardingTypes.IFormData) => void;
+  setFormDataAddress: (address: IAddress) => void;
   setFormDataValue: (
     field: keyof KycOnboardingTypes.IFormData,
     value: string
@@ -60,6 +62,16 @@ export const useKycOnboardingStore = create<IKycOnboardingStore>(
   (set, get) => ({
     form: initialForm,
     setFormData: (form) => set({ form }),
+    setFormDataAddress: (address) =>
+      set({
+        form: {
+          ...get().form,
+          street: address.street || get().form.street,
+          neighborhood: address.neighborhood || get().form.neighborhood,
+          city: address.city || get().form.city,
+          state: address.state || get().form.state,
+        },
+      }),
     setFormDataValue: (field, value) => {
       set((state) => ({ form: { ...state.form, [field]: value } }));
     },
