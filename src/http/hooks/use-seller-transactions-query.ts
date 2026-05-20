@@ -1,8 +1,8 @@
-import { ITransactionDto } from "@/infra/http/services/api/modules/transaction.module";
+import { Transaction } from "@/domain/entities/transaction.entity";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useApiService } from "./use-api-service";
 
-const DEFAULT_RETURN: ITransactionDto[] = [];
+const DEFAULT_RETURN: Transaction[] = [];
 
 export default function useSellerTransactionsQuery() {
   const apiService = useApiService();

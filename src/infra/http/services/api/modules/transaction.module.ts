@@ -1,3 +1,4 @@
+import { Transaction } from "@/domain/entities/transaction.entity";
 import { IApiEnvelope } from "../api-types";
 import { BaseApiModule } from "./base-api.module";
 
@@ -24,8 +25,35 @@ export interface ITransactionDto {
   updatedAt: Date;
 }
 
+export class TransactionMapper {
+  static toDomain(dto: ITransactionDto): Transaction {
+    return Transaction.restore({
+      id: dto.id,
+      sellerId: dto.sellerId,
+      amount: dto.amount,
+      currency: dto.currency,
+      status: dto.status,
+      method: dto.method,
+      customerName: dto.customerName,
+      customerEmail: dto.customerEmail,
+      description: dto.description,
+      metadata: dto.metadata,
+      pixCode: dto.pixCode,
+      isLocked: dto.isLocked,
+      isFakeRefund: dto.isFakeRefund,
+      lockReason: dto.lockReason,
+      refundReason: dto.refundReason,
+      acquirer: dto.acquirer,
+      feeAmount: dto.feeAmount,
+      netAmount: dto.netAmount,
+      createdAt: dto.createdAt,
+      updatedAt: dto.updatedAt,
+    });
+  }
+}
+
 export interface ITransactionModule {
-  listSellerTransactions: () => Promise<ITransactionDto[]>;
+  listSellerTransactions: () => Promise<Transaction[]>;
 }
 
 export class TransactionModule
@@ -34,10 +62,10 @@ export class TransactionModule
 {
   private readonly baseUrl = "/api/v1/transactions";
 
-  async listSellerTransactions(): Promise<ITransactionDto[]> {
+  async listSellerTransactions(): Promise<Transaction[]> {
     const response = await this.getClient().get<
       IApiEnvelope<ITransactionDto[]>
     >(this.baseUrl);
-    return response.data;
+    return response.data.map(TransactionMapper.toDomain);
   }
 }

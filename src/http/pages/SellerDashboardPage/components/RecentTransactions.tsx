@@ -1,6 +1,6 @@
+import { Transaction } from "@/domain/entities/transaction.entity";
 import { useHideBalance } from "@/http/hooks/use-hide-balance";
 import { cn } from "@/http/utils/cn";
-import { ITransactionDto } from "@/infra/http/services/api/modules/transaction.module";
 import { ArrowDownLeft, Loader2 } from "lucide-react";
 import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
@@ -51,7 +51,7 @@ function getMethodColor(method: string) {
 }
 
 interface IRecentTransactionsProps {
-  transactions: ITransactionDto[];
+  transactions: Transaction[];
   loading: boolean;
 }
 

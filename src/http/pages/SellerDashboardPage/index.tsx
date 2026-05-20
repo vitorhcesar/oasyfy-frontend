@@ -1,6 +1,5 @@
 import { SellerLayout } from "@/http/components/seller/SellerLayout";
 import { WithdrawalModal } from "@/http/components/seller/WithdrawalModal";
-import { useHideBalance } from "@/http/hooks/use-hide-balance";
 import useSellerFeesQuery from "@/http/hooks/use-seller-fees-query";
 import { useSellerKycSubmissionQuery } from "@/http/hooks/use-seller-kyc-submission-query";
 import useSellerTransactionsQuery from "@/http/hooks/use-seller-transactions-query";
@@ -9,27 +8,15 @@ import { cn } from "@/http/utils/cn";
 import { Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  Area,
-  AreaChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
 import KycOnboarding from "../../components/KycOnboarding";
 import Banners from "./components/Banners";
 import Conversion from "./components/Conversion";
 import RecentTransactions from "./components/RecentTransactions";
+import RevenueChart from "./components/RevenueChart";
 import SellerDashboardHeader from "./components/SellerDashboardHeader";
 import Stats from "./components/Stats";
 import useSellerStatsQuery from "./hooks/use-seller-stats-query";
 import { useSellerDashboardStore } from "./stores/seller-dashboard.store";
-
-function isPaid(status: string) {
-  return status === "paid" || status === "completed";
-}
 
 export default function SellerDashboardPage() {
   const navigate = useNavigate();
@@ -87,8 +74,6 @@ export default function SellerDashboardPage() {
 
   const [withdrawalOpen, setWithdrawalOpen] = useState(false);
 
-  const { hideBalance } = useHideBalance();
-
   const showKycForm = kycStatus === "none" || kycStatus === "rejected";
   const hasRejectedDocs = Object.values(documentsReview).some(
     (v) => v.status === "rejected"
@@ -112,11 +97,6 @@ export default function SellerDashboardPage() {
     [transactions, rangeEnd, rangeStart]
   );
 
-  const paidTx = useMemo(
-    () => filteredTx.filter((t) => isPaid(t.status)),
-    [filteredTx]
-  );
-
   const allPositiveTx = useMemo(
     () => transactions.filter((t) => t.amount > 0),
     [transactions]
@@ -126,7 +106,7 @@ export default function SellerDashboardPage() {
   const cardPaid = useMemo(
     () =>
       allPositiveTx
-        .filter((t) => isPaid(t.status) && t.method === "card")
+        .filter((t) => t.isPaid() && t.method === "card")
         .reduce((s, t) => s + t.amount, 0),
     [allPositiveTx]
   );
@@ -134,8 +114,7 @@ export default function SellerDashboardPage() {
     () =>
       allPositiveTx
         .filter(
-          (t) =>
-            isPaid(t.status) && (t.method === "pix" || t.method === "boleto")
+          (t) => t.isPaid() && (t.method === "pix" || t.method === "boleto")
         )
         .reduce((s, t) => s + t.amount, 0),
     [allPositiveTx]
@@ -146,7 +125,7 @@ export default function SellerDashboardPage() {
     return allPositiveTx
       .filter(
         (t) =>
-          isPaid(t.status) &&
+          t.isPaid() &&
           t.method === "card" &&
           fees.cardRetentionDays > 0 &&
           new Date(
@@ -160,7 +139,7 @@ export default function SellerDashboardPage() {
     if (!fees) return 0;
     return allPositiveTx
       .filter((t) => {
-        if (!isPaid(t.status)) return false;
+        if (!t.isPaid()) return false;
         if (t.method === "pix")
           return (
             fees.pixRetentionDays > 0 &&
@@ -191,7 +170,7 @@ export default function SellerDashboardPage() {
   const pixBoletoBalance = grossTotal > 0 ? finalAvailable - cardBalance : 0;
 
   const pixTx = filteredTx.filter((t) => t.method === "pix");
-  const pixPaid = pixTx.filter((t) => isPaid(t.status)).length;
+  const pixPaid = pixTx.filter((t) => t.isPaid()).length;
   const pixRate =
     pixTx.length > 0
       ? Math.min(
@@ -203,40 +182,9 @@ export default function SellerDashboardPage() {
       : 0;
 
   const boletoTx = filteredTx.filter((t) => t.method === "boleto");
-  const boletoPaid = boletoTx.filter((t) => isPaid(t.status)).length;
+  const boletoPaid = boletoTx.filter((t) => t.isPaid()).length;
   const boletoRate =
     boletoTx.length > 0 ? Math.round((boletoPaid / boletoTx.length) * 100) : 0;
-
-  const chartData = useMemo(() => {
-    const diffMs = rangeEnd.getTime() - rangeStart.getTime();
-    const days = Math.max(1, Math.ceil(diffMs / 86400000));
-    const data: { date: string; amount: number; count: number }[] = [];
-    for (let i = 0; i < days; i++) {
-      const d = new Date(rangeStart.getTime() + i * 86400000);
-      const dayStr = d.toLocaleDateString("pt-BR", {
-        day: "2-digit",
-        month: "2-digit",
-      });
-      const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-      const dayEnd = new Date(dayStart.getTime() + 86400000);
-      const dayTx = paidTx.filter((t) => {
-        const td = new Date(t.createdAt);
-        return td >= dayStart && td < dayEnd;
-      });
-      const dayTotal = dayTx.reduce((s, t) => s + t.amount, 0);
-      data.push({ date: dayStr, amount: dayTotal / 100, count: dayTx.length });
-    }
-    return data;
-  }, [paidTx, rangeEnd, rangeStart]);
-
-  const chartTotal = useMemo(
-    () => chartData.reduce((s, d) => s + d.amount, 0),
-    [chartData]
-  );
-  const chartTxCount = useMemo(
-    () => chartData.reduce((s, d) => s + d.count, 0),
-    [chartData]
-  );
 
   if (kycLoading) {
     return (
@@ -285,145 +233,11 @@ export default function SellerDashboardPage() {
           <Conversion pixRate={pixRate} boletoRate={boletoRate} />
         )}
 
-        {/* Chart */}
-        <div className="rounded-xl bg-card border border-border/40 p-4 md:p-5 mb-5">
-          <div className="flex items-start justify-between mb-4">
-            <div>
-              <h3 className="text-xs font-semibold text-foreground">
-                Faturamento
-              </h3>
-              <p className="text-[10px] text-muted-foreground mt-0.5">
-                Histórico de transações aprovadas
-              </p>
-            </div>
-            <div className="text-right">
-              <p
-                className={cn(
-                  "text-sm md:text-base font-bold text-foreground transition-all",
-                  hideBalance && "blur-md select-none"
-                )}
-              >
-                R${" "}
-                {chartTotal.toLocaleString("pt-BR", {
-                  minimumFractionDigits: 2,
-                })}
-              </p>
-              <p
-                className={cn(
-                  "text-[10px] text-muted-foreground transition-all",
-                  hideBalance && "blur-md select-none"
-                )}
-              >
-                {chartTxCount} transaç{chartTxCount === 1 ? "ão" : "ões"}
-              </p>
-            </div>
-          </div>
-          <div
-            className={cn(
-              "h-56 transition-all",
-              hideBalance && "blur-md select-none"
-            )}
-          >
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart
-                data={chartData}
-                margin={{ top: 8, right: 4, left: -15, bottom: 0 }}
-              >
-                <defs>
-                  <linearGradient id="fillGreen" x1="0" y1="0" x2="0" y2="1">
-                    <stop
-                      offset="0%"
-                      stopColor="hsl(var(--primary))"
-                      stopOpacity={0.2}
-                    />
-                    <stop
-                      offset="60%"
-                      stopColor="hsl(var(--primary))"
-                      stopOpacity={0.05}
-                    />
-                    <stop
-                      offset="100%"
-                      stopColor="hsl(var(--primary))"
-                      stopOpacity={0}
-                    />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid
-                  strokeDasharray="4 4"
-                  stroke="hsl(var(--border))"
-                  opacity={0.25}
-                  vertical={false}
-                />
-                <XAxis
-                  dataKey="date"
-                  tick={{
-                    fontSize: 10,
-                    fill: "hsl(var(--muted-foreground))",
-                  }}
-                  axisLine={false}
-                  tickLine={false}
-                  dy={8}
-                />
-                <YAxis
-                  tick={{
-                    fontSize: 10,
-                    fill: "hsl(var(--muted-foreground))",
-                  }}
-                  axisLine={false}
-                  tickLine={false}
-                  tickFormatter={(v) =>
-                    v >= 1000 ? `R$${(v / 1000).toFixed(0)}k` : `R$${v}`
-                  }
-                  width={50}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: "10px",
-                    fontSize: "11px",
-                    boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
-                    padding: "8px 12px",
-                  }}
-                  labelStyle={{
-                    fontSize: "10px",
-                    color: "hsl(var(--muted-foreground))",
-                    marginBottom: "4px",
-                  }}
-                  formatter={(value: number, name: string) => {
-                    if (name === "amount")
-                      return [
-                        `R$ ${value.toLocaleString("pt-BR", {
-                          minimumFractionDigits: 2,
-                        })}`,
-                        "Faturamento",
-                      ];
-                    return [value, name];
-                  }}
-                  cursor={{
-                    stroke: "hsl(var(--primary))",
-                    strokeWidth: 1,
-                    strokeDasharray: "4 4",
-                  }}
-                />
-                <Area
-                  type="monotone"
-                  dataKey="amount"
-                  stroke="hsl(var(--primary))"
-                  strokeWidth={2}
-                  fill="url(#fillGreen)"
-                  dot={false}
-                  activeDot={{
-                    r: 5,
-                    fill: "hsl(var(--primary))",
-                    stroke: "hsl(var(--background))",
-                    strokeWidth: 2.5,
-                  }}
-                />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
+        <RevenueChart
+          rangeStart={rangeStart}
+          rangeEnd={rangeEnd}
+          transactions={transactions}
+        />
 
         <RecentTransactions transactions={transactions} loading={dataLoading} />
       </div>
