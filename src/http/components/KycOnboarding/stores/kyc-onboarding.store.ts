@@ -90,6 +90,6 @@ export const useKycOnboardingStore = create<IKycOnboardingStore>(
     setFiles: (files) => set({ files }),
 
     step: "type",
-    setStep: (step) => set({ step }),
+    setStep: (step) => set({ step, error: "" }),
   })
 );

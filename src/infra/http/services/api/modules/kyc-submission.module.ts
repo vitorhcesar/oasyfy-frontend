@@ -1,3 +1,6 @@
+import { KycStatusEnum } from "@/domain/enums/kyc-status.enum";
+import { KycSubmissionSectionStatusEnum } from "@/domain/enums/kyc-submission-section-status.enum";
+import { PersonTypeEnum } from "@/domain/enums/person-type.enum";
 import type { IApiEnvelope } from "@/infra/http/services/api/api-types";
 import { BaseApiModule } from "./base-api.module";
 
@@ -19,18 +22,51 @@ export type TSellerKycDocumentsReview = Record<
   TSellerKycDocReviewEntry
 >;
 
-export interface IKycSubmissionSummaryDto {
+export interface IKycSubmissionDto {
   id: number;
-  status: Exclude<TSellerDashboardKycStatus, "none">;
+  userId: number;
+  status: KycStatusEnum;
+  personType: PersonTypeEnum;
+  fullName: string;
+  cpf: string | null;
+  dateOfBirth: Date | null;
+  phone: string | null;
+  companyName: string | null;
+  companyType: string | null;
+  cnpj: string | null;
+  tradingName: string | null;
+  businessActivity: string | null;
+  monthlyRevenue: string | null;
+  zipCode: string;
+  street: string;
+  number: string;
+  complement: string | null;
+  neighborhood: string;
+  city: string;
+  state: string;
+  documentFrontUrl: string | null;
+  documentBackUrl: string | null;
+  selfieUrl: string | null;
+  proofOfAddressUrl: string | null;
+  companyContractUrl: string | null;
+  bankData: Record<string, unknown>;
   rejectionReason: string | null;
-  documentsStatus: string;
-  bankStatus: string;
-  addressStatus: string;
-  documentsReview: TSellerKycDocumentsReview;
+  documentsStatus: KycSubmissionSectionStatusEnum;
+  bankStatus: KycSubmissionSectionStatusEnum;
+  addressStatus: KycSubmissionSectionStatusEnum;
+  documentsReview: Record<string, unknown>;
+  email: string | null;
+  isBanned: boolean;
+  withdrawalsBlocked: boolean;
+  withdrawalBlockReason: string | null;
+  reviewedAt: Date | null;
+  reviewedBy: number | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface ISellerKycSubmissionResponseDto {
-  submission: IKycSubmissionSummaryDto | null;
+  submission: IKycSubmissionDto | null;
   fullyApproved: boolean;
 }
 

@@ -1,6 +1,6 @@
 import { useAuthStore } from "@/http/stores/useAuthStore";
 import type {
-  IKycSubmissionSummaryDto,
+  IKycSubmissionDto,
   ISellerKycSubmissionResponseDto,
   TSellerDashboardKycStatus,
   TSellerKycDocumentsReview,
@@ -12,7 +12,7 @@ import { useApiService } from "./use-api-service";
 export interface IUseSellerKycSubmissionResult {
   kycStatus: TSellerDashboardKycStatus;
   /** Resumo quando existe envio em `kyc_submissions`; `null` se ainda não houver registro */
-  submission: IKycSubmissionSummaryDto | null;
+  submission: IKycSubmissionDto | null;
   fullyApproved: boolean;
   documentsReview: TSellerKycDocumentsReview;
   isLoading: boolean;
@@ -30,9 +30,7 @@ export function useSellerKycSubmissionQuery(): IUseSellerKycSubmissionResult {
   const QUERY_KEY = ["seller-kyc-submission"];
 
   const [kycStatus, setKycStatus] = useState<TSellerDashboardKycStatus>("none");
-  const [submission, setSubmission] = useState<IKycSubmissionSummaryDto | null>(
-    null
-  );
+  const [submission, setSubmission] = useState<IKycSubmissionDto | null>(null);
   const [fullyApproved, setFullyApproved] = useState(false);
   const [documentsReview, setDocumentsReview] =
     useState<TSellerKycDocumentsReview>({});
