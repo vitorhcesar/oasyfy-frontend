@@ -1,5 +1,5 @@
 import { AppError } from "@/domain/errors/app.error";
-import { getErrorMessageOrDefault } from "@/http/utils/get-error-message-or-default";
+import { getErrorMessageOrDefault } from "@/presentation/utils/get-error-message-or-default";
 import z from "zod";
 import { BaseBrazilZipCodeModule } from "./base-brazil-zip-code.module";
 
