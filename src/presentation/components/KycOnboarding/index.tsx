@@ -54,31 +54,39 @@ export default function KycOnboarding({ onComplete }: IKycOnboardingProps) {
     setError("");
 
     try {
+      validateKycOnboardingStep({ form, step: "documents", files });
+
       await apiService.modules.kycSubmission.submitSellerSubmission({
-        personType: form.personType!,
-        fullName: form.fullName,
-        cpf: form.cpf || null,
-        dateOfBirth: form.dateOfBirth || null,
-        phone: form.phone,
-        companyName: form.companyName || null,
-        companyType: form.companyType || null,
-        cnpj: form.cnpj || null,
-        tradingName: form.tradingName || null,
-        businessActivity: form.businessActivity || null,
-        monthlyRevenue: form.monthlyRevenue || null,
-        zipCode: form.zipCode,
-        street: form.street,
-        number: form.number,
-        complement: form.complement || null,
-        neighborhood: form.neighborhood,
-        city: form.city,
-        state: form.state,
-        documentFrontUrl: files.document_front?.url ?? null,
-        documentBackUrl: files.document_back?.url ?? null,
-        selfieUrl: files.selfie?.url ?? null,
-        proofOfAddressUrl: files.proof_of_address?.url ?? null,
-        companyContractUrl: files.company_contract?.url ?? null,
-        bank: form.bank,
+        body: {
+          personType: form.personType!,
+          fullName: form.fullName,
+          cpf: form.cpf || null,
+          dateOfBirth: form.dateOfBirth || null,
+          phone: form.phone,
+          companyName: form.companyName || null,
+          companyType: form.companyType || null,
+          cnpj: form.cnpj || null,
+          tradingName: form.tradingName || null,
+          businessActivity: form.businessActivity || null,
+          monthlyRevenue: form.monthlyRevenue || null,
+          zipCode: form.zipCode,
+          street: form.street,
+          number: form.number,
+          complement: form.complement || null,
+          neighborhood: form.neighborhood,
+          city: form.city,
+          state: form.state,
+          bank: form.bank,
+        },
+        files: {
+          documentFront: files.document_front.file,
+          documentBack: files.document_back.file,
+          selfie: files.selfie.file,
+          proofOfAddress: files.proof_of_address.file,
+          ...(files.company_contract
+            ? { companyContract: files.company_contract.file }
+            : {}),
+        },
       });
       onComplete();
     } catch (error) {

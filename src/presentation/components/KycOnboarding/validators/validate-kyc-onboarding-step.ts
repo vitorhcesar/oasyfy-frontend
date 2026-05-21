@@ -106,8 +106,6 @@ function validateDocumentsStep(
   const uploadedFileSchema = z.object({
     file: z.instanceof(File),
     preview: z.string(),
-    uploading: z.literal(false, { message: "Aguarde o envio dos arquivos" }),
-    url: z.string().nullable(),
   });
 
   const schema = z.object({
@@ -134,10 +132,6 @@ function validateDocumentsStep(
     if (!companyContractResult.success) {
       throwError(getErrorMessage(companyContractResult.error));
     }
-  }
-
-  if (Object.values(files).some((f) => f.uploading)) {
-    throwError("Aguarde o envio dos arquivos");
   }
 }
 

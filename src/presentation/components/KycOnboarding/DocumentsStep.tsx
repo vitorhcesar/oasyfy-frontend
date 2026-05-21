@@ -1,10 +1,7 @@
-import { supabase } from "@/infra/integrations/supabase/client";
-import { useAuthStore } from "@/presentation/stores/useAuthStore";
 import {
   Camera,
   CheckCircle2,
   FileText,
-  Loader2,
   Upload,
   X,
 } from "lucide-react";
@@ -24,49 +21,19 @@ function FileUploadBox({
   labelClass,
   accept = "image/*,.pdf",
 }: IFileUploadBoxProps) {
-  const { user } = useAuthStore();
-  const { files, setFiles, setError } = useKycOnboardingStore();
+  const { files, setFiles } = useKycOnboardingStore();
 
   const f = files[id];
 
   const handleFileSelect = useCallback(
-    async (key: string, file: File) => {
-      if (!user) return;
+    (key: string, file: File) => {
       const preview = URL.createObjectURL(file);
       setFiles({
         ...files,
-        [key]: { file, preview, uploading: true, url: null },
-      });
-
-      const ext = file.name.split(".").pop();
-      const path = `${user.id}/${key}-${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage
-        .from("kyc-documents")
-        .upload(path, file);
-
-      if (upErr) {
-        setFiles({
-          ...files,
-          [key]: { ...files[key], uploading: false },
-        });
-        setError(`Erro ao enviar ${key}: ${upErr.message}`);
-        return;
-      }
-
-      const { data: urlData } = supabase.storage
-        .from("kyc-documents")
-        .getPublicUrl(path);
-
-      setFiles({
-        ...files,
-        [key]: {
-          ...files[key],
-          uploading: false,
-          url: urlData.publicUrl || path,
-        },
+        [key]: { file, preview },
       });
     },
-    [user, files, setFiles, setError]
+    [files, setFiles]
   );
 
   const removeFile = (key: string) => {
@@ -97,34 +64,23 @@ function FileUploadBox({
               {f.file.name}
             </p>
             <p className="text-xs text-muted-foreground mt-0.5">
-              {f.uploading ? (
-                <span className="text-primary flex items-center gap-1">
-                  <Loader2 size={10} className="animate-spin" />
-                  Enviando...
-                </span>
-              ) : f.url ? (
-                <span className="text-primary flex items-center gap-1">
-                  <CheckCircle2 size={10} />
-                  Toque para trocar
-                </span>
-              ) : (
-                "Erro no envio"
-              )}
+              <span className="text-primary flex items-center gap-1">
+                <CheckCircle2 size={10} />
+                Toque para trocar
+              </span>
             </p>
           </div>
-          {!f.uploading && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                removeFile(id);
-              }}
-              className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
-            >
-              <X size={16} />
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              removeFile(id);
+            }}
+            className="p-1.5 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+          >
+            <X size={16} />
+          </button>
           <input
             type="file"
             accept={accept}

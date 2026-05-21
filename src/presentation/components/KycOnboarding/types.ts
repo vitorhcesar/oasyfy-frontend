@@ -46,7 +46,5 @@ export namespace KycOnboardingTypes {
   export interface IUploadedFile {
     file: File;
     preview: string;
-    uploading: boolean;
-    url: string | null;
   }
 }

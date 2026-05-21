@@ -70,7 +70,7 @@ export interface ISellerKycSubmissionResponseDto {
   fullyApproved: boolean;
 }
 
-/** Corpo do POST `/api/v1/seller/kyc-submission` (camelCase). */
+/** Corpo do POST `/api/v1/seller/kyc-submission` (multipart/form-data). */
 export interface ISubmitSellerKycBody {
   personType: "pf" | "pj";
   fullName: string;
@@ -90,11 +90,6 @@ export interface ISubmitSellerKycBody {
   neighborhood: string;
   city: string;
   state: string;
-  documentFrontUrl: string | null;
-  documentBackUrl: string | null;
-  selfieUrl: string | null;
-  proofOfAddressUrl: string | null;
-  companyContractUrl: string | null;
   bank: {
     bankName: string;
     agency: string;
@@ -107,10 +102,23 @@ export interface ISubmitSellerKycBody {
   };
 }
 
+export interface ISubmitSellerKycFiles {
+  documentFront: File;
+  documentBack: File;
+  selfie: File;
+  proofOfAddress: File;
+  companyContract?: File;
+}
+
+export interface ISubmitSellerKycParams {
+  body: ISubmitSellerKycBody;
+  files: ISubmitSellerKycFiles;
+}
+
 export interface IKycSubmissionModule {
   getSellerSubmission: () => Promise<ISellerKycSubmissionResponseDto>;
   submitSellerSubmission: (
-    body: ISubmitSellerKycBody
+    params: ISubmitSellerKycParams
   ) => Promise<ISellerKycSubmissionResponseDto>;
 }
 
@@ -128,12 +136,58 @@ export class KycSubmissionModule
   }
 
   async submitSellerSubmission(
-    body: ISubmitSellerKycBody
+    params: ISubmitSellerKycParams
   ): Promise<ISellerKycSubmissionResponseDto> {
-    const envelope = await this.getClient().post<
-      IApiEnvelope<ISellerKycSubmissionResponseDto>,
-      ISubmitSellerKycBody
-    >(this.baseUrl, body);
-    return envelope.data;
+    const formData = new FormData();
+    const { body, files } = params;
+
+    formData.append("personType", body.personType);
+    formData.append("fullName", body.fullName);
+    formData.append("cpf", body.cpf ?? "");
+    formData.append("dateOfBirth", body.dateOfBirth ?? "");
+    formData.append("phone", body.phone);
+    formData.append("companyName", body.companyName ?? "");
+    formData.append("companyType", body.companyType ?? "");
+    formData.append("cnpj", body.cnpj ?? "");
+    formData.append("tradingName", body.tradingName ?? "");
+    formData.append("businessActivity", body.businessActivity ?? "");
+    formData.append("monthlyRevenue", body.monthlyRevenue ?? "");
+    formData.append("zipCode", body.zipCode);
+    formData.append("street", body.street);
+    formData.append("number", body.number);
+    formData.append("complement", body.complement ?? "");
+    formData.append("neighborhood", body.neighborhood);
+    formData.append("city", body.city);
+    formData.append("state", body.state);
+    formData.append("bank", JSON.stringify(body.bank));
+    formData.append("documentFront", files.documentFront);
+    formData.append("documentBack", files.documentBack);
+    formData.append("selfie", files.selfie);
+    formData.append("proofOfAddress", files.proofOfAddress);
+
+    if (files.companyContract) {
+      formData.append("companyContract", files.companyContract);
+    }
+
+    const response = await this.getClient().rawRequest<
+      IApiEnvelope<ISellerKycSubmissionResponseDto>
+    >({
+      method: "POST",
+      url: this.baseUrl,
+      data: formData,
+      headers: {
+        Accept: "application/json",
+      },
+      transformRequest: [
+        (data, headers) => {
+          if (data instanceof FormData && headers) {
+            delete headers["Content-Type"];
+          }
+          return data;
+        },
+      ],
+    });
+
+    return response.data.data;
   }
 }
