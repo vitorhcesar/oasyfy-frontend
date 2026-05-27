@@ -46,7 +46,7 @@ export function useSellerKycSubmissionQuery(): IUseSellerKycSubmissionResult {
       setDocumentsReview({});
     } else {
       setKycStatus(data.submission.status);
-      setDocumentsReview(data.submission.documentsReview);
+      setDocumentsReview(data.submission.documentsReview ?? {});
     }
   };
 

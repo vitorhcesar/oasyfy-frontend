@@ -20,9 +20,9 @@ export function useKycStatus() {
     let cancelled = false;
     apiService.modules.kycSubmission
       .getSellerSubmission()
-      .then(({ submission }) => {
+      .then(({ submission, fullyApproved }) => {
         if (!cancelled) {
-          setKycApproved(submission?.status === "approved");
+          setKycApproved(fullyApproved || submission?.status === "approved");
           setLoading(false);
         }
       })

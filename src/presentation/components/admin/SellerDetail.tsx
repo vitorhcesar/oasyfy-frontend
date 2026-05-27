@@ -120,7 +120,7 @@ export function SellerDetail({ seller, onBack, onUpdate }: Props) {
             const f: Record<string, number> = {};
             for (const k of Object.keys(row)) {
               if (k.endsWith("_fee") || k.endsWith("_days"))
-                f[k] = Number(row[k]) || 0;
+                f[k] = Number((row as Record<string, unknown>)[k]) || 0;
             }
             setFees(f);
           } else {

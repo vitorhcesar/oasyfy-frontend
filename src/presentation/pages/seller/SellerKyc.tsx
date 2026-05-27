@@ -1,6 +1,9 @@
-import { supabase } from "@/infra/integrations/supabase/client";
+import {
+  getKycDocumentUrl,
+  type TKycSubmissionDocumentKey,
+} from "@/infra/http/services/api/modules/kyc-submission-document-keys";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
-import { useAuthStore } from "@/presentation/stores/useAuthStore";
+import { useSellerKycSubmissionQuery } from "@/presentation/hooks/use-seller-kyc-submission-query";
 import {
   AlertCircle,
   Building2,
@@ -19,7 +22,7 @@ import {
   X,
   XCircle,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 type TTab = "info" | "documents" | "bank";
@@ -35,20 +38,18 @@ interface IBankAccount {
   pixKeyType: string;
 }
 
-const DOC_URL_KEYS: Record<string, string> = {
-  document_front: "document_front_url",
-  document_back: "document_back_url",
-  selfie: "selfie_url",
-  proof_of_address: "proof_of_address_url",
-  company_contract: "company_contract_url",
-};
+const DOC_DEFINITIONS: { key: TKycSubmissionDocumentKey; label: string }[] = [
+  { key: "documentFront", label: "Documento Frente" },
+  { key: "documentBack", label: "Documento Verso" },
+  { key: "selfie", label: "Selfie com documento" },
+  { key: "proofOfAddress", label: "Comprovante de endereço" },
+  { key: "companyContract", label: "Contrato Social" },
+];
 
 export default function SellerKyc() {
-  const { user } = useAuthStore();
-  const [kyc, setKyc] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const { submission: kyc, isLoading, invalidateQuery } =
+    useSellerKycSubmissionQuery();
   const [tab, setTab] = useState<TTab>("info");
-  const [uploading, setUploading] = useState<string | null>(null);
   const [expandedSections, setExpandedSections] = useState<
     Record<string, boolean>
   >({
@@ -69,76 +70,44 @@ export default function SellerKyc() {
   const [savingBank, setSavingBank] = useState(false);
   const [bankExpanded, setBankExpanded] = useState(false);
 
-  const fetchKyc = async () => {
-    if (!user) return;
-    const { data } = await supabase
-      .from("kyc_submissions")
-      .select("*")
-      .eq("user_id", user.id)
-      .limit(1);
-    if (data && data.length > 0) setKyc(data[0]);
-    setLoading(false);
-  };
+  const documentsReview = useMemo(
+    () => kyc?.documentsReview ?? {},
+    [kyc?.documentsReview]
+  );
+
+  const docs = useMemo(() => {
+    if (!kyc) return [];
+
+    const base = DOC_DEFINITIONS.filter(
+      (doc) => doc.key !== "companyContract" || kyc.personType === "pj"
+    );
+
+    return base.map((doc) => ({
+      ...doc,
+      url: getKycDocumentUrl(kyc.documents, doc.key),
+    }));
+  }, [kyc]);
+
+  const hasRejected = useMemo(
+    () => Object.values(documentsReview).some((r) => r.status === "rejected"),
+    [documentsReview]
+  );
 
   useEffect(() => {
-    fetchKyc();
-  }, [user]);
+    if (hasRejected && tab === "info") setTab("documents");
+  }, [hasRejected, tab]);
 
-  const handleReupload = async (docKey: string, file: File) => {
-    if (!user || !kyc) return;
-    setUploading(docKey);
-    try {
-      const ext = file.name.split(".").pop();
-      const path = `${user.id}/${docKey}_${Date.now()}.${ext}`;
-      const { error: uploadError } = await supabase.storage
-        .from("kyc-documents")
-        .upload(path, file);
-      if (uploadError) throw uploadError;
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("kyc-documents").getPublicUrl(path);
-      const urlField = DOC_URL_KEYS[docKey];
-      const documentsReviewData = (kyc.documents_review || {}) as Record<
-        string,
-        unknown
-      >;
-      const newReview = {
-        ...documentsReviewData,
-        [docKey]: { status: "pending" },
-      };
-      const updatePayload = {
-        [urlField]: publicUrl,
-        documents_review: newReview,
-        documents_status: "pending",
-      };
-      const { error: updateError } = await supabase
-        .from("kyc_submissions")
-        .update(updatePayload)
-        .eq("id", kyc.id);
-      if (updateError) throw updateError;
-      toast.success("Documento reenviado com sucesso!");
-      setKyc((prev: unknown) =>
-        prev ? { ...(prev as object), ...updatePayload } : prev
-      );
-      await fetchKyc();
-    } catch (e) {
-      console.error(e);
-
-      if (e instanceof Error) {
-        toast.error("Erro ao enviar: " + e.message);
-      } else {
-        toast.error("Erro ao enviar: " + String(e));
-      }
-    } finally {
-      setUploading(null);
-    }
+  const handleReupload = (_docKey: TKycSubmissionDocumentKey, _file: File) => {
+    toast.info(
+      "Reenvio de documentos ainda não está disponível pela API. Entre em contato com o suporte."
+    );
   };
 
   const toggleSection = (key: string) =>
     setExpandedSections((prev) => ({ ...prev, [key]: !prev[key] }));
 
   const openBankEdit = () => {
-    const bd = kyc?.bank_data || {};
+    const bd = (kyc?.bankData ?? {}) as Partial<IBankAccount>;
     setBankForm({
       bankName: bd.bankName || "",
       accountType: bd.accountType || "corrente",
@@ -172,30 +141,12 @@ export default function SellerKyc() {
       return;
     }
 
-    setSavingBank(true);
-
-    try {
-      await supabase
-        .from("kyc_submissions")
-        .update({
-          bank_data: bankForm,
-          bank_status: "pending",
-        })
-        .eq("id", kyc.id);
-      toast.success("Dados bancários atualizados!");
-      setEditingBank(false);
-      await fetchKyc();
-    } catch (e) {
-      console.error(e);
-
-      if (e instanceof Error) {
-        toast.error("Erro: " + e.message);
-      } else {
-        toast.error("Erro: " + String(e));
-      }
-    } finally {
-      setSavingBank(false);
-    }
+    toast.info(
+      "Atualização de dados bancários ainda não está disponível pela API."
+    );
+    setEditingBank(false);
+    void invalidateQuery();
+    setSavingBank(false);
   };
 
   const deleteBankData = async () => {
@@ -203,19 +154,7 @@ export default function SellerKyc() {
     toast.error("É obrigatório ter pelo menos uma conta bancária.");
   };
 
-  const kycReview = kyc?.documents_review as Record<
-    string,
-    { status: string }
-  > | null;
-  const hasRejected = kycReview
-    ? Object.values(kycReview).some((r) => r.status === "rejected")
-    : false;
-
-  useEffect(() => {
-    if (hasRejected && tab === "info") setTab("documents");
-  }, [hasRejected]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <SellerLayout>
         <div className="flex-1 flex items-center justify-center min-h-screen">
@@ -251,53 +190,21 @@ export default function SellerKyc() {
 
   const allApproved =
     kyc.status === "approved" &&
-    kyc.documents_status === "approved" &&
-    kyc.bank_status === "approved" &&
-    kyc.address_status === "approved";
+    kyc.documentsStatus === "approved" &&
+    kyc.bankStatus === "approved" &&
+    kyc.addressStatus === "approved";
   const overallStatus = allApproved
     ? "approved"
     : kyc.status === "rejected"
-    ? "rejected"
-    : "pending";
+      ? "rejected"
+      : "pending";
 
-  const bankData = kyc.bank_data || {};
-  const documentsReview = (kyc.documents_review || {}) as Record<
-    string,
-    { status: string; reason?: string }
-  >;
-
-  const docs = [
-    {
-      key: "document_front",
-      label: "Documento Frente",
-      url: kyc.document_front_url,
-    },
-    {
-      key: "document_back",
-      label: "Documento Verso",
-      url: kyc.document_back_url,
-    },
-    { key: "selfie", label: "Selfie com documento", url: kyc.selfie_url },
-    {
-      key: "proof_of_address",
-      label: "Comprovante de endereço",
-      url: kyc.proof_of_address_url,
-    },
-    ...(kyc.person_type === "pj"
-      ? [
-          {
-            key: "company_contract",
-            label: "Contrato Social",
-            url: kyc.company_contract_url,
-          },
-        ]
-      : []),
-  ];
+  const bankData = (kyc.bankData ?? {}) as Partial<IBankAccount>;
 
   const tabStatusMap: Record<TTab, string> = {
-    info: kyc.address_status || "pending",
-    documents: kyc.documents_status || "pending",
-    bank: kyc.bank_status || "pending",
+    info: kyc.addressStatus || "pending",
+    documents: kyc.documentsStatus || "pending",
+    bank: kyc.bankStatus || "pending",
   };
 
   const tabs: { key: TTab; label: string }[] = [
@@ -318,7 +225,6 @@ export default function SellerKyc() {
   return (
     <SellerLayout>
       <div className="px-4 md:px-6 lg:px-12 py-6 md:py-10 max-w-4xl mx-auto">
-        {/* Minimal header */}
         <div className="mb-10 animate-fade-in">
           <h1 className="text-3xl font-light text-foreground tracking-tight">
             Status KYC
@@ -327,12 +233,11 @@ export default function SellerKyc() {
             {allApproved
               ? "Sua verificação foi concluída com sucesso."
               : overallStatus === "rejected"
-              ? "Alguns itens precisam da sua atenção."
-              : "Estamos analisando seus dados. Isso não deve demorar."}
+                ? "Alguns itens precisam da sua atenção."
+                : "Estamos analisando seus dados. Isso não deve demorar."}
           </p>
         </div>
 
-        {/* Status pill + progress */}
         <div
           className="mb-10 animate-fade-in"
           style={{ animationDelay: "50ms" }}
@@ -343,8 +248,8 @@ export default function SellerKyc() {
                 allApproved
                   ? "border-primary/20 bg-primary/5 text-primary"
                   : overallStatus === "rejected"
-                  ? "border-destructive/20 bg-destructive/5 text-destructive"
-                  : "border-border bg-muted/30 text-muted-foreground"
+                    ? "border-destructive/20 bg-destructive/5 text-destructive"
+                    : "border-border bg-muted/30 text-muted-foreground"
               }`}
             >
               <div
@@ -352,19 +257,15 @@ export default function SellerKyc() {
                   allApproved
                     ? "bg-primary"
                     : overallStatus === "rejected"
-                    ? "bg-destructive"
-                    : "bg-muted-foreground"
-                } ${
-                  !allApproved && overallStatus !== "rejected"
-                    ? "animate-pulse"
-                    : ""
-                }`}
+                      ? "bg-destructive"
+                      : "bg-muted-foreground"
+                } ${!allApproved && overallStatus !== "rejected" ? "animate-pulse" : ""}`}
               />
               {allApproved
                 ? "Aprovado"
                 : overallStatus === "rejected"
-                ? "Ação necessária"
-                : "Em análise"}
+                  ? "Ação necessária"
+                  : "Em análise"}
             </div>
 
             {!allApproved && (
@@ -396,7 +297,6 @@ export default function SellerKyc() {
           </div>
         </div>
 
-        {/* Tabs — underline style */}
         <div
           className="flex items-center gap-4 md:gap-8 border-b border-border/40 mb-6 md:mb-10 overflow-x-auto scrollbar-hide animate-fade-in"
           style={{ animationDelay: "100ms" }}
@@ -434,13 +334,11 @@ export default function SellerKyc() {
           ))}
         </div>
 
-        {/* Info tab */}
         {tab === "info" && (
           <div className="space-y-6 animate-fade-in">
-            {/* Type badge */}
             <div className="flex items-center gap-3 pb-6 border-b border-border/30">
               <div className="w-10 h-10 rounded-full bg-muted/40 flex items-center justify-center">
-                {kyc.person_type === "pj" ? (
+                {kyc.personType === "pj" ? (
                   <Building2 size={16} className="text-muted-foreground" />
                 ) : (
                   <User size={16} className="text-muted-foreground" />
@@ -448,59 +346,57 @@ export default function SellerKyc() {
               </div>
               <div>
                 <p className="text-sm font-medium text-foreground">
-                  {kyc.person_type === "pf"
+                  {kyc.personType === "pf"
                     ? "Pessoa Física"
                     : "Pessoa Jurídica"}
                 </p>
                 <p className="text-xs text-muted-foreground font-mono mt-0.5">
-                  {kyc.person_type === "pf" ? kyc.cpf : kyc.cnpj}
+                  {kyc.personType === "pf" ? kyc.cpf : kyc.cnpj}
                 </p>
               </div>
             </div>
 
-            {/* Personal */}
             <CollapsibleSection
               title={
-                kyc.person_type === "pf" ? "Dados pessoais" : "Dados da empresa"
+                kyc.personType === "pf" ? "Dados pessoais" : "Dados da empresa"
               }
               expanded={expandedSections.personal}
               onToggle={() => toggleSection("personal")}
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-0">
-                <DataRow label="Nome completo" value={kyc.full_name} />
+                <DataRow label="Nome completo" value={kyc.fullName} />
                 <DataRow label="E-mail" value={kyc.email} />
                 <DataRow label="Telefone" value={kyc.phone} />
                 <DataRow
                   label="Data de nascimento"
                   value={
-                    kyc.date_of_birth
-                      ? new Date(kyc.date_of_birth).toLocaleDateString("pt-BR")
+                    kyc.dateOfBirth
+                      ? new Date(kyc.dateOfBirth).toLocaleDateString("pt-BR")
                       : null
                   }
                 />
-                {kyc.person_type === "pj" && (
+                {kyc.personType === "pj" && (
                   <>
-                    <DataRow label="Razão Social" value={kyc.company_name} />
-                    <DataRow label="Nome Fantasia" value={kyc.trading_name} />
-                    <DataRow label="Tipo de Empresa" value={kyc.company_type} />
-                    <DataRow label="Atividade" value={kyc.business_activity} />
+                    <DataRow label="Razão Social" value={kyc.companyName} />
+                    <DataRow label="Nome Fantasia" value={kyc.tradingName} />
+                    <DataRow label="Tipo de Empresa" value={kyc.companyType} />
+                    <DataRow label="Atividade" value={kyc.businessActivity} />
                     <DataRow
                       label="Faturamento Mensal"
-                      value={kyc.monthly_revenue}
+                      value={kyc.monthlyRevenue}
                     />
                   </>
                 )}
               </div>
             </CollapsibleSection>
 
-            {/* Address */}
             <CollapsibleSection
               title="Endereço"
               expanded={expandedSections.address}
               onToggle={() => toggleSection("address")}
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-0">
-                <DataRow label="CEP" value={kyc.zip_code} mono />
+                <DataRow label="CEP" value={kyc.zipCode} mono />
                 <DataRow label="Estado" value={kyc.state} />
                 <DataRow label="Cidade" value={kyc.city} />
                 <DataRow label="Bairro" value={kyc.neighborhood} />
@@ -514,7 +410,6 @@ export default function SellerKyc() {
           </div>
         )}
 
-        {/* Documents tab */}
         {tab === "documents" && (
           <div className="space-y-3 animate-fade-in">
             {docRejected > 0 && (
@@ -546,20 +441,19 @@ export default function SellerKyc() {
                     isRejected
                       ? "border-destructive/15 bg-destructive/[0.02]"
                       : isApproved
-                      ? "border-primary/15 bg-primary/[0.02]"
-                      : "border-border/30 bg-card/50"
+                        ? "border-primary/15 bg-primary/[0.02]"
+                        : "border-border/30 bg-card/50"
                   }`}
                   style={{ animationDelay: `${i * 40}ms` }}
                 >
                   <div className="flex items-center gap-4 px-5 py-4">
-                    {/* Status indicator */}
                     <div
                       className={`w-2 h-2 rounded-full flex-shrink-0 ${
                         isApproved
                           ? "bg-primary"
                           : isRejected
-                          ? "bg-destructive"
-                          : "bg-muted-foreground/30"
+                            ? "bg-destructive"
+                            : "bg-muted-foreground/30"
                       }`}
                     />
 
@@ -570,15 +464,15 @@ export default function SellerKyc() {
                           isApproved
                             ? "text-primary/70"
                             : isRejected
-                            ? "text-destructive/70"
-                            : "text-muted-foreground/50"
+                              ? "text-destructive/70"
+                              : "text-muted-foreground/50"
                         }`}
                       >
                         {isApproved
                           ? "Aprovado"
                           : isRejected
-                          ? "Recusado"
-                          : "Aguardando"}
+                            ? "Recusado"
+                            : "Aguardando"}
                       </p>
                     </div>
 
@@ -606,7 +500,6 @@ export default function SellerKyc() {
                     </div>
                   </div>
 
-                  {/* Rejection area */}
                   {isRejected && (
                     <div className="px-5 pb-5">
                       {review?.reason && (
@@ -621,38 +514,19 @@ export default function SellerKyc() {
                         </div>
                       )}
                       <label
-                        className={`group flex items-center justify-center gap-3 w-full py-5 rounded-lg border border-dashed cursor-pointer transition-all duration-300 ${
-                          uploading === doc.key
-                            ? "border-primary/30 bg-primary/[0.03]"
-                            : "border-border/30 hover:border-primary/30 hover:bg-primary/[0.02]"
-                        }`}
+                        className="group flex items-center justify-center gap-3 w-full py-5 rounded-lg border border-dashed cursor-pointer transition-all duration-300 border-border/30 hover:border-primary/30 hover:bg-primary/[0.02]"
                       >
-                        {uploading === doc.key ? (
-                          <>
-                            <Loader2
-                              size={16}
-                              className="animate-spin text-primary/60"
-                            />
-                            <span className="text-xs text-primary/60">
-                              Enviando...
-                            </span>
-                          </>
-                        ) : (
-                          <>
-                            <Upload
-                              size={14}
-                              className="text-muted-foreground/40 group-hover:text-primary/60 transition-colors"
-                            />
-                            <span className="text-xs text-muted-foreground/50 group-hover:text-foreground/70 transition-colors">
-                              Enviar novo arquivo
-                            </span>
-                          </>
-                        )}
+                        <Upload
+                          size={14}
+                          className="text-muted-foreground/40 group-hover:text-primary/60 transition-colors"
+                        />
+                        <span className="text-xs text-muted-foreground/50 group-hover:text-foreground/70 transition-colors">
+                          Enviar novo arquivo
+                        </span>
                         <input
                           type="file"
                           accept="image/*,.pdf"
                           className="hidden"
-                          disabled={uploading !== null}
                           onChange={(e) => {
                             const file = e.target.files?.[0];
                             if (file) handleReupload(doc.key, file);
@@ -667,179 +541,18 @@ export default function SellerKyc() {
           </div>
         )}
 
-        {/* Bank tab */}
         {tab === "bank" && (
           <div className="animate-fade-in">
-            {/* Edit modal */}
             {editingBank && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-                <div className="bg-card border border-border rounded-2xl shadow-lg w-full max-w-md mx-4 p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-base font-medium text-foreground">
-                      Editar conta bancária
-                    </h3>
-                    <button
-                      onClick={() => setEditingBank(false)}
-                      className="p-1.5 rounded-lg hover:bg-muted/50 text-muted-foreground"
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1.5 block">
-                        Banco
-                      </label>
-                      <input
-                        className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
-                        value={bankForm.bankName}
-                        onChange={(e) =>
-                          setBankForm((p) => ({
-                            ...p,
-                            bankName: e.target.value,
-                          }))
-                        }
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1.5 block">
-                        Tipo de conta
-                      </label>
-                      <select
-                        className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
-                        value={bankForm.accountType}
-                        onChange={(e) =>
-                          setBankForm((p) => ({
-                            ...p,
-                            accountType: e.target.value,
-                          }))
-                        }
-                      >
-                        <option value="corrente">Conta Corrente</option>
-                        <option value="poupanca">Poupança</option>
-                      </select>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-xs text-muted-foreground mb-1.5 block">
-                          Agência
-                        </label>
-                        <input
-                          className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary/30"
-                          value={bankForm.agency}
-                          onChange={(e) =>
-                            setBankForm((p) => ({
-                              ...p,
-                              agency: e.target.value,
-                            }))
-                          }
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs text-muted-foreground mb-1.5 block">
-                          Dígito ag.
-                        </label>
-                        <input
-                          className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary/30"
-                          value={bankForm.agencyDigit}
-                          onChange={(e) =>
-                            setBankForm((p) => ({
-                              ...p,
-                              agencyDigit: e.target.value,
-                            }))
-                          }
-                        />
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-xs text-muted-foreground mb-1.5 block">
-                          Conta
-                        </label>
-                        <input
-                          className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary/30"
-                          value={bankForm.account}
-                          onChange={(e) =>
-                            setBankForm((p) => ({
-                              ...p,
-                              account: e.target.value,
-                            }))
-                          }
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs text-muted-foreground mb-1.5 block">
-                          Dígito conta
-                        </label>
-                        <input
-                          className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary/30"
-                          value={bankForm.accountDigit}
-                          onChange={(e) =>
-                            setBankForm((p) => ({
-                              ...p,
-                              accountDigit: e.target.value,
-                            }))
-                          }
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1.5 block">
-                        Chave PIX
-                      </label>
-                      <input
-                        className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary/30"
-                        value={bankForm.pixKey}
-                        onChange={(e) =>
-                          setBankForm((p) => ({ ...p, pixKey: e.target.value }))
-                        }
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1.5 block">
-                        Tipo de chave PIX
-                      </label>
-                      <select
-                        className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
-                        value={bankForm.pixKeyType}
-                        onChange={(e) =>
-                          setBankForm((p) => ({
-                            ...p,
-                            pixKeyType: e.target.value,
-                          }))
-                        }
-                      >
-                        <option value="cpf">CPF</option>
-                        <option value="cnpj">CNPJ</option>
-                        <option value="email">E-mail</option>
-                        <option value="phone">Telefone</option>
-                        <option value="random">Aleatória</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 mt-6">
-                    <button
-                      onClick={() => setEditingBank(false)}
-                      className="flex-1 px-4 py-2.5 rounded-lg border border-border text-sm text-muted-foreground hover:bg-muted/30 transition-colors"
-                    >
-                      Cancelar
-                    </button>
-                    <button
-                      onClick={saveBankData}
-                      disabled={savingBank}
-                      className="flex-1 px-4 py-2.5 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                    >
-                      {savingBank ? (
-                        <Loader2 size={14} className="animate-spin" />
-                      ) : null}
-                      Salvar
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <BankEditModal
+                bankForm={bankForm}
+                setBankForm={setBankForm}
+                savingBank={savingBank}
+                onClose={() => setEditingBank(false)}
+                onSave={saveBankData}
+              />
             )}
 
-            {/* Bank header - clickable to toggle */}
             <button
               onClick={() => setBankExpanded(!bankExpanded)}
               className="w-full flex items-center gap-3 pb-4 border-b border-border/30 mb-0 text-left"
@@ -856,33 +569,10 @@ export default function SellerKyc() {
                     {bankData.accountType === "corrente"
                       ? "Conta Corrente"
                       : bankData.accountType === "poupanca"
-                      ? "Poupança"
-                      : bankData.accountType || "—"}
+                        ? "Poupança"
+                        : bankData.accountType || "—"}
                   </p>
-                  <div
-                    className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] md:text-xs font-medium border ${
-                      kyc.bank_status === "approved"
-                        ? "border-primary/20 bg-primary/5 text-primary"
-                        : kyc.bank_status === "rejected"
-                        ? "border-destructive/20 bg-destructive/5 text-destructive"
-                        : "border-border bg-muted/30 text-muted-foreground"
-                    }`}
-                  >
-                    <div
-                      className={`w-1.5 h-1.5 rounded-full ${
-                        kyc.bank_status === "approved"
-                          ? "bg-primary"
-                          : kyc.bank_status === "rejected"
-                          ? "bg-destructive"
-                          : "bg-muted-foreground"
-                      }`}
-                    />
-                    {kyc.bank_status === "approved"
-                      ? "Aprovada"
-                      : kyc.bank_status === "rejected"
-                      ? "Recusada"
-                      : "Pendente"}
-                  </div>
+                  <BankStatusBadge status={kyc.bankStatus} />
                 </div>
               </div>
               <ChevronRight
@@ -893,7 +583,6 @@ export default function SellerKyc() {
               />
             </button>
 
-            {/* Collapsible details */}
             {bankExpanded && (
               <div className="pt-4 animate-fade-in">
                 <div className="flex items-center justify-end gap-2 mb-4">
@@ -926,8 +615,8 @@ export default function SellerKyc() {
                       bankData.accountType === "corrente"
                         ? "Conta Corrente"
                         : bankData.accountType === "poupanca"
-                        ? "Poupança"
-                        : bankData.accountType
+                          ? "Poupança"
+                          : bankData.accountType
                     }
                   />
                   <DataRow
@@ -957,7 +646,6 @@ export default function SellerKyc() {
               </div>
             )}
 
-            {/* Add new bank account button */}
             <button
               onClick={openBankAdd}
               className="mt-6 w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-dashed border-border/40 text-muted-foreground/60 hover:border-primary/30 hover:text-primary hover:bg-primary/[0.02] transition-all duration-200 text-xs"
@@ -972,7 +660,192 @@ export default function SellerKyc() {
   );
 }
 
-/* ── Sub-components ── */
+function BankStatusBadge({ status }: { status: string }) {
+  return (
+    <div
+      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] md:text-xs font-medium border ${
+        status === "approved"
+          ? "border-primary/20 bg-primary/5 text-primary"
+          : status === "rejected"
+            ? "border-destructive/20 bg-destructive/5 text-destructive"
+            : "border-border bg-muted/30 text-muted-foreground"
+      }`}
+    >
+      <div
+        className={`w-1.5 h-1.5 rounded-full ${
+          status === "approved"
+            ? "bg-primary"
+            : status === "rejected"
+              ? "bg-destructive"
+              : "bg-muted-foreground"
+        }`}
+      />
+      {status === "approved"
+        ? "Aprovada"
+        : status === "rejected"
+          ? "Recusada"
+          : "Pendente"}
+    </div>
+  );
+}
+
+function BankEditModal({
+  bankForm,
+  setBankForm,
+  savingBank,
+  onClose,
+  onSave,
+}: {
+  bankForm: IBankAccount;
+  setBankForm: React.Dispatch<React.SetStateAction<IBankAccount>>;
+  savingBank: boolean;
+  onClose: () => void;
+  onSave: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+      <div className="bg-card border border-border rounded-2xl shadow-lg w-full max-w-md mx-4 p-6">
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-base font-medium text-foreground">
+            Editar conta bancária
+          </h3>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-lg hover:bg-muted/50 text-muted-foreground"
+          >
+            <X size={16} />
+          </button>
+        </div>
+        <div className="space-y-4">
+          <div>
+            <label className="text-xs text-muted-foreground mb-1.5 block">
+              Banco
+            </label>
+            <input
+              className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
+              value={bankForm.bankName}
+              onChange={(e) =>
+                setBankForm((p) => ({ ...p, bankName: e.target.value }))
+              }
+            />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground mb-1.5 block">
+              Tipo de conta
+            </label>
+            <select
+              className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
+              value={bankForm.accountType}
+              onChange={(e) =>
+                setBankForm((p) => ({ ...p, accountType: e.target.value }))
+              }
+            >
+              <option value="corrente">Conta Corrente</option>
+              <option value="poupanca">Poupança</option>
+            </select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs text-muted-foreground mb-1.5 block">
+                Agência
+              </label>
+              <input
+                className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary/30"
+                value={bankForm.agency}
+                onChange={(e) =>
+                  setBankForm((p) => ({ ...p, agency: e.target.value }))
+                }
+              />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1.5 block">
+                Dígito ag.
+              </label>
+              <input
+                className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary/30"
+                value={bankForm.agencyDigit}
+                onChange={(e) =>
+                  setBankForm((p) => ({ ...p, agencyDigit: e.target.value }))
+                }
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs text-muted-foreground mb-1.5 block">
+                Conta
+              </label>
+              <input
+                className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary/30"
+                value={bankForm.account}
+                onChange={(e) =>
+                  setBankForm((p) => ({ ...p, account: e.target.value }))
+                }
+              />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground mb-1.5 block">
+                Dígito conta
+              </label>
+              <input
+                className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary/30"
+                value={bankForm.accountDigit}
+                onChange={(e) =>
+                  setBankForm((p) => ({ ...p, accountDigit: e.target.value }))
+                }
+              />
+            </div>
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground mb-1.5 block">
+              Chave PIX
+            </label>
+            <input
+              className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm text-foreground font-mono focus:outline-none focus:ring-1 focus:ring-primary/30"
+              value={bankForm.pixKey}
+              onChange={(e) =>
+                setBankForm((p) => ({ ...p, pixKey: e.target.value }))
+              }
+            />
+          </div>
+          <div>
+            <label className="text-xs text-muted-foreground mb-1.5 block">
+              Tipo de chave PIX
+            </label>
+            <select
+              className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
+              value={bankForm.pixKeyType}
+              onChange={(e) =>
+                setBankForm((p) => ({ ...p, pixKeyType: e.target.value }))
+              }
+            >
+              <option value="cpf">CPF</option>
+              <option value="cnpj">CNPJ</option>
+              <option value="email">E-mail</option>
+              <option value="phone">Telefone</option>
+            </select>
+          </div>
+        </div>
+        <div className="flex items-center gap-3 mt-6">
+          <button
+            onClick={onClose}
+            className="flex-1 px-4 py-2.5 rounded-lg border border-border text-sm text-muted-foreground hover:bg-muted/30 transition-colors"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={onSave}
+            disabled={savingBank}
+            className="flex-1 px-4 py-2.5 rounded-lg bg-foreground text-background text-sm font-medium hover:bg-foreground/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {savingBank ? <Loader2 size={14} className="animate-spin" /> : null}
+            Salvar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function CollapsibleSection({
   title,
