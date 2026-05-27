@@ -21,7 +21,7 @@ function validateTypeStep(form: KycOnboardingTypes.IFormData) {
 
 function validatePersonalStep(
   form: KycOnboardingTypes.IFormData,
-  isPj: boolean
+  isPj: boolean,
 ) {
   if (!form.fullName.trim()) {
     throwError("Nome completo é obrigatório");
@@ -101,10 +101,21 @@ function validateAddressStep(form: KycOnboardingTypes.IFormData) {
 
 function validateDocumentsStep(
   files: Record<string, KycOnboardingTypes.IUploadedFile>,
-  isPj: boolean
+  isPj: boolean,
 ) {
   const uploadedFileSchema = z.object({
-    file: z.instanceof(File),
+    file: z.instanceof(File).refine((file) => {
+      if (
+        file.type === "image/png" ||
+        file.type === "image/webp" ||
+        file.type === "image/jpeg" ||
+        file.type === "image/jpg"
+      ) {
+        return file.size <= 10 * 1024 * 1024; // 10MB
+      }
+
+      return false;
+    }),
     preview: z.string(),
   });
 
@@ -127,7 +138,7 @@ function validateDocumentsStep(
 
   if (isPj && files.company_contract) {
     const companyContractResult = uploadedFileSchema.safeParse(
-      files.company_contract
+      files.company_contract,
     );
     if (!companyContractResult.success) {
       throwError(getErrorMessage(companyContractResult.error));
@@ -141,7 +152,7 @@ function validateBankStep(form: KycOnboardingTypes.IFormData) {
     .min(1, "Tipo de chave PIX é obrigatório")
     .refine(
       (v) => ["cpf", "cnpj", "email", "phone"].includes(v),
-      "Tipo de chave PIX inválido"
+      "Tipo de chave PIX inválido",
     );
 
   const bankSchema = z.object({
