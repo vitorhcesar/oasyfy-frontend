@@ -1,6 +1,16 @@
 import { useBrazilZipCodeService } from "@/presentation/hooks/use-brazil-zip-code-service";
+import { tryOrToastError } from "@/presentation/utils/try-or-toast-error";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";
+import { Input } from "../Input";
+import { Label } from "../Label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../Select";
 import ValidationBadge from "./ValidationBadge";
 import { useKycOnboardingStore } from "./stores/kyc-onboarding.store";
 import { formatCep } from "./utils/format-cep";
@@ -35,15 +45,7 @@ const STATES = [
   "TO",
 ];
 
-interface IAddressStepProps {
-  labelClass: string;
-  inputClass: string;
-}
-
-export default function AddressStep({
-  labelClass,
-  inputClass,
-}: IAddressStepProps) {
+export default function AddressStep() {
   const brazilZipCodeService = useBrazilZipCodeService();
 
   const { form, setFormDataValue, setFormDataAddress } =
@@ -60,33 +62,40 @@ export default function AddressStep({
     }
     setCepLoading(true);
 
-    try {
-      const address =
-        await brazilZipCodeService.modules.address.getAddressByZipCode(digits);
-      setFormDataAddress(address);
-      setCepValid(true);
-    } catch (error) {
-      console.error(error);
-      setCepValid(false);
-    } finally {
-      setCepLoading(false);
-    }
+    await tryOrToastError(
+      async () => {
+        const address =
+          await brazilZipCodeService.modules.address.getAddressByZipCode(
+            digits,
+          );
+        setFormDataAddress(address);
+        setCepValid(true);
+      },
+      {
+        finallyFn: () => {
+          setCepLoading(false);
+        },
+        errorFn: () => {
+          setCepValid(false);
+        },
+      },
+    );
   };
 
   return (
     <div className="space-y-5 animate-step-slide">
       <div className="grid grid-cols-3 gap-4">
         <div>
-          <label className={labelClass}>
+          <Label htmlFor="zipCode">
             CEP{" "}
             {cepLoading ? (
               <Loader2 size={10} className="inline animate-spin ml-1" />
             ) : (
               <ValidationBadge valid={cepValid} />
             )}
-          </label>
-          <input
-            className={inputClass}
+          </Label>
+          <Input
+            id="zipCode"
             value={form.zipCode}
             onChange={(e) => {
               const v = formatCep(e.target.value);
@@ -97,9 +106,9 @@ export default function AddressStep({
           />
         </div>
         <div className="col-span-2">
-          <label className={labelClass}>Rua / Avenida</label>
-          <input
-            className={inputClass}
+          <Label htmlFor="street">Rua / Avenida</Label>
+          <Input
+            id="street"
             value={form.street}
             onChange={(e) => setFormDataValue("street", e.target.value)}
             placeholder="Rua / Avenida"
@@ -108,18 +117,18 @@ export default function AddressStep({
       </div>
       <div className="grid grid-cols-3 gap-4">
         <div>
-          <label className={labelClass}>Número</label>
-          <input
-            className={inputClass}
+          <Label htmlFor="number">Número</Label>
+          <Input
+            id="number"
             value={form.number}
             onChange={(e) => setFormDataValue("number", e.target.value)}
             placeholder="123"
           />
         </div>
         <div className="col-span-2">
-          <label className={labelClass}>Complemento</label>
-          <input
-            className={inputClass}
+          <Label htmlFor="complement">Complemento</Label>
+          <Input
+            id="complement"
             value={form.complement}
             onChange={(e) => setFormDataValue("complement", e.target.value)}
             placeholder="Apto, sala (opcional)"
@@ -128,37 +137,40 @@ export default function AddressStep({
       </div>
       <div className="grid grid-cols-3 gap-4">
         <div>
-          <label className={labelClass}>Bairro</label>
-          <input
-            className={inputClass}
+          <Label htmlFor="neighborhood">Bairro</Label>
+          <Input
+            id="neighborhood"
             value={form.neighborhood}
             onChange={(e) => setFormDataValue("neighborhood", e.target.value)}
             placeholder="Bairro"
           />
         </div>
         <div>
-          <label className={labelClass}>Cidade</label>
-          <input
-            className={inputClass}
+          <Label htmlFor="city">Cidade</Label>
+          <Input
+            id="city"
             value={form.city}
             onChange={(e) => setFormDataValue("city", e.target.value)}
             placeholder="Cidade"
           />
         </div>
         <div>
-          <label className={labelClass}>Estado</label>
-          <select
-            className={inputClass}
-            value={form.state}
-            onChange={(e) => setFormDataValue("state", e.target.value)}
+          <Label htmlFor="state">Estado</Label>
+          <Select
+            value={form.state || undefined}
+            onValueChange={(value) => setFormDataValue("state", value)}
           >
-            <option value="">UF</option>
-            {STATES.map((s) => (
-              <option key={s} value={s}>
-                {s}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger>
+              <SelectValue placeholder="UF" />
+            </SelectTrigger>
+            <SelectContent>
+              {STATES.map((s) => (
+                <SelectItem key={s} value={s}>
+                  {s}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
     </div>

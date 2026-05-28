@@ -1,4 +1,14 @@
+import { cn } from "@/presentation/utils/cn";
 import { useState } from "react";
+import { Input } from "../Input";
+import { Label } from "../Label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../Select";
 import { COMPANY_TYPE_OPTIONS } from "./constants/company-type-options";
 import { useKycOnboardingStore } from "./stores/kyc-onboarding.store";
 import { formatCnpj } from "./utils/format-cnpj";
@@ -16,15 +26,7 @@ const REVENUE_OPTIONS = [
   "Acima de R$ 100.000",
 ];
 
-interface IPersonalStepProps {
-  labelClass: string;
-  inputClass: string;
-}
-
-export default function PersonalStep({
-  labelClass,
-  inputClass,
-}: IPersonalStepProps) {
+export default function PersonalStep() {
   const { form, isPj, setFormDataValue } = useKycOnboardingStore();
 
   const [cpfValid, setCpfValid] = useState<boolean | null>(null);
@@ -55,9 +57,9 @@ export default function PersonalStep({
   return (
     <div className="space-y-5 animate-step-slide">
       <div>
-        <label className={labelClass}>Nome completo</label>
-        <input
-          className={inputClass}
+        <Label htmlFor="fullName">Nome completo</Label>
+        <Input
+          id="fullName"
           value={form.fullName}
           onChange={(e) => setFormDataValue("fullName", e.target.value)}
           placeholder="Seu nome completo"
@@ -69,28 +71,32 @@ export default function PersonalStep({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+                <Label
+                  htmlFor="cnpj"
+                  className="text-xs font-semibold text-foreground/70 uppercase tracking-wider"
+                >
                   CNPJ
-                </label>
+                </Label>
                 <ValidationBadge valid={cnpjValid} />
               </div>
-              <input
-                className={`${inputClass} ${
+              <Input
+                id="cnpj"
+                className={cn(
                   cnpjValid === false
                     ? "border-destructive/50 focus:ring-destructive/30"
                     : cnpjValid === true
-                    ? "border-primary/50 focus:ring-primary/30"
-                    : ""
-                }`}
+                      ? "border-primary/50 focus:ring-primary/30"
+                      : "",
+                )}
                 value={form.cnpj}
                 onChange={(e) => handleCnpjChange(e.target.value)}
                 placeholder="00.000.000/0000-00"
               />
             </div>
             <div>
-              <label className={labelClass}>Telefone</label>
-              <input
-                className={inputClass}
+              <Label htmlFor="phone">Telefone</Label>
+              <Input
+                id="phone"
                 value={form.phone}
                 onChange={(e) =>
                   setFormDataValue("phone", formatPhone(e.target.value))
@@ -100,42 +106,45 @@ export default function PersonalStep({
             </div>
           </div>
           <div>
-            <label className={labelClass}>Razão Social</label>
-            <input
-              className={inputClass}
+            <Label htmlFor="companyName">Razão Social</Label>
+            <Input
+              id="companyName"
               value={form.companyName}
               onChange={(e) => setFormDataValue("companyName", e.target.value)}
               placeholder="Nome da empresa"
             />
           </div>
           <div>
-            <label className={labelClass}>Tipo de Empresa</label>
-            <select
-              className={inputClass}
-              value={form.companyType}
-              onChange={(e) => setFormDataValue("companyType", e.target.value)}
+            <Label htmlFor="companyType">Tipo de Empresa</Label>
+            <Select
+              value={form.companyType || undefined}
+              onValueChange={(value) => setFormDataValue("companyType", value)}
             >
-              <option value="">Selecione o tipo</option>
-              {COMPANY_TYPE_OPTIONS.map((o) => (
-                <option key={o.value} value={o.value}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger id="companyType">
+                <SelectValue placeholder="Selecione o tipo" />
+              </SelectTrigger>
+              <SelectContent>
+                {COMPANY_TYPE_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={o.value}>
+                    {o.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div>
-            <label className={labelClass}>Nome Fantasia</label>
-            <input
-              className={inputClass}
+            <Label htmlFor="tradingName">Nome Fantasia</Label>
+            <Input
+              id="tradingName"
               value={form.tradingName}
               onChange={(e) => setFormDataValue("tradingName", e.target.value)}
               placeholder="Nome fantasia (opcional)"
             />
           </div>
           <div>
-            <label className={labelClass}>Atividade Principal</label>
-            <input
-              className={inputClass}
+            <Label htmlFor="businessActivity">Atividade Principal</Label>
+            <Input
+              id="businessActivity"
               value={form.businessActivity}
               onChange={(e) =>
                 setFormDataValue("businessActivity", e.target.value)
@@ -144,21 +153,24 @@ export default function PersonalStep({
             />
           </div>
           <div>
-            <label className={labelClass}>Faturamento Mensal</label>
-            <select
-              className={inputClass}
-              value={form.monthlyRevenue}
-              onChange={(e) =>
-                setFormDataValue("monthlyRevenue", e.target.value)
+            <Label htmlFor="monthlyRevenue">Faturamento Mensal</Label>
+            <Select
+              value={form.monthlyRevenue || undefined}
+              onValueChange={(value) =>
+                setFormDataValue("monthlyRevenue", value)
               }
             >
-              <option value="">Selecione</option>
-              {REVENUE_OPTIONS.map((r) => (
-                <option key={r} value={r}>
-                  {r}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger id="monthlyRevenue">
+                <SelectValue placeholder="Selecione" />
+              </SelectTrigger>
+              <SelectContent>
+                {REVENUE_OPTIONS.map((r) => (
+                  <SelectItem key={r} value={r}>
+                    {r}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </>
       ) : (
@@ -166,28 +178,32 @@ export default function PersonalStep({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-semibold text-foreground/70 uppercase tracking-wider">
+                <Label
+                  htmlFor="cpf"
+                  className="text-xs font-semibold text-foreground/70 uppercase tracking-wider"
+                >
                   CPF
-                </label>
+                </Label>
                 <ValidationBadge valid={cpfValid} />
               </div>
-              <input
-                className={`${inputClass} ${
+              <Input
+                id="cpf"
+                className={cn(
                   cpfValid === false
                     ? "border-destructive/50 focus:ring-destructive/30"
                     : cpfValid === true
-                    ? "border-primary/50 focus:ring-primary/30"
-                    : ""
-                }`}
+                      ? "border-primary/50 focus:ring-primary/30"
+                      : "",
+                )}
                 value={form.cpf}
                 onChange={(e) => handleCpfChange(e.target.value)}
                 placeholder="000.000.000-00"
               />
             </div>
             <div>
-              <label className={labelClass}>Telefone</label>
-              <input
-                className={inputClass}
+              <Label htmlFor="phone">Telefone</Label>
+              <Input
+                id="phone"
                 value={form.phone}
                 onChange={(e) =>
                   setFormDataValue("phone", formatPhone(e.target.value))
@@ -197,10 +213,10 @@ export default function PersonalStep({
             </div>
           </div>
           <div>
-            <label className={labelClass}>Data de Nascimento</label>
-            <input
+            <Label htmlFor="dateOfBirth">Data de Nascimento</Label>
+            <Input
+              id="dateOfBirth"
               type="date"
-              className={inputClass}
               value={form.dateOfBirth}
               onChange={(e) => setFormDataValue("dateOfBirth", e.target.value)}
             />

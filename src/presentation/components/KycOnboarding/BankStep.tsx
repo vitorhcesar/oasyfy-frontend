@@ -1,4 +1,13 @@
 import { Landmark } from "lucide-react";
+import { Input } from "../Input";
+import { Label } from "../Label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../Select";
 import { useKycOnboardingStore } from "./stores/kyc-onboarding.store";
 import { formatCnpj } from "./utils/format-cnpj";
 import { formatCpf } from "./utils/format-cpf";
@@ -7,12 +16,7 @@ import { isValidCnpj } from "./utils/is-valid-cnpj";
 import { isValidCpf } from "./utils/is-valid-cpf";
 import ValidationBadge from "./ValidationBadge";
 
-interface IBankStepProps {
-  labelClass: string;
-  inputClass: string;
-}
-
-export default function BankStep({ labelClass, inputClass }: IBankStepProps) {
+export default function BankStep() {
   const { form, setBank } = useKycOnboardingStore();
 
   return (
@@ -27,18 +31,18 @@ export default function BankStep({ labelClass, inputClass }: IBankStepProps) {
 
       <div className="grid grid-cols-2 gap-4">
         <div className="col-span-2">
-          <label className={labelClass}>Nome do Banco</label>
-          <input
-            className={inputClass}
+          <Label htmlFor="bankName">Nome do Banco</Label>
+          <Input
+            id="bankName"
             value={form.bank.bankName}
             onChange={(e) => setBank("bankName", e.target.value)}
             placeholder="Ex: Nubank, Itaú, Bradesco"
           />
         </div>
         <div>
-          <label className={labelClass}>Agência</label>
-          <input
-            className={inputClass}
+          <Label htmlFor="agency">Agência</Label>
+          <Input
+            id="agency"
             value={form.bank.agency}
             onChange={(e) =>
               setBank("agency", e.target.value.replace(/\D/g, "").slice(0, 6))
@@ -47,23 +51,23 @@ export default function BankStep({ labelClass, inputClass }: IBankStepProps) {
           />
         </div>
         <div>
-          <label className={labelClass}>Dígito da Agência</label>
-          <input
-            className={inputClass}
+          <Label htmlFor="agencyDigit">Dígito da Agência</Label>
+          <Input
+            id="agencyDigit"
             value={form.bank.agencyDigit}
             onChange={(e) =>
               setBank(
                 "agencyDigit",
-                e.target.value.replace(/\D/g, "").slice(0, 2)
+                e.target.value.replace(/\D/g, "").slice(0, 2),
               )
             }
             placeholder="0"
           />
         </div>
         <div>
-          <label className={labelClass}>Conta</label>
-          <input
-            className={inputClass}
+          <Label htmlFor="account">Conta</Label>
+          <Input
+            id="account"
             value={form.bank.account}
             onChange={(e) =>
               setBank("account", e.target.value.replace(/\D/g, "").slice(0, 12))
@@ -72,30 +76,33 @@ export default function BankStep({ labelClass, inputClass }: IBankStepProps) {
           />
         </div>
         <div>
-          <label className={labelClass}>Dígito da Conta</label>
-          <input
-            className={inputClass}
+          <Label htmlFor="accountDigit">Dígito da Conta</Label>
+          <Input
+            id="accountDigit"
             value={form.bank.accountDigit}
             onChange={(e) =>
               setBank(
                 "accountDigit",
-                e.target.value.replace(/\D/g, "").slice(0, 2)
+                e.target.value.replace(/\D/g, "").slice(0, 2),
               )
             }
             placeholder="0"
           />
         </div>
         <div className="col-span-2">
-          <label className={labelClass}>Tipo de Conta</label>
-          <select
-            className={inputClass}
-            value={form.bank.accountType}
-            onChange={(e) => setBank("accountType", e.target.value)}
+          <Label htmlFor="accountType">Tipo de Conta</Label>
+          <Select
+            value={form.bank.accountType || undefined}
+            onValueChange={(value) => setBank("accountType", value)}
           >
-            <option value="">Selecione</option>
-            <option value="corrente">Conta Corrente</option>
-            <option value="poupanca">Conta Poupança</option>
-          </select>
+            <SelectTrigger id="accountType">
+              <SelectValue placeholder="Selecione" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="corrente">Conta Corrente</SelectItem>
+              <SelectItem value="poupanca">Conta Poupança</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -103,33 +110,39 @@ export default function BankStep({ labelClass, inputClass }: IBankStepProps) {
         <h4 className="text-xs font-bold text-foreground/70 uppercase tracking-wider flex items-center gap-2">
           Chave PIX
         </h4>
+
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className={labelClass}>Tipo da Chave</label>
-            <select
-              className={inputClass}
-              value={form.bank.pixKeyType}
-              onChange={(e) => {
-                setBank("pixKeyType", e.target.value);
+            <Label htmlFor="pixKeyType">Tipo da Chave</Label>
+            <Select
+              value={form.bank.pixKeyType || undefined}
+              onValueChange={(value) => {
+                setBank("pixKeyType", value);
                 setBank("pixKey", "");
               }}
             >
-              <option value="">Selecione</option>
-              <option value="cpf">CPF</option>
-              <option value="cnpj">CNPJ</option>
-              <option value="email">E-mail</option>
-              <option value="phone">Telefone</option>
-              <option value="random">Chave Aleatória</option>
-            </select>
+              <SelectTrigger id="pixKeyType">
+                <SelectValue placeholder="Selecione" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="cpf">CPF</SelectItem>
+                <SelectItem value="cnpj">CNPJ</SelectItem>
+                <SelectItem value="email">E-mail</SelectItem>
+                <SelectItem value="phone">Telefone</SelectItem>
+                <SelectItem value="random">Chave Aleatória</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
+
           <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs md:text-sm font-medium text-muted-foreground tracking-wide">
+            <div className="flex items-center justify-between pb-[1px]">
+              <Label className="pb-0" htmlFor="pixKey">
                 Chave PIX
-              </label>
+              </Label>
+
               {form.bank.pixKey.trim() &&
                 ["cpf", "cnpj", "email", "phone"].includes(
-                  form.bank.pixKeyType
+                  form.bank.pixKeyType,
                 ) && (
                   <ValidationBadge
                     valid={
@@ -138,20 +151,23 @@ export default function BankStep({ labelClass, inputClass }: IBankStepProps) {
                           ? isValidCpf(form.bank.pixKey)
                           : null
                         : form.bank.pixKeyType === "cnpj"
-                        ? form.bank.pixKey.replace(/\D/g, "").length === 14
-                          ? isValidCnpj(form.bank.pixKey)
-                          : null
-                        : form.bank.pixKeyType === "email"
-                        ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.bank.pixKey)
-                        : form.bank.pixKeyType === "phone"
-                        ? form.bank.pixKey.replace(/\D/g, "").length >= 10
-                        : null
+                          ? form.bank.pixKey.replace(/\D/g, "").length === 14
+                            ? isValidCnpj(form.bank.pixKey)
+                            : null
+                          : form.bank.pixKeyType === "email"
+                            ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+                                form.bank.pixKey,
+                              )
+                            : form.bank.pixKeyType === "phone"
+                              ? form.bank.pixKey.replace(/\D/g, "").length >= 10
+                              : null
                     }
                   />
                 )}
             </div>
-            <input
-              className={inputClass}
+
+            <Input
+              id="pixKey"
               value={form.bank.pixKey}
               onChange={(e) => {
                 let v = e.target.value;
@@ -164,12 +180,12 @@ export default function BankStep({ labelClass, inputClass }: IBankStepProps) {
                 form.bank.pixKeyType === "cpf"
                   ? "000.000.000-00"
                   : form.bank.pixKeyType === "cnpj"
-                  ? "00.000.000/0000-00"
-                  : form.bank.pixKeyType === "email"
-                  ? "email@exemplo.com"
-                  : form.bank.pixKeyType === "phone"
-                  ? "(11) 99999-9999"
-                  : "Cole sua chave aleatória"
+                    ? "00.000.000/0000-00"
+                    : form.bank.pixKeyType === "email"
+                      ? "email@exemplo.com"
+                      : form.bank.pixKeyType === "phone"
+                        ? "(11) 99999-9999"
+                        : "Cole sua chave aleatória"
               }
             />
           </div>

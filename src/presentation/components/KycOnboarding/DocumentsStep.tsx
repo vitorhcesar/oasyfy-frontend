@@ -1,24 +1,17 @@
-import {
-  Camera,
-  CheckCircle2,
-  FileText,
-  Upload,
-  X,
-} from "lucide-react";
+import { Camera, CheckCircle2, FileText, Upload, X } from "lucide-react";
 import { useCallback } from "react";
+import { Label } from "../Label";
 import { useKycOnboardingStore } from "./stores/kyc-onboarding.store";
 
 interface IFileUploadBoxProps {
   id: string;
   label: string;
-  labelClass: string;
   accept?: string;
 }
 
 function FileUploadBox({
   id,
   label,
-  labelClass,
   accept = "image/*,.pdf",
 }: IFileUploadBoxProps) {
   const { files, setFiles } = useKycOnboardingStore();
@@ -33,7 +26,7 @@ function FileUploadBox({
         [key]: { file, preview },
       });
     },
-    [files, setFiles]
+    [files, setFiles],
   );
 
   const removeFile = (key: string) => {
@@ -45,7 +38,8 @@ function FileUploadBox({
 
   return (
     <div>
-      <label className={labelClass}>{label}</label>
+      <Label>{label}</Label>
+
       {f ? (
         <label className="relative rounded-xl border border-border/60 bg-card p-3 flex items-center gap-3 group hover:border-primary/30 transition-colors cursor-pointer">
           {f.preview && f.file.type.startsWith("image/") ? (
@@ -121,11 +115,7 @@ function FileUploadBox({
   );
 }
 
-interface IDocumentsStepProps {
-  labelClass: string;
-}
-
-export default function DocumentsStep({ labelClass }: IDocumentsStepProps) {
+export default function DocumentsStep() {
   const { isPj } = useKycOnboardingStore();
 
   return (
@@ -143,26 +133,22 @@ export default function DocumentsStep({ labelClass }: IDocumentsStepProps) {
           label={
             isPj() ? "RG/CNH do Representante (Frente)" : "RG ou CNH (Frente)"
           }
-          labelClass={labelClass}
         />
         <FileUploadBox
           id="document_back"
           label={
             isPj() ? "RG/CNH do Representante (Verso)" : "RG ou CNH (Verso)"
           }
-          labelClass={labelClass}
         />
       </div>
       <FileUploadBox
         id="selfie"
         label="Selfie segurando o documento"
         accept="image/*"
-        labelClass={labelClass}
       />
       <FileUploadBox
         id="proof_of_address"
         label="Comprovante de Endereço (últimos 3 meses)"
-        labelClass={labelClass}
       />
 
       {isPj() && (
@@ -170,7 +156,6 @@ export default function DocumentsStep({ labelClass }: IDocumentsStepProps) {
           id="company_contract"
           label="Contrato Social ou Requerimento de Empresário"
           accept="image/*,.pdf"
-          labelClass={labelClass}
         />
       )}
     </div>
