@@ -59,17 +59,7 @@ export default function AdminDashboardPage() {
 
   const { period, customFrom, customTo } = useAdminDashboardPageStore();
 
-  const {
-    sellersCount: sellers,
-    pendingKycCount: pendingKyc,
-    approvedKycCount: approvedKyc,
-    rejectedKycCount: rejectedKyc,
-    bannedSellersCount: bannedSellers,
-    pendingWithdrawalsCount: pendingWithdrawals,
-    pendingRefundsCount: pendingRefunds,
-    transactions,
-    sellerProfiles,
-  } = metrics;
+  const { transactions, sellerProfiles } = metrics;
 
   const cutoff = useMemo(() => {
     if (period === "custom" && customFrom) return customFrom;
