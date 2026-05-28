@@ -1,6 +1,10 @@
 import { HttpClient, IHttpClient } from "../../http-client";
 import { apiAxios } from "./axios-instance";
 import { AccountModule, IAccountModule } from "./modules/account.module";
+import {
+  AdminPlatformMetricsModule,
+  IAdminPlatformMetricsModule,
+} from "./modules/admin-platform-metrics.module";
 import { BannerModule, IBannerModule } from "./modules/banner.module";
 import {
   IKycSubmissionModule,
@@ -26,6 +30,7 @@ export interface IApiServiceModules {
   transaction: ITransactionModule;
   sellerFee: ISellerFeeModule;
   seller: ISellerModule;
+  adminPlatformMetrics: IAdminPlatformMetricsModule;
 }
 
 export interface IApiService {
@@ -51,6 +56,7 @@ export class ApiService implements IApiService {
       transaction: new TransactionModule(this.httpClient),
       sellerFee: new SellerFeeModule(this.httpClient),
       seller: new SellerModule(this.httpClient),
+      adminPlatformMetrics: new AdminPlatformMetricsModule(this.httpClient),
     };
   }
 }

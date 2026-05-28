@@ -1,4 +1,3 @@
-import { supabase } from "@/infra/integrations/supabase/client";
 import { AdminLayout } from "@/presentation/components/admin/AdminLayout";
 import { Button } from "@/presentation/components/ui/button";
 import { Calendar } from "@/presentation/components/ui/calendar";
@@ -30,7 +29,7 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Area,
@@ -46,6 +45,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import usePlatformMetricsQuery from "./hooks/use-platform-metrics-query";
 
 function formatCurrency(cents: number) {
   return `R$ ${(cents / 100).toLocaleString("pt-BR", {
@@ -60,106 +60,31 @@ function formatCompact(cents: number) {
   return formatCurrency(cents);
 }
 
-interface Transaction {
-  id: string;
-  amount: number;
-  fee_amount: number;
-  net_amount: number;
-  status: string;
-  method: string;
-  created_at: string;
-  seller_id: string | null;
-  customer_name: string;
-}
+type TPeriod = "7d" | "30d" | "90d" | "custom";
 
-type Period = "7d" | "30d" | "90d" | "custom";
-
-export default function AdminDashboard() {
+export default function AdminDashboardPage() {
   const { user } = useAuthStore();
+
+  const { data: metrics, isLoading } = usePlatformMetricsQuery();
+
   const navigate = useNavigate();
   const name = user?.name || user?.email || "Admin";
 
-  const [loading, setLoading] = useState(true);
-  const [period, setPeriod] = useState<Period>("30d");
+  const [period, setPeriod] = useState<TPeriod>("30d");
   const [customFrom, setCustomFrom] = useState<Date | undefined>(undefined);
   const [customTo, setCustomTo] = useState<Date | undefined>(undefined);
-  const [sellers, setSellers] = useState(0);
-  const [pendingKyc, setPendingKyc] = useState(0);
-  const [approvedKyc, setApprovedKyc] = useState(0);
-  const [rejectedKyc, setRejectedKyc] = useState(0);
-  const [bannedSellers, setBannedSellers] = useState(0);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [pendingWithdrawals, setPendingWithdrawals] = useState(0);
-  const [pendingRefunds, setPendingRefunds] = useState(0);
-  const [sellerProfiles, setSellerProfiles] = useState<
-    { user_id: string; full_name: string | null }[]
-  >([]);
 
-  useEffect(() => {
-    const fetch = async () => {
-      setLoading(true);
-      const [
-        sellersRes,
-        kycPendingRes,
-        kycApprovedRes,
-        kycRejectedRes,
-        kycBannedRes,
-        txRes,
-        withdrawalRes,
-        refundRes,
-        profilesRes,
-      ] = await Promise.all([
-        supabase
-          .from("user_roles")
-          .select("id", { count: "exact", head: true })
-          .eq("role", "seller"),
-        supabase
-          .from("kyc_submissions")
-          .select("id", { count: "exact", head: true })
-          .in("status", ["pending", "under_review"]),
-        supabase
-          .from("kyc_submissions")
-          .select("id", { count: "exact", head: true })
-          .eq("status", "approved"),
-        supabase
-          .from("kyc_submissions")
-          .select("id", { count: "exact", head: true })
-          .eq("status", "rejected"),
-        supabase
-          .from("kyc_submissions")
-          .select("id", { count: "exact", head: true })
-          .eq("is_banned", true),
-        supabase
-          .from("transactions")
-          .select(
-            "id, amount, fee_amount, net_amount, status, method, created_at, seller_id, customer_name"
-          )
-          .order("created_at", { ascending: false }),
-        supabase
-          .from("transactions")
-          .select("id", { count: "exact", head: true })
-          .eq("method", "withdrawal")
-          .eq("status", "pending"),
-        supabase
-          .from("refund_requests")
-          .select("id", { count: "exact", head: true })
-          .eq("status", "pending"),
-        supabase.from("profiles").select("user_id, full_name"),
-      ]);
-
-      setSellers(sellersRes.count ?? 0);
-      setPendingKyc(kycPendingRes.count ?? 0);
-      setApprovedKyc(kycApprovedRes.count ?? 0);
-      setRejectedKyc(kycRejectedRes.count ?? 0);
-      setBannedSellers(kycBannedRes.count ?? 0);
-      setTransactions((txRes.data as Transaction[]) || []);
-      setPendingWithdrawals(withdrawalRes.count ?? 0);
-      setPendingRefunds(refundRes.count ?? 0);
-      setSellerProfiles((profilesRes.data as any[]) || []);
-      setLoading(false);
-    };
-    fetch();
-  }, []);
+  const {
+    sellersCount: sellers,
+    pendingKycCount: pendingKyc,
+    approvedKycCount: approvedKyc,
+    rejectedKycCount: rejectedKyc,
+    bannedSellersCount: bannedSellers,
+    pendingWithdrawalsCount: pendingWithdrawals,
+    pendingRefundsCount: pendingRefunds,
+    transactions,
+    sellerProfiles,
+  } = metrics;
 
   const cutoff = useMemo(() => {
     if (period === "custom" && customFrom) return customFrom;
@@ -167,8 +92,8 @@ export default function AdminDashboard() {
       period === "7d"
         ? 7 * 86400000
         : period === "30d"
-        ? 30 * 86400000
-        : 90 * 86400000;
+          ? 30 * 86400000
+          : 90 * 86400000;
     return new Date(Date.now() - periodMs);
   }, [period, customFrom]);
 
@@ -189,56 +114,56 @@ export default function AdminDashboard() {
 
   const allNonWithdrawal = useMemo(
     () => transactions.filter((t) => t.method !== "withdrawal"),
-    [transactions]
+    [transactions],
   );
 
   const filteredTx = useMemo(
     () =>
       allNonWithdrawal.filter((t) => {
-        const d = new Date(t.created_at);
+        const d = new Date(t.createdAt);
         return d >= cutoff && d <= cutoffEnd;
       }),
-    [allNonWithdrawal, cutoff, cutoffEnd]
+    [allNonWithdrawal, cutoff, cutoffEnd],
   );
 
   const prevTx = useMemo(
     () =>
       allNonWithdrawal.filter((t) => {
-        const d = new Date(t.created_at);
+        const d = new Date(t.createdAt);
         return d >= prevCutoff && d < cutoff;
       }),
-    [allNonWithdrawal, prevCutoff, cutoff]
+    [allNonWithdrawal, prevCutoff, cutoff],
   );
 
   const completedTx = useMemo(
     () =>
       filteredTx.filter((t) => t.status === "completed" || t.status === "paid"),
-    [filteredTx]
+    [filteredTx],
   );
   const pendingTx = useMemo(
     () => filteredTx.filter((t) => t.status === "pending"),
-    [filteredTx]
+    [filteredTx],
   );
   const failedTx = useMemo(
     () =>
       filteredTx.filter(
-        (t) => t.status === "failed" || t.status === "cancelled"
+        (t) => t.status === "failed" || t.status === "cancelled",
       ),
-    [filteredTx]
+    [filteredTx],
   );
   const refundedTx = useMemo(
     () => filteredTx.filter((t) => t.status === "refunded"),
-    [filteredTx]
+    [filteredTx],
   );
 
   const prevCompleted = useMemo(
     () => prevTx.filter((t) => t.status === "completed" || t.status === "paid"),
-    [prevTx]
+    [prevTx],
   );
 
   const totalVolume = completedTx.reduce((s, t) => s + t.amount, 0);
-  const totalFees = completedTx.reduce((s, t) => s + t.fee_amount, 0);
-  const totalNet = completedTx.reduce((s, t) => s + t.net_amount, 0);
+  const totalFees = completedTx.reduce((s, t) => s + t.feeAmount, 0);
+  const totalNet = completedTx.reduce((s, t) => s + t.netAmount, 0);
   const avgTicket =
     completedTx.length > 0 ? Math.round(totalVolume / completedTx.length) : 0;
   const conversionRate =
@@ -252,7 +177,7 @@ export default function AdminDashboard() {
 
   // Previous period values
   const prevVolume = prevCompleted.reduce((s, t) => s + t.amount, 0);
-  const prevFees = prevCompleted.reduce((s, t) => s + t.fee_amount, 0);
+  const prevFees = prevCompleted.reduce((s, t) => s + t.feeAmount, 0);
 
   const volumeChange =
     prevVolume > 0
@@ -264,7 +189,7 @@ export default function AdminDashboard() {
     prevCompleted.length > 0
       ? Math.round(
           ((completedTx.length - prevCompleted.length) / prevCompleted.length) *
-            100
+            100,
         )
       : 0;
 
@@ -272,7 +197,7 @@ export default function AdminDashboard() {
   const withdrawalTx = useMemo(
     () =>
       transactions.filter((t) => {
-        const d = new Date(t.created_at);
+        const d = new Date(t.createdAt);
         return (
           t.method === "withdrawal" &&
           d >= cutoff &&
@@ -280,11 +205,11 @@ export default function AdminDashboard() {
           (t.status === "completed" || t.status === "paid")
         );
       }),
-    [transactions, cutoff, cutoffEnd]
+    [transactions, cutoff, cutoffEnd],
   );
   const withdrawalVolume = withdrawalTx.reduce(
     (s, t) => s + Math.abs(t.amount),
-    0
+    0,
   );
 
   // Chart data - daily revenue
@@ -306,13 +231,13 @@ export default function AdminDashboard() {
       const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate());
       const dayEnd = new Date(dayStart.getTime() + 86400000);
       const dayTx = completedTx.filter((t) => {
-        const td = new Date(t.created_at);
+        const td = new Date(t.createdAt);
         return td >= dayStart && td < dayEnd;
       });
       data.push({
         date: dayStr,
         volume: dayTx.reduce((s, t) => s + t.amount, 0) / 100,
-        fees: dayTx.reduce((s, t) => s + t.fee_amount, 0) / 100,
+        fees: dayTx.reduce((s, t) => s + t.feeAmount, 0) / 100,
         count: dayTx.length,
       });
     }
@@ -341,17 +266,18 @@ export default function AdminDashboard() {
       { sellerId: string; volume: number; count: number; fees: number }
     > = {};
     completedTx.forEach((tx) => {
-      if (!tx.seller_id) return;
-      if (!map[tx.seller_id])
-        map[tx.seller_id] = {
-          sellerId: tx.seller_id,
+      if (tx.sellerId == null) return;
+      const sellerKey = String(tx.sellerId);
+      if (!map[sellerKey])
+        map[sellerKey] = {
+          sellerId: sellerKey,
           volume: 0,
           count: 0,
           fees: 0,
         };
-      map[tx.seller_id].volume += tx.amount;
-      map[tx.seller_id].count += 1;
-      map[tx.seller_id].fees += tx.fee_amount;
+      map[sellerKey].volume += tx.amount;
+      map[sellerKey].count += 1;
+      map[sellerKey].fees += tx.feeAmount;
     });
     return Object.values(map)
       .sort((a, b) => b.volume - a.volume)
@@ -397,7 +323,7 @@ export default function AdminDashboard() {
       count: 0,
     }));
     completedTx.forEach((tx) => {
-      const h = new Date(tx.created_at).getHours();
+      const h = new Date(tx.createdAt).getHours();
       hours[h].count += 1;
     });
     return hours;
@@ -417,8 +343,8 @@ export default function AdminDashboard() {
   };
 
   const getSellerName = (sellerId: string) => {
-    const p = sellerProfiles.find((s) => s.user_id === sellerId);
-    return p?.full_name || sellerId.slice(0, 8);
+    const p = sellerProfiles.find((s) => String(s.userId) === sellerId);
+    return p?.fullName || sellerId.slice(0, 8);
   };
 
   const ChangeIndicator = ({ value }: { value: number }) => {
@@ -428,7 +354,7 @@ export default function AdminDashboard() {
       <span
         className={cn(
           "inline-flex items-center gap-0.5 text-[9px] font-semibold",
-          isPositive ? "text-emerald-500" : "text-destructive"
+          isPositive ? "text-emerald-500" : "text-destructive",
         )}
       >
         {isPositive ? <TrendingUp size={9} /> : <TrendingDown size={9} />}
@@ -554,7 +480,7 @@ export default function AdminDashboard() {
           </div>
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1 rounded-lg bg-muted/50 p-0.5">
-              {(["7d", "30d", "90d"] as Period[]).map((p) => (
+              {(["7d", "30d", "90d"] as TPeriod[]).map((p) => (
                 <button
                   key={p}
                   onClick={() => {
@@ -566,7 +492,7 @@ export default function AdminDashboard() {
                     "px-2.5 py-1 rounded-md text-[11px] font-medium transition-all",
                     period === p
                       ? "bg-card text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
+                      : "text-muted-foreground hover:text-foreground",
                   )}
                 >
                   {p}
@@ -580,7 +506,7 @@ export default function AdminDashboard() {
                   size="sm"
                   className={cn(
                     "h-7 text-[11px] gap-1.5 font-medium",
-                    period === "custom" && "border-primary text-primary"
+                    period === "custom" && "border-primary text-primary",
                   )}
                 >
                   <CalendarIcon size={12} />
@@ -620,7 +546,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {loading ? (
+        {isLoading ? (
           <div className="flex items-center justify-center py-16">
             <Loader2 size={20} className="animate-spin text-muted-foreground" />
           </div>
@@ -637,7 +563,7 @@ export default function AdminDashboard() {
                   <div
                     className={cn(
                       "w-6 h-6 rounded-md flex items-center justify-center mb-1.5",
-                      card.accent
+                      card.accent,
                     )}
                   >
                     <card.icon size={12} />
@@ -1133,7 +1059,7 @@ export default function AdminDashboard() {
                             "w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-bold flex-shrink-0",
                             i === 0
                               ? "bg-primary/15 text-primary"
-                              : "bg-muted/60 text-muted-foreground"
+                              : "bg-muted/60 text-muted-foreground",
                           )}
                         >
                           {i + 1}
