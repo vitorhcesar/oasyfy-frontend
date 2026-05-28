@@ -1,21 +1,10 @@
 import { AdminLayout } from "@/presentation/components/admin/AdminLayout";
-import { Button } from "@/presentation/components/ui/button";
-import { Calendar } from "@/presentation/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/presentation/components/ui/popover";
-import { useAuthStore } from "@/presentation/stores/useAuthStore";
 import { cn } from "@/presentation/utils/cn";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import {
   Activity,
   ArrowDownRight,
   Ban,
   BarChart3,
-  CalendarIcon,
   Clock,
   CreditCard,
   DollarSign,
@@ -29,7 +18,7 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Area,
@@ -45,7 +34,10 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import AdminDashboardPageHeader from "./components/AdminDashboardPageHeader";
+import StatusCards from "./components/StatusCards";
 import usePlatformMetricsQuery from "./hooks/use-platform-metrics-query";
+import { useAdminDashboardPageStore } from "./stores/admin-dashboard-page.store";
 
 function formatCurrency(cents: number) {
   return `R$ ${(cents / 100).toLocaleString("pt-BR", {
@@ -60,19 +52,12 @@ function formatCompact(cents: number) {
   return formatCurrency(cents);
 }
 
-type TPeriod = "7d" | "30d" | "90d" | "custom";
-
 export default function AdminDashboardPage() {
-  const { user } = useAuthStore();
-
   const { data: metrics, isLoading } = usePlatformMetricsQuery();
 
   const navigate = useNavigate();
-  const name = user?.name || user?.email || "Admin";
 
-  const [period, setPeriod] = useState<TPeriod>("30d");
-  const [customFrom, setCustomFrom] = useState<Date | undefined>(undefined);
-  const [customTo, setCustomTo] = useState<Date | undefined>(undefined);
+  const { period, customFrom, customTo } = useAdminDashboardPageStore();
 
   const {
     sellersCount: sellers,
@@ -364,65 +349,6 @@ export default function AdminDashboardPage() {
     );
   };
 
-  const statCards = [
-    {
-      label: "Total de Sellers",
-      value: sellers,
-      icon: Users,
-      accent: "bg-primary/10 text-primary",
-      link: "/admin/sellers",
-    },
-    {
-      label: "KYC Pendentes",
-      value: pendingKyc,
-      icon: FileCheck,
-      accent: "bg-warning/10 text-warning",
-      link: "/admin/kyc",
-    },
-    {
-      label: "KYC Aprovados",
-      value: approvedKyc,
-      icon: ShieldCheck,
-      accent: "bg-success/10 text-success",
-      link: "/admin/kyc",
-    },
-    {
-      label: "KYC Rejeitados",
-      value: rejectedKyc,
-      icon: Ban,
-      accent: "bg-destructive/10 text-destructive",
-      link: "/admin/kyc",
-    },
-    {
-      label: "Sellers Banidos",
-      value: bannedSellers,
-      icon: Ban,
-      accent: "bg-destructive/10 text-destructive",
-      link: "/admin/sellers",
-    },
-    {
-      label: "Saques Pendentes",
-      value: pendingWithdrawals,
-      icon: Wallet,
-      accent: "bg-warning/10 text-warning",
-      link: "/admin/withdrawals",
-    },
-    {
-      label: "Estornos Pendentes",
-      value: pendingRefunds,
-      icon: RefreshCcw,
-      accent: "bg-primary/10 text-primary",
-      link: "/admin/refunds",
-    },
-    {
-      label: "Total Transações",
-      value: filteredTx.length,
-      icon: CreditCard,
-      accent: "bg-primary/10 text-primary",
-      link: "/admin/transactions",
-    },
-  ];
-
   const quickActions = [
     {
       label: "Revisar KYCs",
@@ -466,85 +392,7 @@ export default function AdminDashboardPage() {
     <AdminLayout>
       <div className="px-4 md:px-8 py-4 max-w-7xl mx-auto w-full">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 animate-fade-in">
-          <div>
-            <div className="flex items-center gap-2 mb-0.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-              <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest">
-                Painel Administrativo
-              </span>
-            </div>
-            <h1 className="text-xl font-bold text-foreground tracking-tight">
-              Olá, {name.split(" ")[0]}
-            </h1>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 rounded-lg bg-muted/50 p-0.5">
-              {(["7d", "30d", "90d"] as TPeriod[]).map((p) => (
-                <button
-                  key={p}
-                  onClick={() => {
-                    setPeriod(p);
-                    setCustomFrom(undefined);
-                    setCustomTo(undefined);
-                  }}
-                  className={cn(
-                    "px-2.5 py-1 rounded-md text-[11px] font-medium transition-all",
-                    period === p
-                      ? "bg-card text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className={cn(
-                    "h-7 text-[11px] gap-1.5 font-medium",
-                    period === "custom" && "border-primary text-primary",
-                  )}
-                >
-                  <CalendarIcon size={12} />
-                  {period === "custom" && customFrom && customTo
-                    ? `${format(customFrom, "dd/MM", {
-                        locale: ptBR,
-                      })} - ${format(customTo, "dd/MM", { locale: ptBR })}`
-                    : "Período"}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-3" align="end">
-                <p className="text-xs font-medium text-foreground mb-2">
-                  Selecione o período
-                </p>
-                <Calendar
-                  mode="range"
-                  selected={
-                    customFrom && customTo
-                      ? { from: customFrom, to: customTo }
-                      : undefined
-                  }
-                  onSelect={(range) => {
-                    if (range?.from) {
-                      setCustomFrom(range.from);
-                      setCustomTo(range.to);
-                      if (range.from && range.to) setPeriod("custom");
-                    }
-                  }}
-                  disabled={(date) => date > new Date()}
-                  numberOfMonths={2}
-                  locale={ptBR}
-                  className="pointer-events-auto"
-                  initialFocus
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-        </div>
+        <AdminDashboardPageHeader />
 
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
@@ -552,31 +400,7 @@ export default function AdminDashboardPage() {
           </div>
         ) : (
           <>
-            {/* Status cards */}
-            <div className="grid grid-cols-4 md:grid-cols-8 gap-2 mb-4">
-              {statCards.map((card) => (
-                <button
-                  key={card.label}
-                  onClick={() => navigate(card.link)}
-                  className="group p-2.5 rounded-lg bg-card border border-border/50 hover:border-border transition-all text-left"
-                >
-                  <div
-                    className={cn(
-                      "w-6 h-6 rounded-md flex items-center justify-center mb-1.5",
-                      card.accent,
-                    )}
-                  >
-                    <card.icon size={12} />
-                  </div>
-                  <p className="text-base font-bold text-foreground leading-none">
-                    {card.value}
-                  </p>
-                  <p className="text-[9px] text-muted-foreground mt-0.5 leading-tight">
-                    {card.label}
-                  </p>
-                </button>
-              ))}
-            </div>
+            <StatusCards metrics={metrics} />
 
             {/* Financial cards with comparison */}
             <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-4">
