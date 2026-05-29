@@ -5,6 +5,10 @@ import {
   AdminPlatformMetricsModule,
   IAdminPlatformMetricsModule,
 } from "./modules/admin-platform-metrics.module";
+import {
+  AdminSellersModule,
+  IAdminSellersModule,
+} from "./modules/admin-sellers.module";
 import { BannerModule, IBannerModule } from "./modules/banner.module";
 import {
   IKycSubmissionModule,
@@ -31,6 +35,7 @@ export interface IApiServiceModules {
   sellerFee: ISellerFeeModule;
   seller: ISellerModule;
   adminPlatformMetrics: IAdminPlatformMetricsModule;
+  adminSellers: IAdminSellersModule;
 }
 
 export interface IApiService {
@@ -57,6 +62,7 @@ export class ApiService implements IApiService {
       sellerFee: new SellerFeeModule(this.httpClient),
       seller: new SellerModule(this.httpClient),
       adminPlatformMetrics: new AdminPlatformMetricsModule(this.httpClient),
+      adminSellers: new AdminSellersModule(this.httpClient),
     };
   }
 }
