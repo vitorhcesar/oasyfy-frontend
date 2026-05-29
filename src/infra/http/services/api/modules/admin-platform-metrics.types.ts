@@ -44,3 +44,11 @@ export interface IAdminFinanceMetricsResponseDto {
   filteredTransactionsCount: number;
   withdrawalVolume: number;
 }
+
+export interface IAdminSecondaryMetricsResponseDto {
+  averageTicket: number;
+  refundRate: number;
+  completedTransactionsCount: number;
+  transactionsCountChange: number;
+  feeMarginRate: number;
+}

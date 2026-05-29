@@ -2,6 +2,7 @@ import type { IApiEnvelope } from "../api-types";
 import type {
   IAdminFinanceMetricsQueryDto,
   IAdminFinanceMetricsResponseDto,
+  IAdminSecondaryMetricsResponseDto,
   IPlatformMetricsResponseDto,
 } from "./admin-platform-metrics.types";
 import { BaseApiModule } from "./base-api.module";
@@ -9,6 +10,7 @@ import { BaseApiModule } from "./base-api.module";
 export type {
   IAdminFinanceMetricsQueryDto,
   IAdminFinanceMetricsResponseDto,
+  IAdminSecondaryMetricsResponseDto,
   IPlatformMetricsResponseDto,
   IPlatformMetricsTransactionDto,
   ISellerProfileSummaryDto,
@@ -19,6 +21,9 @@ export interface IAdminPlatformMetricsModule {
   getFinanceMetrics(
     query: IAdminFinanceMetricsQueryDto,
   ): Promise<IAdminFinanceMetricsResponseDto>;
+  getSecondaryMetrics(
+    query: IAdminFinanceMetricsQueryDto,
+  ): Promise<IAdminSecondaryMetricsResponseDto>;
 }
 
 export class AdminPlatformMetricsModule
@@ -40,6 +45,15 @@ export class AdminPlatformMetricsModule
     const response = await this.getClient().get<
       IApiEnvelope<IAdminFinanceMetricsResponseDto>
     >("/api/v1/admin/metrics/finance", { params: query });
+    return response.data;
+  }
+
+  async getSecondaryMetrics(
+    query: IAdminFinanceMetricsQueryDto,
+  ): Promise<IAdminSecondaryMetricsResponseDto> {
+    const response = await this.getClient().get<
+      IApiEnvelope<IAdminSecondaryMetricsResponseDto>
+    >("/api/v1/admin/metrics/secondary", { params: query });
     return response.data;
   }
 }

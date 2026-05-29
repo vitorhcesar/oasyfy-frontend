@@ -7,12 +7,12 @@ import { useMemo } from "react";
 import { formatCompact } from "../../utils/format-compact";
 
 interface ITopSellersProps {
-  completedTx: IPlatformMetricsTransactionDto[];
+  completedTransactions: IPlatformMetricsTransactionDto[];
   sellerProfiles: ISellerProfileSummaryDto[];
 }
 
 export default function TopSellers({
-  completedTx,
+  completedTransactions,
   sellerProfiles,
 }: ITopSellersProps) {
   const topSellers = useMemo(() => {
@@ -20,7 +20,7 @@ export default function TopSellers({
       string,
       { sellerId: string; volume: number; count: number; fees: number }
     > = {};
-    completedTx.forEach((tx) => {
+    completedTransactions.forEach((tx) => {
       if (tx.sellerId == null) return;
       const sellerKey = String(tx.sellerId);
       if (!map[sellerKey])
@@ -37,7 +37,7 @@ export default function TopSellers({
     return Object.values(map)
       .sort((a, b) => b.volume - a.volume)
       .slice(0, 5);
-  }, [completedTx]);
+  }, [completedTransactions]);
 
   const getSellerName = (sellerId: string) => {
     const p = sellerProfiles.find((s) => String(s.userId) === sellerId);

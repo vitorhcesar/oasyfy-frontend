@@ -10,28 +10,28 @@ import {
 } from "recharts";
 
 interface IPeakHourProps {
-  completedTx: IPlatformMetricsTransactionDto[];
+  completedTransactions: IPlatformMetricsTransactionDto[];
 }
 
-export default function PeakHour({ completedTx }: IPeakHourProps) {
+export default function PeakHour({ completedTransactions }: IPeakHourProps) {
   const hourlyData = useMemo(() => {
     const hours = Array.from({ length: 24 }, (_, i) => ({
       hour: `${i}h`,
       count: 0,
     }));
-    completedTx.forEach((tx) => {
+    completedTransactions.forEach((tx) => {
       const h = new Date(tx.createdAt).getHours();
       hours[h].count += 1;
     });
     return hours;
-  }, [completedTx]);
+  }, [completedTransactions]);
 
   return (
     <div className="rounded-xl bg-card border border-border/50 p-3">
       <h3 className="text-xs font-semibold text-foreground mb-2">
         Horário de pico
       </h3>
-      {completedTx.length > 0 ? (
+      {completedTransactions.length > 0 ? (
         <div className="h-28">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
