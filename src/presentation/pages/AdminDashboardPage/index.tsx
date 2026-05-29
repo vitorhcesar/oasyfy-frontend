@@ -1,30 +1,18 @@
 import { AdminLayout } from "@/presentation/components/admin/AdminLayout";
-import { cn } from "@/presentation/utils/cn";
 import {
   Activity,
-  ArrowDownRight,
   Ban,
   BarChart3,
   Clock,
-  CreditCard,
   DollarSign,
-  FileCheck,
   Loader2,
-  Percent,
   RefreshCcw,
   ShieldCheck,
-  TrendingDown,
-  TrendingUp,
-  Users,
-  Wallet,
 } from "lucide-react";
 import { useMemo } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   Area,
   AreaChart,
-  Bar,
-  BarChart,
   CartesianGrid,
   Cell,
   Pie,
@@ -34,28 +22,21 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { formatCompact } from "../utils/format-compact";
+import { formatCurrency } from "../utils/format-currency";
 import AdminDashboardPageHeader from "./components/AdminDashboardPageHeader";
+import ChangeIndicator from "./components/ChangeIndicator";
+import FeesChart from "./components/FeesChart";
+import FinancialCards from "./components/FinancialCards";
+import PeakHour from "./components/PeakHour";
+import QuickActions from "./components/QuickActions";
 import StatusCards from "./components/StatusCards";
+import TopSellers from "./components/TopSellers";
 import usePlatformMetricsQuery from "./hooks/use-platform-metrics-query";
 import { useAdminDashboardPageStore } from "./stores/admin-dashboard-page.store";
 
-function formatCurrency(cents: number) {
-  return `R$ ${(cents / 100).toLocaleString("pt-BR", {
-    minimumFractionDigits: 2,
-  })}`;
-}
-
-function formatCompact(cents: number) {
-  const val = cents / 100;
-  if (val >= 1_000_000) return `R$ ${(val / 1_000_000).toFixed(1)}M`;
-  if (val >= 1_000) return `R$ ${(val / 1_000).toFixed(1)}k`;
-  return formatCurrency(cents);
-}
-
 export default function AdminDashboardPage() {
   const { data: metrics, isLoading } = usePlatformMetricsQuery();
-
-  const navigate = useNavigate();
 
   const { period, customFrom, customTo } = useAdminDashboardPageStore();
 
@@ -138,28 +119,13 @@ export default function AdminDashboardPage() {
 
   const totalVolume = completedTx.reduce((s, t) => s + t.amount, 0);
   const totalFees = completedTx.reduce((s, t) => s + t.feeAmount, 0);
-  const totalNet = completedTx.reduce((s, t) => s + t.netAmount, 0);
   const avgTicket =
     completedTx.length > 0 ? Math.round(totalVolume / completedTx.length) : 0;
-  const conversionRate =
-    filteredTx.length > 0
-      ? Math.round((completedTx.length / filteredTx.length) * 100)
-      : 0;
   const refundRate =
     completedTx.length > 0
       ? Math.round((refundedTx.length / completedTx.length) * 100)
       : 0;
 
-  // Previous period values
-  const prevVolume = prevCompleted.reduce((s, t) => s + t.amount, 0);
-  const prevFees = prevCompleted.reduce((s, t) => s + t.feeAmount, 0);
-
-  const volumeChange =
-    prevVolume > 0
-      ? Math.round(((totalVolume - prevVolume) / prevVolume) * 100)
-      : 0;
-  const feesChange =
-    prevFees > 0 ? Math.round(((totalFees - prevFees) / prevFees) * 100) : 0;
   const txCountChange =
     prevCompleted.length > 0
       ? Math.round(
@@ -167,25 +133,6 @@ export default function AdminDashboardPage() {
             100,
         )
       : 0;
-
-  // Withdrawal volume
-  const withdrawalTx = useMemo(
-    () =>
-      transactions.filter((t) => {
-        const d = new Date(t.createdAt);
-        return (
-          t.method === "withdrawal" &&
-          d >= cutoff &&
-          d <= cutoffEnd &&
-          (t.status === "completed" || t.status === "paid")
-        );
-      }),
-    [transactions, cutoff, cutoffEnd],
-  );
-  const withdrawalVolume = withdrawalTx.reduce(
-    (s, t) => s + Math.abs(t.amount),
-    0,
-  );
 
   // Chart data - daily revenue
   const chartData = useMemo(() => {
@@ -234,31 +181,6 @@ export default function AdminDashboardPage() {
     return Object.values(methods).sort((a, b) => b.volume - a.volume);
   }, [completedTx]);
 
-  // Top sellers
-  const topSellers = useMemo(() => {
-    const map: Record<
-      string,
-      { sellerId: string; volume: number; count: number; fees: number }
-    > = {};
-    completedTx.forEach((tx) => {
-      if (tx.sellerId == null) return;
-      const sellerKey = String(tx.sellerId);
-      if (!map[sellerKey])
-        map[sellerKey] = {
-          sellerId: sellerKey,
-          volume: 0,
-          count: 0,
-          fees: 0,
-        };
-      map[sellerKey].volume += tx.amount;
-      map[sellerKey].count += 1;
-      map[sellerKey].fees += tx.feeAmount;
-    });
-    return Object.values(map)
-      .sort((a, b) => b.volume - a.volume)
-      .slice(0, 5);
-  }, [completedTx]);
-
   // Status breakdown for pie chart
   const statusBreakdown = useMemo(() => {
     const data = [
@@ -292,18 +214,6 @@ export default function AdminDashboardPage() {
   ]);
 
   // Hourly distribution
-  const hourlyData = useMemo(() => {
-    const hours = Array.from({ length: 24 }, (_, i) => ({
-      hour: `${i}h`,
-      count: 0,
-    }));
-    completedTx.forEach((tx) => {
-      const h = new Date(tx.createdAt).getHours();
-      hours[h].count += 1;
-    });
-    return hours;
-  }, [completedTx]);
-
   const methodLabels: Record<string, string> = {
     pix: "Pix",
     card: "Cartão",
@@ -316,67 +226,6 @@ export default function AdminDashboardPage() {
     boleto: "hsl(38, 90%, 50%)",
     crypto: "hsl(280, 60%, 55%)",
   };
-
-  const getSellerName = (sellerId: string) => {
-    const p = sellerProfiles.find((s) => String(s.userId) === sellerId);
-    return p?.fullName || sellerId.slice(0, 8);
-  };
-
-  const ChangeIndicator = ({ value }: { value: number }) => {
-    if (value === 0) return null;
-    const isPositive = value > 0;
-    return (
-      <span
-        className={cn(
-          "inline-flex items-center gap-0.5 text-[9px] font-semibold",
-          isPositive ? "text-emerald-500" : "text-destructive",
-        )}
-      >
-        {isPositive ? <TrendingUp size={9} /> : <TrendingDown size={9} />}
-        {isPositive ? "+" : ""}
-        {value}%
-      </span>
-    );
-  };
-
-  const quickActions = [
-    {
-      label: "Revisar KYCs",
-      description: "Aprovar ou rejeitar verificações",
-      icon: FileCheck,
-      link: "/admin/kyc",
-    },
-    {
-      label: "Ver Sellers",
-      description: "Gerenciar contas de sellers",
-      icon: Users,
-      link: "/admin/sellers",
-    },
-    {
-      label: "Transações",
-      description: "Visualizar pagamentos",
-      icon: CreditCard,
-      link: "/admin/transactions",
-    },
-    {
-      label: "Saques",
-      description: "Gerenciar saques pendentes",
-      icon: Wallet,
-      link: "/admin/withdrawals",
-    },
-    {
-      label: "Estornos",
-      description: "Analisar solicitações",
-      icon: RefreshCcw,
-      link: "/admin/refunds",
-    },
-    {
-      label: "Configurações",
-      description: "Personalizar gateway",
-      icon: Activity,
-      link: "/admin/general",
-    },
-  ];
 
   return (
     <AdminLayout>
@@ -393,68 +242,7 @@ export default function AdminDashboardPage() {
             <StatusCards metrics={metrics} />
 
             {/* Financial cards with comparison */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-4">
-              <div className="p-3 rounded-lg bg-card border border-border/50">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <DollarSign size={12} className="text-primary" />
-                  <span className="text-[10px] text-muted-foreground">
-                    Volume Total
-                  </span>
-                </div>
-                <p className="text-sm font-bold text-foreground">
-                  {formatCompact(totalVolume)}
-                </p>
-                <ChangeIndicator value={volumeChange} />
-              </div>
-              <div className="p-3 rounded-lg bg-card border border-border/50">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <TrendingUp size={12} className="text-success" />
-                  <span className="text-[10px] text-muted-foreground">
-                    Taxas Arrecadadas
-                  </span>
-                </div>
-                <p className="text-sm font-bold text-foreground">
-                  {formatCompact(totalFees)}
-                </p>
-                <ChangeIndicator value={feesChange} />
-              </div>
-              <div className="p-3 rounded-lg bg-card border border-border/50">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <Wallet size={12} className="text-primary" />
-                  <span className="text-[10px] text-muted-foreground">
-                    Líquido Sellers
-                  </span>
-                </div>
-                <p className="text-sm font-bold text-foreground">
-                  {formatCompact(totalNet)}
-                </p>
-              </div>
-              <div className="p-3 rounded-lg bg-card border border-border/50">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <Percent size={12} className="text-primary" />
-                  <span className="text-[10px] text-muted-foreground">
-                    Taxa Conversão
-                  </span>
-                </div>
-                <p className="text-sm font-bold text-foreground">
-                  {conversionRate}%
-                </p>
-                <span className="text-[9px] text-muted-foreground">
-                  {completedTx.length}/{filteredTx.length}
-                </span>
-              </div>
-              <div className="p-3 rounded-lg bg-card border border-border/50">
-                <div className="flex items-center gap-1.5 mb-1">
-                  <ArrowDownRight size={12} className="text-warning" />
-                  <span className="text-[10px] text-muted-foreground">
-                    Saques Realizados
-                  </span>
-                </div>
-                <p className="text-sm font-bold text-foreground">
-                  {formatCompact(withdrawalVolume)}
-                </p>
-              </div>
-            </div>
+            <FinancialCards />
 
             {/* Secondary metrics row */}
             <div className="grid grid-cols-3 md:grid-cols-4 gap-2 mb-4">
@@ -739,197 +527,16 @@ export default function AdminDashboardPage() {
               </div>
             </div>
 
-            {/* Fees chart + Horário pico + Top sellers */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-              {/* Fees chart */}
-              <div className="rounded-xl bg-card border border-border/50 p-3">
-                <h3 className="text-xs font-semibold text-foreground mb-2">
-                  Taxas arrecadadas
-                </h3>
-                {chartData.length > 0 ? (
-                  <div className="h-28">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={chartData}
-                        margin={{ top: 5, right: 5, left: -15, bottom: 0 }}
-                      >
-                        <CartesianGrid
-                          strokeDasharray="3 3"
-                          stroke="hsl(var(--border))"
-                          opacity={0.3}
-                          vertical={false}
-                        />
-                        <XAxis
-                          dataKey="date"
-                          tick={{
-                            fontSize: 8,
-                            fill: "hsl(var(--muted-foreground))",
-                          }}
-                          axisLine={false}
-                          tickLine={false}
-                        />
-                        <YAxis
-                          tick={{
-                            fontSize: 8,
-                            fill: "hsl(var(--muted-foreground))",
-                          }}
-                          axisLine={false}
-                          tickLine={false}
-                          tickFormatter={(v) => `R$${v}`}
-                        />
-                        <Tooltip
-                          contentStyle={{
-                            backgroundColor: "hsl(var(--card))",
-                            border: "1px solid hsl(var(--border))",
-                            borderRadius: "8px",
-                            fontSize: "10px",
-                          }}
-                          formatter={(value: number) => [
-                            `R$ ${value.toFixed(2)}`,
-                            "Taxas",
-                          ]}
-                        />
-                        <Bar
-                          dataKey="fees"
-                          fill="hsl(var(--primary))"
-                          radius={[3, 3, 0, 0]}
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground text-center py-6">
-                    Sem dados
-                  </p>
-                )}
-              </div>
-
-              {/* Horário de pico */}
-              <div className="rounded-xl bg-card border border-border/50 p-3">
-                <h3 className="text-xs font-semibold text-foreground mb-2">
-                  Horário de pico
-                </h3>
-                {completedTx.length > 0 ? (
-                  <div className="h-28">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={hourlyData}
-                        margin={{ top: 5, right: 2, left: -20, bottom: 0 }}
-                      >
-                        <XAxis
-                          dataKey="hour"
-                          tick={{
-                            fontSize: 7,
-                            fill: "hsl(var(--muted-foreground))",
-                          }}
-                          axisLine={false}
-                          tickLine={false}
-                          interval={2}
-                        />
-                        <YAxis
-                          tick={{
-                            fontSize: 7,
-                            fill: "hsl(var(--muted-foreground))",
-                          }}
-                          axisLine={false}
-                          tickLine={false}
-                        />
-                        <Tooltip
-                          contentStyle={{
-                            backgroundColor: "hsl(var(--card))",
-                            border: "1px solid hsl(var(--border))",
-                            borderRadius: "8px",
-                            fontSize: "10px",
-                          }}
-                          formatter={(value: number) => [value, "Transações"]}
-                        />
-                        <Bar
-                          dataKey="count"
-                          fill="hsl(var(--primary))"
-                          radius={[2, 2, 0, 0]}
-                          opacity={0.7}
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground text-center py-6">
-                    Sem dados
-                  </p>
-                )}
-              </div>
-
-              {/* Top Sellers */}
-              <div className="rounded-xl bg-card border border-border/50 p-3">
-                <h3 className="text-xs font-semibold text-foreground mb-2">
-                  Top Sellers
-                </h3>
-                {topSellers.length > 0 ? (
-                  <div className="space-y-2">
-                    {topSellers.map((s, i) => (
-                      <div key={s.sellerId} className="flex items-center gap-2">
-                        <span
-                          className={cn(
-                            "w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-bold flex-shrink-0",
-                            i === 0
-                              ? "bg-primary/15 text-primary"
-                              : "bg-muted/60 text-muted-foreground",
-                          )}
-                        >
-                          {i + 1}
-                        </span>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[11px] font-medium text-foreground truncate">
-                            {getSellerName(s.sellerId)}
-                          </p>
-                          <p className="text-[9px] text-muted-foreground">
-                            {s.count} tx · {formatCompact(s.volume)}
-                          </p>
-                        </div>
-                        <span className="text-[9px] text-muted-foreground">
-                          {formatCompact(s.fees)} tax
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground text-center py-6">
-                    Sem dados
-                  </p>
-                )}
-              </div>
+              <FeesChart chartData={chartData} />
+              <PeakHour completedTx={completedTx} />
+              <TopSellers
+                completedTx={completedTx}
+                sellerProfiles={sellerProfiles}
+              />
             </div>
 
-            {/* Quick actions */}
-            <div className="rounded-xl bg-card border border-border/50 p-3">
-              <h3 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
-                <Activity size={11} className="text-primary" /> Ações rápidas
-              </h3>
-              <div className="grid grid-cols-3 md:grid-cols-6 gap-1.5">
-                {quickActions.map((action) => (
-                  <button
-                    key={action.label}
-                    onClick={() => navigate(action.link)}
-                    className="group flex items-center gap-2 p-2 rounded-lg hover:bg-muted/30 transition-all text-left"
-                  >
-                    <div className="w-6 h-6 rounded-md bg-muted/60 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/10 transition-colors">
-                      <action.icon
-                        size={11}
-                        className="text-muted-foreground group-hover:text-primary transition-colors"
-                      />
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-[11px] font-medium text-foreground leading-none">
-                        {action.label}
-                      </p>
-                      <p className="text-[9px] text-muted-foreground truncate mt-0.5">
-                        {action.description}
-                      </p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
+            <QuickActions />
           </>
         )}
       </div>

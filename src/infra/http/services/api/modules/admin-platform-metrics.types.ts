@@ -26,3 +26,21 @@ export interface IPlatformMetricsResponseDto {
   transactions: IPlatformMetricsTransactionDto[];
   sellerProfiles: ISellerProfileSummaryDto[];
 }
+
+export interface IAdminFinanceMetricsQueryDto {
+  period: "7d" | "30d" | "90d" | "custom";
+  rangeStart?: string;
+  rangeEnd?: string;
+}
+
+export interface IAdminFinanceMetricsResponseDto {
+  totalVolume: number;
+  volumeChange: number;
+  totalFees: number;
+  feesChange: number;
+  totalNet: number;
+  conversionRate: number;
+  completedTransactionsCount: number;
+  filteredTransactionsCount: number;
+  withdrawalVolume: number;
+}

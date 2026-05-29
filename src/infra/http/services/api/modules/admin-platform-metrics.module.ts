@@ -1,8 +1,14 @@
 import type { IApiEnvelope } from "../api-types";
-import type { IPlatformMetricsResponseDto } from "./admin-platform-metrics.types";
+import type {
+  IAdminFinanceMetricsQueryDto,
+  IAdminFinanceMetricsResponseDto,
+  IPlatformMetricsResponseDto,
+} from "./admin-platform-metrics.types";
 import { BaseApiModule } from "./base-api.module";
 
 export type {
+  IAdminFinanceMetricsQueryDto,
+  IAdminFinanceMetricsResponseDto,
   IPlatformMetricsResponseDto,
   IPlatformMetricsTransactionDto,
   ISellerProfileSummaryDto,
@@ -10,6 +16,9 @@ export type {
 
 export interface IAdminPlatformMetricsModule {
   getPlatformMetrics(): Promise<IPlatformMetricsResponseDto>;
+  getFinanceMetrics(
+    query: IAdminFinanceMetricsQueryDto,
+  ): Promise<IAdminFinanceMetricsResponseDto>;
 }
 
 export class AdminPlatformMetricsModule
@@ -22,6 +31,15 @@ export class AdminPlatformMetricsModule
     const response = await this.getClient().get<
       IApiEnvelope<IPlatformMetricsResponseDto>
     >(this.baseUrl);
+    return response.data;
+  }
+
+  async getFinanceMetrics(
+    query: IAdminFinanceMetricsQueryDto,
+  ): Promise<IAdminFinanceMetricsResponseDto> {
+    const response = await this.getClient().get<
+      IApiEnvelope<IAdminFinanceMetricsResponseDto>
+    >("/api/v1/admin/metrics/finance", { params: query });
     return response.data;
   }
 }
