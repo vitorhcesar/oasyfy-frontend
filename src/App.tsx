@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/presentation/hooks/use-theme";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import AdminDashboardPage from "./presentation/pages/AdminDashboardPage";
+import AdminKycPage from "./presentation/pages/AdminKycPage";
 import AdminSellersPage from "./presentation/pages/AdminSellersPage";
 import LoginAdmin from "./presentation/pages/LoginAdminPage";
 import LoginSellerPage from "./presentation/pages/LoginSellerPage";
@@ -22,7 +23,6 @@ import AdminEmail from "./presentation/pages/admin/AdminEmail";
 import AdminGeneral from "./presentation/pages/admin/AdminGeneral";
 import AdminGlobalFees from "./presentation/pages/admin/AdminGlobalFees";
 import AdminGoals from "./presentation/pages/admin/AdminGoals";
-import AdminKyc from "./presentation/pages/admin/AdminKyc";
 import AdminManagers from "./presentation/pages/admin/AdminManagers";
 import AdminRefunds from "./presentation/pages/admin/AdminRefunds";
 import AdminSubscriptions from "./presentation/pages/admin/AdminSubscriptions";
@@ -158,7 +158,7 @@ export default function App() {
                   path="/admin/kyc"
                   element={
                     <ProtectedRoute requiredRole="admin">
-                      <AdminKyc />
+                      <AdminKycPage />
                     </ProtectedRoute>
                   }
                 />

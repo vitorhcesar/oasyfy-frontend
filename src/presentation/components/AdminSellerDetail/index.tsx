@@ -60,7 +60,7 @@ type KycSubmission = {
 };
 type Tab = "kyc" | "documents" | "bank" | "fees" | "balance";
 
-interface Props {
+interface IAdminSellerDetailProps {
   seller: KycSubmission;
   onBack: () => void;
   onUpdate: () => void;
@@ -85,7 +85,11 @@ const statusText = (status: string) => {
   return "Pendente";
 };
 
-export function SellerDetail({ seller, onBack, onUpdate }: Props) {
+export function AdminSellerDetail({
+  seller,
+  onBack,
+  onUpdate,
+}: IAdminSellerDetailProps) {
   const [tab, setTab] = useState<Tab>("kyc");
   const [actionLoading, setActionLoading] = useState(false);
   const [docRejectingKey, setDocRejectingKey] = useState<string | null>(null);
@@ -158,7 +162,7 @@ export function SellerDetail({ seller, onBack, onUpdate }: Props) {
       supabase
         .from("seller_fees")
         .select(
-          "pix_retention_days, card_retention_days, boleto_retention_days, crypto_retention_days"
+          "pix_retention_days, card_retention_days, boleto_retention_days, crypto_retention_days",
         )
         .eq("seller_id", seller.user_id)
         .limit(1),
@@ -168,33 +172,33 @@ export function SellerDetail({ seller, onBack, onUpdate }: Props) {
       const now = new Date();
 
       const sales = txs.filter(
-        (t) => t.method !== "withdrawal" && t.amount > 0
+        (t) => t.method !== "withdrawal" && t.amount > 0,
       );
       const paid = sales.filter(
-        (t) => t.status === "completed" || t.status === "paid"
+        (t) => t.status === "completed" || t.status === "paid",
       );
       const refunds = txs.filter((t) => t.status === "refunded");
       const withdrawals = txs.filter(
         (t) =>
           t.method === "withdrawal" &&
-          (t.status === "completed" || t.status === "paid")
+          (t.status === "completed" || t.status === "paid"),
       );
 
       const totalGrossSales = paid.reduce(
         (s: number, t: any) => s + t.amount,
-        0
+        0,
       );
       const totalFeesEarned = paid.reduce(
         (s: number, t: any) => s + (t.fee_amount || 0),
-        0
+        0,
       );
       const totalPaid = totalGrossSales;
       const totalWithdrawn = Math.abs(
-        withdrawals.reduce((s: number, t: any) => s + t.amount, 0)
+        withdrawals.reduce((s: number, t: any) => s + t.amount, 0),
       );
       const totalRefunded = refunds.reduce(
         (s: number, t: any) => s + Math.abs(t.amount),
-        0
+        0,
       );
 
       const retained = paid
@@ -203,10 +207,10 @@ export function SellerDetail({ seller, onBack, onUpdate }: Props) {
             t.method === "pix"
               ? f.pix_retention_days || 0
               : t.method === "card"
-              ? f.card_retention_days || 0
-              : t.method === "boleto"
-              ? f.boleto_retention_days || 0
-              : f.crypto_retention_days || 0;
+                ? f.card_retention_days || 0
+                : t.method === "boleto"
+                  ? f.boleto_retention_days || 0
+                  : f.crypto_retention_days || 0;
           if (!days) return false;
           return (
             new Date(new Date(t.created_at).getTime() + days * 86400000) > now
@@ -276,7 +280,7 @@ export function SellerDetail({ seller, onBack, onUpdate }: Props) {
             seller_email: seller.email,
             seller_name: seller.full_name,
           },
-        }
+        },
       );
 
       if (error) throw error;
@@ -292,7 +296,7 @@ export function SellerDetail({ seller, onBack, onUpdate }: Props) {
   };
 
   const autoApproveIfComplete = async (
-    overrides: Record<string, string> = {}
+    overrides: Record<string, string> = {},
   ) => {
     const merged = {
       documents_status: seller.documents_status,
@@ -350,7 +354,7 @@ export function SellerDetail({ seller, onBack, onUpdate }: Props) {
   };
 
   const checkAndUpdateDocumentsStatus = (
-    updatedReview: Record<string, any>
+    updatedReview: Record<string, any>,
   ) => {
     const docKeys = [
       "document_front",
@@ -360,10 +364,10 @@ export function SellerDetail({ seller, onBack, onUpdate }: Props) {
       ...(seller.person_type === "pj" ? ["company_contract"] : []),
     ];
     const allDocsApproved = docKeys.every(
-      (k) => updatedReview[k]?.status === "approved"
+      (k) => updatedReview[k]?.status === "approved",
     );
     const anyRejected = docKeys.some(
-      (k) => updatedReview[k]?.status === "rejected"
+      (k) => updatedReview[k]?.status === "rejected",
     );
     return allDocsApproved ? "approved" : anyRejected ? "rejected" : "pending";
   };
@@ -389,8 +393,8 @@ export function SellerDetail({ seller, onBack, onUpdate }: Props) {
     allApproved && seller.status === "approved"
       ? "approved"
       : seller.status === "rejected"
-      ? "rejected"
-      : "pending";
+        ? "rejected"
+        : "pending";
 
   // Count pending items per tab
   const docReview = ((seller as any).documents_review || {}) as Record<
@@ -405,7 +409,7 @@ export function SellerDetail({ seller, onBack, onUpdate }: Props) {
     ...(seller.person_type === "pj" ? ["company_contract"] : []),
   ];
   const pendingDocs = docKeys.filter(
-    (k) => !docReview[k] || docReview[k].status === "pending"
+    (k) => !docReview[k] || docReview[k].status === "pending",
   ).length;
   const pendingKyc = seller.address_status === "pending" ? 1 : 0;
   const pendingBank = seller.bank_status === "pending" ? 1 : 0;
@@ -447,7 +451,7 @@ export function SellerDetail({ seller, onBack, onUpdate }: Props) {
           <div className="flex items-center gap-1.5 ml-1">
             <div
               className={`w-1.5 h-1.5 rounded-full ${statusDot(
-                effectiveStatus
+                effectiveStatus,
               )}`}
             />
             <span className="text-xs text-muted-foreground">
@@ -489,7 +493,7 @@ export function SellerDetail({ seller, onBack, onUpdate }: Props) {
                         return;
                       }
                       toast.success(
-                        newVal ? "Seller banido" : "Seller desbanido"
+                        newVal ? "Seller banido" : "Seller desbanido",
                       );
                       onUpdate();
                     }}
@@ -811,13 +815,13 @@ export function SellerDetail({ seller, onBack, onUpdate }: Props) {
                           docStatus === "approved"
                             ? "border-primary/20 bg-primary/5 text-primary"
                             : docStatus === "rejected"
-                            ? "border-destructive/20 bg-destructive/5 text-destructive"
-                            : "border-amber-200 bg-amber-50 text-amber-700"
+                              ? "border-destructive/20 bg-destructive/5 text-destructive"
+                              : "border-amber-200 bg-amber-50 text-amber-700"
                         }`}
                       >
                         <span
                           className={`w-1 h-1 rounded-full ${statusDot(
-                            docStatus
+                            docStatus,
                           )}`}
                         />
                         {statusText(docStatus)}
@@ -840,7 +844,7 @@ export function SellerDetail({ seller, onBack, onUpdate }: Props) {
                           <button
                             onClick={() => {
                               setDocRejectingKey(
-                                docRejectingKey === doc.key ? null : doc.key
+                                docRejectingKey === doc.key ? null : doc.key,
                               );
                               setDocRejectReason("");
                             }}
@@ -881,7 +885,7 @@ export function SellerDetail({ seller, onBack, onUpdate }: Props) {
                         <button
                           onClick={() => {
                             setDocRejectingKey(
-                              docRejectingKey === doc.key ? null : doc.key
+                              docRejectingKey === doc.key ? null : doc.key,
                             );
                             setDocRejectReason("");
                           }}

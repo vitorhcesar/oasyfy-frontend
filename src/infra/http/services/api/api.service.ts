@@ -6,6 +6,10 @@ import {
   IAdminPlatformMetricsModule,
 } from "./modules/admin-platform-metrics.module";
 import {
+  AdminKycSubmissionsModule,
+  IAdminKycSubmissionsModule,
+} from "./modules/admin-kyc-submissions.module";
+import {
   AdminSellersModule,
   IAdminSellersModule,
 } from "./modules/admin-sellers.module";
@@ -36,6 +40,7 @@ export interface IApiServiceModules {
   seller: ISellerModule;
   adminPlatformMetrics: IAdminPlatformMetricsModule;
   adminSellers: IAdminSellersModule;
+  adminKycSubmissions: IAdminKycSubmissionsModule;
 }
 
 export interface IApiService {
@@ -63,6 +68,7 @@ export class ApiService implements IApiService {
       seller: new SellerModule(this.httpClient),
       adminPlatformMetrics: new AdminPlatformMetricsModule(this.httpClient),
       adminSellers: new AdminSellersModule(this.httpClient),
+      adminKycSubmissions: new AdminKycSubmissionsModule(this.httpClient),
     };
   }
 }
