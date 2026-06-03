@@ -1,5 +1,7 @@
-import { supabase } from "@/infra/integrations/supabase/client";
+import type { IGatewayThemeColors } from "@/infra/http/services/api/modules/types/gateway-theme.types";
+import { useApiService } from "@/presentation/hooks/use-api-service";
 import { cn } from "@/presentation/utils/cn";
+import { tryOrToastError } from "@/presentation/utils/try-or-toast-error";
 import {
   AlertTriangle,
   CheckCircle,
@@ -17,67 +19,40 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-
-interface ThemeColors {
-  id: string;
-  primary_color: string;
-  primary_foreground: string;
-  background_color: string;
-  foreground_color: string;
-  card_color: string;
-  card_foreground: string;
-  border_color: string;
-  muted_color: string;
-  muted_foreground: string;
-  accent_color: string;
-  accent_foreground: string;
-  destructive_color: string;
-  success_color: string;
-  warning_color: string;
-  dark_primary_color: string;
-  dark_background_color: string;
-  dark_foreground_color: string;
-  dark_card_color: string;
-  dark_card_foreground: string;
-  dark_border_color: string;
-  dark_muted_color: string;
-  dark_muted_foreground: string;
-  dark_accent_color: string;
-  dark_accent_foreground: string;
-}
+import useGatewayTheme from "../../../hooks/use-gateway-theme";
 
 const DEFAULT_LIGHT: Record<string, string> = {
-  primary_color: "152 60% 42%",
-  primary_foreground: "0 0% 100%",
-  background_color: "0 0% 99%",
-  foreground_color: "150 15% 10%",
-  card_color: "0 0% 100%",
-  card_foreground: "150 15% 10%",
-  border_color: "150 10% 92%",
-  muted_color: "150 10% 96%",
-  muted_foreground: "150 8% 32%",
-  accent_color: "150 20% 96%",
-  accent_foreground: "150 15% 10%",
-  destructive_color: "0 72% 55%",
-  success_color: "152 60% 42%",
-  warning_color: "38 90% 50%",
+  primaryColor: "152 60% 42%",
+  primaryForeground: "0 0% 100%",
+  backgroundColor: "0 0% 99%",
+  foregroundColor: "150 15% 10%",
+  cardColor: "0 0% 100%",
+  cardForeground: "150 15% 10%",
+  borderColor: "150 10% 92%",
+  mutedColor: "150 10% 96%",
+  mutedForeground: "150 8% 32%",
+  accentColor: "150 20% 96%",
+  accentForeground: "150 15% 10%",
+  destructiveColor: "0 72% 55%",
+  successColor: "152 60% 42%",
+  warningColor: "38 90% 50%",
 };
 
 const DEFAULT_DARK: Record<string, string> = {
-  dark_primary_color: "152 60% 45%",
-  dark_background_color: "160 15% 5%",
-  dark_foreground_color: "150 10% 95%",
-  dark_card_color: "160 12% 8%",
-  dark_card_foreground: "150 10% 95%",
-  dark_border_color: "155 10% 15%",
-  dark_muted_color: "155 10% 12%",
-  dark_muted_foreground: "150 8% 68%",
-  dark_accent_color: "155 12% 13%",
-  dark_accent_foreground: "150 10% 93%",
+  darkPrimaryColor: "152 60% 45%",
+  darkBackgroundColor: "160 15% 5%",
+  darkForegroundColor: "150 10% 95%",
+  darkCardColor: "160 12% 8%",
+  darkCardForeground: "150 10% 95%",
+  darkBorderColor: "155 10% 15%",
+  darkMutedColor: "155 10% 12%",
+  darkMutedForeground: "150 8% 68%",
+  darkAccentColor: "155 12% 13%",
+  darkAccentForeground: "150 10% 93%",
 };
 
 interface IColorField {
-  key: keyof ThemeColors;
+  key: Exclude<keyof IGatewayThemeColors, "id">;
   label: string;
   description: string;
 }
@@ -94,27 +69,27 @@ const lightGroups: IColorGroup[] = [
     icon: Palette,
     fields: [
       {
-        key: "primary_color",
+        key: "primaryColor",
         label: "Primária",
         description: "Cor principal da interface",
       },
       {
-        key: "primary_foreground",
+        key: "primaryForeground",
         label: "Texto primário",
         description: "Texto sobre a cor primária",
       },
       {
-        key: "success_color",
+        key: "successColor",
         label: "Sucesso",
         description: "Indicadores positivos",
       },
       {
-        key: "warning_color",
+        key: "warningColor",
         label: "Alerta",
         description: "Indicadores de aviso",
       },
       {
-        key: "destructive_color",
+        key: "destructiveColor",
         label: "Destrutivo",
         description: "Ações perigosas e erros",
       },
@@ -125,27 +100,27 @@ const lightGroups: IColorGroup[] = [
     icon: Layout,
     fields: [
       {
-        key: "background_color",
+        key: "backgroundColor",
         label: "Fundo",
         description: "Fundo principal da página",
       },
       {
-        key: "card_color",
+        key: "cardColor",
         label: "Card",
         description: "Fundo dos cards e painéis",
       },
       {
-        key: "border_color",
+        key: "borderColor",
         label: "Borda",
         description: "Bordas e divisores",
       },
       {
-        key: "muted_color",
+        key: "mutedColor",
         label: "Muted",
         description: "Fundos suaves e inputs",
       },
       {
-        key: "accent_color",
+        key: "accentColor",
         label: "Accent",
         description: "Destaque suave em hovers",
       },
@@ -156,22 +131,22 @@ const lightGroups: IColorGroup[] = [
     icon: Type,
     fields: [
       {
-        key: "foreground_color",
+        key: "foregroundColor",
         label: "Texto",
         description: "Texto principal",
       },
       {
-        key: "card_foreground",
+        key: "cardForeground",
         label: "Texto card",
         description: "Texto dentro de cards",
       },
       {
-        key: "muted_foreground",
+        key: "mutedForeground",
         label: "Texto muted",
         description: "Textos secundários",
       },
       {
-        key: "accent_foreground",
+        key: "accentForeground",
         label: "Texto accent",
         description: "Texto sobre accent",
       },
@@ -185,7 +160,7 @@ const darkGroups: IColorGroup[] = [
     icon: Palette,
     fields: [
       {
-        key: "dark_primary_color",
+        key: "darkPrimaryColor",
         label: "Primária",
         description: "Cor principal da interface",
       },
@@ -196,19 +171,19 @@ const darkGroups: IColorGroup[] = [
     icon: Layout,
     fields: [
       {
-        key: "dark_background_color",
+        key: "darkBackgroundColor",
         label: "Fundo",
         description: "Fundo principal",
       },
-      { key: "dark_card_color", label: "Card", description: "Fundo dos cards" },
+      { key: "darkCardColor", label: "Card", description: "Fundo dos cards" },
       {
-        key: "dark_border_color",
+        key: "darkBorderColor",
         label: "Borda",
         description: "Bordas e divisores",
       },
-      { key: "dark_muted_color", label: "Muted", description: "Fundos suaves" },
+      { key: "darkMutedColor", label: "Muted", description: "Fundos suaves" },
       {
-        key: "dark_accent_color",
+        key: "darkAccentColor",
         label: "Accent",
         description: "Destaque suave",
       },
@@ -219,22 +194,22 @@ const darkGroups: IColorGroup[] = [
     icon: Type,
     fields: [
       {
-        key: "dark_foreground_color",
+        key: "darkForegroundColor",
         label: "Texto",
         description: "Texto principal",
       },
       {
-        key: "dark_card_foreground",
+        key: "darkCardForeground",
         label: "Texto card",
         description: "Texto em cards",
       },
       {
-        key: "dark_muted_foreground",
+        key: "darkMutedForeground",
         label: "Texto muted",
         description: "Textos secundários",
       },
       {
-        key: "dark_accent_foreground",
+        key: "darkAccentForeground",
         label: "Texto accent",
         description: "Texto sobre accent",
       },
@@ -289,30 +264,30 @@ function hexToHsl(hex: string): string {
   }
 
   return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(
-    l * 100
+    l * 100,
   )}%`;
 }
 
-function applyThemeToDOM(theme: ThemeColors) {
+function applyThemeToDOM(theme: IGatewayThemeColors) {
   const root = document.documentElement;
-  root.style.setProperty("--primary", theme.primary_color);
-  root.style.setProperty("--primary-foreground", theme.primary_foreground);
-  root.style.setProperty("--background", theme.background_color);
-  root.style.setProperty("--foreground", theme.foreground_color);
-  root.style.setProperty("--card", theme.card_color);
-  root.style.setProperty("--card-foreground", theme.card_foreground);
-  root.style.setProperty("--border", theme.border_color);
-  root.style.setProperty("--input", theme.border_color);
-  root.style.setProperty("--muted", theme.muted_color);
-  root.style.setProperty("--muted-foreground", theme.muted_foreground);
-  root.style.setProperty("--accent", theme.accent_color);
-  root.style.setProperty("--accent-foreground", theme.accent_foreground);
-  root.style.setProperty("--destructive", theme.destructive_color);
-  root.style.setProperty("--success", theme.success_color);
-  root.style.setProperty("--warning", theme.warning_color);
-  root.style.setProperty("--ring", theme.primary_color);
-  root.style.setProperty("--sidebar-primary", theme.primary_color);
-  root.style.setProperty("--sidebar-ring", theme.primary_color);
+  root.style.setProperty("--primary", theme.primaryColor);
+  root.style.setProperty("--primary-foreground", theme.primaryForeground);
+  root.style.setProperty("--background", theme.backgroundColor);
+  root.style.setProperty("--foreground", theme.foregroundColor);
+  root.style.setProperty("--card", theme.cardColor);
+  root.style.setProperty("--card-foreground", theme.cardForeground);
+  root.style.setProperty("--border", theme.borderColor);
+  root.style.setProperty("--input", theme.borderColor);
+  root.style.setProperty("--muted", theme.mutedColor);
+  root.style.setProperty("--muted-foreground", theme.mutedForeground);
+  root.style.setProperty("--accent", theme.accentColor);
+  root.style.setProperty("--accent-foreground", theme.accentForeground);
+  root.style.setProperty("--destructive", theme.destructiveColor);
+  root.style.setProperty("--success", theme.successColor);
+  root.style.setProperty("--warning", theme.warningColor);
+  root.style.setProperty("--ring", theme.primaryColor);
+  root.style.setProperty("--sidebar-primary", theme.primaryColor);
+  root.style.setProperty("--sidebar-ring", theme.primaryColor);
 }
 
 function ColorCard({
@@ -399,23 +374,22 @@ function LivePreview({
   theme,
   mode,
 }: {
-  theme: ThemeColors;
+  theme: IGatewayThemeColors;
   mode: "light" | "dark";
 }) {
   const bg =
-    mode === "light" ? theme.background_color : theme.dark_background_color;
+    mode === "light" ? theme.backgroundColor : theme.darkBackgroundColor;
   const fg =
-    mode === "light" ? theme.foreground_color : theme.dark_foreground_color;
-  const card = mode === "light" ? theme.card_color : theme.dark_card_color;
+    mode === "light" ? theme.foregroundColor : theme.darkForegroundColor;
+  const card = mode === "light" ? theme.cardColor : theme.darkCardColor;
   const cardFg =
-    mode === "light" ? theme.card_foreground : theme.dark_card_foreground;
-  const border =
-    mode === "light" ? theme.border_color : theme.dark_border_color;
+    mode === "light" ? theme.cardForeground : theme.darkCardForeground;
+  const border = mode === "light" ? theme.borderColor : theme.darkBorderColor;
   const muted =
-    mode === "light" ? theme.muted_foreground : theme.dark_muted_foreground;
+    mode === "light" ? theme.mutedForeground : theme.darkMutedForeground;
   const primary =
-    mode === "light" ? theme.primary_color : theme.dark_primary_color;
-  const mutedBg = mode === "light" ? theme.muted_color : theme.dark_muted_color;
+    mode === "light" ? theme.primaryColor : theme.darkPrimaryColor;
+  const mutedBg = mode === "light" ? theme.mutedColor : theme.darkMutedColor;
 
   return (
     <div
@@ -434,7 +408,7 @@ function LivePreview({
           >
             <span
               className="text-[10px] font-bold"
-              style={{ color: `hsl(${theme.primary_foreground})` }}
+              style={{ color: `hsl(${theme.primaryForeground})` }}
             >
               O
             </span>
@@ -469,7 +443,7 @@ function LivePreview({
           className="px-3 py-1.5 rounded-lg text-[10px] font-semibold shadow-sm"
           style={{
             backgroundColor: `hsl(${primary})`,
-            color: `hsl(${theme.primary_foreground})`,
+            color: `hsl(${theme.primaryForeground})`,
           }}
         >
           Primário
@@ -477,7 +451,7 @@ function LivePreview({
         <div
           className="px-3 py-1.5 rounded-lg text-[10px] font-semibold"
           style={{
-            backgroundColor: `hsl(${theme.success_color})`,
+            backgroundColor: `hsl(${theme.successColor})`,
             color: "white",
           }}
         >
@@ -486,7 +460,7 @@ function LivePreview({
         <div
           className="px-3 py-1.5 rounded-lg text-[10px] font-semibold"
           style={{
-            backgroundColor: `hsl(${theme.warning_color})`,
+            backgroundColor: `hsl(${theme.warningColor})`,
             color: "white",
           }}
         >
@@ -495,7 +469,7 @@ function LivePreview({
         <div
           className="px-3 py-1.5 rounded-lg text-[10px] font-semibold"
           style={{
-            backgroundColor: `hsl(${theme.destructive_color})`,
+            backgroundColor: `hsl(${theme.destructiveColor})`,
             color: "white",
           }}
         >
@@ -521,7 +495,7 @@ function LivePreview({
           <div className="flex items-center gap-1.5 mb-1.5">
             <CheckCircle
               size={11}
-              style={{ color: `hsl(${theme.success_color})` }}
+              style={{ color: `hsl(${theme.successColor})` }}
             />
             <span
               className="text-[10px] font-semibold"
@@ -550,7 +524,7 @@ function LivePreview({
           <div className="flex items-center gap-1.5 mb-1.5">
             <AlertTriangle
               size={11}
-              style={{ color: `hsl(${theme.warning_color})` }}
+              style={{ color: `hsl(${theme.warningColor})` }}
             />
             <span
               className="text-[10px] font-semibold"
@@ -588,7 +562,7 @@ function LivePreview({
           className="px-3 py-2 rounded-lg text-[10px] font-semibold"
           style={{
             backgroundColor: `hsl(${primary})`,
-            color: `hsl(${theme.primary_foreground})`,
+            color: `hsl(${theme.primaryForeground})`,
           }}
         >
           Buscar
@@ -613,13 +587,13 @@ function LivePreview({
             name: "João Silva",
             amount: "R$ 89,90",
             status: "Pago",
-            statusColor: theme.success_color,
+            statusColor: theme.successColor,
           },
           {
             name: "Maria Santos",
             amount: "R$ 245,00",
             status: "Pendente",
-            statusColor: theme.warning_color,
+            statusColor: theme.warningColor,
           },
         ].map((row, i) => (
           <div
@@ -661,61 +635,102 @@ function LivePreview({
 }
 
 export function ColorsTab() {
-  const [loading, setLoading] = useState(true);
+  const apiService = useApiService();
+
+  const {
+    data: fetchedTheme,
+    isLoading: isLoadingGatewayTheme,
+    isError: isErrorOnGatewayTheme,
+    invalidateQuery: invalidateGatewayThemeQuery,
+  } = useGatewayTheme();
+
   const [saving, setSaving] = useState(false);
-  const [theme, setTheme] = useState<ThemeColors | null>(null);
+  const [theme, setTheme] = useState<IGatewayThemeColors | null>(null);
   const [mode, setMode] = useState<"light" | "dark">("light");
 
   useEffect(() => {
-    supabase
-      .from("gateway_theme")
-      .select("*")
-      .limit(1)
-      .then(({ data, error }) => {
-        if (error) {
-          toast.error("Erro ao carregar tema");
-        } else if (data && data.length > 0) {
-          setTheme(data[0] as unknown as ThemeColors);
-        }
-        setLoading(false);
-      });
-  }, []);
+    if (fetchedTheme) {
+      setTheme(fetchedTheme);
+    }
+  }, [fetchedTheme]);
+
+  useEffect(() => {
+    if (isErrorOnGatewayTheme) {
+      toast.error("Erro ao carregar tema");
+    }
+  }, [isErrorOnGatewayTheme]);
 
   const updateColor = useCallback(
-    (key: string, hex: string) => {
+    (key: Exclude<keyof IGatewayThemeColors, "id">, hex: string) => {
       if (!theme) return;
       const hsl = hexToHsl(hex);
       const updated = { ...theme, [key]: hsl };
       setTheme(updated);
       if (!key.startsWith("dark_")) applyThemeToDOM(updated);
     },
-    [theme]
+    [theme],
   );
 
   const handleSave = async () => {
     if (!theme) return;
+
     setSaving(true);
-    const { id, ...rest } = theme;
-    const { error } = await supabase
-      .from("gateway_theme")
-      .update(rest)
-      .eq("id", id);
-    if (error) toast.error("Erro ao salvar tema");
-    else toast.success("Tema salvo com sucesso!");
-    setSaving(false);
+
+    await tryOrToastError(
+      async () => {
+        await apiService.modules.gatewayTheme.update({
+          primaryColor: theme.primaryColor,
+          primaryForeground: theme.primaryForeground,
+          backgroundColor: theme.backgroundColor,
+          foregroundColor: theme.foregroundColor,
+          cardColor: theme.cardColor,
+          cardForeground: theme.cardForeground,
+          borderColor: theme.borderColor,
+          mutedColor: theme.mutedColor,
+          mutedForeground: theme.mutedForeground,
+          accentColor: theme.accentColor,
+          accentForeground: theme.accentForeground,
+          destructiveColor: theme.destructiveColor,
+          successColor: theme.successColor,
+          warningColor: theme.warningColor,
+          darkPrimaryColor: theme.darkPrimaryColor,
+          darkBackgroundColor: theme.darkBackgroundColor,
+          darkForegroundColor: theme.darkForegroundColor,
+          darkCardColor: theme.darkCardColor,
+          darkCardForeground: theme.darkCardForeground,
+          darkBorderColor: theme.darkBorderColor,
+          darkMutedColor: theme.darkMutedColor,
+          darkMutedForeground: theme.darkMutedForeground,
+          darkAccentColor: theme.darkAccentColor,
+          darkAccentForeground: theme.darkAccentForeground,
+        });
+        await invalidateGatewayThemeQuery();
+
+        toast.success("Tema salvo com sucesso!");
+      },
+      {
+        defaultErrorMessage: "Erro ao salvar tema",
+        finallyFn: () => {
+          setSaving(false);
+        },
+      },
+    );
   };
 
   const handleReset = () => {
     if (!theme) return;
+
     const defaults =
       mode === "light" ? { ...DEFAULT_LIGHT } : { ...DEFAULT_DARK };
     const updated = { ...theme, ...defaults };
+
     setTheme(updated);
+
     if (mode === "light") applyThemeToDOM(updated);
     toast.info("Cores restauradas para o padrão");
   };
 
-  if (loading) {
+  if (isLoadingGatewayTheme) {
     return (
       <div className="flex items-center justify-center py-16">
         <Loader2 className="animate-spin text-muted-foreground" size={20} />
@@ -744,7 +759,7 @@ export function ColorsTab() {
               "flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium transition-all duration-200",
               mode === "light"
                 ? "bg-card text-foreground shadow-sm border border-border/40"
-                : "text-muted-foreground hover:text-foreground"
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             <Sun size={13} /> Claro
@@ -755,7 +770,7 @@ export function ColorsTab() {
               "flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium transition-all duration-200",
               mode === "dark"
                 ? "bg-card text-foreground shadow-sm border border-border/40"
-                : "text-muted-foreground hover:text-foreground"
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             <Moon size={13} /> Escuro

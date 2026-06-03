@@ -52,6 +52,7 @@ export default function SellerKyc() {
     isLoading,
     invalidateQuery,
   } = useSellerKycSubmissionQuery();
+
   const [tab, setTab] = useState<TTab>("info");
   const [expandedSections, setExpandedSections] = useState<
     Record<string, boolean>

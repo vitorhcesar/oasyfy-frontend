@@ -1,69 +1,111 @@
-import { supabase } from "@/infra/integrations/supabase/client";
+import { IGatewayThemeDto } from "@/infra/http/services/api/modules/gateway-theme.module";
+import { useApiService } from "@/presentation/hooks/use-api-service";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect } from "react";
 
-let cachedTheme: Record<string, any> | null = null;
-
-function applyTheme(t: Record<string, any>, isDark: boolean) {
+function applyTheme(theme: IGatewayThemeDto, isDark: boolean) {
   const root = document.documentElement;
-  const prefix = isDark ? "dark_" : "";
 
-  root.style.setProperty("--primary", t[`${prefix}primary_color`]);
-  root.style.setProperty("--background", t[`${prefix}background_color`]);
-  root.style.setProperty("--foreground", t[`${prefix}foreground_color`]);
-  root.style.setProperty("--card", t[`${prefix}card_color`]);
-  root.style.setProperty("--card-foreground", t[`${prefix}card_foreground`]);
-  root.style.setProperty("--popover", t[`${prefix}card_color`]);
-  root.style.setProperty("--popover-foreground", t[`${prefix}card_foreground`]);
-  root.style.setProperty("--border", t[`${prefix}border_color`]);
-  root.style.setProperty("--input", t[`${prefix}border_color`]);
-  root.style.setProperty("--muted", t[`${prefix}muted_color`]);
-  root.style.setProperty("--muted-foreground", t[`${prefix}muted_foreground`]);
-  root.style.setProperty("--accent", t[`${prefix}accent_color`]);
+  root.style.setProperty(
+    "--primary",
+    isDark ? theme.darkPrimaryColor : theme.primaryColor,
+  );
+  root.style.setProperty(
+    "--background",
+    isDark ? theme.darkBackgroundColor : theme.backgroundColor,
+  );
+  root.style.setProperty(
+    "--foreground",
+    isDark ? theme.darkForegroundColor : theme.foregroundColor,
+  );
+  root.style.setProperty(
+    "--card",
+    isDark ? theme.darkCardColor : theme.cardColor,
+  );
+  root.style.setProperty(
+    "--card-foreground",
+    isDark ? theme.darkCardForeground : theme.cardForeground,
+  );
+  root.style.setProperty(
+    "--popover",
+    isDark ? theme.darkCardColor : theme.cardColor,
+  );
+  root.style.setProperty(
+    "--popover-foreground",
+    isDark ? theme.darkCardForeground : theme.cardForeground,
+  );
+  root.style.setProperty(
+    "--border",
+    isDark ? theme.darkBorderColor : theme.borderColor,
+  );
+  root.style.setProperty(
+    "--input",
+    isDark ? theme.darkBorderColor : theme.borderColor,
+  );
+  root.style.setProperty(
+    "--muted",
+    isDark ? theme.darkMutedColor : theme.mutedColor,
+  );
+  root.style.setProperty(
+    "--muted-foreground",
+    isDark ? theme.darkMutedForeground : theme.mutedForeground,
+  );
+  root.style.setProperty(
+    "--accent",
+    isDark ? theme.darkAccentColor : theme.accentColor,
+  );
   root.style.setProperty(
     "--accent-foreground",
-    t[`${prefix}accent_foreground`]
+    isDark ? theme.darkAccentForeground : theme.accentForeground,
   );
-  root.style.setProperty("--ring", t[`${prefix}primary_color`]);
-  root.style.setProperty("--sidebar-primary", t[`${prefix}primary_color`]);
-  root.style.setProperty("--sidebar-ring", t[`${prefix}primary_color`]);
+  root.style.setProperty(
+    "--ring",
+    isDark ? theme.darkPrimaryColor : theme.primaryColor,
+  );
+  root.style.setProperty(
+    "--sidebar-primary",
+    isDark ? theme.darkPrimaryColor : theme.primaryColor,
+  );
+  root.style.setProperty(
+    "--sidebar-ring",
+    isDark ? theme.darkPrimaryColor : theme.primaryColor,
+  );
 
   // These don't have dark variants in the table, use light values
   if (!isDark) {
-    root.style.setProperty("--primary-foreground", t.primary_foreground);
-    root.style.setProperty("--destructive", t.destructive_color);
-    root.style.setProperty("--success", t.success_color);
-    root.style.setProperty("--warning", t.warning_color);
+    root.style.setProperty("--primary-foreground", theme.primaryForeground);
+    root.style.setProperty("--destructive", theme.destructiveColor);
+    root.style.setProperty("--success", theme.successColor);
+    root.style.setProperty("--warning", theme.warningColor);
   } else {
-    root.style.setProperty("--primary-foreground", t.primary_foreground);
-    root.style.setProperty("--destructive", t.destructive_color);
-    root.style.setProperty("--success", t.success_color);
-    root.style.setProperty("--warning", t.warning_color);
+    root.style.setProperty("--primary-foreground", theme.primaryForeground);
+    root.style.setProperty("--destructive", theme.destructiveColor);
+    root.style.setProperty("--success", theme.successColor);
+    root.style.setProperty("--warning", theme.warningColor);
   }
 }
 
-export function useGatewayTheme() {
+export default function useGatewayTheme() {
+  const apiService = useApiService();
+  const queryClient = useQueryClient();
+
+  const QUERY_KEY = ["gateway-theme"];
+
+  const query = useQuery({
+    queryKey: QUERY_KEY,
+    queryFn: async () => {
+      const theme = await apiService.modules.gatewayTheme.find();
+      applyTheme(theme, document.documentElement.classList.contains("dark"));
+      return theme;
+    },
+  });
+
   useEffect(() => {
-    const fetchAndApply = async () => {
-      if (!cachedTheme) {
-        const { data } = await supabase
-          .from("gateway_theme")
-          .select("*")
-          .limit(1);
-        if (data && data.length > 0) cachedTheme = data[0];
-      }
-      if (cachedTheme) {
-        const isDark = document.documentElement.classList.contains("dark");
-        applyTheme(cachedTheme, isDark);
-      }
-    };
-
-    fetchAndApply();
-
     // Observe class changes on <html> to detect theme toggle
     const observer = new MutationObserver(() => {
-      if (cachedTheme) {
+      if (query.data) {
         const isDark = document.documentElement.classList.contains("dark");
-        applyTheme(cachedTheme, isDark);
+        applyTheme(query.data, isDark);
       }
     });
     observer.observe(document.documentElement, {
@@ -72,5 +114,15 @@ export function useGatewayTheme() {
     });
 
     return () => observer.disconnect();
-  }, []);
+  }, [query.data]);
+
+  const invalidateQuery = async () => {
+    await queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+  };
+
+  return {
+    ...query,
+    data: query.data ?? null,
+    invalidateQuery,
+  };
 }
