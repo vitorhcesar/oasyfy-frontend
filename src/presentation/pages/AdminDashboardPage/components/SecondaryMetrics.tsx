@@ -1,6 +1,12 @@
-import { Activity, BarChart3, DollarSign, Loader2, RefreshCcw } from "lucide-react";
-import { formatCurrency } from "../../utils/format-currency";
+import {
+  Activity,
+  BarChart3,
+  DollarSign,
+  Loader2,
+  RefreshCcw,
+} from "lucide-react";
 import useAdminSecondaryMetricsQuery from "../hooks/use-admin-secondary-metrics-query";
+import { formatCurrency } from "../utils/format-currency";
 import ChangeIndicator from "./ChangeIndicator";
 
 export default function SecondaryMetrics() {

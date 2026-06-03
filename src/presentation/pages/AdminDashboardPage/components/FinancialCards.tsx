@@ -6,8 +6,8 @@ import {
   TrendingUp,
   Wallet,
 } from "lucide-react";
-import { formatCompact } from "../../utils/format-compact";
 import useAdminFinanceMetricsQuery from "../hooks/use-admin-finance-metrics-query";
+import { formatCompact } from "../utils/format-compact";
 import ChangeIndicator from "./ChangeIndicator";
 
 export default function FinancialCards() {

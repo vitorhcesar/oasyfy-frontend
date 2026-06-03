@@ -1,4 +1,4 @@
-import { IPlatformMetricsResponseDto } from "@/infra/http/services/api/modules/admin-platform-metrics.types";
+import { IPlatformMetricsResponseDto } from "@/infra/http/services/api/modules/types/admin-platform-metrics.types";
 import { cn } from "@/presentation/utils/cn";
 import {
   Ban,

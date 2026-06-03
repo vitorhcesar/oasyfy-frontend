@@ -2,13 +2,17 @@ import { HttpClient, IHttpClient } from "../../http-client";
 import { apiAxios } from "./axios-instance";
 import { AccountModule, IAccountModule } from "./modules/account.module";
 import {
-  AdminPlatformMetricsModule,
-  IAdminPlatformMetricsModule,
-} from "./modules/admin-platform-metrics.module";
+  AdminBannerModule,
+  IAdminBannerModule,
+} from "./modules/admin-banner.module";
 import {
   AdminKycSubmissionsModule,
   IAdminKycSubmissionsModule,
 } from "./modules/admin-kyc-submissions.module";
+import {
+  AdminPlatformMetricsModule,
+  IAdminPlatformMetricsModule,
+} from "./modules/admin-platform-metrics.module";
 import {
   AdminSellersModule,
   IAdminSellersModule,
@@ -41,6 +45,27 @@ export interface IApiServiceModules {
   adminPlatformMetrics: IAdminPlatformMetricsModule;
   adminSellers: IAdminSellersModule;
   adminKycSubmissions: IAdminKycSubmissionsModule;
+  adminBanners: IAdminBannerModule;
+}
+
+function attachModules(httpClient: IHttpClient): IApiServiceModules {
+  return {
+    // admin
+    adminPlatformMetrics: new AdminPlatformMetricsModule(httpClient),
+    adminSellers: new AdminSellersModule(httpClient),
+    adminKycSubmissions: new AdminKycSubmissionsModule(httpClient),
+    adminBanners: new AdminBannerModule(httpClient),
+
+    account: new AccountModule(httpClient),
+    rateLimit: new RateLimitModule(httpClient),
+    session: new SessionModule(httpClient),
+    kycSubmission: new KycSubmissionModule(httpClient),
+    user: new UserModule(httpClient),
+    banner: new BannerModule(httpClient),
+    transaction: new TransactionModule(httpClient),
+    sellerFee: new SellerFeeModule(httpClient),
+    seller: new SellerModule(httpClient),
+  };
 }
 
 export interface IApiService {
@@ -54,22 +79,7 @@ export class ApiService implements IApiService {
 
   constructor() {
     this.httpClient = new HttpClient(apiAxios);
-
-    // modules
-    this.modules = {
-      account: new AccountModule(this.httpClient),
-      rateLimit: new RateLimitModule(this.httpClient),
-      session: new SessionModule(this.httpClient),
-      kycSubmission: new KycSubmissionModule(this.httpClient),
-      user: new UserModule(this.httpClient),
-      banner: new BannerModule(this.httpClient),
-      transaction: new TransactionModule(this.httpClient),
-      sellerFee: new SellerFeeModule(this.httpClient),
-      seller: new SellerModule(this.httpClient),
-      adminPlatformMetrics: new AdminPlatformMetricsModule(this.httpClient),
-      adminSellers: new AdminSellersModule(this.httpClient),
-      adminKycSubmissions: new AdminKycSubmissionsModule(this.httpClient),
-    };
+    this.modules = attachModules(this.httpClient);
   }
 }
 

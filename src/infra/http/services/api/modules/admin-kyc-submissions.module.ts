@@ -1,9 +1,9 @@
 import type { IApiEnvelope } from "../api-types";
+import { BaseApiModule } from "./base-api.module";
 import type {
   IAdminKycSubmissionsQueryDto,
   IAdminKycSubmissionsResponseDto,
-} from "./admin-kyc-submissions.types";
-import { BaseApiModule } from "./base-api.module";
+} from "./types/admin-kyc-submissions.types";
 
 export type {
   IAdminKycSubmissionDto,
@@ -11,7 +11,7 @@ export type {
   IAdminKycSubmissionsResponseDto,
   IAdminRegisteredSellerDto,
   TAdminKycListFilter,
-} from "./admin-kyc-submissions.types";
+} from "./types/admin-kyc-submissions.types";
 
 export interface IAdminKycSubmissionsModule {
   listSubmissions(

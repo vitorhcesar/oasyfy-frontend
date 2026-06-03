@@ -1,11 +1,11 @@
 import type { IApiEnvelope } from "../api-types";
+import { BaseApiModule } from "./base-api.module";
 import type {
   IAdminFinanceMetricsQueryDto,
   IAdminFinanceMetricsResponseDto,
   IAdminSecondaryMetricsResponseDto,
   IPlatformMetricsResponseDto,
-} from "./admin-platform-metrics.types";
-import { BaseApiModule } from "./base-api.module";
+} from "./types/admin-platform-metrics.types";
 
 export type {
   IAdminFinanceMetricsQueryDto,
@@ -14,7 +14,7 @@ export type {
   IPlatformMetricsResponseDto,
   IPlatformMetricsTransactionDto,
   ISellerProfileSummaryDto,
-} from "./admin-platform-metrics.types";
+} from "./types/admin-platform-metrics.types";
 
 export interface IAdminPlatformMetricsModule {
   getPlatformMetrics(): Promise<IPlatformMetricsResponseDto>;

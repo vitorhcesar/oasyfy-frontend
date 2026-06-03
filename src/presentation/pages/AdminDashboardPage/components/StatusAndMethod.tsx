@@ -1,7 +1,7 @@
-import { IPlatformMetricsTransactionDto } from "@/infra/http/services/api/modules/admin-platform-metrics.types";
+import { IPlatformMetricsTransactionDto } from "@/infra/http/services/api/modules/types/admin-platform-metrics.types";
 import { useMemo } from "react";
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
-import { formatCompact } from "../../utils/format-compact";
+import { formatCompact } from "../utils/format-compact";
 
 const methodLabels: Record<string, string> = {
   pix: "Pix",

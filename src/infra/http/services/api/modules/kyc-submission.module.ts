@@ -1,34 +1,34 @@
 import type { IApiEnvelope } from "@/infra/http/services/api/api-types";
-import { mapSellerKycSubmissionResponse } from "./kyc-submission.mapper";
+import { BaseApiModule } from "./base-api.module";
+import { mapSellerKycSubmissionResponse } from "./types/kyc-submission.mapper";
 import type {
-  IKycSubmissionDto,
   IKycSubmissionDocumentsDto,
+  IKycSubmissionDto,
   ISellerKycSubmissionResponseDto,
   ISubmitSellerKycBody,
   ISubmitSellerKycFiles,
   ISubmitSellerKycParams,
   TSellerDashboardKycStatus,
-  TSellerKycDocumentsReview,
   TSellerKycDocReviewEntry,
-} from "./kyc-submission.types";
-import { BaseApiModule } from "./base-api.module";
+  TSellerKycDocumentsReview,
+} from "./types/kyc-submission.types";
 
 export type {
-  IKycSubmissionDto,
   IKycSubmissionDocumentsDto,
+  IKycSubmissionDto,
   ISellerKycSubmissionResponseDto,
   ISubmitSellerKycBody,
   ISubmitSellerKycFiles,
   ISubmitSellerKycParams,
   TSellerDashboardKycStatus,
-  TSellerKycDocumentsReview,
   TSellerKycDocReviewEntry,
+  TSellerKycDocumentsReview,
 };
 
 export interface IKycSubmissionModule {
   getSellerSubmission: () => Promise<ISellerKycSubmissionResponseDto>;
   submitSellerSubmission: (
-    params: ISubmitSellerKycParams
+    params: ISubmitSellerKycParams,
   ) => Promise<ISellerKycSubmissionResponseDto>;
 }
 
@@ -46,7 +46,7 @@ export class KycSubmissionModule
   }
 
   async submitSellerSubmission(
-    params: ISubmitSellerKycParams
+    params: ISubmitSellerKycParams,
   ): Promise<ISellerKycSubmissionResponseDto> {
     const formData = new FormData();
     const { body, files } = params;

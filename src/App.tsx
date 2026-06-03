@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/presentation/hooks/use-theme";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import AdminDashboardPage from "./presentation/pages/AdminDashboardPage";
+import AdminGeneralPage from "./presentation/pages/AdminGeneralPage";
 import AdminKycPage from "./presentation/pages/AdminKycPage";
 import AdminSellersPage from "./presentation/pages/AdminSellersPage";
 import LoginAdmin from "./presentation/pages/LoginAdminPage";
@@ -20,7 +21,6 @@ import AdminAcquirer from "./presentation/pages/admin/AdminAcquirer";
 import AdminBanners from "./presentation/pages/admin/AdminBanners";
 import AdminCrm from "./presentation/pages/admin/AdminCrm";
 import AdminEmail from "./presentation/pages/admin/AdminEmail";
-import AdminGeneral from "./presentation/pages/admin/AdminGeneral";
 import AdminGlobalFees from "./presentation/pages/admin/AdminGlobalFees";
 import AdminGoals from "./presentation/pages/admin/AdminGoals";
 import AdminManagers from "./presentation/pages/admin/AdminManagers";
@@ -190,7 +190,7 @@ export default function App() {
                   path="/admin/general"
                   element={
                     <ProtectedRoute requiredRole="admin">
-                      <AdminGeneral />
+                      <AdminGeneralPage />
                     </ProtectedRoute>
                   }
                 />

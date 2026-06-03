@@ -21,11 +21,9 @@ const LEGACY_DOCUMENT_KEY_MAP: Record<string, TKycSubmissionDocumentKey> = {
 };
 
 export function normalizeKycDocumentKey(
-  key: string
+  key: string,
 ): TKycSubmissionDocumentKey | null {
-  if (
-    (KYC_SUBMISSION_DOCUMENT_KEYS as readonly string[]).includes(key)
-  ) {
+  if ((KYC_SUBMISSION_DOCUMENT_KEYS as readonly string[]).includes(key)) {
     return key as TKycSubmissionDocumentKey;
   }
 
@@ -45,7 +43,7 @@ export const KYC_DOCUMENT_URL_FIELD: Record<
 
 export function getKycDocumentUrl(
   documents: IKycSubmissionDocumentsDto | null | undefined,
-  key: TKycSubmissionDocumentKey
+  key: TKycSubmissionDocumentKey,
 ): string | null {
   if (!documents) return null;
   return documents[KYC_DOCUMENT_URL_FIELD[key]] ?? null;

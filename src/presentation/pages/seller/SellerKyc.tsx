@@ -1,7 +1,7 @@
 import {
   getKycDocumentUrl,
   type TKycSubmissionDocumentKey,
-} from "@/infra/http/services/api/modules/kyc-submission-document-keys";
+} from "@/infra/http/services/api/modules/types/kyc-submission-document-keys";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import { useSellerKycSubmissionQuery } from "@/presentation/hooks/use-seller-kyc-submission-query";
 import {
@@ -47,8 +47,11 @@ const DOC_DEFINITIONS: { key: TKycSubmissionDocumentKey; label: string }[] = [
 ];
 
 export default function SellerKyc() {
-  const { submission: kyc, isLoading, invalidateQuery } =
-    useSellerKycSubmissionQuery();
+  const {
+    submission: kyc,
+    isLoading,
+    invalidateQuery,
+  } = useSellerKycSubmissionQuery();
   const [tab, setTab] = useState<TTab>("info");
   const [expandedSections, setExpandedSections] = useState<
     Record<string, boolean>
@@ -72,14 +75,14 @@ export default function SellerKyc() {
 
   const documentsReview = useMemo(
     () => kyc?.documentsReview ?? {},
-    [kyc?.documentsReview]
+    [kyc?.documentsReview],
   );
 
   const docs = useMemo(() => {
     if (!kyc) return [];
 
     const base = DOC_DEFINITIONS.filter(
-      (doc) => doc.key !== "companyContract" || kyc.personType === "pj"
+      (doc) => doc.key !== "companyContract" || kyc.personType === "pj",
     );
 
     return base.map((doc) => ({
@@ -90,7 +93,7 @@ export default function SellerKyc() {
 
   const hasRejected = useMemo(
     () => Object.values(documentsReview).some((r) => r.status === "rejected"),
-    [documentsReview]
+    [documentsReview],
   );
 
   useEffect(() => {
@@ -99,7 +102,7 @@ export default function SellerKyc() {
 
   const handleReupload = (_docKey: TKycSubmissionDocumentKey, _file: File) => {
     toast.info(
-      "Reenvio de documentos ainda não está disponível pela API. Entre em contato com o suporte."
+      "Reenvio de documentos ainda não está disponível pela API. Entre em contato com o suporte.",
     );
   };
 
@@ -142,7 +145,7 @@ export default function SellerKyc() {
     }
 
     toast.info(
-      "Atualização de dados bancários ainda não está disponível pela API."
+      "Atualização de dados bancários ainda não está disponível pela API.",
     );
     setEditingBank(false);
     void invalidateQuery();
@@ -214,10 +217,10 @@ export default function SellerKyc() {
   ];
 
   const docApproved = docs.filter(
-    (d) => documentsReview[d.key]?.status === "approved"
+    (d) => documentsReview[d.key]?.status === "approved",
   ).length;
   const docRejected = docs.filter(
-    (d) => documentsReview[d.key]?.status === "rejected"
+    (d) => documentsReview[d.key]?.status === "rejected",
   ).length;
   const progress =
     docs.length > 0 ? Math.round((docApproved / docs.length) * 100) : 0;
@@ -513,9 +516,7 @@ export default function SellerKyc() {
                           </p>
                         </div>
                       )}
-                      <label
-                        className="group flex items-center justify-center gap-3 w-full py-5 rounded-lg border border-dashed cursor-pointer transition-all duration-300 border-border/30 hover:border-primary/30 hover:bg-primary/[0.02]"
-                      >
+                      <label className="group flex items-center justify-center gap-3 w-full py-5 rounded-lg border border-dashed cursor-pointer transition-all duration-300 border-border/30 hover:border-primary/30 hover:bg-primary/[0.02]">
                         <Upload
                           size={14}
                           className="text-muted-foreground/40 group-hover:text-primary/60 transition-colors"

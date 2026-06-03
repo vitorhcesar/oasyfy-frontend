@@ -1,11 +1,11 @@
 import type { IApiEnvelope } from "../api-types";
-import type { IAdminSellerDto } from "./admin-sellers.types";
 import { BaseApiModule } from "./base-api.module";
+import type { IAdminSellerDto } from "./types/admin-sellers.types";
 
 export type {
   IAdminSellerDto,
   TAdminSellerKycStatus,
-} from "./admin-sellers.types";
+} from "./types/admin-sellers.types";
 
 export interface IAdminSellersModule {
   listSellers(): Promise<IAdminSellerDto[]>;
@@ -18,10 +18,9 @@ export class AdminSellersModule
   private readonly baseUrl = "/api/v1/admin/sellers";
 
   async listSellers(): Promise<IAdminSellerDto[]> {
-    const response =
-      await this.getClient().get<IApiEnvelope<IAdminSellerDto[]>>(
-        this.baseUrl,
-      );
+    const response = await this.getClient().get<
+      IApiEnvelope<IAdminSellerDto[]>
+    >(this.baseUrl);
     return response.data;
   }
 }

@@ -1,6 +1,6 @@
 import { AdminLayout } from "@/presentation/components/admin/AdminLayout";
-import { BannersTab } from "@/presentation/components/admin/BannersTab";
-import { ColorsTab } from "@/presentation/components/admin/ColorsTab";
+import { BannersTab } from "@/presentation/pages/AdminGeneralPage/components/BannersTab";
+import { ColorsTab } from "@/presentation/pages/AdminGeneralPage/components/ColorsTab";
 import { cn } from "@/presentation/utils/cn";
 import { Building2, Image, LayoutGrid, Palette } from "lucide-react";
 import { useState } from "react";
@@ -14,7 +14,7 @@ const tabs = [
 
 type TabKey = (typeof tabs)[number]["key"];
 
-export default function AdminGeneral() {
+export default function AdminGeneralPage() {
   const [activeTab, setActiveTab] = useState<TabKey>("empresa");
   const current = tabs.find((t) => t.key === activeTab)!;
 
@@ -59,7 +59,7 @@ export default function AdminGeneral() {
                   "px-4 py-2.5 text-xs font-medium transition-all relative whitespace-nowrap",
                   activeTab === tab.key
                     ? "text-primary"
-                    : "text-muted-foreground/60 hover:text-muted-foreground"
+                    : "text-muted-foreground/60 hover:text-muted-foreground",
                 )}
               >
                 {tab.label}

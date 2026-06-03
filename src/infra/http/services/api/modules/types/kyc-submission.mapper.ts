@@ -1,10 +1,10 @@
-import type { IKycSubmissionDocumentsDto } from "./kyc-submission.types";
 import { normalizeKycDocumentKey } from "./kyc-submission-document-keys";
 import type {
+  IKycSubmissionDocumentsDto,
   IKycSubmissionDto,
   ISellerKycSubmissionResponseDto,
-  TSellerKycDocumentsReview,
   TSellerKycDocReviewEntry,
+  TSellerKycDocumentsReview,
 } from "./kyc-submission.types";
 
 function isReviewEntry(value: unknown): value is TSellerKycDocReviewEntry {
@@ -37,7 +37,7 @@ function mapDocuments(raw: unknown): IKycSubmissionDocumentsDto | null {
 }
 
 export function normalizeDocumentsReview(
-  raw: Record<string, unknown> | null | undefined
+  raw: Record<string, unknown> | null | undefined,
 ): TSellerKycDocumentsReview {
   if (!raw) return {};
 
@@ -87,13 +87,13 @@ function mapSubmission(raw: unknown): IKycSubmissionDto | null {
     documents: legacyDocuments,
     documentsReview: normalizeDocumentsReview(
       (source.documentsReview as Record<string, unknown> | undefined) ??
-        (source.documents_review as Record<string, unknown> | undefined)
+        (source.documents_review as Record<string, unknown> | undefined),
     ),
   };
 }
 
 export function mapSellerKycSubmissionResponse(
-  raw: ISellerKycSubmissionResponseDto
+  raw: ISellerKycSubmissionResponseDto,
 ): ISellerKycSubmissionResponseDto {
   return {
     fullyApproved: raw.fullyApproved,

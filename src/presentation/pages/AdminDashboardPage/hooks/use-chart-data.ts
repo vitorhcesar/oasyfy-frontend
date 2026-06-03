@@ -1,4 +1,4 @@
-import { IPlatformMetricsTransactionDto } from "@/infra/http/services/api/modules/admin-platform-metrics.types";
+import { IPlatformMetricsTransactionDto } from "@/infra/http/services/api/modules/types/admin-platform-metrics.types";
 import { useMemo } from "react";
 
 interface IUseChartDataProps {
