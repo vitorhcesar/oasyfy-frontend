@@ -7,13 +7,13 @@ import { useState } from "react";
 
 interface IBannerListItemProps {
   banner: IAdminBannerDto;
-  setDeleteId: (id: number) => void;
+  openDeleteModal: (bannerId: number) => void;
   invalidateQuery: () => Promise<void>;
 }
 
 export default function BannerListItem({
   banner,
-  setDeleteId,
+  openDeleteModal,
   invalidateQuery,
 }: IBannerListItemProps) {
   const apiService = useApiService();
@@ -89,7 +89,7 @@ export default function BannerListItem({
             )}
           </button>
           <button
-            onClick={() => setDeleteId(banner.id)}
+            onClick={() => openDeleteModal(banner.id)}
             className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
           >
             <Trash2 size={14} />

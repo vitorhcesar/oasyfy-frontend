@@ -16,7 +16,17 @@ export function BannersTab() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<number | null>(null);
 
-  const handleCloseDeleteModal = () => {
+  const handleOpenDeleteModal = (bannerId: number) => {
+    setDeleteModalOpen(true);
+    setDeleteId(bannerId);
+  };
+
+  const handleDeleteModalOpenChange = (open: boolean) => {
+    if (!open) {
+      setDeleteModalOpen(false);
+      setDeleteId(null);
+    }
+
     setDeleteModalOpen(false);
     setDeleteId(null);
   };
@@ -31,7 +41,7 @@ export function BannersTab() {
 
       <DeleteBannerModal
         open={deleteModalOpen}
-        onOpenChange={handleCloseDeleteModal}
+        onOpenChange={handleDeleteModalOpenChange}
         deleteId={deleteId}
         onInvalidateQuery={invalidateBannersQuery}
       />
@@ -72,7 +82,7 @@ export function BannersTab() {
             <BannerListItem
               key={banner.id}
               banner={banner}
-              setDeleteId={setDeleteId}
+              openDeleteModal={handleOpenDeleteModal}
               invalidateQuery={invalidateBannersQuery}
             />
           ))}

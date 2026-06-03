@@ -75,8 +75,10 @@ export default function DeleteBannerModal({
             onClick={handleDelete}
             className={cn(
               "py-2 rounded-lg bg-destructive text-destructive-foreground text-xs font-medium hover:opacity-90 transition-all",
+              "flex items-center justify-center",
               deleting ? "opacity-50 cursor-not-allowed" : "",
             )}
+            disabled={deleting}
           >
             {deleting ? (
               <Loader2 size={13} className="animate-spin" />
