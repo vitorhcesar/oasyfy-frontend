@@ -1,55 +1,21 @@
 import type { IGatewayThemeColors } from "@/infra/http/services/api/modules/types/gateway-theme.types";
-import { useApiService } from "@/presentation/hooks/use-api-service";
-import { cn } from "@/presentation/utils/cn";
-import { tryOrToastError } from "@/presentation/utils/try-or-toast-error";
 import {
   AlertTriangle,
   CheckCircle,
   Eye,
   Layout,
   Loader2,
-  Moon,
   Palette,
   Pipette,
-  RotateCcw,
-  Save,
   Search,
-  Sun,
   Type,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import useGatewayTheme from "../../../hooks/use-gateway-theme";
-
-const DEFAULT_LIGHT: Record<string, string> = {
-  primaryColor: "152 60% 42%",
-  primaryForeground: "0 0% 100%",
-  backgroundColor: "0 0% 99%",
-  foregroundColor: "150 15% 10%",
-  cardColor: "0 0% 100%",
-  cardForeground: "150 15% 10%",
-  borderColor: "150 10% 92%",
-  mutedColor: "150 10% 96%",
-  mutedForeground: "150 8% 32%",
-  accentColor: "150 20% 96%",
-  accentForeground: "150 15% 10%",
-  destructiveColor: "0 72% 55%",
-  successColor: "152 60% 42%",
-  warningColor: "38 90% 50%",
-};
-
-const DEFAULT_DARK: Record<string, string> = {
-  darkPrimaryColor: "152 60% 45%",
-  darkBackgroundColor: "160 15% 5%",
-  darkForegroundColor: "150 10% 95%",
-  darkCardColor: "160 12% 8%",
-  darkCardForeground: "150 10% 95%",
-  darkBorderColor: "155 10% 15%",
-  darkMutedColor: "155 10% 12%",
-  darkMutedForeground: "150 8% 68%",
-  darkAccentColor: "155 12% 13%",
-  darkAccentForeground: "150 10% 93%",
-};
+import { useColorsTabStore } from "../stores/colors-tab.store";
+import { applyThemeToDOM } from "../utils/apply-theme-to-dom";
+import ColorsTabTopBar from "./ColorsTabTopBar";
 
 interface IColorField {
   key: Exclude<keyof IGatewayThemeColors, "id">;
@@ -266,28 +232,6 @@ function hexToHsl(hex: string): string {
   return `${Math.round(h * 360)} ${Math.round(s * 100)}% ${Math.round(
     l * 100,
   )}%`;
-}
-
-function applyThemeToDOM(theme: IGatewayThemeColors) {
-  const root = document.documentElement;
-  root.style.setProperty("--primary", theme.primaryColor);
-  root.style.setProperty("--primary-foreground", theme.primaryForeground);
-  root.style.setProperty("--background", theme.backgroundColor);
-  root.style.setProperty("--foreground", theme.foregroundColor);
-  root.style.setProperty("--card", theme.cardColor);
-  root.style.setProperty("--card-foreground", theme.cardForeground);
-  root.style.setProperty("--border", theme.borderColor);
-  root.style.setProperty("--input", theme.borderColor);
-  root.style.setProperty("--muted", theme.mutedColor);
-  root.style.setProperty("--muted-foreground", theme.mutedForeground);
-  root.style.setProperty("--accent", theme.accentColor);
-  root.style.setProperty("--accent-foreground", theme.accentForeground);
-  root.style.setProperty("--destructive", theme.destructiveColor);
-  root.style.setProperty("--success", theme.successColor);
-  root.style.setProperty("--warning", theme.warningColor);
-  root.style.setProperty("--ring", theme.primaryColor);
-  root.style.setProperty("--sidebar-primary", theme.primaryColor);
-  root.style.setProperty("--sidebar-ring", theme.primaryColor);
 }
 
 function ColorCard({
@@ -635,8 +579,6 @@ function LivePreview({
 }
 
 export function ColorsTab() {
-  const apiService = useApiService();
-
   const {
     data: fetchedTheme,
     isLoading: isLoadingGatewayTheme,
@@ -644,9 +586,9 @@ export function ColorsTab() {
     invalidateQuery: invalidateGatewayThemeQuery,
   } = useGatewayTheme();
 
-  const [saving, setSaving] = useState(false);
+  const { mode } = useColorsTabStore();
+
   const [theme, setTheme] = useState<IGatewayThemeColors | null>(null);
-  const [mode, setMode] = useState<"light" | "dark">("light");
 
   useEffect(() => {
     if (fetchedTheme) {
@@ -671,65 +613,6 @@ export function ColorsTab() {
     [theme],
   );
 
-  const handleSave = async () => {
-    if (!theme) return;
-
-    setSaving(true);
-
-    await tryOrToastError(
-      async () => {
-        await apiService.modules.gatewayTheme.update({
-          primaryColor: theme.primaryColor,
-          primaryForeground: theme.primaryForeground,
-          backgroundColor: theme.backgroundColor,
-          foregroundColor: theme.foregroundColor,
-          cardColor: theme.cardColor,
-          cardForeground: theme.cardForeground,
-          borderColor: theme.borderColor,
-          mutedColor: theme.mutedColor,
-          mutedForeground: theme.mutedForeground,
-          accentColor: theme.accentColor,
-          accentForeground: theme.accentForeground,
-          destructiveColor: theme.destructiveColor,
-          successColor: theme.successColor,
-          warningColor: theme.warningColor,
-          darkPrimaryColor: theme.darkPrimaryColor,
-          darkBackgroundColor: theme.darkBackgroundColor,
-          darkForegroundColor: theme.darkForegroundColor,
-          darkCardColor: theme.darkCardColor,
-          darkCardForeground: theme.darkCardForeground,
-          darkBorderColor: theme.darkBorderColor,
-          darkMutedColor: theme.darkMutedColor,
-          darkMutedForeground: theme.darkMutedForeground,
-          darkAccentColor: theme.darkAccentColor,
-          darkAccentForeground: theme.darkAccentForeground,
-        });
-        await invalidateGatewayThemeQuery();
-
-        toast.success("Tema salvo com sucesso!");
-      },
-      {
-        defaultErrorMessage: "Erro ao salvar tema",
-        finallyFn: () => {
-          setSaving(false);
-        },
-      },
-    );
-  };
-
-  const handleReset = () => {
-    if (!theme) return;
-
-    const defaults =
-      mode === "light" ? { ...DEFAULT_LIGHT } : { ...DEFAULT_DARK };
-    const updated = { ...theme, ...defaults };
-
-    setTheme(updated);
-
-    if (mode === "light") applyThemeToDOM(updated);
-    toast.info("Cores restauradas para o padrão");
-  };
-
   if (isLoadingGatewayTheme) {
     return (
       <div className="flex items-center justify-center py-16">
@@ -750,54 +633,9 @@ export function ColorsTab() {
 
   return (
     <div className="space-y-5">
-      {/* Top bar */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="flex items-center gap-1 rounded-xl bg-muted/40 p-1 border border-border/30">
-          <button
-            onClick={() => setMode("light")}
-            className={cn(
-              "flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium transition-all duration-200",
-              mode === "light"
-                ? "bg-card text-foreground shadow-sm border border-border/40"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            <Sun size={13} /> Claro
-          </button>
-          <button
-            onClick={() => setMode("dark")}
-            className={cn(
-              "flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium transition-all duration-200",
-              mode === "dark"
-                ? "bg-card text-foreground shadow-sm border border-border/40"
-                : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            <Moon size={13} /> Escuro
-          </button>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleReset}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium border border-border/40 text-muted-foreground hover:text-foreground hover:border-border transition-all"
-          >
-            <RotateCcw size={12} /> Restaurar
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="flex items-center gap-1.5 px-5 py-2 rounded-xl text-xs font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50 shadow-sm"
-          >
-            {saving ? (
-              <Loader2 size={12} className="animate-spin" />
-            ) : (
-              <Save size={12} />
-            )}
-            Salvar
-          </button>
-        </div>
-      </div>
+      <ColorsTabTopBar
+        invalidateGatewayThemeQuery={invalidateGatewayThemeQuery}
+      />
 
       {/* Main content: editor + preview side by side */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
