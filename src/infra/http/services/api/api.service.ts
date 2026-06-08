@@ -18,6 +18,7 @@ import {
   IAdminSellersModule,
 } from "./modules/admin-sellers.module";
 import { BannerModule, IBannerModule } from "./modules/banner.module";
+import { EmailModule, IEmailModule } from "./modules/email.module";
 import {
   GatewayThemeModule,
   IGatewayThemeModule,
@@ -37,6 +38,12 @@ import {
 import { IUserModule, UserModule } from "./modules/user.module";
 
 export interface IApiServiceModules {
+  // admin
+  adminPlatformMetrics: IAdminPlatformMetricsModule;
+  adminSellers: IAdminSellersModule;
+  adminKycSubmissions: IAdminKycSubmissionsModule;
+  adminBanners: IAdminBannerModule;
+
   account: IAccountModule;
   rateLimit: IRateLimitModule;
   session: ISessionModule;
@@ -46,11 +53,8 @@ export interface IApiServiceModules {
   transaction: ITransactionModule;
   sellerFee: ISellerFeeModule;
   seller: ISellerModule;
-  adminPlatformMetrics: IAdminPlatformMetricsModule;
-  adminSellers: IAdminSellersModule;
-  adminKycSubmissions: IAdminKycSubmissionsModule;
-  adminBanners: IAdminBannerModule;
   gatewayTheme: IGatewayThemeModule;
+  email: IEmailModule;
 }
 
 function attachModules(httpClient: IHttpClient): IApiServiceModules {
@@ -71,6 +75,7 @@ function attachModules(httpClient: IHttpClient): IApiServiceModules {
     transaction: new TransactionModule(httpClient),
     sellerFee: new SellerFeeModule(httpClient),
     seller: new SellerModule(httpClient),
+    email: new EmailModule(httpClient),
   };
 }
 

@@ -1,7 +1,7 @@
-import { AdminSellerDetail } from "@/presentation/components/AdminSellerDetail";
 import { AdminLayout } from "@/presentation/layouts/AdminLayout";
 import { Loader2 } from "lucide-react";
 import { useMemo } from "react";
+import { AdminKycDetails } from "./components/AdminKycDetails";
 import AdminKycPageContent from "./components/AdminKycPageContent";
 import AdminKycPageHeader from "./components/AdminKycPageHeader";
 import Filters from "./components/Filters";
@@ -97,7 +97,7 @@ export default function AdminKycPage() {
     return (
       <AdminLayout>
         <div className="px-8 py-8">
-          <AdminSellerDetail
+          <AdminKycDetails
             seller={selectedSeller}
             onBack={async () => {
               setSelectedSeller(null);

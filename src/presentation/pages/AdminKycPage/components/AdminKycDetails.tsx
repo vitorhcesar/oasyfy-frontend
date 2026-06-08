@@ -1,9 +1,11 @@
 import { supabase } from "@/infra/integrations/supabase/client";
+import { useApiService } from "@/presentation/hooks/use-api-service";
+import useFullSellerFeesQuery from "@/presentation/hooks/use-full-seller-fees-query";
+import { tryOrToastError } from "@/presentation/utils/try-or-toast-error";
 import {
   ArrowDownLeft,
   ArrowLeft,
   ArrowUpRight,
-  Ban,
   Check,
   CheckCircle,
   ChevronDown,
@@ -11,59 +13,28 @@ import {
   ExternalLink,
   Loader2,
   Lock,
-  Mail,
   Pencil,
-  Phone,
   RotateCcw,
-  Shield,
-  ShieldCheck,
   X,
   XCircle,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useAdminKycDetailsStore } from "../stores/admin-kyc-details.store";
+import { IKycSubmissionView } from "../types/kyc-submission-view.type";
+import { AdminKycDetailsHeader } from "./AdminKycDetailsHeader";
+import AdminKycDetailsTabs from "./AdminKycDetailsTabs";
 
-type KycSubmission = {
-  id: string;
-  user_id: string;
-  full_name: string;
-  person_type: "pf" | "pj";
-  cpf: string | null;
-  cnpj: string | null;
-  company_name: string | null;
-  company_type: string | null;
-  phone: string | null;
-  email: string | null;
-  status: string;
-  created_at: string;
-  city: string;
-  state: string;
-  street: string;
-  number: string;
-  neighborhood: string;
-  zip_code: string;
-  complement: string | null;
-  bank_data: any;
-  address_status: string;
-  bank_status: string;
-  documents_status: string;
-  rejection_reason: string | null;
-  document_front_url: string | null;
-  document_back_url: string | null;
-  selfie_url: string | null;
-  proof_of_address_url: string | null;
-  company_contract_url: string | null;
-  is_banned: boolean;
-  withdrawals_blocked: boolean;
-  withdrawal_block_reason: string | null;
-  email_manually_approved?: boolean;
-};
-type Tab = "kyc" | "documents" | "bank" | "fees" | "balance";
-
-interface IAdminSellerDetailProps {
-  seller: KycSubmission;
-  onBack: () => void;
-  onUpdate: () => void;
+interface IBalanceData {
+  available: number;
+  retained: number;
+  totalSalesCount: number;
+  totalSalesAmount: number;
+  grossSalesAmount: number;
+  earnedFeesAmount: number;
+  refundCount: number;
+  refundAmount: number;
+  withdrawnAmount: number;
 }
 
 function formatCurrencyAdmin(cents: number) {
@@ -73,81 +44,46 @@ function formatCurrencyAdmin(cents: number) {
   }).format(cents / 100);
 }
 
-const statusDot = (status: string) => {
-  if (status === "approved") return "bg-primary";
-  if (status === "rejected") return "bg-destructive";
-  return "bg-muted-foreground/40";
-};
+interface IAdminKycDetailsProps {
+  seller: IKycSubmissionView;
+  onBack: () => void;
+  onUpdate: () => void;
+}
 
-const statusText = (status: string) => {
-  if (status === "approved") return "Aprovado";
-  if (status === "rejected") return "Recusado";
-  return "Pendente";
-};
-
-export function AdminSellerDetail({
+export function AdminKycDetails({
   seller,
   onBack,
   onUpdate,
-}: IAdminSellerDetailProps) {
-  const [tab, setTab] = useState<Tab>("kyc");
+}: IAdminKycDetailsProps) {
+  const apiService = useApiService();
+
+  const {
+    tab,
+    setTab,
+    blockReason,
+    setBlockReason,
+    showBlockReasonModal,
+    setShowBlockReasonModal,
+  } = useAdminKycDetailsStore();
+
   const [actionLoading, setActionLoading] = useState(false);
   const [docRejectingKey, setDocRejectingKey] = useState<string | null>(null);
   const [docRejectReason, setDocRejectReason] = useState("");
   const [addressLoading, setAddressLoading] = useState(false);
   const [addressRejectReason, setAddressRejectReason] = useState("");
   const [showAddressReject, setShowAddressReject] = useState(false);
-  const [actionsOpen, setActionsOpen] = useState(false);
-  const [manualEmailApprovalLoading, setManualEmailApprovalLoading] =
-    useState(false);
-  const [showBlockReasonModal, setShowBlockReasonModal] = useState(false);
-  const [blockReason, setBlockReason] = useState("");
 
   // Fees state
-  const [fees, setFees] = useState<Record<string, number>>({});
-  const [feesLoading, setFeesLoading] = useState(false);
+  const {
+    data: sellerFees,
+    isLoading: isLoadingSellerFees,
+    invalidateQuery: invalidateSellerFeesQuery,
+  } = useFullSellerFeesQuery();
+
   const [feesSaving, setFeesSaving] = useState(false);
   const [feesId, setFeesId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (tab === "fees") {
-      setFeesLoading(true);
-      supabase
-        .from("seller_fees")
-        .select("*")
-        .eq("seller_id", seller.user_id)
-        .limit(1)
-        .then(({ data }) => {
-          if (data && data.length > 0) {
-            const row = data[0];
-            setFeesId(row.id);
-            const f: Record<string, number> = {};
-            for (const k of Object.keys(row)) {
-              if (k.endsWith("_fee") || k.endsWith("_days"))
-                f[k] = Number((row as Record<string, unknown>)[k]) || 0;
-            }
-            setFees(f);
-          } else {
-            setFeesId(null);
-            setFees({});
-          }
-          setFeesLoading(false);
-        });
-    }
-  }, [tab, seller.user_id]);
-
   // Balance state
-  interface IBalanceData {
-    available: number;
-    retained: number;
-    totalSalesCount: number;
-    totalSalesAmount: number;
-    grossSalesAmount: number;
-    earnedFeesAmount: number;
-    refundCount: number;
-    refundAmount: number;
-    withdrawnAmount: number;
-  }
   const [balanceData, setBalanceData] = useState<IBalanceData | null>(null);
   const [balanceLoading, setBalanceLoading] = useState(false);
 
@@ -235,64 +171,50 @@ export function AdminSellerDetail({
 
   const saveFees = async () => {
     setFeesSaving(true);
-    try {
-      if (feesId) {
-        await supabase
-          .from("seller_fees")
-          .update(fees as any)
-          .eq("id", feesId);
-      } else {
-        await supabase
-          .from("seller_fees")
-          .insert({ seller_id: seller.user_id, ...fees } as any);
-      }
-      toast.success("Taxas salvas!");
-    } catch (e: any) {
-      toast.error("Erro ao salvar taxas");
-    }
-    setFeesSaving(false);
+
+    await tryOrToastError(
+      async () => {
+        if (feesId) {
+          await supabase
+            .from("seller_fees")
+            .update(fees as any)
+            .eq("id", feesId);
+        } else {
+          await supabase
+            .from("seller_fees")
+            .insert({ seller_id: seller.user_id, ...fees } as any);
+        }
+
+        toast.success("Taxas salvas!");
+      },
+      {
+        defaultErrorMessage: "Erro ao salvar taxas",
+        finallyFn: () => {
+          setFeesSaving(false);
+        },
+      },
+    );
   };
 
   const sendApprovalEmail = async () => {
-    if (!seller.email) return;
-    try {
-      await supabase.functions.invoke("send-approval-email", {
-        body: { seller_email: seller.email, seller_name: seller.full_name },
-      });
-    } catch (err) {
-      console.error("Erro ao enviar e-mail de aprovação:", err);
-    }
-  };
-
-  const handleManualEmailApproval = async () => {
     if (!seller.email) {
-      toast.error("Seller sem e-mail cadastrado");
+      toast.error(
+        "Não foi possível enviar o e-mail de aprovação para o seller",
+      );
       return;
     }
 
-    setManualEmailApprovalLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke(
-        "approve-seller-email",
-        {
-          body: {
-            user_id: seller.user_id,
-            seller_email: seller.email,
-            seller_name: seller.full_name,
-          },
-        },
-      );
-
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-
-      toast.success("E-mail aprovado manualmente");
-      setActionsOpen(false);
-      onUpdate();
-    } catch (err: any) {
-      toast.error(err.message || "Erro ao aprovar e-mail");
-    }
-    setManualEmailApprovalLoading(false);
+    await tryOrToastError(
+      async () => {
+        await apiService.modules.email.sendApprovalEmail(
+          seller.email!,
+          seller.full_name,
+        );
+      },
+      {
+        defaultErrorMessage: "Erro ao enviar e-mail de aprovação",
+      },
+    );
   };
 
   const autoApproveIfComplete = async (
@@ -304,6 +226,7 @@ export function AdminSellerDetail({
       address_status: seller.address_status,
       ...overrides,
     };
+
     if (
       merged.documents_status === "approved" &&
       merged.bank_status === "approved" &&
@@ -319,11 +242,13 @@ export function AdminSellerDetail({
 
   const handleAddressApprove = async () => {
     setAddressLoading(true);
+
     await supabase
       .from("kyc_submissions")
       .update({ address_status: "approved" })
       .eq("id", seller.id);
     await autoApproveIfComplete({ address_status: "approved" });
+
     toast.success("Endereço aprovado!");
     setAddressLoading(false);
     onUpdate();
@@ -332,11 +257,13 @@ export function AdminSellerDetail({
   const handleAddressReject = async () => {
     if (!addressRejectReason.trim()) return;
     setAddressLoading(true);
+
     await supabase
       .from("kyc_submissions")
       .update({ address_status: "rejected" })
       .eq("id", seller.id);
     toast.success("Endereço recusado.");
+
     setAddressLoading(false);
     setShowAddressReject(false);
     setAddressRejectReason("");
@@ -345,11 +272,13 @@ export function AdminSellerDetail({
 
   const handleApprove = async () => {
     setActionLoading(true);
+
     await supabase
       .from("kyc_submissions")
       .update({ status: "approved", reviewed_at: new Date().toISOString() })
       .eq("id", seller.id);
     await sendApprovalEmail();
+
     onUpdate();
   };
 
@@ -374,6 +303,7 @@ export function AdminSellerDetail({
 
   const handleReject = async () => {
     setActionLoading(true);
+
     await supabase
       .from("kyc_submissions")
       .update({
@@ -382,50 +312,8 @@ export function AdminSellerDetail({
         reviewed_at: new Date().toISOString(),
       })
       .eq("id", seller.id);
+
     onUpdate();
-  };
-
-  const allApproved =
-    seller.documents_status === "approved" &&
-    seller.bank_status === "approved" &&
-    seller.address_status === "approved";
-  const effectiveStatus =
-    allApproved && seller.status === "approved"
-      ? "approved"
-      : seller.status === "rejected"
-        ? "rejected"
-        : "pending";
-
-  // Count pending items per tab
-  const docReview = ((seller as any).documents_review || {}) as Record<
-    string,
-    { status: string }
-  >;
-  const docKeys = [
-    "document_front",
-    "document_back",
-    "selfie",
-    "proof_of_address",
-    ...(seller.person_type === "pj" ? ["company_contract"] : []),
-  ];
-  const pendingDocs = docKeys.filter(
-    (k) => !docReview[k] || docReview[k].status === "pending",
-  ).length;
-  const pendingKyc = seller.address_status === "pending" ? 1 : 0;
-  const pendingBank = seller.bank_status === "pending" ? 1 : 0;
-
-  const tabs: { key: Tab; label: string; pending: number }[] = [
-    { key: "kyc", label: "Cadastro", pending: pendingKyc },
-    { key: "documents", label: "Documentos", pending: pendingDocs },
-    { key: "bank", label: "Banco", pending: pendingBank },
-    { key: "fees", label: "Taxas", pending: 0 },
-    { key: "balance", label: "Saldo", pending: 0 },
-  ];
-
-  const copyToClipboard = (text: string | null, label: string) => {
-    if (!text) return;
-    navigator.clipboard.writeText(text);
-    toast.success(`${label} copiado!`);
   };
 
   return (
@@ -439,185 +327,9 @@ export function AdminSellerDetail({
         Voltar
       </button>
 
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-1">
-          <h1 className="text-lg font-semibold text-foreground">
-            {seller.full_name}
-          </h1>
-          <span className="text-xs font-medium text-muted-foreground border border-border rounded px-1.5 py-0.5 uppercase">
-            {seller.person_type === "pj" ? "PJ" : "PF"}
-          </span>
-          <div className="flex items-center gap-1.5 ml-1">
-            <div
-              className={`w-1.5 h-1.5 rounded-full ${statusDot(
-                effectiveStatus,
-              )}`}
-            />
-            <span className="text-xs text-muted-foreground">
-              {statusText(effectiveStatus)}
-            </span>
-          </div>
+      <AdminKycDetailsHeader seller={seller} onUpdate={onUpdate} />
 
-          {/* Ações dropdown */}
-          <div className="relative ml-auto">
-            <button
-              onClick={() => setActionsOpen(!actionsOpen)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border border-border bg-card text-foreground hover:bg-muted transition-colors"
-            >
-              Ações
-              <ChevronDown
-                size={12}
-                className={`transition-transform ${
-                  actionsOpen ? "rotate-180" : ""
-                }`}
-              />
-            </button>
-            {actionsOpen && (
-              <>
-                <div
-                  className="fixed inset-0 z-40"
-                  onClick={() => setActionsOpen(false)}
-                />
-                <div className="absolute right-0 mt-1 w-48 rounded-lg border border-border bg-card shadow-lg z-50 py-1">
-                  <button
-                    onClick={async () => {
-                      setActionsOpen(false);
-                      const newVal = !seller.is_banned;
-                      const { error } = await supabase
-                        .from("kyc_submissions")
-                        .update({ is_banned: newVal })
-                        .eq("id", seller.id);
-                      if (error) {
-                        toast.error("Erro ao atualizar");
-                        return;
-                      }
-                      toast.success(
-                        newVal ? "Seller banido" : "Seller desbanido",
-                      );
-                      onUpdate();
-                    }}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-xs text-destructive hover:bg-destructive/10 transition-colors"
-                  >
-                    <Ban size={14} />
-                    {seller.is_banned ? "Desbanir seller" : "Banir seller"}
-                  </button>
-                  <button
-                    onClick={() => {
-                      setActionsOpen(false);
-                      if (seller.withdrawals_blocked) {
-                        // Unblock directly
-                        (async () => {
-                          const { error } = await supabase
-                            .from("kyc_submissions")
-                            .update({
-                              withdrawals_blocked: false,
-                              withdrawal_block_reason: null,
-                            })
-                            .eq("id", seller.id);
-                          if (error) {
-                            toast.error("Erro ao atualizar");
-                            return;
-                          }
-                          toast.success("Saque liberado");
-                          onUpdate();
-                        })();
-                      } else {
-                        setBlockReason("");
-                        setShowBlockReasonModal(true);
-                      }
-                    }}
-                    className="flex items-center gap-2 w-full px-3 py-2 text-xs text-foreground hover:bg-muted transition-colors"
-                  >
-                    <Lock size={14} />
-                    {seller.withdrawals_blocked
-                      ? "Liberar saque"
-                      : "Travar saque"}
-                  </button>
-                  <button
-                    onClick={handleManualEmailApproval}
-                    disabled={
-                      manualEmailApprovalLoading ||
-                      !seller.email ||
-                      !!seller.email_manually_approved
-                    }
-                    className="flex items-center gap-2 w-full px-3 py-2 text-xs text-foreground hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {manualEmailApprovalLoading ? (
-                      <Loader2 size={14} className="animate-spin" />
-                    ) : (
-                      <CheckCircle
-                        size={14}
-                        className={
-                          seller.email_manually_approved ? "text-primary" : ""
-                        }
-                      />
-                    )}
-                    {seller.email_manually_approved
-                      ? "E-mail aprovado"
-                      : "Aprovar e-mail"}
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Contact row */}
-        <div className="flex items-center gap-5 mt-3">
-          {seller.phone && (
-            <button
-              onClick={() => copyToClipboard(seller.phone, "Telefone")}
-              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <Phone size={12} />
-              {seller.phone}
-            </button>
-          )}
-          {seller.email && (
-            <button
-              onClick={() => copyToClipboard(seller.email, "E-mail")}
-              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <Mail size={12} />
-              {seller.email}
-              {seller.email_manually_approved ? (
-                <ShieldCheck size={12} className="text-primary" />
-              ) : (
-                <Shield size={12} className="text-muted-foreground/50" />
-              )}
-            </button>
-          )}
-          <span className="text-xs text-muted-foreground/50">
-            {new Date(seller.created_at).toLocaleDateString("pt-BR")}
-          </span>
-        </div>
-      </div>
-
-      {/* Tabs */}
-      <div className="flex items-center gap-0 border-b border-border/40 mb-8">
-        {tabs.map((t) => (
-          <button
-            key={t.key}
-            onClick={() => setTab(t.key)}
-            className={`px-4 py-2.5 text-xs font-medium transition-colors relative ${
-              tab === t.key
-                ? "text-foreground"
-                : "text-muted-foreground/60 hover:text-muted-foreground"
-            }`}
-          >
-            {t.label}
-            {t.pending > 0 && (
-              <span className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-amber-100 text-amber-700 text-[11px] md:text-xs font-bold leading-none">
-                {t.pending}
-              </span>
-            )}
-            {tab === t.key && (
-              <div className="absolute bottom-0 left-0 right-0 h-px bg-foreground" />
-            )}
-          </button>
-        ))}
-      </div>
+      <AdminKycDetailsTabs seller={seller} />
 
       {/* KYC Tab */}
       {tab === "kyc" && (
