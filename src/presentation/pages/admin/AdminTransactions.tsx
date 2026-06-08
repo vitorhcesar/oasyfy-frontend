@@ -1,5 +1,4 @@
 import { supabase } from "@/infra/integrations/supabase/client";
-import { AdminLayout } from "@/presentation/components/admin/AdminLayout";
 import { Calendar } from "@/presentation/components/ui/calendar";
 import {
   Dialog,
@@ -18,6 +17,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/presentation/components/ui/tabs";
+import { AdminLayout } from "@/presentation/layouts/AdminLayout";
 import { cn } from "@/presentation/utils/cn";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -185,7 +185,7 @@ export default function AdminTransactions() {
       setSellerInfo(
         profileRes.data
           ? { ...profileRes.data, email: kycRes.data?.email || undefined }
-          : null
+          : null,
       );
       setSellerKyc(
         kycRes.data
@@ -194,7 +194,7 @@ export default function AdminTransactions() {
               cpf: kycRes.data.cpf ?? undefined,
               cnpj: kycRes.data.cnpj ?? undefined,
             }
-          : null
+          : null,
       );
     };
     fetchSeller();
@@ -328,7 +328,7 @@ export default function AdminTransactions() {
 
   const stats = useMemo(() => {
     const paid = filtered.filter(
-      (t) => t.status === "completed" && t.method !== "withdrawal"
+      (t) => t.status === "completed" && t.method !== "withdrawal",
     );
     const pending = filtered.filter((t) => t.status === "pending");
     const failed = filtered.filter((t) => t.status === "failed");
@@ -404,7 +404,7 @@ export default function AdminTransactions() {
   const totalPages = Math.max(1, Math.ceil(displayFiltered.length / perPage));
   const paginatedData = displayFiltered.slice(
     (currentPage - 1) * perPage,
-    currentPage * perPage
+    currentPage * perPage,
   );
 
   useEffect(() => {
@@ -514,7 +514,7 @@ export default function AdminTransactions() {
                     "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all border",
                     dateRange?.from
                       ? "bg-primary/10 text-primary border-primary/20"
-                      : "bg-card border-border/50 text-muted-foreground hover:text-foreground"
+                      : "bg-card border-border/50 text-muted-foreground hover:text-foreground",
                   )}
                 >
                   <CalendarIcon size={11} />
@@ -561,26 +561,26 @@ export default function AdminTransactions() {
               stat.label === "Pago"
                 ? "completed"
                 : stat.label === "Pendente"
-                ? "pending"
-                : stat.label === "Falhou"
-                ? "failed"
-                : stat.label === "Chargeback"
-                ? "chargeback"
-                : "refunded";
+                  ? "pending"
+                  : stat.label === "Falhou"
+                    ? "failed"
+                    : stat.label === "Chargeback"
+                      ? "chargeback"
+                      : "refunded";
             const isActive = activeStatFilter === statusKey;
             return (
               <button
                 key={stat.label}
                 onClick={() =>
                   setActiveStatFilter((prev) =>
-                    prev === statusKey ? null : statusKey
+                    prev === statusKey ? null : statusKey,
                   )
                 }
                 className={cn(
                   "p-2.5 rounded-lg bg-card border text-left transition-all",
                   isActive
                     ? `${stat.border} ring-1 ring-offset-0`
-                    : "border-border/40 hover:border-border/60"
+                    : "border-border/40 hover:border-border/60",
                 )}
               >
                 <div className="flex items-center gap-1.5 mb-1">
@@ -849,7 +849,7 @@ export default function AdminTransactions() {
                           "w-6 h-6 rounded text-[10px] font-medium transition-all",
                           currentPage === page
                             ? "bg-primary text-primary-foreground"
-                            : "text-muted-foreground hover:bg-muted/30"
+                            : "text-muted-foreground hover:bg-muted/30",
                         )}
                       >
                         {page}
@@ -1009,7 +1009,7 @@ export default function AdminTransactions() {
                         {format(
                           new Date(selectedTx.created_at),
                           "dd/MM/yyyy 'às' HH:mm:ss",
-                          { locale: ptBR }
+                          { locale: ptBR },
                         )}
                       </p>
                     </div>
@@ -1021,7 +1021,7 @@ export default function AdminTransactions() {
                         {format(
                           new Date(selectedTx.updated_at),
                           "dd/MM/yyyy 'às' HH:mm:ss",
-                          { locale: ptBR }
+                          { locale: ptBR },
                         )}
                       </p>
                     </div>
@@ -1078,7 +1078,7 @@ export default function AdminTransactions() {
                       <span className="text-sm font-bold text-primary">
                         {formatCurrency(
                           selectedTx.net_amount ||
-                            selectedTx.amount - selectedTx.fee_amount
+                            selectedTx.amount - selectedTx.fee_amount,
                         )}
                       </span>
                     </div>
@@ -1195,7 +1195,7 @@ export default function AdminTransactions() {
                           "flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors border",
                           selectedTx.is_locked
                             ? "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
-                            : "bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/20"
+                            : "bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/20",
                         )}
                       >
                         {selectedTx.is_locked ? (

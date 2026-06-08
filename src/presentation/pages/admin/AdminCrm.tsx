@@ -1,5 +1,5 @@
 import { supabase } from "@/infra/integrations/supabase/client";
-import { AdminLayout } from "@/presentation/components/admin/AdminLayout";
+import { AdminLayout } from "@/presentation/layouts/AdminLayout";
 import { CheckCircle, Loader2, MessageSquare, Send } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -89,7 +89,7 @@ export default function AdminCrm() {
         "send-whatsapp-welcome",
         {
           body: { phone: testPhone.trim(), name: "Teste", test: true },
-        }
+        },
       );
       if (error) throw error;
       if (data?.error) throw new Error(data.error);

@@ -1,5 +1,5 @@
-import { AdminLayout } from "@/presentation/components/admin/AdminLayout";
 import { UnderConstruction } from "@/presentation/components/UnderConstruction";
+import { AdminLayout } from "@/presentation/layouts/AdminLayout";
 
 export default function AdminSubscriptions() {
   return (

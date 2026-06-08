@@ -1,11 +1,11 @@
 import { supabase } from "@/infra/integrations/supabase/client";
-import { AdminLayout } from "@/presentation/components/admin/AdminLayout";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/presentation/components/ui/dialog";
+import { AdminLayout } from "@/presentation/layouts/AdminLayout";
 import { cn } from "@/presentation/utils/cn";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -358,7 +358,7 @@ export default function AdminGoals() {
                   const gtc = goalTypeConfig[goal.goal_type];
                   const rtc = rewardTypeConfig[goal.reward_type];
                   const seller = sellers.find(
-                    (s) => s.user_id === goal.seller_id
+                    (s) => s.user_id === goal.seller_id,
                   );
                   return (
                     <div
@@ -371,7 +371,7 @@ export default function AdminGoals() {
                           <div
                             className={cn(
                               "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0",
-                              gtc.bg
+                              gtc.bg,
                             )}
                           >
                             <gtc.icon size={18} className={gtc.color} />
@@ -414,7 +414,7 @@ export default function AdminGoals() {
                                   "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border",
                                   goal.seller_id
                                     ? "bg-purple-500/10 text-purple-600 border-purple-500/20"
-                                    : "bg-primary/10 text-primary border-primary/20"
+                                    : "bg-primary/10 text-primary border-primary/20",
                                 )}
                               >
                                 {goal.seller_id
@@ -427,13 +427,13 @@ export default function AdminGoals() {
                                 {format(
                                   new Date(goal.start_date),
                                   "dd/MM/yyyy",
-                                  { locale: ptBR }
+                                  { locale: ptBR },
                                 )}
                                 {goal.end_date &&
                                   ` → ${format(
                                     new Date(goal.end_date),
                                     "dd/MM/yyyy",
-                                    { locale: ptBR }
+                                    { locale: ptBR },
                                   )}`}
                               </span>
                             </div>
@@ -483,7 +483,7 @@ export default function AdminGoals() {
                           <div
                             className={cn(
                               "w-8 h-8 rounded-lg flex items-center justify-center",
-                              gtc.bg
+                              gtc.bg,
                             )}
                           >
                             <gtc.icon size={14} className={gtc.color} />
@@ -728,8 +728,8 @@ export default function AdminGoals() {
                 {saving
                   ? "Salvando..."
                   : editingId
-                  ? "Atualizar Meta"
-                  : "Criar Meta"}
+                    ? "Atualizar Meta"
+                    : "Criar Meta"}
               </button>
               <button
                 onClick={() => setShowForm(false)}

@@ -1,9 +1,10 @@
 import { authClient } from "@/infra/auth/auth-client";
 import { useAuthStore } from "@/presentation/stores/useAuthStore";
-import { useEffect } from "react";
+import { PropsWithChildren, useEffect } from "react";
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: PropsWithChildren) {
   const sessionQuery = authClient.useSession();
+
   const setAuthSession = useAuthStore((s) => s.setAuthSession);
   const setLoading = useAuthStore((s) => s.setLoading);
   const fetchRole = useAuthStore((s) => s.fetchRole);

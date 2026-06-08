@@ -1,8 +1,8 @@
-import { useState } from 'react';
-import { AdminSidebar } from './AdminSidebar';
-import { Menu } from 'lucide-react';
+import { Menu } from "lucide-react";
+import { PropsWithChildren, useState } from "react";
+import { AdminSidebar } from "./AdminSidebar";
 
-export function AdminLayout({ children }: { children: React.ReactNode }) {
+export function AdminLayout({ children }: PropsWithChildren) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
@@ -13,11 +13,17 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         <div className="absolute top-1/4 right-[-100px] w-[500px] h-[500px] rounded-full bg-primary/12 blur-[120px]" />
         <div className="absolute bottom-[-80px] left-1/3 w-[550px] h-[550px] rounded-full bg-primary/15 blur-[140px]" />
       </div>
-      <AdminSidebar mobileOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <AdminSidebar
+        mobileOpen={sidebarOpen}
+        onClose={() => setSidebarOpen(false)}
+      />
       <main className="flex-1 min-w-0 relative z-10 flex flex-col">
         {/* Mobile topbar */}
         <div className="md:hidden h-14 flex items-center px-4 border-b border-border/50 bg-card/30 backdrop-blur-sm">
-          <button onClick={() => setSidebarOpen(true)} className="p-2 rounded-lg text-muted-foreground hover:bg-muted/40 transition-colors">
+          <button
+            onClick={() => setSidebarOpen(true)}
+            className="p-2 rounded-lg text-muted-foreground hover:bg-muted/40 transition-colors"
+          >
             <Menu size={22} />
           </button>
         </div>

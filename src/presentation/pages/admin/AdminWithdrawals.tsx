@@ -1,5 +1,4 @@
 import { supabase } from "@/infra/integrations/supabase/client";
-import { AdminLayout } from "@/presentation/components/admin/AdminLayout";
 import { Calendar } from "@/presentation/components/ui/calendar";
 import {
   Dialog,
@@ -12,6 +11,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/presentation/components/ui/popover";
+import { AdminLayout } from "@/presentation/layouts/AdminLayout";
 import { cn } from "@/presentation/utils/cn";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -135,7 +135,7 @@ export default function AdminWithdrawals() {
             ? bd[0]?.pixKey || bd[0]?.pix_key || ""
             : bd?.pixKey || bd?.pix_key || "";
           return [k.user_id, { email: k.email || "", pix_key: pixKey }];
-        })
+        }),
       );
     }
 
@@ -214,7 +214,7 @@ export default function AdminWithdrawals() {
     const fixedFee = Number(fees?.withdrawal_fixed_fee || 0);
     const withdrawalAmount = Math.abs(w.amount);
     const withdrawalFee = Math.round(
-      (withdrawalAmount * varFee) / 100 + fixedFee
+      (withdrawalAmount * varFee) / 100 + fixedFee,
     );
 
     setApprovalModal({
@@ -289,7 +289,7 @@ export default function AdminWithdrawals() {
       toast.success(
         type === "manual"
           ? "Saque aprovado manualmente"
-          : "Saque enviado para API"
+          : "Saque enviado para API",
       );
       setApprovalModal(null);
       fetchWithdrawals();
@@ -349,7 +349,7 @@ export default function AdminWithdrawals() {
     const pending = filtered.filter((w) => w.status === "pending");
     const completed = filtered.filter((w) => w.status === "completed");
     const cancelled = filtered.filter(
-      (w) => w.status === "cancelled" || w.status === "failed"
+      (w) => w.status === "cancelled" || w.status === "failed",
     );
     const transferring = filtered.filter((w) => w.status === "transferring");
     return [
@@ -402,7 +402,7 @@ export default function AdminWithdrawals() {
     if (!activeStatFilter) return filtered;
     if (activeStatFilter === "cancelled")
       return filtered.filter(
-        (w) => w.status === "cancelled" || w.status === "failed"
+        (w) => w.status === "cancelled" || w.status === "failed",
       );
     return filtered.filter((w) => w.status === activeStatFilter);
   }, [filtered, activeStatFilter]);
@@ -410,7 +410,7 @@ export default function AdminWithdrawals() {
   const totalPages = Math.max(1, Math.ceil(displayFiltered.length / perPage));
   const paginatedData = displayFiltered.slice(
     (currentPage - 1) * perPage,
-    currentPage * perPage
+    currentPage * perPage,
   );
 
   useEffect(() => {
@@ -510,7 +510,7 @@ export default function AdminWithdrawals() {
                     "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all border",
                     dateRange?.from
                       ? "bg-primary/10 text-primary border-primary/20"
-                      : "bg-background border-border/50 text-muted-foreground hover:text-foreground hover:border-border"
+                      : "bg-background border-border/50 text-muted-foreground hover:text-foreground hover:border-border",
                   )}
                 >
                   <CalendarIcon size={12} />
@@ -596,21 +596,21 @@ export default function AdminWithdrawals() {
                 key={stat.label}
                 onClick={() =>
                   setActiveStatFilter((prev) =>
-                    prev === stat.key ? null : stat.key
+                    prev === stat.key ? null : stat.key,
                   )
                 }
                 className={cn(
                   "p-4 rounded-xl bg-card border text-left transition-all hover:shadow-sm",
                   isActive
                     ? `${stat.border} ring-1 ring-offset-0`
-                    : "border-border/40"
+                    : "border-border/40",
                 )}
               >
                 <div className="flex items-center gap-2 mb-2">
                   <div
                     className={cn(
                       "w-7 h-7 rounded-lg flex items-center justify-center",
-                      stat.bg
+                      stat.bg,
                     )}
                   >
                     <stat.icon size={14} className={stat.color} />
@@ -763,7 +763,7 @@ export default function AdminWithdrawals() {
                           "w-7 h-7 rounded-lg text-xs md:text-sm font-medium transition-all",
                           currentPage === page
                             ? "bg-primary text-primary-foreground"
-                            : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                            : "text-muted-foreground hover:text-foreground hover:bg-muted/30",
                         )}
                       >
                         {page}
@@ -835,7 +835,7 @@ export default function AdminWithdrawals() {
                     "px-3 py-2.5 text-xs font-medium transition-colors relative",
                     modalTab === "info"
                       ? "text-foreground"
-                      : "text-muted-foreground hover:text-foreground"
+                      : "text-muted-foreground hover:text-foreground",
                   )}
                 >
                   Informações
@@ -849,7 +849,7 @@ export default function AdminWithdrawals() {
                     "px-3 py-2.5 text-xs font-medium transition-colors relative",
                     modalTab === "history"
                       ? "text-foreground"
-                      : "text-muted-foreground hover:text-foreground"
+                      : "text-muted-foreground hover:text-foreground",
                   )}
                 >
                   Logs
@@ -1059,13 +1059,13 @@ export default function AdminWithdrawals() {
                                 approvalModal.withdrawalFee >=
                                 0
                                 ? "text-primary"
-                                : "text-destructive"
+                                : "text-destructive",
                             )}
                           >
                             {formatCurrency(
                               approvalModal.balance +
                                 approvalModal.withdrawal.amount -
-                                approvalModal.withdrawalFee
+                                approvalModal.withdrawalFee,
                             )}
                           </span>
                         </div>
@@ -1094,7 +1094,7 @@ export default function AdminWithdrawals() {
                           {format(
                             new Date(approvalModal.withdrawal.created_at),
                             "dd/MM/yy 'às' HH:mm",
-                            { locale: ptBR }
+                            { locale: ptBR },
                           )}
                         </p>
                       </div>
@@ -1284,8 +1284,8 @@ export default function AdminWithdrawals() {
                                       evtSuccess
                                         ? "bg-primary/10 border-primary text-primary"
                                         : evtFailed
-                                        ? "bg-destructive/10 border-destructive text-destructive"
-                                        : "bg-muted border-border text-muted-foreground"
+                                          ? "bg-destructive/10 border-destructive text-destructive"
+                                          : "bg-muted border-border text-muted-foreground",
                                     )}
                                   >
                                     {evtSuccess ? (
@@ -1306,8 +1306,8 @@ export default function AdminWithdrawals() {
                                     evtSuccess
                                       ? "border-primary/20 bg-primary/[0.02]"
                                       : evtFailed
-                                      ? "border-destructive/20 bg-destructive/[0.02]"
-                                      : "border-border/30 bg-muted/5"
+                                        ? "border-destructive/20 bg-destructive/[0.02]"
+                                        : "border-border/30 bg-muted/5",
                                   )}
                                 >
                                   <div className="flex items-center justify-between">
@@ -1317,8 +1317,8 @@ export default function AdminWithdrawals() {
                                         evtSuccess
                                           ? "text-primary"
                                           : evtFailed
-                                          ? "text-destructive"
-                                          : "text-foreground"
+                                            ? "text-destructive"
+                                            : "text-foreground",
                                       )}
                                     >
                                       {eventLabels[entry.event] || entry.event}
@@ -1328,7 +1328,7 @@ export default function AdminWithdrawals() {
                                         {format(
                                           new Date(entry.timestamp),
                                           "dd/MM/yyyy - HH:mm:ss",
-                                          { locale: ptBR }
+                                          { locale: ptBR },
                                         )}
                                       </span>
                                     )}
@@ -1370,7 +1370,7 @@ export default function AdminWithdrawals() {
                                           "string"
                                             ? entry.api_response
                                             : JSON.stringify(
-                                                entry.api_response
+                                                entry.api_response,
                                               )}
                                         </p>
                                       </div>

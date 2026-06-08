@@ -1,5 +1,5 @@
 import { supabase } from "@/infra/integrations/supabase/client";
-import { AdminLayout } from "@/presentation/components/admin/AdminLayout";
+import { AdminLayout } from "@/presentation/layouts/AdminLayout";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -128,7 +128,7 @@ export default function Admin2FA() {
 
   const qrImageUrl = qrUri
     ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
-        qrUri
+        qrUri,
       )}`
     : "";
 

@@ -1,4 +1,4 @@
-import { AdminLayout } from "@/presentation/components/admin/AdminLayout";
+import { AdminLayout } from "@/presentation/layouts/AdminLayout";
 import { Loader2 } from "lucide-react";
 import AdminDashboardPageHeader from "./components/AdminDashboardPageHeader";
 import FeesChart from "./components/FeesChart";

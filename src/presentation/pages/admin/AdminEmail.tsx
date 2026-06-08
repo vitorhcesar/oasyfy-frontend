@@ -1,11 +1,11 @@
 import { supabase } from "@/infra/integrations/supabase/client";
-import { AdminLayout } from "@/presentation/components/admin/AdminLayout";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/presentation/components/ui/dialog";
+import { AdminLayout } from "@/presentation/layouts/AdminLayout";
 import { cn } from "@/presentation/utils/cn";
 import {
   CheckCircle2,
@@ -220,7 +220,7 @@ export default function AdminEmail() {
               "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border",
               settings.is_active
                 ? "bg-primary/5 border-primary/20 text-primary"
-                : "bg-muted/50 border-border/40 text-muted-foreground"
+                : "bg-muted/50 border-border/40 text-muted-foreground",
             )}
           >
             {settings.is_active ? (
@@ -264,7 +264,7 @@ export default function AdminEmail() {
                   <div
                     className={cn(
                       inputClass,
-                      "flex items-center text-muted-foreground/60 select-none"
+                      "flex items-center text-muted-foreground/60 select-none",
                     )}
                   >
                     {settings.host
@@ -279,7 +279,7 @@ export default function AdminEmail() {
                   <div
                     className={cn(
                       inputClass,
-                      "flex items-center text-muted-foreground/60 select-none"
+                      "flex items-center text-muted-foreground/60 select-none",
                     )}
                   >
                     {settings.port}
@@ -292,13 +292,13 @@ export default function AdminEmail() {
                   <div
                     className={cn(
                       inputClass,
-                      "flex items-center text-muted-foreground/60 select-none"
+                      "flex items-center text-muted-foreground/60 select-none",
                     )}
                   >
                     {settings.from_email
                       ? settings.from_email.replace(
                           /^(.{2}).*(@.*)$/,
-                          "$1••••$2"
+                          "$1••••$2",
                         )
                       : "••••••••"}
                   </div>
@@ -310,7 +310,7 @@ export default function AdminEmail() {
                   <div
                     className={cn(
                       inputClass,
-                      "flex items-center text-muted-foreground/60 select-none"
+                      "flex items-center text-muted-foreground/60 select-none",
                     )}
                   >
                     ••••••••••••

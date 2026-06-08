@@ -1,11 +1,11 @@
 import { supabase } from "@/infra/integrations/supabase/client";
-import { AdminLayout } from "@/presentation/components/admin/AdminLayout";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@/presentation/components/ui/tabs";
+import { AdminLayout } from "@/presentation/layouts/AdminLayout";
 import {
   Bitcoin,
   Clock,

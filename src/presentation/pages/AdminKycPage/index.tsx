@@ -1,5 +1,5 @@
-import { AdminLayout } from "@/presentation/components/admin/AdminLayout";
 import { AdminSellerDetail } from "@/presentation/components/AdminSellerDetail";
+import { AdminLayout } from "@/presentation/layouts/AdminLayout";
 import { Loader2 } from "lucide-react";
 import { useMemo } from "react";
 import AdminKycPageContent from "./components/AdminKycPageContent";

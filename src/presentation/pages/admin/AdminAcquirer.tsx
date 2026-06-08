@@ -1,6 +1,5 @@
 import cartwaveLogo from "@/assets/cartwave-logo.png";
 import { supabase } from "@/infra/integrations/supabase/client";
-import { AdminLayout } from "@/presentation/components/admin/AdminLayout";
 import { Badge } from "@/presentation/components/ui/badge";
 import { Button } from "@/presentation/components/ui/button";
 import {
@@ -20,6 +19,7 @@ import {
   SelectValue,
 } from "@/presentation/components/ui/select";
 import { Switch } from "@/presentation/components/ui/switch";
+import { AdminLayout } from "@/presentation/layouts/AdminLayout";
 import { cn } from "@/presentation/utils/cn";
 import {
   ArrowRightLeft,
@@ -107,7 +107,7 @@ export default function AdminAcquirer() {
   const [connections, setConnections] = useState<IAcquirerConnection[]>([]);
   const [loading, setLoading] = useState(true);
   const [configModal, setConfigModal] = useState<IAcquirerConnection | null>(
-    null
+    null,
   );
   const [showToken, setShowToken] = useState(false);
   const [showHmac, setShowHmac] = useState(false);
@@ -134,7 +134,7 @@ export default function AdminAcquirer() {
   >(null);
 
   const activeConnections = connections.filter(
-    (c) => c.is_active && c.status === "connected"
+    (c) => c.is_active && c.status === "connected",
   );
 
   const fetchConnections = async () => {
@@ -157,7 +157,7 @@ export default function AdminAcquirer() {
               branch_id: c.branch_id ?? "",
               account_number: c.account_number ?? "",
             }))
-          : []
+          : [],
       );
     }
     setLoading(false);
@@ -299,7 +299,7 @@ export default function AdminAcquirer() {
             >
               <div className="w-12 h-12 rounded-lg bg-background border border-border/30 flex items-center justify-center overflow-hidden shrink-0">
                 <img
-                  src={conn.logo_key ? logoMap[conn.logo_key] ?? "" : ""}
+                  src={conn.logo_key ? (logoMap[conn.logo_key] ?? "") : ""}
                   alt={conn.name}
                   className="w-8 h-8 object-contain"
                   loading="lazy"
@@ -320,14 +320,14 @@ export default function AdminAcquirer() {
                       conn.status === "connected" &&
                         "bg-primary/10 text-primary border-primary/20",
                       conn.status === "error" &&
-                        "bg-destructive/10 text-destructive border-destructive/20"
+                        "bg-destructive/10 text-destructive border-destructive/20",
                     )}
                   >
                     {conn.status === "connected"
                       ? "Conectada"
                       : conn.status === "error"
-                      ? "Erro"
-                      : "Desconectada"}
+                        ? "Erro"
+                        : "Desconectada"}
                   </Badge>
                 </div>
                 <p className="text-xs text-muted-foreground mt-0.5 truncate">
@@ -663,7 +663,7 @@ export default function AdminAcquirer() {
 
   const getAcquirerLogo = (acquirerId: string) => {
     const conn = connections.find((c) => c.id === acquirerId);
-    return conn?.logo_key ? logoMap[conn.logo_key] ?? null : null;
+    return conn?.logo_key ? (logoMap[conn.logo_key] ?? null) : null;
   };
 
   const renderRoutingDeposit = () => {
@@ -713,10 +713,10 @@ export default function AdminAcquirer() {
         {METHODS_DEPOSIT.map((method) => {
           const rules = getRulesForMethod(method);
           const methodAcquirers = activeConnections.filter((c) =>
-            c.methods.some((m) => m.toLowerCase() === method.toLowerCase())
+            c.methods.some((m) => m.toLowerCase() === method.toLowerCase()),
           );
           const availableAcquirers = methodAcquirers.filter(
-            (c) => !rules.some((r) => r.acquirer_id === c.id)
+            (c) => !rules.some((r) => r.acquirer_id === c.id),
           );
 
           return (
@@ -754,9 +754,9 @@ export default function AdminAcquirer() {
                         activeConnections.length === 0
                           ? "Nenhuma adquirente"
                           : availableAcquirers.length === 0 &&
-                            methodAcquirers.length > 0
-                          ? "Todas vinculadas"
-                          : "Vincular adquirente"
+                              methodAcquirers.length > 0
+                            ? "Todas vinculadas"
+                            : "Vincular adquirente"
                       }
                     />
                   </SelectTrigger>
@@ -764,7 +764,7 @@ export default function AdminAcquirer() {
                     {(availableAcquirers.length > 0
                       ? availableAcquirers
                       : activeConnections.filter(
-                          (c) => !rules.some((r) => r.acquirer_id === c.id)
+                          (c) => !rules.some((r) => r.acquirer_id === c.id),
                         )
                     ).map((c) => (
                       <SelectItem key={c.id} value={c.id} className="text-xs">
@@ -938,7 +938,7 @@ export default function AdminAcquirer() {
           const availableAcquirers = activeConnections.filter(
             (c) =>
               c.methods.some((m) => m.toLowerCase() === method.toLowerCase()) &&
-              !rules.some((r) => r.acquirer_id === c.id)
+              !rules.some((r) => r.acquirer_id === c.id),
           );
 
           const methodLabels: Record<string, string> = {
@@ -1127,7 +1127,7 @@ export default function AdminAcquirer() {
       (c) =>
         c.acquirer_id === acquirerId &&
         c.operation_type === opType &&
-        c.method === method
+        c.method === method,
     );
 
   const updateCostLocal = (
@@ -1135,14 +1135,14 @@ export default function AdminAcquirer() {
     opType: string,
     method: string,
     field: "fixed_cost" | "variable_cost" | "min_cost",
-    value: number
+    value: number,
   ) => {
     setCosts((prev) => {
       const idx = prev.findIndex(
         (c) =>
           c.acquirer_id === acquirerId &&
           c.operation_type === opType &&
-          c.method === method
+          c.method === method,
       );
       if (idx >= 0) {
         const updated = [...prev];
@@ -1275,7 +1275,7 @@ export default function AdminAcquirer() {
                       costs.filter(
                         (c) =>
                           c.acquirer_id === conn.id &&
-                          (c.fixed_cost > 0 || c.variable_cost > 0)
+                          (c.fixed_cost > 0 || c.variable_cost > 0),
                       ).length
                     }{" "}
                     regra(s) configurada(s)
@@ -1321,7 +1321,7 @@ export default function AdminAcquirer() {
                                     "deposit",
                                     method,
                                     "fixed_cost",
-                                    parseFloat(e.target.value) || 0
+                                    parseFloat(e.target.value) || 0,
                                   )
                                 }
                                 className="h-8 text-xs"
@@ -1343,7 +1343,7 @@ export default function AdminAcquirer() {
                                     "deposit",
                                     method,
                                     "variable_cost",
-                                    parseFloat(e.target.value) || 0
+                                    parseFloat(e.target.value) || 0,
                                   )
                                 }
                                 className="h-8 text-xs"
@@ -1364,7 +1364,7 @@ export default function AdminAcquirer() {
                                     "deposit",
                                     method,
                                     "min_cost",
-                                    parseFloat(e.target.value) || 0
+                                    parseFloat(e.target.value) || 0,
                                   )
                                 }
                                 className="h-8 text-xs"
@@ -1407,7 +1407,7 @@ export default function AdminAcquirer() {
                                     "withdrawal",
                                     method,
                                     "fixed_cost",
-                                    parseFloat(e.target.value) || 0
+                                    parseFloat(e.target.value) || 0,
                                   )
                                 }
                                 className="h-8 text-xs"
@@ -1429,7 +1429,7 @@ export default function AdminAcquirer() {
                                     "withdrawal",
                                     method,
                                     "variable_cost",
-                                    parseFloat(e.target.value) || 0
+                                    parseFloat(e.target.value) || 0,
                                   )
                                 }
                                 className="h-8 text-xs"
@@ -1450,7 +1450,7 @@ export default function AdminAcquirer() {
                                     "withdrawal",
                                     method,
                                     "min_cost",
-                                    parseFloat(e.target.value) || 0
+                                    parseFloat(e.target.value) || 0,
                                   )
                                 }
                                 className="h-8 text-xs"
@@ -1523,7 +1523,7 @@ export default function AdminAcquirer() {
                   "px-4 py-2.5 text-xs font-medium transition-all relative whitespace-nowrap",
                   activeTab === tab.key
                     ? "text-primary"
-                    : "text-muted-foreground/60 hover:text-muted-foreground"
+                    : "text-muted-foreground/60 hover:text-muted-foreground",
                 )}
               >
                 {tab.label}

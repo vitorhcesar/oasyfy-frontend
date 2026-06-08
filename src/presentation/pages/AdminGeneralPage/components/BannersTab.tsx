@@ -1,9 +1,9 @@
 import { Image, Loader2, Plus } from "lucide-react";
 import { useState } from "react";
-import useAdminBannersQuery from "../hooks/use-admin-banners-query";
+import AddBannerModal from "../../../components/banner/AddBannerModal";
+import useAdminBannersQuery from "../../../hooks/use-admin-banners-query";
 import BannerListItem from "./BannerListItem";
-import AddBannerModal from "./BannerModal";
-import DeleteBannerModal from "./DeleteBannerModal";
+import DeleteBannerModal from "../../../components/banner/DeleteBannerModal";
 
 export function BannersTab() {
   const {

@@ -1,5 +1,5 @@
 import { supabase } from "@/infra/integrations/supabase/client";
-import { AdminLayout } from "@/presentation/components/admin/AdminLayout";
+import { AdminLayout } from "@/presentation/layouts/AdminLayout";
 import { cn } from "@/presentation/utils/cn";
 import { Check, Clock, RotateCcw, X } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -80,10 +80,10 @@ export default function AdminRefunds() {
 
     const txMap = new Map((txResult.data ?? []).map((t: any) => [t.id, t]));
     const profileMap = new Map(
-      (profileResult.data ?? []).map((p: any) => [p.user_id, p])
+      (profileResult.data ?? []).map((p: any) => [p.user_id, p]),
     );
     const kycMap = new Map(
-      (kycResult.data ?? []).map((k: any) => [k.user_id, k])
+      (kycResult.data ?? []).map((k: any) => [k.user_id, k]),
     );
 
     const enriched = refundsData.map((r) => {
@@ -127,7 +127,7 @@ export default function AdminRefunds() {
       toast.success(
         noteModal.action === "approved"
           ? "Reembolso aprovado"
-          : "Reembolso rejeitado"
+          : "Reembolso rejeitado",
       );
       // If approved, update transaction status
       if (noteModal.action === "approved") {
@@ -229,21 +229,21 @@ export default function AdminRefunds() {
               key={s.label}
               onClick={() =>
                 setFilterStatus((prev) =>
-                  prev === s.filterVal ? "" : s.filterVal
+                  prev === s.filterVal ? "" : s.filterVal,
                 )
               }
               className={cn(
                 "p-4 rounded-xl bg-card border text-left transition-all hover:shadow-sm",
                 filterStatus === s.filterVal
                   ? "border-border ring-1 ring-primary/20"
-                  : "border-border/40"
+                  : "border-border/40",
               )}
             >
               <div className="flex items-center gap-2 mb-1">
                 <div
                   className={cn(
                     "w-7 h-7 rounded-lg flex items-center justify-center",
-                    s.bg
+                    s.bg,
                   )}
                 >
                   <s.icon size={14} className={s.color} />
@@ -296,7 +296,7 @@ export default function AdminRefunds() {
                         <span
                           className={cn(
                             "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs md:text-sm font-medium border",
-                            sc.cls
+                            sc.cls,
                           )}
                         >
                           <sc.icon size={10} />
@@ -304,12 +304,12 @@ export default function AdminRefunds() {
                         </span>
                         <span className="text-xs text-muted-foreground/50">
                           {new Date(refund.created_at).toLocaleDateString(
-                            "pt-BR"
+                            "pt-BR",
                           )}{" "}
                           às{" "}
                           {new Date(refund.created_at).toLocaleTimeString(
                             "pt-BR",
-                            { hour: "2-digit", minute: "2-digit" }
+                            { hour: "2-digit", minute: "2-digit" },
                           )}
                         </span>
                       </div>
@@ -461,7 +461,7 @@ export default function AdminRefunds() {
                     "flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-opacity disabled:opacity-50",
                     noteModal.action === "approved"
                       ? "bg-primary text-primary-foreground hover:opacity-90"
-                      : "bg-destructive text-destructive-foreground hover:opacity-90"
+                      : "bg-destructive text-destructive-foreground hover:opacity-90",
                   )}
                 >
                   {actionLoading ? (

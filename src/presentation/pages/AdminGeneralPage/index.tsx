@@ -1,4 +1,4 @@
-import { AdminLayout } from "@/presentation/components/admin/AdminLayout";
+import { AdminLayout } from "@/presentation/layouts/AdminLayout";
 import { BannersTab } from "@/presentation/pages/AdminGeneralPage/components/BannersTab";
 import { ColorsTab } from "@/presentation/pages/AdminGeneralPage/components/ColorsTab";
 import { cn } from "@/presentation/utils/cn";

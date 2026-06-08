@@ -1,5 +1,4 @@
 import { supabase } from "@/infra/integrations/supabase/client";
-import { AdminLayout } from "@/presentation/components/admin/AdminLayout";
 import { Button } from "@/presentation/components/ui/button";
 import {
   Card,
@@ -8,6 +7,7 @@ import {
   CardTitle,
 } from "@/presentation/components/ui/card";
 import { Input } from "@/presentation/components/ui/input";
+import { AdminLayout } from "@/presentation/layouts/AdminLayout";
 import { useAuthStore } from "@/presentation/stores/useAuthStore";
 import { Loader2, Mail, Shield, Trash2, UserPlus } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -57,7 +57,7 @@ export default function AdminManagers() {
             full_name: p.full_name,
             created_at: p.created_at,
           }))
-        : []
+        : [],
     );
     setLoading(false);
   };
@@ -85,7 +85,7 @@ export default function AdminManagers() {
 
       if (error || data?.error) {
         toast.error(
-          data?.error || error?.message || "Erro ao adicionar administrador"
+          data?.error || error?.message || "Erro ao adicionar administrador",
         );
         setAdding(false);
         return;
@@ -123,7 +123,7 @@ export default function AdminManagers() {
 
       if (error || data?.error) {
         toast.error(
-          data?.error || error?.message || "Erro ao remover administrador"
+          data?.error || error?.message || "Erro ao remover administrador",
         );
         setRemoving(null);
         return;

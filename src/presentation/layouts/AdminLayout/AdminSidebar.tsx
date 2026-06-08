@@ -10,6 +10,7 @@ import {
   CreditCard,
   DollarSign,
   FileCheck,
+  Image,
   LayoutDashboard,
   LogOut,
   Mail,
@@ -62,6 +63,7 @@ const settingsSubItems = [
   },
   { title: "2FA", url: "/admin/2fa", icon: ShieldCheck },
   { title: "Administradores", url: "/admin/managers", icon: UserCog },
+  { title: "Banners", url: "/admin/banners", icon: Image },
 ];
 
 interface AdminSidebarProps {
@@ -92,7 +94,7 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
     location.pathname.startsWith("/admin/2fa") ||
     location.pathname.startsWith("/admin/managers");
   const isOnFinancial = financialSubItems.some((i) =>
-    location.pathname.startsWith(i.url)
+    location.pathname.startsWith(i.url),
   );
   const [settingsOpen, setSettingsOpen] = useState(isOnSettings);
   const [financialOpen, setFinancialOpen] = useState(isOnFinancial);
@@ -158,7 +160,7 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
               className={cn(
                 linkClass,
                 "w-full",
-                isOnFinancial && "text-primary"
+                isOnFinancial && "text-primary",
               )}
             >
               <CreditCard size={20} className="flex-shrink-0" />
@@ -167,7 +169,7 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
                 size={14}
                 className={cn(
                   "flex-shrink-0 text-muted-foreground/40 transition-transform duration-200",
-                  financialOpen && "rotate-180"
+                  financialOpen && "rotate-180",
                 )}
               />
             </button>
@@ -210,7 +212,7 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
               className={cn(
                 linkClass,
                 "w-full",
-                isOnSettings && "text-primary"
+                isOnSettings && "text-primary",
               )}
             >
               <Settings size={20} className="flex-shrink-0" />
@@ -219,7 +221,7 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
                 size={14}
                 className={cn(
                   "flex-shrink-0 text-muted-foreground/40 transition-transform duration-200",
-                  settingsOpen && "rotate-180"
+                  settingsOpen && "rotate-180",
                 )}
               />
             </button>
