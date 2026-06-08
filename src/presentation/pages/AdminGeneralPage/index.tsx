@@ -19,22 +19,26 @@ export default function AdminGeneralPage() {
   const current = tabs.find((t) => t.key === activeTab)!;
 
   const renderContent = () => {
-    if (activeTab === "banners") return <BannersTab />;
-    if (activeTab === "cores") return <ColorsTab />;
-
-    return (
-      <div className="rounded-xl border border-border/40 bg-card p-8 text-center">
-        <div className="w-10 h-10 rounded-lg bg-muted/50 flex items-center justify-center mx-auto mb-3">
-          <current.icon size={18} className="text-muted-foreground/40" />
-        </div>
-        <p className="text-sm font-medium text-foreground mb-1">
-          {current.label}
-        </p>
-        <p className="text-xs md:text-sm text-muted-foreground">
-          Em breve esta seção estará disponível.
-        </p>
-      </div>
-    );
+    switch (activeTab) {
+      case "banners":
+        return <BannersTab />;
+      case "cores":
+        return <ColorsTab />;
+      default:
+        return (
+          <div className="rounded-xl border border-border/40 bg-card p-8 text-center">
+            <div className="w-10 h-10 rounded-lg bg-muted/50 flex items-center justify-center mx-auto mb-3">
+              <current.icon size={18} className="text-muted-foreground/40" />
+            </div>
+            <p className="text-sm font-medium text-foreground mb-1">
+              {current.label}
+            </p>
+            <p className="text-xs md:text-sm text-muted-foreground">
+              Em breve esta seção estará disponível.
+            </p>
+          </div>
+        );
+    }
   };
 
   return (
