@@ -3,17 +3,17 @@ import { useApiService } from "./use-api-service";
 
 const DEFAULT_RETURN = null;
 
-export default function useFullSellerFeesQuery() {
+export default function useSellerFeeQuery() {
   const apiService = useApiService();
 
   const queryClient = useQueryClient();
 
-  const QUERY_KEY = ["full-seller-fees"];
+  const QUERY_KEY = ["seller-fee"];
 
   const query = useQuery({
     queryKey: QUERY_KEY,
     queryFn: async () => {
-      const data = await apiService.modules.sellerFee.getFullSellerFees();
+      const data = await apiService.modules.sellerFee.getSellerFee();
       return data;
     },
   });

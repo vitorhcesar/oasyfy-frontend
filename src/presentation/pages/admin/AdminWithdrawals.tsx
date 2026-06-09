@@ -171,7 +171,7 @@ export default function AdminWithdrawals() {
       withdrawalFee: 0,
     });
 
-    const [kycRes, ipsRes, txRes, profileRes, sellerFeesRes, globalFeesRes] =
+    const [kycRes, ipsRes, txRes, profileRes, sellerFeeRes, globalFeesRes] =
       await Promise.all([
         supabase
           .from("kyc_submissions")
@@ -209,7 +209,7 @@ export default function AdminWithdrawals() {
       .reduce((sum: number, t: any) => sum + t.amount, 0);
 
     // Calculate withdrawal fee
-    const fees = sellerFeesRes.data || globalFeesRes.data;
+    const fees = sellerFeeRes.data || globalFeesRes.data;
     const varFee = Number(fees?.withdrawal_variable_fee || 0);
     const fixedFee = Number(fees?.withdrawal_fixed_fee || 0);
     const withdrawalAmount = Math.abs(w.amount);

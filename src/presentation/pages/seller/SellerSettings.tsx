@@ -307,7 +307,8 @@ function SecurityTab({ userId }: { userId?: string }) {
                     });
                     if (error) {
                       toast.error(
-                        translateError(error.message) || "Erro ao alterar senha"
+                        translateError(error.message) ||
+                          "Erro ao alterar senha",
                       );
                     } else {
                       toast.success("Senha alterada com sucesso");
@@ -438,8 +439,8 @@ export default function SellerSettings() {
   const [accountId, setAccountId] = useState("");
   const [phone, setPhone] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [sellerFees, setSellerFees] = useState<Record<string, number> | null>(
-    null
+  const [sellerFee, setSellerFee] = useState<Record<string, number> | null>(
+    null,
   );
 
   useEffect(() => {
@@ -463,7 +464,7 @@ export default function SellerSettings() {
         }
         // Only use seller fees if at least one fee value is non-zero
         if (hasNonZero) {
-          setSellerFees(f);
+          setSellerFee(f);
           return;
         }
       }
@@ -479,7 +480,7 @@ export default function SellerSettings() {
           if (k.endsWith("_fee") || k.endsWith("_days"))
             f[k] = Number(row[k]) || 0;
         }
-        setSellerFees(f);
+        setSellerFee(f);
       }
     };
     loadFees();
@@ -787,7 +788,7 @@ export default function SellerSettings() {
                   Taxas aplicadas nas suas transações
                 </p>
 
-                {!sellerFees ? (
+                {!sellerFee ? (
                   <p className="text-sm text-muted-foreground py-8 text-center">
                     Nenhuma taxa configurada ainda.
                   </p>
@@ -802,10 +803,9 @@ export default function SellerSettings() {
                         { label: "Saque", prefix: "withdrawal" },
                       ] as const
                     ).map(({ label, prefix }) => {
-                      const fixed = sellerFees[`${prefix}_fixed_fee`] || 0;
-                      const variable =
-                        sellerFees[`${prefix}_variable_fee`] || 0;
-                      const min = sellerFees[`${prefix}_min_fee`] || 0;
+                      const fixed = sellerFee[`${prefix}_fixed_fee`] || 0;
+                      const variable = sellerFee[`${prefix}_variable_fee`] || 0;
+                      const min = sellerFee[`${prefix}_min_fee`] || 0;
                       const hasAny = fixed > 0 || variable > 0 || min > 0;
                       if (!hasAny) return null;
 

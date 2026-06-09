@@ -1,6 +1,6 @@
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import { WithdrawalModal } from "@/presentation/components/seller/WithdrawalModal";
-import useSellerFeesQuery from "@/presentation/hooks/use-seller-fees-query";
+import useSellerFeeQuery from "@/presentation/hooks/use-seller-fee-query";
 import { useSellerKycSubmissionQuery } from "@/presentation/hooks/use-seller-kyc-submission-query";
 import useSellerTransactionsQuery from "@/presentation/hooks/use-seller-transactions-query";
 import { useAuthStore } from "@/presentation/stores/useAuthStore";
@@ -40,8 +40,8 @@ export default function SellerDashboardPage() {
   const {
     data: fees,
     isLoading: feesLoading,
-    invalidateQuery: invalidateSellerFeesQuery,
-  } = useSellerFeesQuery();
+    invalidateQuery: invalidateSellerFeeQuery,
+  } = useSellerFeeQuery();
 
   const { timeRange, dateRange } = useSellerDashboardStore();
 
@@ -68,7 +68,7 @@ export default function SellerDashboardPage() {
   const invalidateSellerData = async () => {
     await Promise.all([
       invalidateSellerTransactionsQuery(),
-      invalidateSellerFeesQuery(),
+      invalidateSellerFeeQuery(),
     ]);
   };
 
@@ -76,7 +76,7 @@ export default function SellerDashboardPage() {
 
   const showKycForm = kycStatus === "none" || kycStatus === "rejected";
   const hasRejectedDocs = Object.values(documentsReview).some(
-    (v) => v.status === "rejected"
+    (v) => v.status === "rejected",
   );
   const showKycPending = !showKycForm && !fullyApproved && !hasRejectedDocs;
   const showDocResubmit = !showKycForm && !fullyApproved && hasRejectedDocs;
@@ -94,12 +94,12 @@ export default function SellerDashboardPage() {
         const d = new Date(t.createdAt);
         return d >= rangeStart && d <= rangeEnd && t.method !== "withdrawal";
       }),
-    [transactions, rangeEnd, rangeStart]
+    [transactions, rangeEnd, rangeStart],
   );
 
   const allPositiveTx = useMemo(
     () => transactions.filter((t) => t.amount > 0),
-    [transactions]
+    [transactions],
   );
 
   // Per-method balances for withdrawal modal — subtract withdrawals & adjustments proportionally
@@ -108,16 +108,16 @@ export default function SellerDashboardPage() {
       allPositiveTx
         .filter((t) => t.isPaid() && t.method === "card")
         .reduce((s, t) => s + t.amount, 0),
-    [allPositiveTx]
+    [allPositiveTx],
   );
   const pixBoletoPaid = useMemo(
     () =>
       allPositiveTx
         .filter(
-          (t) => t.isPaid() && (t.method === "pix" || t.method === "boleto")
+          (t) => t.isPaid() && (t.method === "pix" || t.method === "boleto"),
         )
         .reduce((s, t) => s + t.amount, 0),
-    [allPositiveTx]
+    [allPositiveTx],
   );
 
   const cardRetained = useMemo(() => {
@@ -129,8 +129,8 @@ export default function SellerDashboardPage() {
           t.method === "card" &&
           fees.cardRetentionDays > 0 &&
           new Date(
-            new Date(t.createdAt).getTime() + fees.cardRetentionDays * 86400000
-          ) > now
+            new Date(t.createdAt).getTime() + fees.cardRetentionDays * 86400000,
+          ) > now,
       )
       .reduce((s, t) => s + t.amount, 0);
   }, [allPositiveTx, fees, now]);
@@ -144,7 +144,8 @@ export default function SellerDashboardPage() {
           return (
             fees.pixRetentionDays > 0 &&
             new Date(
-              new Date(t.createdAt).getTime() + fees.pixRetentionDays * 86400000
+              new Date(t.createdAt).getTime() +
+                fees.pixRetentionDays * 86400000,
             ) > now
           );
         if (t.method === "boleto")
@@ -152,7 +153,7 @@ export default function SellerDashboardPage() {
             fees.boletoRetentionDays > 0 &&
             new Date(
               new Date(t.createdAt).getTime() +
-                fees.boletoRetentionDays * 86400000
+                fees.boletoRetentionDays * 86400000,
             ) > now
           );
         return false;
@@ -177,7 +178,7 @@ export default function SellerDashboardPage() {
           100,
           Math.round((pixPaid / pixTx.length) * 100) +
             Math.floor(Math.random() * 3) +
-            1
+            1,
         )
       : 0;
 
@@ -218,7 +219,7 @@ export default function SellerDashboardPage() {
         className={cn(
           "w-full max-w-4xl",
           "mx-auto px-4 md:px-8 lg:px-10 py-6",
-          dashboardBlocked && "blur-sm pointer-events-none select-none"
+          dashboardBlocked && "blur-sm pointer-events-none select-none",
         )}
       >
         <Banners />

@@ -45,7 +45,7 @@ interface Withdrawal {
   updated_at: string;
 }
 
-interface SellerFees {
+interface SellerFee {
   pix_retention_days: number;
   card_retention_days: number;
   boleto_retention_days: number;
@@ -110,7 +110,7 @@ function StatusBadge({ status }: { status: string }) {
     <span
       className={cn(
         "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium",
-        s.className
+        s.className,
       )}
     >
       <Icon size={10} />
@@ -125,7 +125,7 @@ export default function SellerTransfers() {
   const [allTx, setAllTx] = useState<
     { amount: number; method: string; status: string; created_at: string }[]
   >([]);
-  const [fees, setFees] = useState<SellerFees | null>(null);
+  const [fees, setFees] = useState<SellerFee | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -144,7 +144,7 @@ export default function SellerTransfers() {
       supabase
         .from("transactions")
         .select(
-          "id, amount, fee_amount, net_amount, status, description, pix_code, acquirer, metadata, created_at, updated_at"
+          "id, amount, fee_amount, net_amount, status, description, pix_code, acquirer, metadata, created_at, updated_at",
         )
         .eq("seller_id", user.id)
         .eq("method", "withdrawal")
@@ -157,7 +157,7 @@ export default function SellerTransfers() {
       supabase
         .from("seller_fees")
         .select(
-          "pix_retention_days, card_retention_days, boleto_retention_days, crypto_retention_days"
+          "pix_retention_days, card_retention_days, boleto_retention_days, crypto_retention_days",
         )
         .eq("seller_id", user.id)
         .limit(1),
@@ -170,7 +170,7 @@ export default function SellerTransfers() {
     ]);
     setWithdrawals((wRes.data as Withdrawal[]) || []);
     setAllTx((txRes.data as any[]) || []);
-    setFees((feeRes.data?.[0] as SellerFees) || null);
+    setFees((feeRes.data?.[0] as SellerFee) || null);
     setWithdrawalBlocked(kycRes.data?.withdrawals_blocked || false);
     setBlockReason(kycRes.data?.withdrawal_block_reason || null);
     setLoading(false);
@@ -184,20 +184,20 @@ export default function SellerTransfers() {
   const now = new Date();
   const paidTx = useMemo(
     () => allTx.filter((t) => isPaid(t.status) && t.amount > 0),
-    [allTx]
+    [allTx],
   );
   const totalPaid = useMemo(
     () => paidTx.reduce((s, t) => s + t.amount, 0),
-    [paidTx]
+    [paidTx],
   );
   const totalWithdrawn = useMemo(
     () =>
       Math.abs(
         withdrawals
           .filter((w) => isPaid(w.status))
-          .reduce((s, w) => s + w.amount, 0)
+          .reduce((s, w) => s + w.amount, 0),
       ),
-    [withdrawals]
+    [withdrawals],
   );
 
   const retainedBalance = useMemo(() => {
@@ -208,10 +208,10 @@ export default function SellerTransfers() {
           t.method === "pix"
             ? fees.pix_retention_days
             : t.method === "card"
-            ? fees.card_retention_days
-            : t.method === "boleto"
-            ? fees.boleto_retention_days
-            : fees.crypto_retention_days;
+              ? fees.card_retention_days
+              : t.method === "boleto"
+                ? fees.boleto_retention_days
+                : fees.crypto_retention_days;
         if (!days) return false;
         return (
           new Date(new Date(t.created_at).getTime() + days * 86400000) > now
@@ -222,7 +222,7 @@ export default function SellerTransfers() {
 
   const availableBalance = Math.max(
     0,
-    totalPaid - totalWithdrawn - retainedBalance
+    totalPaid - totalWithdrawn - retainedBalance,
   );
 
   // Card vs PIX/Boleto balances
@@ -231,14 +231,14 @@ export default function SellerTransfers() {
       paidTx
         .filter((t) => t.method === "card")
         .reduce((s, t) => s + t.amount, 0),
-    [paidTx]
+    [paidTx],
   );
   const pixBoletoPaid = useMemo(
     () =>
       paidTx
         .filter((t) => t.method === "pix" || t.method === "boleto")
         .reduce((s, t) => s + t.amount, 0),
-    [paidTx]
+    [paidTx],
   );
   const cardRetained = useMemo(() => {
     if (!fees || !fees.card_retention_days) return 0;
@@ -248,8 +248,8 @@ export default function SellerTransfers() {
           t.method === "card" &&
           new Date(
             new Date(t.created_at).getTime() +
-              fees.card_retention_days * 86400000
-          ) > now
+              fees.card_retention_days * 86400000,
+          ) > now,
       )
       .reduce((s, t) => s + t.amount, 0);
   }, [paidTx, fees]);
@@ -262,7 +262,7 @@ export default function SellerTransfers() {
             fees.pix_retention_days > 0 &&
             new Date(
               new Date(t.created_at).getTime() +
-                fees.pix_retention_days * 86400000
+                fees.pix_retention_days * 86400000,
             ) > now
           );
         if (t.method === "boleto")
@@ -270,7 +270,7 @@ export default function SellerTransfers() {
             fees.boleto_retention_days > 0 &&
             new Date(
               new Date(t.created_at).getTime() +
-                fees.boleto_retention_days * 86400000
+                fees.boleto_retention_days * 86400000,
             ) > now
           );
         return false;
@@ -293,14 +293,14 @@ export default function SellerTransfers() {
       withdrawals
         .filter((w) => w.status === "pending")
         .reduce((s, w) => s + Math.abs(w.amount), 0),
-    [withdrawals]
+    [withdrawals],
   );
   const totalCompleted = useMemo(
     () =>
       withdrawals
         .filter((w) => isPaid(w.status))
         .reduce((s, w) => s + Math.abs(w.amount), 0),
-    [withdrawals]
+    [withdrawals],
   );
 
   // Filtered list
@@ -311,7 +311,7 @@ export default function SellerTransfers() {
         list = list.filter((w) => isPaid(w.status));
       } else if (statusFilter === "failed") {
         list = list.filter(
-          (w) => w.status === "failed" || w.status === "cancelled"
+          (w) => w.status === "failed" || w.status === "cancelled",
         );
       } else if (statusFilter === "rejected") {
         list = list.filter((w) => w.status === "rejected");
@@ -323,7 +323,7 @@ export default function SellerTransfers() {
       list = list.filter(
         (w) =>
           w.description?.toLowerCase().includes(search.toLowerCase()) ||
-          w.id.includes(search)
+          w.id.includes(search),
       );
     if (dateFrom) list = list.filter((w) => new Date(w.created_at) >= dateFrom);
     if (dateTo) {
@@ -440,7 +440,7 @@ export default function SellerTransfers() {
                   "px-3 py-1.5 rounded-lg text-xs md:text-sm font-medium transition-colors",
                   statusFilter === f.key
                     ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/30",
                 )}
               >
                 {f.label}
@@ -454,7 +454,7 @@ export default function SellerTransfers() {
                   "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs md:text-sm font-medium transition-all",
                   dateFrom || dateTo
                     ? "bg-primary/10 text-primary border border-primary/20"
-                    : "bg-card border border-border/40 text-muted-foreground hover:text-foreground"
+                    : "bg-card border border-border/40 text-muted-foreground hover:text-foreground",
                 )}
               >
                 <CalendarIcon size={12} />
@@ -462,7 +462,7 @@ export default function SellerTransfers() {
                   ? `${format(dateFrom, "dd/MM", { locale: ptBR })} - ${format(
                       dateTo,
                       "dd/MM",
-                      { locale: ptBR }
+                      { locale: ptBR },
                     )}`
                   : "Período"}
               </button>
@@ -694,7 +694,7 @@ export default function SellerTransfers() {
                     <span
                       className={cn(
                         "text-xs font-medium text-foreground truncate",
-                        mono && "font-mono text-[11px]"
+                        mono && "font-mono text-[11px]",
                       )}
                     >
                       {value}
@@ -724,8 +724,8 @@ export default function SellerTransfers() {
                       isRejected
                         ? "bg-gradient-to-b from-destructive/8 to-transparent"
                         : isPaidW
-                        ? "bg-gradient-to-b from-primary/8 to-transparent"
-                        : "bg-gradient-to-b from-amber-500/8 to-transparent"
+                          ? "bg-gradient-to-b from-primary/8 to-transparent"
+                          : "bg-gradient-to-b from-amber-500/8 to-transparent",
                     )}
                   >
                     <div
@@ -734,8 +734,8 @@ export default function SellerTransfers() {
                         isRejected
                           ? "bg-destructive/10 text-destructive"
                           : isPaidW
-                          ? "bg-primary/10 text-primary"
-                          : "bg-amber-500/10 text-amber-500"
+                            ? "bg-primary/10 text-primary"
+                            : "bg-amber-500/10 text-amber-500",
                       )}
                     >
                       {isRejected ? (
@@ -750,8 +750,8 @@ export default function SellerTransfers() {
                       {isRejected
                         ? "Saque Negado"
                         : isPaidW
-                        ? "Saque Concluído"
-                        : "Saque Pendente"}
+                          ? "Saque Concluído"
+                          : "Saque Pendente"}
                     </p>
                     <p
                       className={cn(
@@ -759,8 +759,8 @@ export default function SellerTransfers() {
                         isRejected
                           ? "text-destructive"
                           : isPaidW
-                          ? "text-primary"
-                          : "text-amber-500"
+                            ? "text-primary"
+                            : "text-amber-500",
                       )}
                     >
                       {formatCurrency(Math.abs(detailW.amount))}
@@ -880,7 +880,7 @@ export default function SellerTransfers() {
                       <div
                         className={cn(
                           "flex items-center justify-between px-4 py-3.5",
-                          isPaidW ? "bg-primary/5" : "bg-muted/20"
+                          isPaidW ? "bg-primary/5" : "bg-muted/20",
                         )}
                       >
                         <span className="text-xs font-semibold text-foreground">
@@ -889,7 +889,7 @@ export default function SellerTransfers() {
                         <span
                           className={cn(
                             "text-base font-bold tabular-nums",
-                            isPaidW ? "text-primary" : "text-foreground"
+                            isPaidW ? "text-primary" : "text-foreground",
                           )}
                         >
                           {formatCurrency(net)}

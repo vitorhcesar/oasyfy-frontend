@@ -1,6 +1,5 @@
 import { supabase } from "@/infra/integrations/supabase/client";
 import { useApiService } from "@/presentation/hooks/use-api-service";
-import useFullSellerFeesQuery from "@/presentation/hooks/use-full-seller-fees-query";
 import { tryOrToastError } from "@/presentation/utils/try-or-toast-error";
 import {
   ArrowDownLeft,
@@ -8,7 +7,6 @@ import {
   ArrowUpRight,
   Check,
   CheckCircle,
-  ChevronDown,
   DollarSign,
   ExternalLink,
   Loader2,
@@ -22,6 +20,9 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useAdminKycDetailsStore } from "../stores/admin-kyc-details.store";
 import { IKycSubmissionView } from "../types/kyc-submission-view.type";
+import { statusDot } from "../utils/status-dot.util";
+import { statusText } from "../utils/status-text.util";
+import { AdminKycDetailsFeesTab } from "./AdminKycDetailsFeesTab";
 import { AdminKycDetailsHeader } from "./AdminKycDetailsHeader";
 import AdminKycDetailsTabs from "./AdminKycDetailsTabs";
 
@@ -72,16 +73,6 @@ export function AdminKycDetails({
   const [addressLoading, setAddressLoading] = useState(false);
   const [addressRejectReason, setAddressRejectReason] = useState("");
   const [showAddressReject, setShowAddressReject] = useState(false);
-
-  // Fees state
-  const {
-    data: sellerFees,
-    isLoading: isLoadingSellerFees,
-    invalidateQuery: invalidateSellerFeesQuery,
-  } = useFullSellerFeesQuery();
-
-  const [feesSaving, setFeesSaving] = useState(false);
-  const [feesId, setFeesId] = useState<string | null>(null);
 
   // Balance state
   const [balanceData, setBalanceData] = useState<IBalanceData | null>(null);
@@ -168,33 +159,6 @@ export function AdminKycDetails({
       setBalanceLoading(false);
     });
   }, [tab, seller.user_id]);
-
-  const saveFees = async () => {
-    setFeesSaving(true);
-
-    await tryOrToastError(
-      async () => {
-        if (feesId) {
-          await supabase
-            .from("seller_fees")
-            .update(fees as any)
-            .eq("id", feesId);
-        } else {
-          await supabase
-            .from("seller_fees")
-            .insert({ seller_id: seller.user_id, ...fees } as any);
-        }
-
-        toast.success("Taxas salvas!");
-      },
-      {
-        defaultErrorMessage: "Erro ao salvar taxas",
-        finallyFn: () => {
-          setFeesSaving(false);
-        },
-      },
-    );
-  };
 
   const sendApprovalEmail = async () => {
     if (!seller.email) {
@@ -795,49 +759,9 @@ export function AdminKycDetails({
           )}
         </div>
       )}
-      {/* Fees Tab */}
-      {tab === "fees" && (
-        <div className="animate-fade-in">
-          {feesLoading ? (
-            <div className="py-16 flex justify-center">
-              <Loader2 className="animate-spin text-primary" size={24} />
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {(
-                [
-                  { title: "Pix", prefix: "pix", hasRetention: true },
-                  {
-                    title: "Cartão de Crédito",
-                    prefix: "card",
-                    hasRetention: true,
-                  },
-                  { title: "Boleto", prefix: "boleto", hasRetention: true },
-                  { title: "Cripto", prefix: "crypto", hasRetention: true },
-                  {
-                    title: "Saque",
-                    prefix: "withdrawal",
-                    hasRetention: false,
-                    isWithdrawal: true,
-                  },
-                ] as const
-              ).map((item) => (
-                <FeeSection
-                  key={item.prefix}
-                  title={item.title}
-                  prefix={item.prefix}
-                  hasRetention={item.hasRetention}
-                  isWithdrawal={"isWithdrawal" in item}
-                  fees={fees}
-                  setFees={setFees}
-                  onSave={saveFees}
-                  saving={feesSaving}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      )}
+
+      {tab === "fees" && <AdminKycDetailsFeesTab />}
+
       {/* Balance Tab */}
       {tab === "balance" && (
         <div className="animate-fade-in">
@@ -968,6 +892,7 @@ export function AdminKycDetails({
           )}
         </div>
       )}
+
       {/* Block Reason Modal */}
       {showBlockReasonModal && (
         <div
@@ -1092,171 +1017,6 @@ function ActionBtn({
       {loading ? <Loader2 size={12} className="animate-spin" /> : null}
       {label}
     </button>
-  );
-}
-
-function FeeSection({
-  title,
-  prefix,
-  hasRetention,
-  isWithdrawal,
-  fees,
-  setFees,
-  onSave,
-  saving,
-}: {
-  title: string;
-  prefix: string;
-  hasRetention: boolean;
-  isWithdrawal?: boolean;
-  fees: Record<string, number>;
-  setFees: React.Dispatch<React.SetStateAction<Record<string, number>>>;
-  onSave: () => void;
-  saving: boolean;
-}) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="rounded-xl border border-border/40 overflow-hidden">
-      <button
-        onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/20 transition-colors"
-      >
-        <span className="text-xs font-semibold text-foreground">{title}</span>
-        <ChevronDown
-          size={14}
-          className={`text-muted-foreground transition-transform duration-200 ${
-            open ? "rotate-180" : ""
-          }`}
-        />
-      </button>
-      {open && (
-        <div className="px-4 pb-4 pt-1 border-t border-border/30 space-y-3">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <FeeInput
-              label="Taxa fixa (R$)"
-              value={fees[`${prefix}_fixed_fee`] ?? 0}
-              onChange={(v) =>
-                setFees((f) => ({ ...f, [`${prefix}_fixed_fee`]: v }))
-              }
-            />
-            <FeeInput
-              label="Taxa variável (%)"
-              value={fees[`${prefix}_variable_fee`] ?? 0}
-              onChange={(v) =>
-                setFees((f) => ({ ...f, [`${prefix}_variable_fee`]: v }))
-              }
-            />
-            <FeeInput
-              label="Taxa mínima (R$)"
-              value={fees[`${prefix}_min_fee`] ?? 0}
-              onChange={(v) =>
-                setFees((f) => ({ ...f, [`${prefix}_min_fee`]: v }))
-              }
-            />
-            {hasRetention && (
-              <>
-                <FeeInput
-                  label="Retenção (%)"
-                  value={fees[`${prefix}_retention_fee`] ?? 0}
-                  onChange={(v) =>
-                    setFees((f) => ({ ...f, [`${prefix}_retention_fee`]: v }))
-                  }
-                />
-                <FeeInput
-                  label="Dias retenção"
-                  value={fees[`${prefix}_retention_days`] ?? 0}
-                  onChange={(v) =>
-                    setFees((f) => ({ ...f, [`${prefix}_retention_days`]: v }))
-                  }
-                  step={1}
-                />
-              </>
-            )}
-          </div>
-          {isWithdrawal && (
-            <>
-              <div className="border-t border-border/30 pt-3">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                  Limites de saque
-                </p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  <FeeInput
-                    label="Mínimo por saque (R$)"
-                    value={fees.withdrawal_min_amount ?? 0}
-                    onChange={(v) =>
-                      setFees((f) => ({ ...f, withdrawal_min_amount: v }))
-                    }
-                    step={1}
-                  />
-                  <FeeInput
-                    label="Máximo por saque (R$)"
-                    value={fees.withdrawal_max_amount ?? 0}
-                    onChange={(v) =>
-                      setFees((f) => ({ ...f, withdrawal_max_amount: v }))
-                    }
-                    step={1}
-                  />
-                  <FeeInput
-                    label="Limite diário (R$)"
-                    value={fees.withdrawal_daily_max ?? 0}
-                    onChange={(v) =>
-                      setFees((f) => ({ ...f, withdrawal_daily_max: v }))
-                    }
-                    step={1}
-                  />
-                </div>
-              </div>
-            </>
-          )}
-          <button
-            onClick={onSave}
-            disabled={saving}
-            className="w-full py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-1.5"
-          >
-            {saving && <Loader2 size={12} className="animate-spin" />}
-            Salvar {title.toLowerCase()}
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function FeeInput({
-  label,
-  value,
-  onChange,
-  step = 0.01,
-}: {
-  label: string;
-  value: number;
-  onChange: (v: number) => void;
-  step?: number;
-}) {
-  const [raw, setRaw] = useState(value ? String(value) : "");
-
-  useEffect(() => {
-    setRaw(value ? String(value) : "");
-  }, [value]);
-
-  return (
-    <div>
-      <label className="text-xs text-muted-foreground/60 uppercase tracking-wider">
-        {label}
-      </label>
-      <input
-        type="number"
-        step={step}
-        min={0}
-        value={raw}
-        onChange={(e) => {
-          setRaw(e.target.value);
-          onChange(Number(e.target.value) || 0);
-        }}
-        placeholder="0"
-        className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/30 transition-all"
-      />
-    </div>
   );
 }
 
