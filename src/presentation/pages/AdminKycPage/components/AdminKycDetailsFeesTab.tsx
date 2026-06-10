@@ -177,14 +177,20 @@ function FeeSection({
   );
 }
 
-export function AdminKycDetailsFeesTab() {
+interface IAdminKycDetailsFeesTabProps {
+  sellerId: number;
+}
+
+export function AdminKycDetailsFeesTab({
+  sellerId,
+}: IAdminKycDetailsFeesTabProps) {
   const apiService = useApiService();
 
   const {
     data: sellerFee,
     isLoading: isLoadingSellerFee,
     invalidateQuery: invalidateSellerFeeQuery,
-  } = useFullSellerFeeQuery();
+  } = useFullSellerFeeQuery(sellerId);
 
   const [fees, setFees] = useState<Record<string, number>>({});
   const [feeId, setFeeId] = useState<string | null>(null);

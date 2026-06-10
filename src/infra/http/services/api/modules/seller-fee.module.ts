@@ -82,7 +82,7 @@ export type TUpdateSellerFeeResponseDto = IGetFullSellerFeeResponseDto;
 
 export interface ISellerFeeModule {
   getSellerFee(): Promise<IGetSellerFeeResponseDto>;
-  getFullSellerFee(): Promise<IGetFullSellerFeeResponseDto>;
+  getFullSellerFee(sellerId?: number): Promise<IGetFullSellerFeeResponseDto>;
   createSellerFee(
     payload: ICreateSellerFeeRequestDto,
   ): Promise<TCreateSellerFeeResponseDto>;
@@ -101,10 +101,12 @@ export class SellerFeeModule extends BaseApiModule implements ISellerFeeModule {
     return response.data;
   }
 
-  async getFullSellerFee(): Promise<IGetFullSellerFeeResponseDto> {
+  async getFullSellerFee(
+    sellerId?: number,
+  ): Promise<IGetFullSellerFeeResponseDto> {
     const response = await this.getClient().get<
       IApiEnvelope<IGetFullSellerFeeResponseDto>
-    >(`${this.baseUrl}/full`);
+    >(`${this.baseUrl}/full`, { params: { sellerId } });
     return response.data;
   }
 
