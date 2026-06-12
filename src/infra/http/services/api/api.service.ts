@@ -17,6 +17,7 @@ import {
   AdminSellersModule,
   IAdminSellersModule,
 } from "./modules/admin-sellers.module";
+import { BalanceModule, IBalanceModule } from "./modules/balance.module";
 import { BannerModule, IBannerModule } from "./modules/banner.module";
 import { EmailModule, IEmailModule } from "./modules/email.module";
 import {
@@ -45,6 +46,7 @@ export interface IApiServiceModules {
   adminBanners: IAdminBannerModule;
 
   account: IAccountModule;
+  balance: IBalanceModule;
   rateLimit: IRateLimitModule;
   session: ISessionModule;
   kycSubmission: IKycSubmissionModule;
@@ -65,8 +67,9 @@ function attachModules(httpClient: IHttpClient): IApiServiceModules {
     adminKycSubmissions: new AdminKycSubmissionsModule(httpClient),
     adminBanners: new AdminBannerModule(httpClient),
 
-    gatewayTheme: new GatewayThemeModule(httpClient),
     account: new AccountModule(httpClient),
+    balance: new BalanceModule(httpClient),
+    gatewayTheme: new GatewayThemeModule(httpClient),
     rateLimit: new RateLimitModule(httpClient),
     session: new SessionModule(httpClient),
     kycSubmission: new KycSubmissionModule(httpClient),

@@ -12,7 +12,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useAdminKycDetailsStore } from "../stores/admin-kyc-details.store";
+import useAdminSellerBalancerQuery from "../hooks/use-admin-seller-balancer-query";
+import { IKycSubmissionView } from "../types/kyc-submission-view.type";
 
 function formatCurrencyAdmin(cents: number) {
   return new Intl.NumberFormat("pt-BR", {
@@ -66,6 +67,7 @@ function BalanceEditor({
     }
 
     setSaving(true);
+
     // Insert an adjustment transaction
     const { error } = await supabase.from("transactions").insert({
       seller_id: sellerId,
@@ -83,6 +85,7 @@ function BalanceEditor({
       toast.success("Saldo ajustado!");
       onUpdated();
     }
+
     setSaving(false);
     setEditing(false);
   };
@@ -149,14 +152,180 @@ function BalanceEditor({
   );
 }
 
+interface IRetainedBalanceCardProps {
+  retained: number;
+}
+
+function RetainedBalanceCard({ retained }: IRetainedBalanceCardProps) {
+  return (
+    <div className="rounded-xl border border-border/40 p-4">
+      <div className="flex items-center gap-2 mb-2">
+        <div className="w-7 h-7 rounded-lg bg-amber-500/10 flex items-center justify-center">
+          <Lock size={13} className="text-amber-500" />
+        </div>
+        <p className="text-xs uppercase tracking-wider text-muted-foreground">
+          Saldo retido
+        </p>
+      </div>
+      <p className="text-lg font-semibold text-foreground tabular-nums">
+        {formatCurrencyAdmin(retained)}
+      </p>
+    </div>
+  );
+}
+
+interface IWithdrawnAmountBalanceCardProps {
+  withdrawn: number;
+}
+
+function WithdrawnAmountBalanceCard({
+  withdrawn,
+}: IWithdrawnAmountBalanceCardProps) {
+  return (
+    <div className="rounded-xl border border-border/40 p-4">
+      <div className="flex items-center gap-2 mb-2">
+        <div className="w-7 h-7 rounded-lg bg-muted/50 flex items-center justify-center">
+          <ArrowUpRight size={13} className="text-muted-foreground" />
+        </div>
+        <p className="text-xs uppercase tracking-wider text-muted-foreground">
+          Total sacado (aprovado)
+        </p>
+      </div>
+      <p className="text-lg font-semibold text-foreground tabular-nums">
+        {formatCurrencyAdmin(withdrawn)}
+      </p>
+    </div>
+  );
+}
+
+interface ITotalSalesCardProps {
+  totalSalesCount: number;
+  totalSalesAmount: number;
+}
+
+function TotalSalesCard({
+  totalSalesCount,
+  totalSalesAmount,
+}: ITotalSalesCardProps) {
+  return (
+    <div className="rounded-xl border border-border/40 p-4">
+      <div className="flex items-center gap-2 mb-2">
+        <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
+          <ArrowDownLeft size={13} className="text-primary" />
+        </div>
+        <p className="text-xs uppercase tracking-wider text-muted-foreground">
+          Vendas realizadas
+        </p>
+      </div>
+      <p className="text-lg font-semibold text-foreground tabular-nums">
+        {totalSalesCount}
+      </p>
+      <p className="text-xs text-muted-foreground mt-0.5">
+        Líquido movimentado: {formatCurrencyAdmin(totalSalesAmount)}
+      </p>
+    </div>
+  );
+}
+
+interface IGrossSalesAmountCardProps {
+  grossSalesAmount: number;
+}
+
+function GrossSalesAmountCard({
+  grossSalesAmount,
+}: IGrossSalesAmountCardProps) {
+  return (
+    <div className="rounded-xl border border-border/40 p-4">
+      <div className="flex items-center gap-2 mb-2">
+        <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center">
+          <DollarSign size={13} className="text-foreground" />
+        </div>
+        <p className="text-xs uppercase tracking-wider text-muted-foreground">
+          Volume bruto vendido
+        </p>
+      </div>
+      <p className="text-lg font-semibold text-foreground tabular-nums">
+        {formatCurrencyAdmin(grossSalesAmount)}
+      </p>
+      <p className="text-xs text-muted-foreground mt-0.5">
+        Valor total em R$ das vendas aprovadas
+      </p>
+    </div>
+  );
+}
+
+interface IEarnedFeesAmountCardProps {
+  earnedFeesAmount: number;
+}
+
+function EarnedFeesAmountCard({
+  earnedFeesAmount,
+}: IEarnedFeesAmountCardProps) {
+  return (
+    <div className="rounded-xl border border-border/40 p-4">
+      <div className="flex items-center gap-2 mb-2">
+        <div className="w-7 h-7 rounded-lg bg-warning/10 flex items-center justify-center">
+          <DollarSign size={13} className="text-warning" />
+        </div>
+        <p className="text-xs uppercase tracking-wider text-muted-foreground">
+          Taxas geradas
+        </p>
+      </div>
+      <p className="text-lg font-semibold text-foreground tabular-nums">
+        {formatCurrencyAdmin(earnedFeesAmount)}
+      </p>
+      <p className="text-xs text-muted-foreground mt-0.5">
+        Lucro obtido nas taxas desse seller
+      </p>
+    </div>
+  );
+}
+
+interface IRefundsAmountCardProps {
+  refundCount: number;
+  refundAmount: number;
+}
+
+function RefundsAmountCard({
+  refundCount,
+  refundAmount,
+}: IRefundsAmountCardProps) {
+  return (
+    <div className="rounded-xl border border-border/40 p-4">
+      <div className="flex items-center gap-2 mb-2">
+        <div className="w-7 h-7 rounded-lg bg-destructive/10 flex items-center justify-center">
+          <RotateCcw size={13} className="text-destructive" />
+        </div>
+        <p className="text-xs uppercase tracking-wider text-muted-foreground">
+          Reembolsos
+        </p>
+      </div>
+      <p className="text-lg font-semibold text-foreground tabular-nums">
+        {refundCount}
+      </p>
+      <p className="text-xs text-muted-foreground mt-0.5">
+        {formatCurrencyAdmin(refundAmount)}
+      </p>
+    </div>
+  );
+}
+
 interface IAdminKycDetailsBalanceTabProps {
-  sellerId: number;
+  seller: IKycSubmissionView;
 }
 
 export function AdminKycDetailsBalanceTab({
-  sellerId,
+  seller,
 }: IAdminKycDetailsBalanceTabProps) {
-  const { tab, setTab } = useAdminKycDetailsStore();
+  const {
+    data: balanceData,
+    isLoading: balanceLoading,
+    invalidateQuery: invalidateBalanceQuery,
+  } = useAdminSellerBalancerQuery(seller.user_id);
+
+  const handleUpdateBalanceEditor = async () => {
+    await invalidateBalanceQuery();
+  };
 
   return (
     <div className="animate-fade-in">
@@ -166,119 +335,31 @@ export function AdminKycDetailsBalanceTab({
         </div>
       ) : (
         <div className="space-y-4">
-          {/* Available balance highlight */}
           <BalanceEditor
             available={balanceData.available}
             sellerId={seller.user_id}
-            onUpdated={() => {
-              setBalanceLoading(true);
-              setBalanceData(null);
-              // re-trigger the effect
-              const t = tab;
-              setTab("kyc");
-              setTimeout(() => setTab(t), 10);
-            }}
+            onUpdated={handleUpdateBalanceEditor}
           />
 
           <div className="grid grid-cols-2 gap-3">
-            {/* Retained */}
-            <div className="rounded-xl border border-border/40 p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-7 h-7 rounded-lg bg-amber-500/10 flex items-center justify-center">
-                  <Lock size={13} className="text-amber-500" />
-                </div>
-                <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                  Saldo retido
-                </p>
-              </div>
-              <p className="text-lg font-semibold text-foreground tabular-nums">
-                {formatCurrencyAdmin(balanceData.retained)}
-              </p>
-            </div>
-
-            {/* Withdrawn */}
-            <div className="rounded-xl border border-border/40 p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-7 h-7 rounded-lg bg-muted/50 flex items-center justify-center">
-                  <ArrowUpRight size={13} className="text-muted-foreground" />
-                </div>
-                <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                  Total sacado (aprovado)
-                </p>
-              </div>
-              <p className="text-lg font-semibold text-foreground tabular-nums">
-                {formatCurrencyAdmin(balanceData.withdrawnAmount)}
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-border/40 p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <ArrowDownLeft size={13} className="text-primary" />
-                </div>
-                <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                  Vendas realizadas
-                </p>
-              </div>
-              <p className="text-lg font-semibold text-foreground tabular-nums">
-                {balanceData.totalSalesCount}
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Líquido movimentado:{" "}
-                {formatCurrencyAdmin(balanceData.totalSalesAmount)}
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-border/40 p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center">
-                  <DollarSign size={13} className="text-foreground" />
-                </div>
-                <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                  Volume bruto vendido
-                </p>
-              </div>
-              <p className="text-lg font-semibold text-foreground tabular-nums">
-                {formatCurrencyAdmin(balanceData.grossSalesAmount)}
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Valor total em R$ das vendas aprovadas
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-border/40 p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-7 h-7 rounded-lg bg-warning/10 flex items-center justify-center">
-                  <DollarSign size={13} className="text-warning" />
-                </div>
-                <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                  Taxas geradas
-                </p>
-              </div>
-              <p className="text-lg font-semibold text-foreground tabular-nums">
-                {formatCurrencyAdmin(balanceData.earnedFeesAmount)}
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Lucro obtido nas taxas desse seller
-              </p>
-            </div>
-
-            <div className="rounded-xl border border-border/40 p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-7 h-7 rounded-lg bg-destructive/10 flex items-center justify-center">
-                  <RotateCcw size={13} className="text-destructive" />
-                </div>
-                <p className="text-xs uppercase tracking-wider text-muted-foreground">
-                  Reembolsos
-                </p>
-              </div>
-              <p className="text-lg font-semibold text-foreground tabular-nums">
-                {balanceData.refundCount}
-              </p>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                {formatCurrencyAdmin(balanceData.refundAmount)}
-              </p>
-            </div>
+            <RetainedBalanceCard retained={balanceData.retained} />
+            <WithdrawnAmountBalanceCard
+              withdrawn={balanceData.withdrawnAmount}
+            />
+            <TotalSalesCard
+              totalSalesCount={balanceData.totalSalesCount}
+              totalSalesAmount={balanceData.totalSalesAmount}
+            />
+            <GrossSalesAmountCard
+              grossSalesAmount={balanceData.grossSalesAmount}
+            />
+            <EarnedFeesAmountCard
+              earnedFeesAmount={balanceData.earnedFeesAmount}
+            />
+            <RefundsAmountCard
+              refundCount={balanceData.refundCount}
+              refundAmount={balanceData.refundAmount}
+            />
           </div>
         </div>
       )}

@@ -8,7 +8,7 @@ import {
   Loader2,
   XCircle,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { useAdminKycDetailsStore } from "../stores/admin-kyc-details.store";
 import { IKycSubmissionView } from "../types/kyc-submission-view.type";
@@ -46,7 +46,6 @@ export function AdminKycDetails({
 
   const {
     tab,
-    setTab,
     blockReason,
     setBlockReason,
     showBlockReasonModal,
@@ -59,92 +58,6 @@ export function AdminKycDetails({
   const [addressLoading, setAddressLoading] = useState(false);
   const [addressRejectReason, setAddressRejectReason] = useState("");
   const [showAddressReject, setShowAddressReject] = useState(false);
-
-  // Balance state
-  const [balanceData, setBalanceData] = useState<IBalanceData | null>(null);
-  const [balanceLoading, setBalanceLoading] = useState(false);
-
-  useEffect(() => {
-    if (tab !== "balance") return;
-    setBalanceLoading(true);
-    Promise.all([
-      supabase
-        .from("transactions")
-        .select("amount, fee_amount, status, method, created_at")
-        .eq("seller_id", seller.user_id),
-      supabase
-        .from("seller_fees")
-        .select(
-          "pix_retention_days, card_retention_days, boleto_retention_days, crypto_retention_days",
-        )
-        .eq("seller_id", seller.user_id)
-        .limit(1),
-    ]).then(([txRes, feesRes]) => {
-      const txs = (txRes.data ?? []) as any[];
-      const f = (feesRes.data?.[0] as any) || {};
-      const now = new Date();
-
-      const sales = txs.filter(
-        (t) => t.method !== "withdrawal" && t.amount > 0,
-      );
-      const paid = sales.filter(
-        (t) => t.status === "completed" || t.status === "paid",
-      );
-      const refunds = txs.filter((t) => t.status === "refunded");
-      const withdrawals = txs.filter(
-        (t) =>
-          t.method === "withdrawal" &&
-          (t.status === "completed" || t.status === "paid"),
-      );
-
-      const totalGrossSales = paid.reduce(
-        (s: number, t: any) => s + t.amount,
-        0,
-      );
-      const totalFeesEarned = paid.reduce(
-        (s: number, t: any) => s + (t.fee_amount || 0),
-        0,
-      );
-      const totalPaid = totalGrossSales;
-      const totalWithdrawn = Math.abs(
-        withdrawals.reduce((s: number, t: any) => s + t.amount, 0),
-      );
-      const totalRefunded = refunds.reduce(
-        (s: number, t: any) => s + Math.abs(t.amount),
-        0,
-      );
-
-      const retained = paid
-        .filter((t: any) => {
-          const days =
-            t.method === "pix"
-              ? f.pix_retention_days || 0
-              : t.method === "card"
-                ? f.card_retention_days || 0
-                : t.method === "boleto"
-                  ? f.boleto_retention_days || 0
-                  : f.crypto_retention_days || 0;
-          if (!days) return false;
-          return (
-            new Date(new Date(t.created_at).getTime() + days * 86400000) > now
-          );
-        })
-        .reduce((s: number, t: any) => s + t.amount, 0);
-
-      setBalanceData({
-        available: totalPaid - totalWithdrawn - retained - totalRefunded,
-        retained,
-        totalSalesCount: paid.length,
-        totalSalesAmount: totalPaid,
-        grossSalesAmount: totalGrossSales,
-        earnedFeesAmount: totalFeesEarned,
-        refundCount: refunds.length,
-        refundAmount: totalRefunded,
-        withdrawnAmount: totalWithdrawn,
-      });
-      setBalanceLoading(false);
-    });
-  }, [tab, seller.user_id]);
 
   const sendApprovalEmail = async () => {
     if (!seller.email) {
@@ -751,9 +664,7 @@ export function AdminKycDetails({
       )}
 
       {/* Balance Tab */}
-      {tab === "balance" && (
-        <AdminKycDetailsBalanceTab sellerId={Number(seller.user_id)} />
-      )}
+      {tab === "balance" && <AdminKycDetailsBalanceTab seller={seller} />}
 
       {/* Block Reason Modal */}
       {showBlockReasonModal && (
