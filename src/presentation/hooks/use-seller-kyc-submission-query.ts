@@ -1,13 +1,13 @@
 import type {
   IKycSubmissionDto,
-  ISellerKycSubmissionResponseDto,
   TSellerDashboardKycStatus,
   TSellerKycDocumentsReview,
 } from "@/infra/http/services/api/modules/kyc-submission.module";
 import { useAuthStore } from "@/presentation/stores/useAuthStore";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
 import { useApiService } from "./use-api-service";
+
+export const SELLER_KYC_SUBMISSION_QUERY_KEY = ["seller-kyc-submission"] as const;
 
 export interface IUseSellerKycSubmissionResult {
   kycStatus: TSellerDashboardKycStatus;
@@ -27,41 +27,22 @@ export function useSellerKycSubmissionQuery(): IUseSellerKycSubmissionResult {
 
   const queryClient = useQueryClient();
 
-  const QUERY_KEY = ["seller-kyc-submission"];
-
-  const [kycStatus, setKycStatus] = useState<TSellerDashboardKycStatus>("none");
-  const [submission, setSubmission] = useState<IKycSubmissionDto | null>(null);
-  const [fullyApproved, setFullyApproved] = useState(false);
-  const [documentsReview, setDocumentsReview] =
-    useState<TSellerKycDocumentsReview>({});
-
-  const extractDataFromQueryResponse = async (
-    data: ISellerKycSubmissionResponseDto
-  ) => {
-    setSubmission(data.submission);
-    setFullyApproved(data.fullyApproved);
-
-    if (!data.submission) {
-      setKycStatus("none");
-      setDocumentsReview({});
-    } else {
-      setKycStatus(data.submission.status);
-      setDocumentsReview(data.submission.documentsReview ?? {});
-    }
-  };
-
-  const { isLoading } = useQuery({
-    queryKey: QUERY_KEY,
-    queryFn: async () => {
-      const data = await apiService.modules.kycSubmission.getSellerSubmission();
-      extractDataFromQueryResponse(data);
-      return data;
-    },
+  const query = useQuery({
+    queryKey: SELLER_KYC_SUBMISSION_QUERY_KEY,
+    queryFn: () => apiService.modules.kycSubmission.getSellerSubmission(),
     enabled: !!user?.id,
   });
 
+  const submission = query.data?.submission ?? null;
+  const fullyApproved = query.data?.fullyApproved ?? false;
+  const kycStatus: TSellerDashboardKycStatus = submission?.status ?? "none";
+  const documentsReview: TSellerKycDocumentsReview =
+    submission?.documentsReview ?? {};
+
   const invalidateQuery = async () => {
-    await queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+    await queryClient.invalidateQueries({
+      queryKey: SELLER_KYC_SUBMISSION_QUERY_KEY,
+    });
   };
 
   return {
@@ -69,7 +50,7 @@ export function useSellerKycSubmissionQuery(): IUseSellerKycSubmissionResult {
     submission,
     fullyApproved,
     documentsReview,
-    isLoading,
+    isLoading: query.isLoading,
     invalidateQuery,
   };
 }

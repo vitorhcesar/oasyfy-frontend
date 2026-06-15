@@ -1,5 +1,5 @@
-import { supabase } from "@/infra/integrations/supabase/client";
 import { NavLink } from "@/presentation/components/NavLink";
+import { useSellerKycSubmissionQuery } from "@/presentation/hooks/use-seller-kyc-submission-query";
 import { useAuthStore } from "@/presentation/stores/useAuthStore";
 import { cn } from "@/presentation/utils/cn";
 import {
@@ -37,32 +37,15 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
     location.pathname.startsWith("/seller/kyc") ||
     location.pathname.startsWith("/seller/2fa");
 
-  const { user, signOut } = useAuthStore();
+  const { signOut } = useAuthStore();
+
+  const { fullyApproved: kycApproved, isLoading: kycLoading } =
+    useSellerKycSubmissionQuery();
 
   const [collapsed, setCollapsed] = useState(false);
-  const [kycApproved, setKycApproved] = useState<boolean | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(isOnSettingsPage);
 
-  useEffect(() => {
-    if (!user) return;
-    supabase
-      .from("kyc_submissions")
-      .select("status, documents_status, bank_status, address_status")
-      .eq("user_id", user.id)
-      .limit(1)
-      .then(({ data }) => {
-        if (data && data.length > 0) {
-          setKycApproved(
-            data[0].status === "approved" &&
-              data[0].documents_status === "approved" &&
-              data[0].bank_status === "approved" &&
-              data[0].address_status === "approved"
-          );
-        } else {
-          setKycApproved(false);
-        }
-      });
-  }, [user]);
+  const isKycLocked = kycLoading || !kycApproved;
 
   useEffect(() => {
     if (isOnSettingsPage) setSettingsOpen(true);
@@ -73,12 +56,12 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
   }, [location.pathname]);
 
   const mainItems = [
-    { title: "Início", url: "/seller", icon: Home, locked: !kycApproved },
+    { title: "Início", url: "/seller", icon: Home, locked: isKycLocked },
     {
       title: "Transações",
       url: "/seller/transactions",
       icon: ArrowLeftRight,
-      locked: !kycApproved,
+      locked: isKycLocked,
     },
   ];
 
@@ -87,13 +70,13 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
       title: "Depósito",
       url: "/seller/deposit",
       icon: ArrowDownLeft,
-      locked: !kycApproved,
+      locked: isKycLocked,
     },
     {
       title: "Saques",
       url: "/seller/transfers",
       icon: ArrowUpRight,
-      locked: !kycApproved,
+      locked: isKycLocked,
     },
   ];
 
@@ -102,7 +85,7 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
       title: "Perfil",
       url: "/seller/settings",
       icon: User,
-      locked: !kycApproved,
+      locked: isKycLocked,
     },
     { title: "Documentos", url: "/seller/kyc", icon: FileText, locked: false },
     { title: "2FA", url: "/seller/2fa", icon: ShieldCheck, locked: false },

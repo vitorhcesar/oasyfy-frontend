@@ -1,42 +1,20 @@
 import { useAuthStore } from "@/presentation/stores/useAuthStore";
-import { useEffect, useState } from "react";
-import { useApiService } from "./use-api-service";
+import { useSellerKycSubmissionQuery } from "./use-seller-kyc-submission-query";
 
 export function useKycStatus() {
   const { user } = useAuthStore();
+  const { fullyApproved, submission, isLoading } = useSellerKycSubmissionQuery();
 
-  const apiService = useApiService();
+  if (!user) {
+    return { kycApproved: null, loading: false };
+  }
 
-  const [kycApproved, setKycApproved] = useState<boolean | null>(null);
-  const [loading, setLoading] = useState(true);
+  const kycApproved =
+    !isLoading && submission
+      ? fullyApproved || submission.status === "approved"
+      : !isLoading
+        ? false
+        : null;
 
-  useEffect(() => {
-    if (!user) {
-      setKycApproved(null);
-      setLoading(false);
-      return;
-    }
-
-    let cancelled = false;
-    apiService.modules.kycSubmission
-      .getSellerSubmission()
-      .then(({ submission, fullyApproved }) => {
-        if (!cancelled) {
-          setKycApproved(fullyApproved || submission?.status === "approved");
-          setLoading(false);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setKycApproved(false);
-          setLoading(false);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [user, apiService]);
-
-  return { kycApproved, loading };
+  return { kycApproved, loading: isLoading };
 }
