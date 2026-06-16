@@ -36,6 +36,11 @@ jobs:
           [ -n "${VPS_USER}" ] || { echo "::error::Missing required secret: VPS_USER"; exit 1; }
           [ -n "${PROD_ENV}" ] || { echo "::error::Missing required secret: PROD_ENV"; exit 1; }
 
+          printf "%s" "${PROD_ENV}" > /tmp/prod.env
+          grep -q "^VITE_API_URL=." /tmp/prod.env || { echo "::error::PROD_ENV must define VITE_API_URL (required at build time)"; exit 1; }
+          grep -q "^VITE_SUPABASE_URL=." /tmp/prod.env || { echo "::error::PROD_ENV must define VITE_SUPABASE_URL (required at build time)"; exit 1; }
+          grep -q "^VITE_SUPABASE_PUBLISHABLE_KEY=." /tmp/prod.env || { echo "::error::PROD_ENV must define VITE_SUPABASE_PUBLISHABLE_KEY (required at build time)"; exit 1; }
+
   build-and-push:
     runs-on: ubuntu-latest
     environment: oasyfy-frontend-env
@@ -63,6 +68,8 @@ jobs:
           tags: |
             ${{ env.IMAGE_NAME }}:${{ github.ref_name }}
             ${{ env.IMAGE_NAME }}:latest
+          build-args: |
+            APP_VERSION=${{ github.ref_name }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           secrets: |
@@ -85,11 +92,6 @@ jobs:
       - name: Add VPS to known hosts
         run: ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
 
-      - name: Create production env file
-        shell: bash
-        run: |
-          printf "%s" "${{ secrets.PROD_ENV }}" > prod.env
-
       - name: Prepare destination on VPS
         shell: bash
         run: |
@@ -102,11 +104,6 @@ jobs:
         run: |
           rsync -az docker-compose.prod.yml \
             "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${REMOTE_APP_DIR}/"
-
-      - name: Store production env in VPS
-        shell: bash
-        run: |
-          rsync -az ./prod.env "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${REMOTE_APP_DIR}/.env"
 
       - name: Transfer image to VPS and restart container
         shell: bash
