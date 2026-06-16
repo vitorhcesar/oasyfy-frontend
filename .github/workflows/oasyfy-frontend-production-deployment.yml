@@ -60,6 +60,14 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Create build env file
+        shell: bash
+        env:
+          PROD_ENV: ${{ secrets.PROD_ENV }}
+        run: |
+          printf '%s' "${PROD_ENV}" > prod.env
+          grep -q "^VITE_API_URL=." prod.env || { echo "::error::VITE_API_URL missing in prod.env"; exit 1; }
+
       - name: Build and push image
         uses: docker/build-push-action@v6
         with:
@@ -72,8 +80,8 @@ jobs:
             APP_VERSION=${{ github.ref_name }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          secrets: |
-            prod_env=${{ secrets.PROD_ENV }}
+          secret-files: |
+            prod_env=prod.env
 
   deploy:
     runs-on: ubuntu-latest
