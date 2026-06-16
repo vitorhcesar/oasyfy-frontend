@@ -1,12 +1,10 @@
 services:
   frontend:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: oasyfy-frontend:${APP_VERSION:-latest}
+    image: ghcr.io/vitorhcesar/oasyfy-frontend:${APP_VERSION:-latest}
     container_name: oasyfy-frontend
     ports:
       - "3000:80"
     restart: unless-stopped
+    pull_policy: always
     env_file:
       - .env

@@ -1,0 +1,15 @@
+node_modules
+dist
+dist-ssr
+.git
+.github
+.env
+.env.*
+prod.env
+*.log
+backup
+coverage
+.vscode
+.idea
+.DS_Store
+**/*.md

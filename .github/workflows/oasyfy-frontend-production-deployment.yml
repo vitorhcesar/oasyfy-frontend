@@ -6,11 +6,16 @@ on:
       - "*"
 
 concurrency:
-  group: deploy-${{ github.ref }}
-  cancel-in-progress: true
+  group: vps-deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  packages: write
 
 env:
-  APPLICATION_NAME: oasyfy-frontend
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ghcr.io/vitorhcesar/oasyfy-frontend
   REMOTE_APP_DIR: ~/oasyfy-frontend/oasyfy-frontend
 
 jobs:
@@ -25,16 +30,50 @@ jobs:
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_USER: ${{ secrets.VPS_USER }}
           PROD_ENV: ${{ secrets.PROD_ENV }}
+          GHCR_PULL_TOKEN: ${{ secrets.GHCR_PULL_TOKEN }}
         run: |
           [ -n "${VPS_SSH_PRIVATE_KEY}" ] || { echo "::error::Missing required secret: VPS_SSH_PRIVATE_KEY"; exit 1; }
           [ -n "${VPS_HOST}" ] || { echo "::error::Missing required secret: VPS_HOST"; exit 1; }
           [ -n "${VPS_USER}" ] || { echo "::error::Missing required secret: VPS_USER"; exit 1; }
           [ -n "${PROD_ENV}" ] || { echo "::error::Missing required secret: PROD_ENV"; exit 1; }
+          [ -n "${GHCR_PULL_TOKEN}" ] || { echo "::error::Missing required secret: GHCR_PULL_TOKEN"; exit 1; }
 
-  sync-files:
+  build-and-push:
     runs-on: ubuntu-latest
     environment: oasyfy-frontend-env
     needs: validate-secrets
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.IMAGE_NAME }}:${{ github.ref_name }}
+            ${{ env.IMAGE_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          secrets: |
+            prod_env=${{ secrets.PROD_ENV }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    environment: oasyfy-frontend-env
+    needs: build-and-push
 
     steps:
       - name: Checkout repository
@@ -57,43 +96,32 @@ jobs:
         shell: bash
         run: |
           ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "
-            rm -rf ~/oasyfy-frontend/oasyfy-frontend &&
-            mkdir -p ~/oasyfy-frontend/oasyfy-frontend
+            mkdir -p ${REMOTE_APP_DIR}
           "
 
-      - name: Sync application files to VPS
+      - name: Sync deployment files to VPS
         shell: bash
         run: |
-          rsync -az --delete \
-            --exclude '.git' \
-            --exclude 'node_modules' \
-            --exclude 'backup' \
-            ./ "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${REMOTE_APP_DIR}/"
+          rsync -az docker-compose.prod.yml \
+            "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${REMOTE_APP_DIR}/"
 
       - name: Store production env in VPS
         shell: bash
         run: |
           rsync -az ./prod.env "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${REMOTE_APP_DIR}/.env"
 
-  deploy-container:
-    runs-on: ubuntu-latest
-    environment: oasyfy-frontend-env
-    needs: sync-files
-
-    steps:
-      - name: Setup SSH agent
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.VPS_SSH_PRIVATE_KEY }}
-
-      - name: Add VPS to known hosts
-        run: ssh-keyscan -H "${{ secrets.VPS_HOST }}" >> ~/.ssh/known_hosts
-
-      - name: Build and restart container
+      - name: Pull image and restart container
         shell: bash
+        env:
+          GHCR_PULL_TOKEN: ${{ secrets.GHCR_PULL_TOKEN }}
         run: |
           ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "
-            cd ${REMOTE_APP_DIR} &&
-            APP_VERSION='${{ github.ref_name }}' sudo docker compose -f docker-compose.prod.yml down &&
-            APP_VERSION='${{ github.ref_name }}' sudo docker compose -f docker-compose.prod.yml up -d --build
+            set -e
+            echo '${GHCR_PULL_TOKEN}' | sudo docker login ghcr.io -u '${{ github.repository_owner }}' --password-stdin
+            flock /tmp/oasyfy-deploy.lock -c '
+              cd ${REMOTE_APP_DIR} &&
+              APP_VERSION=${{ github.ref_name }} sudo -E docker compose -f docker-compose.prod.yml pull &&
+              APP_VERSION=${{ github.ref_name }} sudo -E docker compose -f docker-compose.prod.yml up -d --no-build --remove-orphans &&
+              sudo docker image prune -f
+            '
           "
