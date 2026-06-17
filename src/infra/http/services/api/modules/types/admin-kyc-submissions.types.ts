@@ -67,3 +67,24 @@ export interface IAdminKycSubmissionsResponseDto {
   submissions: IAdminKycSubmissionDto[];
   registeredOnly: IAdminRegisteredSellerDto[];
 }
+
+export interface IApproveKycSubmissionAddressResponseDto {
+  autoApproved: boolean;
+}
+
+export interface IApproveKycSubmissionResponseDto {
+  emailSent: boolean;
+}
+
+export interface IAutoApproveKycSubmissionIfCompleteResponseDto {
+  approved: boolean;
+  emailSent: boolean;
+}
+
+export interface IRejectKycSubmissionAddressBodyDto {
+  reason?: string;
+}
+
+export interface IRejectKycSubmissionBodyDto {
+  reason?: string;
+}

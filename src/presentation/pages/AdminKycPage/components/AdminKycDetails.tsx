@@ -11,25 +11,15 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import { useAdminKycDetailsStore } from "../stores/admin-kyc-details.store";
+import type { TKycDocumentKey } from "../types/kyc-documents-review.type";
 import { IKycSubmissionView } from "../types/kyc-submission-view.type";
+import { checkAndUpdateDocumentsStatus } from "../utils/check-and-update-documents-status.util";
 import { statusDot } from "../utils/status-dot.util";
 import { statusText } from "../utils/status-text.util";
 import { AdminKycDetailsBalanceTab } from "./AdminKycDetailsBalanceTab";
 import { AdminKycDetailsFeesTab } from "./AdminKycDetailsFeesTab";
 import { AdminKycDetailsHeader } from "./AdminKycDetailsHeader";
 import AdminKycDetailsTabs from "./AdminKycDetailsTabs";
-
-interface IBalanceData {
-  available: number;
-  retained: number;
-  totalSalesCount: number;
-  totalSalesAmount: number;
-  grossSalesAmount: number;
-  earnedFeesAmount: number;
-  refundCount: number;
-  refundAmount: number;
-  withdrawnAmount: number;
-}
 
 interface IAdminKycDetailsProps {
   seller: IKycSubmissionView;
@@ -59,124 +49,137 @@ export function AdminKycDetails({
   const [addressRejectReason, setAddressRejectReason] = useState("");
   const [showAddressReject, setShowAddressReject] = useState(false);
 
-  const sendApprovalEmail = async () => {
-    if (!seller.email) {
+  const documentsReview = seller.documents_review ?? {};
+
+  const autoApproveIfComplete = async () => {
+    const result =
+      await apiService.modules.adminKycSubmissions.autoApproveIfComplete(
+        Number(seller.id),
+      );
+
+    if (result.approved && !result.emailSent) {
       toast.error(
         "Não foi possível enviar o e-mail de aprovação para o seller",
       );
-      return;
-    }
-
-    await tryOrToastError(
-      async () => {
-        await apiService.modules.email.sendApprovalEmail(
-          seller.email!,
-          seller.full_name,
-        );
-      },
-      {
-        defaultErrorMessage: "Erro ao enviar e-mail de aprovação",
-      },
-    );
-  };
-
-  const autoApproveIfComplete = async (
-    overrides: Record<string, string> = {},
-  ) => {
-    const merged = {
-      documents_status: seller.documents_status,
-      bank_status: seller.bank_status,
-      address_status: seller.address_status,
-      ...overrides,
-    };
-
-    if (
-      merged.documents_status === "approved" &&
-      merged.bank_status === "approved" &&
-      merged.address_status === "approved"
-    ) {
-      await supabase
-        .from("kyc_submissions")
-        .update({ status: "approved", reviewed_at: new Date().toISOString() })
-        .eq("id", seller.id);
-      await sendApprovalEmail();
     }
   };
 
   const handleAddressApprove = async () => {
     setAddressLoading(true);
 
-    await supabase
-      .from("kyc_submissions")
-      .update({ address_status: "approved" })
-      .eq("id", seller.id);
-    await autoApproveIfComplete({ address_status: "approved" });
-
-    toast.success("Endereço aprovado!");
-    setAddressLoading(false);
-    onUpdate();
+    await tryOrToastError(
+      async () => {
+        await apiService.modules.adminKycSubmissions.approveAddress(
+          Number(seller.id),
+        );
+        toast.success("Endereço aprovado!");
+        onUpdate();
+      },
+      {
+        defaultErrorMessage: "Erro ao aprovar endereço",
+        finallyFn: () => setAddressLoading(false),
+      },
+    );
   };
 
   const handleAddressReject = async () => {
     if (!addressRejectReason.trim()) return;
     setAddressLoading(true);
 
-    await supabase
-      .from("kyc_submissions")
-      .update({ address_status: "rejected" })
-      .eq("id", seller.id);
-    toast.success("Endereço recusado.");
-
-    setAddressLoading(false);
-    setShowAddressReject(false);
-    setAddressRejectReason("");
-    onUpdate();
+    await tryOrToastError(
+      async () => {
+        await apiService.modules.adminKycSubmissions.rejectAddress(
+          Number(seller.id),
+          { reason: addressRejectReason.trim() },
+        );
+        toast.success("Endereço recusado.");
+        setShowAddressReject(false);
+        setAddressRejectReason("");
+        onUpdate();
+      },
+      {
+        defaultErrorMessage: "Erro ao recusar endereço",
+        finallyFn: () => setAddressLoading(false),
+      },
+    );
   };
 
   const handleApprove = async () => {
     setActionLoading(true);
 
-    await supabase
-      .from("kyc_submissions")
-      .update({ status: "approved", reviewed_at: new Date().toISOString() })
-      .eq("id", seller.id);
-    await sendApprovalEmail();
+    await tryOrToastError(
+      async () => {
+        const result = await apiService.modules.adminKycSubmissions.approve(
+          Number(seller.id),
+        );
 
-    onUpdate();
+        if (!result.emailSent) {
+          toast.error(
+            "Não foi possível enviar o e-mail de aprovação para o seller",
+          );
+        }
+
+        onUpdate();
+      },
+      {
+        defaultErrorMessage: "Erro ao aprovar KYC",
+        finallyFn: () => setActionLoading(false),
+      },
+    );
   };
 
-  const checkAndUpdateDocumentsStatus = (
-    updatedReview: Record<string, any>,
-  ) => {
-    const docKeys = [
-      "document_front",
-      "document_back",
-      "selfie",
-      "proof_of_address",
-      ...(seller.person_type === "pj" ? ["company_contract"] : []),
-    ];
-    const allDocsApproved = docKeys.every(
-      (k) => updatedReview[k]?.status === "approved",
-    );
-    const anyRejected = docKeys.some(
-      (k) => updatedReview[k]?.status === "rejected",
-    );
-    return allDocsApproved ? "approved" : anyRejected ? "rejected" : "pending";
-  };
+  const kycDocuments: {
+    key: TKycDocumentKey;
+    label: string;
+    url: string | null;
+  }[] = [
+    {
+      key: "document_front",
+      label: "Documento frente",
+      url: seller.document_front_url,
+    },
+    {
+      key: "document_back",
+      label: "Documento verso",
+      url: seller.document_back_url,
+    },
+    {
+      key: "selfie",
+      label: "Selfie com documento",
+      url: seller.selfie_url,
+    },
+    {
+      key: "proof_of_address",
+      label: "Comprovante de endereço",
+      url: seller.proof_of_address_url,
+    },
+    ...(seller.person_type === "pj"
+      ? [
+          {
+            key: "company_contract" as const,
+            label: "Contrato social",
+            url: seller.company_contract_url,
+          },
+        ]
+      : []),
+  ];
 
   const handleReject = async () => {
     setActionLoading(true);
 
-    await supabase
-      .from("kyc_submissions")
-      .update({
-        status: "rejected",
-        rejection_reason: "Não atende aos critérios",
-        reviewed_at: new Date().toISOString(),
-      })
-      .eq("id", seller.id);
-
-    onUpdate();
+    await tryOrToastError(
+      async () => {
+        await apiService.modules.adminKycSubmissions.reject(
+          Number(seller.id),
+          { reason: "Não atende aos critérios" },
+        );
+        onUpdate();
+      },
+      {
+        defaultErrorMessage: "Erro ao recusar KYC",
+        finallyFn: () => setActionLoading(false),
+      },
+    );
   };
 
   return (
@@ -285,13 +288,19 @@ export function AdminKycDetails({
                 <ActionBtn
                   onClick={async () => {
                     setAddressLoading(true);
-                    await supabase
-                      .from("kyc_submissions")
-                      .update({ address_status: "rejected" })
-                      .eq("id", seller.id);
-                    toast.success("Endereço recusado.");
-                    setAddressLoading(false);
-                    onUpdate();
+                    await tryOrToastError(
+                      async () => {
+                        await apiService.modules.adminKycSubmissions.rejectAddress(
+                          Number(seller.id),
+                        );
+                        toast.success("Endereço recusado.");
+                        onUpdate();
+                      },
+                      {
+                        defaultErrorMessage: "Erro ao recusar endereço",
+                        finallyFn: () => setAddressLoading(false),
+                      },
+                    );
                   }}
                   loading={addressLoading}
                   variant="reject"
@@ -340,43 +349,9 @@ export function AdminKycDetails({
           </div>
 
           <div className="divide-y divide-border/20">
-            {[
-              {
-                key: "document_front",
-                label: "Documento frente",
-                url: seller.document_front_url,
-              },
-              {
-                key: "document_back",
-                label: "Documento verso",
-                url: seller.document_back_url,
-              },
-              {
-                key: "selfie",
-                label: "Selfie com documento",
-                url: seller.selfie_url,
-              },
-              {
-                key: "proof_of_address",
-                label: "Comprovante de endereço",
-                url: seller.proof_of_address_url,
-              },
-              ...(seller.person_type === "pj"
-                ? [
-                    {
-                      key: "company_contract",
-                      label: "Contrato social",
-                      url: seller.company_contract_url,
-                    },
-                  ]
-                : []),
-            ].map((doc) => {
-              const review = ((seller as any).documents_review || {}) as Record<
-                string,
-                { status: string; reason?: string }
-              >;
-              const docReview = review[doc.key];
-              const docStatus = docReview?.status || "pending";
+            {kycDocuments.map((doc) => {
+              const docReview = documentsReview[doc.key];
+              const docStatus = docReview?.status ?? "pending";
 
               return (
                 <div key={doc.key} className="py-4">
@@ -429,25 +404,24 @@ export function AdminKycDetails({
                           </button>
                           <button
                             onClick={async () => {
-                              const currentReview =
-                                (seller as any).documents_review || {};
                               const updated = {
-                                ...currentReview,
-                                [doc.key]: { status: "approved" },
+                                ...documentsReview,
+                                [doc.key]: { status: "approved" as const },
                               };
                               const newDocStatus =
-                                checkAndUpdateDocumentsStatus(updated);
+                                checkAndUpdateDocumentsStatus(
+                                  updated,
+                                  seller.person_type,
+                                );
                               await supabase
                                 .from("kyc_submissions")
                                 .update({
                                   documents_review: updated,
                                   documents_status: newDocStatus,
-                                } as any)
+                                })
                                 .eq("id", seller.id);
                               if (newDocStatus === "approved")
-                                await autoApproveIfComplete({
-                                  documents_status: "approved",
-                                });
+                                await autoApproveIfComplete();
                               onUpdate();
                             }}
                             className="p-1.5 rounded text-muted-foreground/40 hover:text-primary transition-colors"
@@ -472,25 +446,24 @@ export function AdminKycDetails({
                       {doc.url && docStatus === "rejected" && (
                         <button
                           onClick={async () => {
-                            const currentReview =
-                              (seller as any).documents_review || {};
                             const updated = {
-                              ...currentReview,
-                              [doc.key]: { status: "approved" },
+                              ...documentsReview,
+                              [doc.key]: { status: "approved" as const },
                             };
                             const newDocStatus =
-                              checkAndUpdateDocumentsStatus(updated);
+                              checkAndUpdateDocumentsStatus(
+                                updated,
+                                seller.person_type,
+                              );
                             await supabase
                               .from("kyc_submissions")
                               .update({
                                 documents_review: updated,
                                 documents_status: newDocStatus,
-                              } as any)
+                              })
                               .eq("id", seller.id);
                             if (newDocStatus === "approved")
-                              await autoApproveIfComplete({
-                                documents_status: "approved",
-                              });
+                              await autoApproveIfComplete();
                             onUpdate();
                           }}
                           className="p-1.5 rounded text-muted-foreground/40 hover:text-primary transition-colors"
@@ -529,23 +502,23 @@ export function AdminKycDetails({
                       <button
                         onClick={async () => {
                           if (!docRejectReason.trim()) return;
-                          const currentReview =
-                            (seller as any).documents_review || {};
                           const updated = {
-                            ...currentReview,
+                            ...documentsReview,
                             [doc.key]: {
-                              status: "rejected",
+                              status: "rejected" as const,
                               reason: docRejectReason.trim(),
                             },
                           };
-                          const newDocStatus =
-                            checkAndUpdateDocumentsStatus(updated);
+                          const newDocStatus = checkAndUpdateDocumentsStatus(
+                            updated,
+                            seller.person_type,
+                          );
                           await supabase
                             .from("kyc_submissions")
                             .update({
                               documents_review: updated,
                               documents_status: newDocStatus,
-                            } as any)
+                            })
                             .eq("id", seller.id);
                           setDocRejectingKey(null);
                           setDocRejectReason("");
@@ -640,7 +613,7 @@ export function AdminKycDetails({
                         .from("kyc_submissions")
                         .update({ bank_status: "approved" } as any)
                         .eq("id", seller.id);
-                      await autoApproveIfComplete({ bank_status: "approved" });
+                      await autoApproveIfComplete();
                       onUpdate();
                     }}
                     variant="approve"

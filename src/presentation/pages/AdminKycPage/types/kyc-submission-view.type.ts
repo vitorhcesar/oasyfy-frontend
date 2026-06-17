@@ -1,3 +1,7 @@
+import type { TKycDocumentsReview } from "./kyc-documents-review.type";
+
+export type { TKycDocumentsReview } from "./kyc-documents-review.type";
+
 export interface IKycSubmissionView {
   id: string;
   user_id: string;
@@ -23,6 +27,7 @@ export interface IKycSubmissionView {
   address_status: string;
   bank_status: string;
   documents_status: string;
+  documents_review: TKycDocumentsReview | null;
   rejection_reason: string | null;
   document_front_url: string | null;
   document_back_url: string | null;

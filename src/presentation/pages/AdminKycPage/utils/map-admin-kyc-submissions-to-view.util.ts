@@ -6,6 +6,7 @@ import type {
   IKycSubmissionView,
   IRegisteredSellerView,
 } from "../types/kyc-submission-view.type";
+import { parseKycDocumentsReview } from "./check-and-update-documents-status.util";
 
 export function mapAdminKycSubmissionToView(
   submission: IAdminKycSubmissionDto,
@@ -35,6 +36,7 @@ export function mapAdminKycSubmissionToView(
     address_status: submission.addressStatus,
     bank_status: submission.bankStatus,
     documents_status: submission.documentsStatus,
+    documents_review: parseKycDocumentsReview(submission.documentsReview),
     rejection_reason: submission.rejectionReason,
     document_front_url: submission.documentFrontUrl,
     document_back_url: submission.documentBackUrl,
@@ -89,6 +91,7 @@ export function mapRegisteredSellerToKycView(
     address_status: "pending",
     bank_status: "pending",
     documents_status: "pending",
+    documents_review: null,
     rejection_reason: null,
     document_front_url: null,
     document_back_url: null,
