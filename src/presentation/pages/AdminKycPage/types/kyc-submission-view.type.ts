@@ -1,3 +1,4 @@
+import type { IKycSubmissionBankData } from "@/domain/types/kyc-submission-bank-data.type";
 import type { TKycDocumentsReview } from "./kyc-documents-review.type";
 
 export type { TKycDocumentsReview } from "./kyc-documents-review.type";
@@ -23,7 +24,7 @@ export interface IKycSubmissionView {
   neighborhood: string;
   zip_code: string;
   complement: string | null;
-  bank_data: Record<string, unknown> | null;
+  bank_data: IKycSubmissionBankData | null;
   address_status: string;
   bank_status: string;
   documents_status: string;

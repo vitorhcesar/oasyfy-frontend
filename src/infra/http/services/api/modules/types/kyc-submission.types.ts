@@ -1,3 +1,4 @@
+import type { IKycSubmissionBankData } from "@/domain/types/kyc-submission-bank-data.type";
 import { KycStatusEnum } from "@/domain/enums/kyc-status.enum";
 import { KycSubmissionSectionStatusEnum } from "@/domain/enums/kyc-submission-section-status.enum";
 import { PersonTypeEnum } from "@/domain/enums/person-type.enum";
@@ -50,7 +51,7 @@ export interface IKycSubmissionDto {
   neighborhood: string;
   city: string;
   state: string;
-  bankData: Record<string, unknown>;
+  bankData: IKycSubmissionBankData | null;
   rejectionReason: string | null;
   documentsStatus: KycSubmissionSectionStatusEnum;
   bankStatus: KycSubmissionSectionStatusEnum;

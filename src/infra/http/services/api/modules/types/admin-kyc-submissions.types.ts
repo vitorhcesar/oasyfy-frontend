@@ -1,9 +1,17 @@
+import type { IKycSubmissionBankData } from "@/domain/types/kyc-submission-bank-data.type";
+
 export type TAdminKycListFilter =
   | "all"
   | "registered"
   | "pending"
   | "approved"
   | "rejected";
+
+export type {
+  IKycSubmissionBankData,
+  TKycBankAccountType,
+  TKycPixKeyType,
+} from "@/domain/types/kyc-submission-bank-data.type";
 
 export interface IAdminKycSubmissionsQueryDto {
   filter: TAdminKycListFilter;
@@ -38,7 +46,7 @@ export interface IAdminKycSubmissionDto {
   neighborhood: string;
   zipCode: string;
   complement: string | null;
-  bankData: Record<string, unknown> | null;
+  bankData: IKycSubmissionBankData | null;
   addressStatus: string;
   bankStatus: string;
   documentsStatus: string;

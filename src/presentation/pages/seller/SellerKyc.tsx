@@ -1,3 +1,8 @@
+import type {
+  IKycSubmissionBankData,
+  TKycBankAccountType,
+  TKycPixKeyType,
+} from "@/domain/types/kyc-submission-bank-data.type";
 import {
   getKycDocumentUrl,
   type TKycSubmissionDocumentKey,
@@ -27,16 +32,16 @@ import { toast } from "sonner";
 
 type TTab = "info" | "documents" | "bank";
 
-interface IBankAccount {
-  bankName: string;
-  accountType: string;
-  agency: string;
-  agencyDigit?: string;
-  account: string;
-  accountDigit?: string;
-  pixKey: string;
-  pixKeyType: string;
-}
+const emptyBankForm: IKycSubmissionBankData = {
+  bankName: "",
+  accountType: "corrente",
+  agency: "",
+  agencyDigit: "",
+  account: "",
+  accountDigit: "",
+  pixKey: "",
+  pixKeyType: "cpf",
+};
 
 const DOC_DEFINITIONS: { key: TKycSubmissionDocumentKey; label: string }[] = [
   { key: "documentFront", label: "Documento Frente" },
@@ -61,16 +66,7 @@ export default function SellerKyc() {
     address: false,
   });
   const [editingBank, setEditingBank] = useState(false);
-  const [bankForm, setBankForm] = useState<IBankAccount>({
-    bankName: "",
-    accountType: "corrente",
-    agency: "",
-    agencyDigit: "",
-    account: "",
-    accountDigit: "",
-    pixKey: "",
-    pixKeyType: "cpf",
-  });
+  const [bankForm, setBankForm] = useState<IKycSubmissionBankData>(emptyBankForm);
   const [savingBank, setSavingBank] = useState(false);
   const [bankExpanded, setBankExpanded] = useState(false);
 
@@ -111,16 +107,16 @@ export default function SellerKyc() {
     setExpandedSections((prev) => ({ ...prev, [key]: !prev[key] }));
 
   const openBankEdit = () => {
-    const bd = (kyc?.bankData ?? {}) as Partial<IBankAccount>;
+    const bd = kyc?.bankData;
     setBankForm({
-      bankName: bd.bankName || "",
-      accountType: bd.accountType || "corrente",
-      agency: bd.agency || "",
-      agencyDigit: bd.agencyDigit || "",
-      account: bd.account || "",
-      accountDigit: bd.accountDigit || "",
-      pixKey: bd.pixKey || "",
-      pixKeyType: bd.pixKeyType || "cpf",
+      bankName: bd?.bankName || "",
+      accountType: bd?.accountType || "corrente",
+      agency: bd?.agency || "",
+      agencyDigit: bd?.agencyDigit || "",
+      account: bd?.account || "",
+      accountDigit: bd?.accountDigit || "",
+      pixKey: bd?.pixKey || "",
+      pixKeyType: bd?.pixKeyType || "cpf",
     });
     setEditingBank(true);
   };
@@ -203,7 +199,7 @@ export default function SellerKyc() {
       ? "rejected"
       : "pending";
 
-  const bankData = (kyc.bankData ?? {}) as Partial<IBankAccount>;
+  const bankData = kyc.bankData;
 
   const tabStatusMap: Record<TTab, string> = {
     info: kyc.addressStatus || "pending",
@@ -564,15 +560,15 @@ export default function SellerKyc() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground truncate">
-                  {bankData.bankName || "—"}
+                  {bankData?.bankName || "—"}
                 </p>
                 <div className="flex items-center gap-2 mt-1">
                   <p className="text-xs text-muted-foreground">
-                    {bankData.accountType === "corrente"
+                    {bankData?.accountType === "corrente"
                       ? "Conta Corrente"
-                      : bankData.accountType === "poupanca"
+                      : bankData?.accountType === "poupanca"
                         ? "Poupança"
-                        : bankData.accountType || "—"}
+                        : bankData?.accountType || "—"}
                   </p>
                   <BankStatusBadge status={kyc.bankStatus} />
                 </div>
@@ -610,39 +606,39 @@ export default function SellerKyc() {
                   </button>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-0">
-                  <DataRow label="Banco" value={bankData.bankName} />
+                  <DataRow label="Banco" value={bankData?.bankName} />
                   <DataRow
                     label="Tipo de conta"
                     value={
-                      bankData.accountType === "corrente"
+                      bankData?.accountType === "corrente"
                         ? "Conta Corrente"
-                        : bankData.accountType === "poupanca"
+                        : bankData?.accountType === "poupanca"
                           ? "Poupança"
-                          : bankData.accountType
+                          : bankData?.accountType
                     }
                   />
                   <DataRow
                     label="Agência"
                     value={
-                      bankData.agencyDigit
+                      bankData?.agencyDigit
                         ? `${bankData.agency}-${bankData.agencyDigit}`
-                        : bankData.agency
+                        : bankData?.agency
                     }
                     mono
                   />
                   <DataRow
                     label="Conta"
                     value={
-                      bankData.accountDigit
+                      bankData?.accountDigit
                         ? `${bankData.account}-${bankData.accountDigit}`
-                        : bankData.account
+                        : bankData?.account
                     }
                     mono
                   />
-                  <DataRow label="Chave PIX" value={bankData.pixKey} mono />
+                  <DataRow label="Chave PIX" value={bankData?.pixKey} mono />
                   <DataRow
                     label="Tipo de chave PIX"
-                    value={bankData.pixKeyType?.toUpperCase()}
+                    value={bankData?.pixKeyType?.toUpperCase()}
                   />
                 </div>
               </div>
@@ -698,8 +694,8 @@ function BankEditModal({
   onClose,
   onSave,
 }: {
-  bankForm: IBankAccount;
-  setBankForm: React.Dispatch<React.SetStateAction<IBankAccount>>;
+  bankForm: IKycSubmissionBankData;
+  setBankForm: React.Dispatch<React.SetStateAction<IKycSubmissionBankData>>;
   savingBank: boolean;
   onClose: () => void;
   onSave: () => void;
@@ -739,7 +735,10 @@ function BankEditModal({
               className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
               value={bankForm.accountType}
               onChange={(e) =>
-                setBankForm((p) => ({ ...p, accountType: e.target.value }))
+                setBankForm((p) => ({
+                  ...p,
+                  accountType: e.target.value as TKycBankAccountType,
+                }))
               }
             >
               <option value="corrente">Conta Corrente</option>
@@ -818,7 +817,10 @@ function BankEditModal({
               className="w-full px-3 py-2.5 rounded-lg border border-border bg-background text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
               value={bankForm.pixKeyType}
               onChange={(e) =>
-                setBankForm((p) => ({ ...p, pixKeyType: e.target.value }))
+                setBankForm((p) => ({
+                  ...p,
+                  pixKeyType: e.target.value as TKycPixKeyType,
+                }))
               }
             >
               <option value="cpf">CPF</option>

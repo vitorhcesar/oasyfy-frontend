@@ -1,5 +1,4 @@
 import { useApiService } from "@/presentation/hooks/use-api-service";
-import { tryOrToastError } from "@/presentation/utils/try-or-toast-error";
 import { ArrowLeft, CheckCircle, ExternalLink, XCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -10,10 +9,12 @@ import { checkAndUpdateDocumentsStatus } from "../utils/check-and-update-documen
 import { statusDot } from "../utils/status-dot.util";
 import { statusText } from "../utils/status-text.util";
 import { AdminKycDetailsBalanceTab } from "./AdminKycDetailsBalanceTab";
+import AdminKycDetailsBankTab from "./AdminKycDetailsBankTab";
 import { AdminKycDetailsFeesTab } from "./AdminKycDetailsFeesTab";
 import { AdminKycDetailsHeader } from "./AdminKycDetailsHeader";
 import AdminKycDetailsKycTab from "./AdminKycDetailsKycTab";
 import AdminKycDetailsTabs from "./AdminKycDetailsTabs";
+import BlockReasonModal from "./BlockReasonModal";
 
 interface IAdminKycDetailsProps {
   submission: IKycSubmissionView;
@@ -28,13 +29,7 @@ export function AdminKycDetails({
 }: IAdminKycDetailsProps) {
   const apiService = useApiService();
 
-  const {
-    tab,
-    blockReason,
-    setBlockReason,
-    showBlockReasonModal,
-    setShowBlockReasonModal,
-  } = useAdminKycDetailsStore();
+  const { tab, showBlockReasonModal } = useAdminKycDetailsStore();
 
   const [docRejectingKey, setDocRejectingKey] = useState<string | null>(null);
   const [docRejectReason, setDocRejectReason] = useState("");
@@ -316,92 +311,11 @@ export function AdminKycDetails({
 
       {/* Bank Tab */}
       {tab === "bank" && (
-        <div className="animate-fade-in">
-          {submission.bank_data ? (
-            <div className="space-y-6">
-              <div className="flex items-center gap-2">
-                <SectionLabel text="Conta bancária" />
-                <StatusPill status={submission.bank_status} />
-              </div>
-
-              <div className="divide-y divide-border/20">
-                <Row
-                  label="Banco"
-                  value={(submission.bank_data as any).bankName}
-                />
-                <Row
-                  label="Agência"
-                  value={`${(submission.bank_data as any).agency}${
-                    (submission.bank_data as any).agencyDigit
-                      ? "-" + (submission.bank_data as any).agencyDigit
-                      : ""
-                  }`}
-                  mono
-                />
-                <Row
-                  label="Conta"
-                  value={`${(submission.bank_data as any).account}-${
-                    (submission.bank_data as any).accountDigit || ""
-                  }`}
-                  mono
-                />
-                <Row
-                  label="Tipo"
-                  value={
-                    (submission.bank_data as any).accountType === "corrente"
-                      ? "Corrente"
-                      : "Poupança"
-                  }
-                />
-                <Row
-                  label="Chave PIX"
-                  value={(submission.bank_data as any).pixKey}
-                  mono
-                />
-                <Row
-                  label="Tipo da chave"
-                  value={(
-                    submission.bank_data as any
-                  ).pixKeyType?.toUpperCase()}
-                />
-              </div>
-
-              {submission.bank_status !== "approved" && (
-                <div className="flex items-center gap-2 pt-4 border-t border-border/30">
-                  <ActionBtn
-                    onClick={async () => {
-                      await supabase
-                        .from("kyc_submissions")
-                        .update({ bank_status: "rejected" } as any)
-                        .eq("id", submission.id);
-                      onUpdate();
-                    }}
-                    variant="reject"
-                    label="Recusar"
-                  />
-                  <ActionBtn
-                    onClick={async () => {
-                      await supabase
-                        .from("kyc_submissions")
-                        .update({ bank_status: "approved" } as any)
-                        .eq("id", submission.id);
-                      await autoApproveIfComplete();
-                      onUpdate();
-                    }}
-                    variant="approve"
-                    label="Aprovar"
-                  />
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="py-16 text-center">
-              <p className="text-sm text-muted-foreground">
-                Nenhuma conta bancária cadastrada.
-              </p>
-            </div>
-          )}
-        </div>
+        <AdminKycDetailsBankTab
+          submission={submission}
+          onUpdate={onUpdate}
+          autoApproveIfComplete={autoApproveIfComplete}
+        />
       )}
 
       {tab === "fees" && (
@@ -413,58 +327,7 @@ export function AdminKycDetails({
 
       {/* Block Reason Modal */}
       {showBlockReasonModal && (
-        <div
-          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-          onClick={() => setShowBlockReasonModal(false)}
-        >
-          <div
-            className="bg-card border border-border rounded-xl p-6 w-full max-w-md shadow-xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-sm font-semibold text-foreground mb-1">
-              Travar saque
-            </h3>
-            <p className="text-xs text-muted-foreground mb-4">
-              Informe o motivo do bloqueio. O seller verá esta mensagem.
-            </p>
-            <textarea
-              value={blockReason}
-              onChange={(e) => setBlockReason(e.target.value)}
-              placeholder="Motivo do bloqueio de saque..."
-              className="w-full rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none h-24 mb-4"
-            />
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setShowBlockReasonModal(false)}
-                className="px-3 py-1.5 text-xs rounded-lg bg-muted text-muted-foreground hover:bg-muted/80 transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                disabled={!blockReason.trim()}
-                onClick={async () => {
-                  await tryOrToastError(
-                    async () => {
-                      await apiService.modules.adminKycSubmissions.blockWithdrawals(
-                        Number(submission.id),
-                        { reason: blockReason.trim() },
-                      );
-                      toast.success("Saque travado");
-                      setShowBlockReasonModal(false);
-                      onUpdate();
-                    },
-                    {
-                      defaultErrorMessage: "Erro ao travar saque",
-                    },
-                  );
-                }}
-                className="px-3 py-1.5 text-xs rounded-lg bg-destructive text-destructive-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
-              >
-                Confirmar bloqueio
-              </button>
-            </div>
-          </div>
-        </div>
+        <BlockReasonModal submissionId={submission.id} onUpdate={onUpdate} />
       )}
     </div>
   );
