@@ -3,15 +3,15 @@ import { TAdminKycDetailsTab } from "../types/admin-kyc-details-tab.type";
 import { IKycSubmissionView } from "../types/kyc-submission-view.type";
 
 interface IAdminKycDetailsTabsProps {
-  seller: IKycSubmissionView;
+  submission: IKycSubmissionView;
 }
 
 export default function AdminKycDetailsTabs({
-  seller,
+  submission,
 }: IAdminKycDetailsTabsProps) {
   const { tab, setTab } = useAdminKycDetailsStore();
 
-  const docReview = (seller.documents_review || {}) as Record<
+  const docReview = (submission.documents_review || {}) as Record<
     string,
     { status: string }
   >;
@@ -20,13 +20,13 @@ export default function AdminKycDetailsTabs({
     "document_back",
     "selfie",
     "proof_of_address",
-    ...(seller.person_type === "pj" ? ["company_contract"] : []),
+    ...(submission.person_type === "pj" ? ["company_contract"] : []),
   ];
   const pendingDocs = docKeys.filter(
     (k) => !docReview[k] || docReview[k].status === "pending",
   ).length;
-  const pendingKyc = seller.address_status === "pending" ? 1 : 0;
-  const pendingBank = seller.bank_status === "pending" ? 1 : 0;
+  const pendingKyc = submission.address_status === "pending" ? 1 : 0;
+  const pendingBank = submission.bank_status === "pending" ? 1 : 0;
 
   const tabs: { key: TAdminKycDetailsTab; label: string; pending: number }[] = [
     { key: "kyc", label: "Cadastro", pending: pendingKyc },

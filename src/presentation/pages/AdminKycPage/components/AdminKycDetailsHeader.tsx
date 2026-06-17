@@ -1,4 +1,4 @@
-import { supabase } from "@/infra/integrations/supabase/client";
+import { useApiService } from "@/presentation/hooks/use-api-service";
 import { tryOrToastError } from "@/presentation/utils/try-or-toast-error";
 import {
   Ban,
@@ -19,14 +19,16 @@ import { statusDot } from "../utils/status-dot.util";
 import { statusText } from "../utils/status-text.util";
 
 interface IAdminKycDetailsHeaderProps {
-  seller: IKycSubmissionView;
+  submission: IKycSubmissionView;
   onUpdate: () => void;
 }
 
 export function AdminKycDetailsHeader({
-  seller,
+  submission,
   onUpdate,
 }: IAdminKycDetailsHeaderProps) {
+  const apiService = useApiService();
+
   const {
     actionsOpen,
     setActionsOpen,
@@ -36,15 +38,17 @@ export function AdminKycDetailsHeader({
 
   const [manualEmailApprovalLoading, setManualEmailApprovalLoading] =
     useState(false);
+  const [banLoading, setBanLoading] = useState(false);
+  const [withdrawalsLoading, setWithdrawalsLoading] = useState(false);
 
   const allApproved =
-    seller.documents_status === "approved" &&
-    seller.bank_status === "approved" &&
-    seller.address_status === "approved";
+    submission.documents_status === "approved" &&
+    submission.bank_status === "approved" &&
+    submission.address_status === "approved";
   const effectiveStatus =
-    allApproved && seller.status === "approved"
+    allApproved && submission.status === "approved"
       ? "approved"
-      : seller.status === "rejected"
+      : submission.status === "rejected"
         ? "rejected"
         : "pending";
 
@@ -55,7 +59,7 @@ export function AdminKycDetailsHeader({
   };
 
   const handleManualEmailApproval = async () => {
-    if (!seller.email) {
+    if (!submission.email) {
       toast.error("Seller sem e-mail cadastrado");
       return;
     }
@@ -64,19 +68,11 @@ export function AdminKycDetailsHeader({
 
     await tryOrToastError(
       async () => {
-        const { data, error } = await supabase.functions.invoke(
-          "approve-seller-email",
-          {
-            body: {
-              user_id: seller.user_id,
-              seller_email: seller.email,
-              seller_name: seller.full_name,
-            },
-          },
-        );
-
-        if (error) throw error;
-        if (data?.error) throw new Error(data.error);
+        await apiService.modules.seller.approveAndNotify({
+          userId: Number(submission.user_id),
+          sellerEmail: submission.email!,
+          sellerName: submission.full_name,
+        });
 
         toast.success("E-mail aprovado manualmente");
         setActionsOpen(false);
@@ -91,14 +87,62 @@ export function AdminKycDetailsHeader({
     );
   };
 
+  const handleToggleBan = async () => {
+    setActionsOpen(false);
+    setBanLoading(true);
+
+    await tryOrToastError(
+      async () => {
+        const result = await apiService.modules.adminKycSubmissions.toggleBan(
+          Number(submission.id),
+        );
+
+        toast.success(
+          result.isBanned ? "Seller banido" : "Seller desbanido",
+        );
+        onUpdate();
+      },
+      {
+        defaultErrorMessage: "Erro ao atualizar banimento",
+        finallyFn: () => setBanLoading(false),
+      },
+    );
+  };
+
+  const handleToggleWithdrawalsBlock = async () => {
+    setActionsOpen(false);
+
+    if (submission.withdrawals_blocked) {
+      setWithdrawalsLoading(true);
+
+      await tryOrToastError(
+        async () => {
+          await apiService.modules.adminKycSubmissions.unblockWithdrawals(
+            Number(submission.id),
+          );
+          toast.success("Saque liberado");
+          onUpdate();
+        },
+        {
+          defaultErrorMessage: "Erro ao liberar saque",
+          finallyFn: () => setWithdrawalsLoading(false),
+        },
+      );
+      return;
+    }
+
+    setBlockReason("");
+    setShowBlockReasonModal(true);
+  };
+
   return (
     <header className="mb-8">
       <div className="flex items-center gap-3 mb-1">
         <h1 className="text-lg font-semibold text-foreground">
-          {seller.full_name}
+          {submission.full_name}
         </h1>
         <span className="text-xs font-medium text-muted-foreground border border-border rounded px-1.5 py-0.5 uppercase">
-          {seller.person_type === "pj" ? "PJ" : "PF"}
+          {submission.person_type === "pj" ? "PJ" : "PF"}
         </span>
         <div className="flex items-center gap-1.5 ml-1">
           <div
@@ -132,56 +176,28 @@ export function AdminKycDetailsHeader({
               />
               <div className="absolute right-0 mt-1 w-48 rounded-lg border border-border bg-card shadow-lg z-50 py-1">
                 <button
-                  onClick={async () => {
-                    setActionsOpen(false);
-                    const newVal = !seller.is_banned;
-                    const { error } = await supabase
-                      .from("kyc_submissions")
-                      .update({ is_banned: newVal })
-                      .eq("id", seller.id);
-                    if (error) {
-                      toast.error("Erro ao atualizar");
-                      return;
-                    }
-                    toast.success(
-                      newVal ? "Seller banido" : "Seller desbanido",
-                    );
-                    onUpdate();
-                  }}
-                  className="flex items-center gap-2 w-full px-3 py-2 text-xs text-destructive hover:bg-destructive/10 transition-colors"
+                  onClick={handleToggleBan}
+                  disabled={banLoading}
+                  className="flex items-center gap-2 w-full px-3 py-2 text-xs text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-50"
                 >
-                  <Ban size={14} />
-                  {seller.is_banned ? "Desbanir seller" : "Banir seller"}
+                  {banLoading ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <Ban size={14} />
+                  )}
+                  {submission.is_banned ? "Desbanir seller" : "Banir seller"}
                 </button>
                 <button
-                  onClick={() => {
-                    setActionsOpen(false);
-                    if (seller.withdrawals_blocked) {
-                      // Unblock directly
-                      (async () => {
-                        const { error } = await supabase
-                          .from("kyc_submissions")
-                          .update({
-                            withdrawals_blocked: false,
-                            withdrawal_block_reason: null,
-                          })
-                          .eq("id", seller.id);
-                        if (error) {
-                          toast.error("Erro ao atualizar");
-                          return;
-                        }
-                        toast.success("Saque liberado");
-                        onUpdate();
-                      })();
-                    } else {
-                      setBlockReason("");
-                      setShowBlockReasonModal(true);
-                    }
-                  }}
-                  className="flex items-center gap-2 w-full px-3 py-2 text-xs text-foreground hover:bg-muted transition-colors"
+                  onClick={handleToggleWithdrawalsBlock}
+                  disabled={withdrawalsLoading}
+                  className="flex items-center gap-2 w-full px-3 py-2 text-xs text-foreground hover:bg-muted transition-colors disabled:opacity-50"
                 >
-                  <Lock size={14} />
-                  {seller.withdrawals_blocked
+                  {withdrawalsLoading ? (
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : (
+                    <Lock size={14} />
+                  )}
+                  {submission.withdrawals_blocked
                     ? "Liberar saque"
                     : "Travar saque"}
                 </button>
@@ -189,8 +205,8 @@ export function AdminKycDetailsHeader({
                   onClick={handleManualEmailApproval}
                   disabled={
                     manualEmailApprovalLoading ||
-                    !seller.email ||
-                    !!seller.email_manually_approved
+                    !submission.email ||
+                    !!submission.email_manually_approved
                   }
                   className="flex items-center gap-2 w-full px-3 py-2 text-xs text-foreground hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -200,11 +216,11 @@ export function AdminKycDetailsHeader({
                     <CheckCircle
                       size={14}
                       className={
-                        seller.email_manually_approved ? "text-primary" : ""
+                        submission.email_manually_approved ? "text-primary" : ""
                       }
                     />
                   )}
-                  {seller.email_manually_approved
+                  {submission.email_manually_approved
                     ? "E-mail aprovado"
                     : "Aprovar e-mail"}
                 </button>
@@ -216,23 +232,23 @@ export function AdminKycDetailsHeader({
 
       {/* Contact row */}
       <div className="flex items-center gap-5 mt-3">
-        {seller.phone && (
+        {submission.phone && (
           <button
-            onClick={() => copyToClipboard(seller.phone, "Telefone")}
+            onClick={() => copyToClipboard(submission.phone, "Telefone")}
             className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
             <Phone size={12} />
-            {seller.phone}
+            {submission.phone}
           </button>
         )}
-        {seller.email && (
+        {submission.email && (
           <button
-            onClick={() => copyToClipboard(seller.email, "E-mail")}
+            onClick={() => copyToClipboard(submission.email, "E-mail")}
             className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
           >
             <Mail size={12} />
-            {seller.email}
-            {seller.email_manually_approved ? (
+            {submission.email}
+            {submission.email_manually_approved ? (
               <ShieldCheck size={12} className="text-primary" />
             ) : (
               <Shield size={12} className="text-muted-foreground/50" />
@@ -240,7 +256,7 @@ export function AdminKycDetailsHeader({
           </button>
         )}
         <span className="text-xs text-muted-foreground/50">
-          {new Date(seller.created_at).toLocaleDateString("pt-BR")}
+          {new Date(submission.created_at).toLocaleDateString("pt-BR")}
         </span>
       </div>
     </header>

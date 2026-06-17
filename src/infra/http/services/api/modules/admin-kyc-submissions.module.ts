@@ -6,8 +6,12 @@ import type {
   IApproveKycSubmissionAddressResponseDto,
   IApproveKycSubmissionResponseDto,
   IAutoApproveKycSubmissionIfCompleteResponseDto,
+  IBlockKycSubmissionWithdrawalsBodyDto,
+  IBlockKycSubmissionWithdrawalsResponseDto,
   IRejectKycSubmissionAddressBodyDto,
   IRejectKycSubmissionBodyDto,
+  IToggleKycSubmissionBanResponseDto,
+  IUnblockKycSubmissionWithdrawalsResponseDto,
 } from "./types/admin-kyc-submissions.types";
 
 export type {
@@ -18,8 +22,12 @@ export type {
   IApproveKycSubmissionAddressResponseDto,
   IApproveKycSubmissionResponseDto,
   IAutoApproveKycSubmissionIfCompleteResponseDto,
+  IBlockKycSubmissionWithdrawalsBodyDto,
+  IBlockKycSubmissionWithdrawalsResponseDto,
   IRejectKycSubmissionAddressBodyDto,
   IRejectKycSubmissionBodyDto,
+  IToggleKycSubmissionBanResponseDto,
+  IUnblockKycSubmissionWithdrawalsResponseDto,
   TAdminKycListFilter,
 } from "./types/admin-kyc-submissions.types";
 
@@ -44,6 +52,14 @@ export interface IAdminKycSubmissionsModule {
     submissionId: number,
     body?: IRejectKycSubmissionAddressBodyDto,
   ): Promise<void>;
+  toggleBan(submissionId: number): Promise<IToggleKycSubmissionBanResponseDto>;
+  blockWithdrawals(
+    submissionId: number,
+    body: IBlockKycSubmissionWithdrawalsBodyDto,
+  ): Promise<IBlockKycSubmissionWithdrawalsResponseDto>;
+  unblockWithdrawals(
+    submissionId: number,
+  ): Promise<IUnblockKycSubmissionWithdrawalsResponseDto>;
 }
 
 export class AdminKycSubmissionsModule
@@ -106,5 +122,33 @@ export class AdminKycSubmissionsModule
       `${this.baseUrl}/${submissionId}/address/reject`,
       body ?? {},
     );
+  }
+
+  async toggleBan(
+    submissionId: number,
+  ): Promise<IToggleKycSubmissionBanResponseDto> {
+    const response = await this.getClient().post<
+      IApiEnvelope<IToggleKycSubmissionBanResponseDto>
+    >(`${this.baseUrl}/${submissionId}/toggle-ban`);
+    return response.data;
+  }
+
+  async blockWithdrawals(
+    submissionId: number,
+    body: IBlockKycSubmissionWithdrawalsBodyDto,
+  ): Promise<IBlockKycSubmissionWithdrawalsResponseDto> {
+    const response = await this.getClient().post<
+      IApiEnvelope<IBlockKycSubmissionWithdrawalsResponseDto>
+    >(`${this.baseUrl}/${submissionId}/withdrawals/block`, body);
+    return response.data;
+  }
+
+  async unblockWithdrawals(
+    submissionId: number,
+  ): Promise<IUnblockKycSubmissionWithdrawalsResponseDto> {
+    const response = await this.getClient().post<
+      IApiEnvelope<IUnblockKycSubmissionWithdrawalsResponseDto>
+    >(`${this.baseUrl}/${submissionId}/withdrawals/unblock`);
+    return response.data;
   }
 }

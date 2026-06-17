@@ -98,7 +98,7 @@ export default function AdminKycPage() {
       <AdminLayout>
         <div className="px-8 py-8">
           <AdminKycDetails
-            seller={selectedSeller}
+            submission={selectedSeller}
             onBack={async () => {
               setSelectedSeller(null);
               await invalidateQuery();

@@ -88,3 +88,19 @@ export interface IRejectKycSubmissionAddressBodyDto {
 export interface IRejectKycSubmissionBodyDto {
   reason?: string;
 }
+
+export interface IToggleKycSubmissionBanResponseDto {
+  isBanned: boolean;
+}
+
+export interface IBlockKycSubmissionWithdrawalsBodyDto {
+  reason: string;
+}
+
+export interface IBlockKycSubmissionWithdrawalsResponseDto {
+  withdrawalsBlocked: boolean;
+}
+
+export interface IUnblockKycSubmissionWithdrawalsResponseDto {
+  withdrawalsBlocked: boolean;
+}
