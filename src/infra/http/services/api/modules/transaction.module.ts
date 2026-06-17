@@ -52,8 +52,16 @@ export class TransactionMapper {
   }
 }
 
+interface IInsertAdjustmentTransactionBody {
+  sellerId: number;
+  amount: number;
+}
+
 export interface ITransactionModule {
   listSellerTransactions: () => Promise<Transaction[]>;
+  insertAdjustmentTransaction: (
+    data: IInsertAdjustmentTransactionBody,
+  ) => Promise<void>;
 }
 
 export class TransactionModule
@@ -67,5 +75,15 @@ export class TransactionModule
       IApiEnvelope<ITransactionDto[]>
     >(this.baseUrl);
     return response.data.map(TransactionMapper.toDomain);
+  }
+
+  async insertAdjustmentTransaction(
+    data: IInsertAdjustmentTransactionBody,
+  ): Promise<void> {
+    const response = await this.getClient().post<IApiEnvelope<void>>(
+      `${this.baseUrl}/adjustment`,
+      data,
+    );
+    return response.data;
   }
 }

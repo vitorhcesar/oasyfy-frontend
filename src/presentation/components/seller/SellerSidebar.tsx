@@ -15,6 +15,7 @@ import {
   Home,
   Lock,
   LogOut,
+  LucideIcon,
   Settings,
   ShieldCheck,
   User,
@@ -53,6 +54,7 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
 
   useEffect(() => {
     if (mobileOpen && onClose) onClose();
+    // eslint-disable-next-line
   }, [location.pathname]);
 
   const mainItems = [
@@ -102,9 +104,9 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
   };
 
   const renderItem = (
-    item: { title: string; url: string; icon: any; locked?: boolean },
+    item: { title: string; url: string; icon: LucideIcon; locked?: boolean },
     isCollapsed: boolean,
-    small = false
+    small = false,
   ) => {
     const iconSize = small ? 16 : 18;
     const textSize = small ? "text-[13px]" : "text-sm";
@@ -116,7 +118,7 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
           key={item.url}
           className={cn(
             `flex items-center gap-3 px-3 ${py} rounded-lg ${textSize} text-muted-foreground/25 cursor-not-allowed select-none`,
-            isCollapsed && "justify-center px-2"
+            isCollapsed && "justify-center px-2",
           )}
           title="Disponível após aprovação do KYC"
         >
@@ -134,7 +136,7 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
         end={item.url === "/seller"}
         className={cn(
           `flex items-center gap-3 px-3 ${py} rounded-lg ${textSize} text-muted-foreground hover:bg-primary/5 hover:text-foreground transition-all duration-150`,
-          isCollapsed && "justify-center px-2"
+          isCollapsed && "justify-center px-2",
         )}
         activeClassName="bg-primary/10 text-primary font-medium"
       >
@@ -169,7 +171,7 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
         <div
           className={cn(
             "h-16 flex items-center border-b border-border/20",
-            isCollapsed ? "justify-center px-2" : "justify-between px-5"
+            isCollapsed ? "justify-center px-2" : "justify-between px-5",
           )}
         >
           {isCollapsed ? (
@@ -217,14 +219,14 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
                   size={14}
                   className={cn(
                     "shrink-0 text-muted-foreground/40 transition-transform duration-200",
-                    settingsOpen && "rotate-180"
+                    settingsOpen && "rotate-180",
                   )}
                 />
               </button>
               {settingsOpen && (
                 <div className="ml-5 mt-0.5 space-y-0.5 border-l-2 border-primary/15 pl-3">
                   {settingsSubItems.map((item) =>
-                    renderItem(item, false, true)
+                    renderItem(item, false, true),
                   )}
                 </div>
               )}
@@ -253,7 +255,7 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
             onClick={handleSignOut}
             className={cn(
               "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-destructive/70 hover:bg-destructive/5 hover:text-destructive transition-all duration-150",
-              isCollapsed && "justify-center px-2"
+              isCollapsed && "justify-center px-2",
             )}
           >
             <LogOut size={18} strokeWidth={1.7} />
@@ -266,7 +268,7 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
               onClick={() => setCollapsed(!collapsed)}
               className={cn(
                 "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs text-muted-foreground/40 hover:text-muted-foreground hover:bg-muted/20 transition-all duration-150",
-                isCollapsed && "justify-center px-2"
+                isCollapsed && "justify-center px-2",
               )}
             >
               {collapsed ? (
@@ -288,7 +290,7 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
       <aside
         className={cn(
           "hidden md:flex h-screen sticky top-0 flex-col bg-card/60 backdrop-blur-md border-r border-border/20 transition-all duration-300 ease-in-out",
-          collapsed ? "w-[68px]" : "w-60"
+          collapsed ? "w-[68px]" : "w-60",
         )}
       >
         {sidebarContent(false)}

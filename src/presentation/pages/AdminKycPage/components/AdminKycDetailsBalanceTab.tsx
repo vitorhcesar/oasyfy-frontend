@@ -1,4 +1,5 @@
-import { supabase } from "@/infra/integrations/supabase/client";
+import { useApiService } from "@/presentation/hooks/use-api-service";
+import { tryOrToastError } from "@/presentation/utils/try-or-toast-error";
 import {
   ArrowDownLeft,
   ArrowUpRight,
@@ -26,13 +27,17 @@ interface IBalanceEditorProps {
   available: number;
   sellerId: string;
   onUpdated: () => void;
+  invalidateBalanceQuery: () => Promise<void>;
 }
 
 function BalanceEditor({
   available,
   sellerId,
   onUpdated,
+  invalidateBalanceQuery,
 }: IBalanceEditorProps) {
+  const apiService = useApiService();
+
   const [editing, setEditing] = useState(false);
   const [value, setValue] = useState("");
   const [saving, setSaving] = useState(false);
@@ -68,26 +73,27 @@ function BalanceEditor({
 
     setSaving(true);
 
-    // Insert an adjustment transaction
-    const { error } = await supabase.from("transactions").insert({
-      seller_id: sellerId,
-      amount: diff,
-      method: diff > 0 ? "pix" : "withdrawal",
-      status: "completed",
-      customer_name: "Ajuste administrativo",
-      description:
-        diff > 0 ? "Crédito manual pelo admin" : "Débito manual pelo admin",
-    } as any);
+    await tryOrToastError(
+      async () => {
+        // Insert an adjustment transaction
+        await apiService.modules.transaction.insertAdjustmentTransaction({
+          sellerId: Number(sellerId),
+          amount: diff,
+        });
 
-    if (error) {
-      toast.error("Erro ao ajustar saldo");
-    } else {
-      toast.success("Saldo ajustado!");
-      onUpdated();
-    }
+        await invalidateBalanceQuery();
 
-    setSaving(false);
-    setEditing(false);
+        toast.success("Saldo ajustado!");
+        onUpdated();
+      },
+      {
+        defaultErrorMessage: "Erro ao ajustar saldo",
+        finallyFn: () => {
+          setSaving(false);
+          setEditing(false);
+        },
+      },
+    );
   };
 
   return (
@@ -339,6 +345,7 @@ export function AdminKycDetailsBalanceTab({
             available={balanceData.available}
             sellerId={seller.user_id}
             onUpdated={handleUpdateBalanceEditor}
+            invalidateBalanceQuery={invalidateBalanceQuery}
           />
 
           <div className="grid grid-cols-2 gap-3">
