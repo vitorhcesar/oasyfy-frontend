@@ -1,4 +1,4 @@
-import { supabase } from "@/infra/integrations/supabase/client";
+import { useApiService } from "@/presentation/hooks/use-api-service";
 import { IKycSubmissionView } from "../types/kyc-submission-view.type";
 import { ActionButton } from "./ActionButton";
 import { Row } from "./Row";
@@ -16,6 +16,7 @@ export default function AdminKycDetailsBankTab({
   onUpdate,
   autoApproveIfComplete,
 }: IAdminKycDetailsBankTabProps) {
+  const apiService = useApiService();
   const bankData = submission.bank_data;
 
   return (
@@ -58,10 +59,9 @@ export default function AdminKycDetailsBankTab({
             <div className="flex items-center gap-2 pt-4 border-t border-border/30">
               <ActionButton
                 onClick={async () => {
-                  await supabase
-                    .from("kyc_submissions")
-                    .update({ bank_status: "rejected" } as any)
-                    .eq("id", submission.id);
+                  await apiService.modules.adminKycSubmissions.rejectBank(
+                    Number(submission.id),
+                  );
                   onUpdate();
                 }}
                 variant="reject"
@@ -69,10 +69,9 @@ export default function AdminKycDetailsBankTab({
               />
               <ActionButton
                 onClick={async () => {
-                  await supabase
-                    .from("kyc_submissions")
-                    .update({ bank_status: "approved" } as any)
-                    .eq("id", submission.id);
+                  await apiService.modules.adminKycSubmissions.approveBank(
+                    Number(submission.id),
+                  );
                   await autoApproveIfComplete();
                   onUpdate();
                 }}

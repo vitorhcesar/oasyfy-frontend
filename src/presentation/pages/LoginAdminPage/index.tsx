@@ -2,8 +2,10 @@ import { ClientIpService } from "@/app/modules/client/services/client-ip.service
 import { AppError } from "@/domain/errors/app.error";
 import { authClient } from "@/infra/auth/auth-client";
 import { fetchSessionContext } from "@/infra/auth/session-context-api";
+import { isTwoFactorRedirect } from "@/infra/auth/two-factor-utils";
 import { Input } from "@/presentation/components/Input";
 import { PasswordInput } from "@/presentation/components/PasswordInput";
+import { TwoFactorLoginStep } from "@/presentation/components/auth/TwoFactorLoginStep";
 import { Button } from "@/presentation/components/ui/button";
 import { tryOrToastError } from "@/presentation/utils/try-or-toast-error";
 import { ArrowRight, Mail, Shield } from "lucide-react";
@@ -19,6 +21,17 @@ export default function LoginAdmin() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [needsTwoFactor, setNeedsTwoFactor] = useState(false);
+
+  const completeAdminLogin = async () => {
+    const ctx = await fetchSessionContext();
+
+    if (ctx.role !== "admin") {
+      throw new AppError("Acesso restrito a administradores", 403);
+    }
+
+    navigate("/admin");
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,13 +60,12 @@ export default function LoginAdmin() {
           return;
         }
 
-        const ctx = await fetchSessionContext();
-
-        if (ctx.role !== "admin") {
-          throw new AppError("Acesso restrito a administradores", 403);
+        if (isTwoFactorRedirect(signInResult.data)) {
+          setNeedsTwoFactor(true);
+          return;
         }
 
-        navigate("/admin");
+        await completeAdminLogin();
       },
       {
         defaultErrorMessage: "Erro ao entrar",
@@ -132,40 +144,59 @@ export default function LoginAdmin() {
             </p>
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-3.5">
-            {error && (
-              <div className="px-3.5 py-2.5 rounded-xl bg-destructive/5 border border-destructive/15 text-destructive text-[12px] font-medium flex items-center gap-2 animate-fade-in">
-                <span className="w-1 h-1 rounded-full bg-destructive flex-shrink-0" />
-                {error}
-              </div>
-            )}
-
-            <Input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              placeholder="admin@oasyfy.com"
-              startComponent={
-                <Mail size={15} className="text-muted-foreground/40" />
-              }
+          {needsTwoFactor ? (
+            <TwoFactorLoginStep
+              onVerified={async () => {
+                try {
+                  await completeAdminLogin();
+                } catch (err) {
+                  if (err instanceof AppError) {
+                    setError(err.message);
+                    await authClient.signOut();
+                  }
+                }
+              }}
+              onCancel={() => {
+                setNeedsTwoFactor(false);
+                void authClient.signOut();
+              }}
             />
+          ) : (
+            <form onSubmit={handleLogin} className="space-y-3.5">
+              {error && (
+                <div className="px-3.5 py-2.5 rounded-xl bg-destructive/5 border border-destructive/15 text-destructive text-[12px] font-medium flex items-center gap-2 animate-fade-in">
+                  <span className="w-1 h-1 rounded-full bg-destructive flex-shrink-0" />
+                  {error}
+                </div>
+              )}
 
-            <PasswordInput
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              placeholder="Senha"
-            />
+              <Input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                placeholder="admin@oasyfy.com"
+                startComponent={
+                  <Mail size={15} className="text-muted-foreground/40" />
+                }
+              />
 
-            <Button
-              disabled={loading}
-              className="w-full !mt-3"
-              loading={loading}
-            >
-              Entrar como Admin <ArrowRight size={15} />
-            </Button>
-          </form>
+              <PasswordInput
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                placeholder="Senha"
+              />
+
+              <Button
+                disabled={loading}
+                className="w-full !mt-3"
+                loading={loading}
+              >
+                Entrar como Admin <ArrowRight size={15} />
+              </Button>
+            </form>
+          )}
 
           <p className="text-center text-[13px] text-muted-foreground mt-6">
             É um seller?{" "}

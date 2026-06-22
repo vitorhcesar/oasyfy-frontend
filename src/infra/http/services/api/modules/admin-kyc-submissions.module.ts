@@ -60,6 +60,17 @@ export interface IAdminKycSubmissionsModule {
   unblockWithdrawals(
     submissionId: number,
   ): Promise<IUnblockKycSubmissionWithdrawalsResponseDto>;
+  approveDocument(
+    submissionId: number,
+    documentKey: string,
+  ): Promise<{ documentsStatus: string }>;
+  rejectDocument(
+    submissionId: number,
+    documentKey: string,
+    body: { reason: string },
+  ): Promise<{ documentsStatus: string }>;
+  approveBank(submissionId: number): Promise<{ autoApproved: boolean }>;
+  rejectBank(submissionId: number): Promise<void>;
 }
 
 export class AdminKycSubmissionsModule
@@ -150,5 +161,41 @@ export class AdminKycSubmissionsModule
       IApiEnvelope<IUnblockKycSubmissionWithdrawalsResponseDto>
     >(`${this.baseUrl}/${submissionId}/withdrawals/unblock`);
     return response.data;
+  }
+
+  async approveDocument(
+    submissionId: number,
+    documentKey: string,
+  ): Promise<{ documentsStatus: string }> {
+    const response = await this.getClient().post<
+      IApiEnvelope<{ documentsStatus: string }>
+    >(`${this.baseUrl}/${submissionId}/documents/${documentKey}/approve`);
+    return response.data;
+  }
+
+  async rejectDocument(
+    submissionId: number,
+    documentKey: string,
+    body: { reason: string },
+  ): Promise<{ documentsStatus: string }> {
+    const response = await this.getClient().post<
+      IApiEnvelope<{ documentsStatus: string }>
+    >(`${this.baseUrl}/${submissionId}/documents/${documentKey}/reject`, body);
+    return response.data;
+  }
+
+  async approveBank(
+    submissionId: number,
+  ): Promise<{ autoApproved: boolean }> {
+    const response = await this.getClient().post<
+      IApiEnvelope<{ autoApproved: boolean }>
+    >(`${this.baseUrl}/${submissionId}/bank/approve`);
+    return response.data;
+  }
+
+  async rejectBank(submissionId: number): Promise<void> {
+    await this.getClient().post<IApiEnvelope<{ rejected: boolean }>>(
+      `${this.baseUrl}/${submissionId}/bank/reject`,
+    );
   }
 }

@@ -1,4 +1,4 @@
-import { supabase } from "@/infra/integrations/supabase/client";
+import { useApiService } from "@/presentation/hooks/use-api-service";
 import {
   Dialog,
   DialogContent,
@@ -78,7 +78,6 @@ interface IWithdrawalModalProps {
   availableBalance: number;
   cardBalance: number;
   pixBoletoBalance: number;
-  userId: string;
   onSuccess: () => void;
 }
 
@@ -98,9 +97,9 @@ export function WithdrawalModal({
   onOpenChange,
   cardBalance,
   pixBoletoBalance,
-  userId,
   onSuccess,
 }: IWithdrawalModalProps) {
+  const apiService = useApiService();
   const [step, setStep] = useState<TStep>("amount");
   const [tab, setTab] = useState<TBalanceTab>("card");
   const [rawValue, setRawValue] = useState("");
@@ -163,87 +162,53 @@ export function WithdrawalModal({
   };
 
   useEffect(() => {
-    if (open && userId) {
-      // Fetch bank data + blocked status
-      supabase
-        .from("kyc_submissions")
-        .select("bank_data, withdrawals_blocked, withdrawal_block_reason")
-        .eq("user_id", userId)
-        .limit(1)
-        .single()
-        .then(({ data }) => {
-          if (data?.bank_data) {
-            const raw = data.bank_data as unknown;
-            const accounts = Array.isArray(raw)
-              ? (raw as IBankData[])
-              : [raw as IBankData];
-            setBankAccounts(accounts);
-            setSelectedAccountIdx(0);
-          }
-          setWithdrawalBlocked(data?.withdrawals_blocked || false);
-          setBlockReason(data?.withdrawal_block_reason || null);
-        });
+    if (!open) return;
 
-      // Fetch withdrawal limits
-      supabase
-        .from("seller_fees")
-        .select(
-          "withdrawal_min_amount, withdrawal_max_amount, withdrawal_daily_max"
-        )
-        .eq("seller_id", userId)
-        .limit(1)
-        .single()
-        .then(({ data }) => {
-          if (data) {
-            setLimits({
-              min: (data.withdrawal_min_amount || 0) * 100 || DEFAULT_MIN,
-              max: (data.withdrawal_max_amount || 0) * 100,
-              dailyMax: (data.withdrawal_daily_max || 0) * 100,
-            });
-          }
+    apiService.modules.sellerPortal
+      .getWithdrawalContext()
+      .then((ctx) => {
+        setBankAccounts(
+          ctx.bankAccounts.map((b) => ({
+            bankName: b.bankName,
+            agency: b.agency,
+            agencyDigit: b.agencyDigit,
+            account: b.account,
+            accountDigit: b.accountDigit,
+            accountType: b.accountType,
+            pixKey: b.pixKey,
+            pixKeyType: b.pixKeyType,
+          })),
+        );
+        setSelectedAccountIdx(0);
+        setWithdrawalBlocked(ctx.withdrawalsBlocked);
+        setBlockReason(ctx.withdrawalBlockReason);
+        setLimits({
+          min: ctx.limits.withdrawalMinAmount * 100 || DEFAULT_MIN,
+          max: ctx.limits.withdrawalMaxAmount * 100,
+          dailyMax: ctx.limits.withdrawalDailyMax * 100,
         });
-
-      // Fetch today's approved withdrawals total
-      const todayStart = new Date();
-      todayStart.setHours(0, 0, 0, 0);
-      supabase
-        .from("transactions")
-        .select("amount")
-        .eq("seller_id", userId)
-        .eq("method", "withdrawal")
-        .in("status", ["pending", "approved"])
-        .gte("created_at", todayStart.toISOString())
-        .then(({ data }) => {
-          if (data) {
-            const total = data.reduce((sum, t) => sum + Math.abs(t.amount), 0);
-            setDailyWithdrawn(total);
-          }
-        });
-    }
-  }, [open, userId]);
+        setDailyWithdrawn(ctx.dailyWithdrawnTotal);
+      })
+      .catch(() => {
+        toast.error("Erro ao carregar dados do saque");
+      });
+  }, [open, apiService]);
 
   const handleConfirm = async () => {
     setLoading(true);
     try {
-      const { error } = await supabase.from("transactions").insert({
-        seller_id: userId,
-        amount: -amountCents,
-        method: "withdrawal",
-        status: "pending",
-        customer_name: "Saque",
+      await apiService.modules.sellerPortal.requestWithdrawal({
+        amount: amountCents,
         description: `Saque - ${
           tab === "card" ? "Vendas Cartão" : "Vendas PIX/Boleto"
         }`,
-        pix_code: selectedAccount?.pixKey || null,
-        metadata: {
-          pix_key: selectedAccount?.pixKey || null,
-          pix_key_type: selectedAccount?.pixKeyType || null,
-          bank_name: selectedAccount?.bankName || null,
-          account_type: selectedAccount?.accountType || null,
-          balance_source: tab,
-        },
+        balanceSource: tab,
+        pixCode: selectedAccount?.pixKey || undefined,
+        pixKey: selectedAccount?.pixKey || undefined,
+        pixKeyType: selectedAccount?.pixKeyType || undefined,
+        bankName: selectedAccount?.bankName || undefined,
+        accountType: selectedAccount?.accountType || undefined,
       });
-      if (error) throw error;
       setStep("success");
       onSuccess();
     } catch {

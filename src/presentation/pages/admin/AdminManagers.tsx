@@ -1,4 +1,4 @@
-import { supabase } from "@/infra/integrations/supabase/client";
+import { useApiService } from "@/presentation/hooks/use-api-service";
 import { Button } from "@/presentation/components/ui/button";
 import {
   Card,
@@ -21,6 +21,7 @@ interface IAdminUser {
 }
 
 export default function AdminManagers() {
+  const apiService = useApiService();
   const { user } = useAuthStore();
   const [admins, setAdmins] = useState<IAdminUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -32,34 +33,16 @@ export default function AdminManagers() {
 
   const fetchAdmins = async () => {
     setLoading(true);
-    const { data: roles } = await supabase
-      .from("user_roles")
-      .select("user_id")
-      .eq("role", "admin");
-
-    if (!roles || roles.length === 0) {
+    try {
+      const managers = await apiService.modules.manageAdmins.listManagers();
+      setAdmins(managers);
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro ao carregar administradores");
       setAdmins([]);
+    } finally {
       setLoading(false);
-      return;
     }
-
-    const userIds = roles.map((r) => r.user_id);
-    const { data: profiles } = await supabase
-      .from("profiles")
-      .select("user_id, email, full_name, created_at")
-      .in("user_id", userIds);
-
-    setAdmins(
-      profiles
-        ? profiles.map((p) => ({
-            user_id: p.user_id,
-            email: p.email ?? "",
-            full_name: p.full_name,
-            created_at: p.created_at,
-          }))
-        : [],
-    );
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -79,17 +62,12 @@ export default function AdminManagers() {
 
     setAdding(true);
     try {
-      const { data, error } = await supabase.functions.invoke("manage-admins", {
-        body: { action: "add", email, password, full_name: fullName || null },
+      await apiService.modules.manageAdmins.execute({
+        action: "add",
+        email,
+        password,
+        full_name: fullName || null,
       });
-
-      if (error || data?.error) {
-        toast.error(
-          data?.error || error?.message || "Erro ao adicionar administrador",
-        );
-        setAdding(false);
-        return;
-      }
 
       toast.success("Administrador adicionado com sucesso");
       setEmail("");
@@ -117,17 +95,10 @@ export default function AdminManagers() {
 
     setRemoving(targetUserId);
     try {
-      const { data, error } = await supabase.functions.invoke("manage-admins", {
-        body: { action: "remove", target_user_id: targetUserId },
+      await apiService.modules.manageAdmins.execute({
+        action: "remove",
+        target_user_id: Number(targetUserId),
       });
-
-      if (error || data?.error) {
-        toast.error(
-          data?.error || error?.message || "Erro ao remover administrador",
-        );
-        setRemoving(null);
-        return;
-      }
 
       toast.success("Administrador removido com sucesso");
       fetchAdmins();

@@ -7,6 +7,10 @@ export interface IGetSellerFeeResponseDto {
   cardRetentionDays: number;
   boletoRetentionDays: number;
   cryptoRetentionDays: number;
+  billingGoal: number;
+  withdrawalMinAmount: number;
+  withdrawalMaxAmount: number;
+  withdrawalDailyMax: number;
 }
 
 export interface IGetFullSellerFeeResponseDto {
@@ -82,6 +86,7 @@ export type TUpdateSellerFeeResponseDto = IGetFullSellerFeeResponseDto;
 
 export interface ISellerFeeModule {
   getSellerFee(): Promise<IGetSellerFeeResponseDto>;
+  getMyFullSellerFee(): Promise<IGetFullSellerFeeResponseDto>;
   getFullSellerFee(sellerId?: number): Promise<IGetFullSellerFeeResponseDto>;
   createSellerFee(
     payload: ICreateSellerFeeRequestDto,
@@ -98,6 +103,13 @@ export class SellerFeeModule extends BaseApiModule implements ISellerFeeModule {
     const response = await this.getClient().get<
       IApiEnvelope<IGetSellerFeeResponseDto>
     >(this.baseUrl);
+    return response.data;
+  }
+
+  async getMyFullSellerFee(): Promise<IGetFullSellerFeeResponseDto> {
+    const response = await this.getClient().get<
+      IApiEnvelope<IGetFullSellerFeeResponseDto>
+    >(`${this.baseUrl}/full`);
     return response.data;
   }
 

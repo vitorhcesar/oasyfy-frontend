@@ -1,5 +1,8 @@
-import { supabase } from "@/infra/integrations/supabase/client";
+import { authClient } from "@/infra/auth/auth-client";
+import type { IGetFullSellerFeeResponseDto } from "@/infra/http/services/api/modules/seller-fee.module";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
+import { useApiService } from "@/presentation/hooks/use-api-service";
+import { useSellerKycSubmissionQuery } from "@/presentation/hooks/use-seller-kyc-submission-query";
 import { useAuthStore } from "@/presentation/stores/useAuthStore";
 import { translateError } from "@/presentation/utils/translate-error";
 import {
@@ -45,8 +48,16 @@ function parseUserAgent(ua: string | null) {
   };
 }
 
-function SecurityTab({ userId }: { userId?: string }) {
-  const [sessions, setSessions] = useState<any[]>([]);
+function SecurityTab() {
+  const apiService = useApiService();
+  const [sessions, setSessions] = useState<
+    Array<{
+      id: string;
+      user_agent: string | null;
+      ip_address: string;
+      created_at: string;
+    }>
+  >([]);
   const [loadingSessions, setLoadingSessions] = useState(true);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [currentPassword, setCurrentPassword] = useState("");
@@ -56,33 +67,43 @@ function SecurityTab({ userId }: { userId?: string }) {
   const [changingPassword, setChangingPassword] = useState(false);
 
   useEffect(() => {
-    if (!userId) return;
-    supabase
-      .from("login_logs")
-      .select("*")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false })
-      .then(({ data }) => {
-        setSessions(data || []);
+    apiService.modules.sellerPortal
+      .listLoginLogs()
+      .then((logs) => {
+        setSessions(
+          logs.map((log) => ({
+            id: String(log.id),
+            user_agent: log.userAgent,
+            ip_address: log.ipAddress,
+            created_at: log.createdAt,
+          })),
+        );
+        setLoadingSessions(false);
+      })
+      .catch(() => {
+        setSessions([]);
         setLoadingSessions(false);
       });
-  }, [userId]);
+  }, [apiService]);
 
   const handleEndSession = async (sessionId: string, idx: number) => {
     const active = idx === 0 && isActive(sessions[0]?.created_at);
-    if (active) {
-      await supabase.auth.signOut({ scope: "local" });
-      window.location.href = "/login-seller";
-      return;
+    try {
+      await apiService.modules.sellerPortal.deleteLoginLog(Number(sessionId));
+      setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+      if (active) {
+        await authClient.signOut();
+        window.location.href = "/login-seller";
+        return;
+      }
+      toast.success("Sessão encerrada");
+    } catch {
+      toast.error("Erro ao encerrar sessão");
     }
-    // Delete from database so it won't reappear on reload
-    await supabase.from("login_logs").delete().eq("id", sessionId);
-    setSessions((prev) => prev.filter((s) => s.id !== sessionId));
-    toast.success("Sessão encerrada");
   };
 
   const handleEndAll = async () => {
-    await supabase.auth.signOut({ scope: "global" });
+    await authClient.revokeSessions();
     window.location.href = "/login-seller";
   };
 
@@ -284,36 +305,19 @@ function SecurityTab({ userId }: { userId?: string }) {
 
                     setChangingPassword(true);
 
-                    // Verify current password by re-signing in
-                    const email = (await supabase.auth.getUser()).data.user
-                      ?.email;
-                    if (!email) {
-                      setChangingPassword(false);
-                      return toast.error("Usuário não encontrado");
-                    }
-
-                    const { error: signInError } =
-                      await supabase.auth.signInWithPassword({
-                        email,
-                        password: currentPassword,
-                      });
-                    if (signInError) {
-                      setChangingPassword(false);
-                      return toast.error("Senha atual incorreta");
-                    }
-
-                    const { error } = await supabase.auth.updateUser({
-                      password: newPassword,
+                    const { error } = await authClient.changePassword({
+                      currentPassword,
+                      newPassword,
+                      revokeOtherSessions: logoutAll,
                     });
                     if (error) {
                       toast.error(
-                        translateError(error.message) ||
+                        translateError(error.message ?? "") ||
                           "Erro ao alterar senha",
                       );
                     } else {
                       toast.success("Senha alterada com sucesso");
                       if (logoutAll) {
-                        await supabase.auth.signOut({ scope: "global" });
                         window.location.href = "/login-seller";
                         return;
                       }
@@ -425,6 +429,8 @@ function SecurityTab({ userId }: { userId?: string }) {
 
 export default function SellerSettings() {
   const { user } = useAuthStore();
+  const apiService = useApiService();
+  const { submission } = useSellerKycSubmissionQuery();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<
     "perfil" | "antecipacao" | "seguranca" | "taxas"
@@ -439,85 +445,40 @@ export default function SellerSettings() {
   const [accountId, setAccountId] = useState("");
   const [phone, setPhone] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [sellerFee, setSellerFee] = useState<Record<string, number> | null>(
-    null,
-  );
+  const [sellerFee, setSellerFee] =
+    useState<IGetFullSellerFeeResponseDto | null>(null);
+  const [feesLoading, setFeesLoading] = useState(true);
 
   useEffect(() => {
     if (!user) return;
-    const loadFees = async () => {
-      // Try seller-specific fees first
-      const { data: sellerData } = await supabase
-        .from("seller_fees")
-        .select("*")
-        .eq("seller_id", user.id)
-        .limit(1);
-      if (sellerData && sellerData.length > 0) {
-        const row = sellerData[0] as any;
-        const f: Record<string, number> = {};
-        let hasNonZero = false;
-        for (const k of Object.keys(row)) {
-          if (k.endsWith("_fee") || k.endsWith("_days")) {
-            f[k] = Number(row[k]) || 0;
-            if (k.endsWith("_fee") && f[k] > 0) hasNonZero = true;
-          }
-        }
-        // Only use seller fees if at least one fee value is non-zero
-        if (hasNonZero) {
-          setSellerFee(f);
-          return;
-        }
-      }
-      // Fallback to global fees
-      const { data: globalData } = await supabase
-        .from("global_fees")
-        .select("*")
-        .limit(1);
-      if (globalData && globalData.length > 0) {
-        const row = globalData[0] as any;
-        const f: Record<string, number> = {};
-        for (const k of Object.keys(row)) {
-          if (k.endsWith("_fee") || k.endsWith("_days"))
-            f[k] = Number(row[k]) || 0;
-        }
-        setSellerFee(f);
-      }
-    };
-    loadFees();
-  }, [user]);
+    setFeesLoading(true);
+    apiService.modules.sellerFee
+      .getMyFullSellerFee()
+      .then(setSellerFee)
+      .catch(() => setSellerFee(null))
+      .finally(() => setFeesLoading(false));
+  }, [user, apiService]);
 
   useEffect(() => {
     if (!user) return;
     setEmail(user.email || "");
 
-    supabase
-      .from("profiles")
-      .select("full_name, avatar_url, account_id")
-      .eq("user_id", user.id)
-      .limit(1)
-      .then(({ data }) => {
-        if (data && data.length > 0) {
-          setFullName(data[0].full_name || "");
-          setAvatarUrl(data[0].avatar_url || null);
-          setAccountId((data[0] as any).account_id || "");
-        } else {
-          setFullName(user.name || "");
-        }
-        setLoading(false);
-      });
+    apiService.modules.sellerPortal
+      .getProfile()
+      .then((profile) => {
+        setFullName(profile.fullName || user.name || "");
+        setAvatarUrl(profile.avatarUrl);
+        setAccountId(profile.accountId || "");
+        if (profile.email) setEmail(profile.email);
+      })
+      .finally(() => setLoading(false));
+  }, [user, apiService]);
 
-    supabase
-      .from("kyc_submissions")
-      .select("full_name, phone")
-      .eq("user_id", user.id)
-      .limit(1)
-      .then(({ data }) => {
-        if (data && data.length > 0) {
-          if (!fullName) setFullName(data[0].full_name || "");
-          setPhone(data[0].phone || "");
-        }
-      });
-  }, [user]);
+  useEffect(() => {
+    if (!submission) return;
+    if (submission.fullName) setFullName((prev) => prev || submission.fullName);
+    if (submission.phone) setPhone(submission.phone);
+  }, [submission]);
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -535,22 +496,9 @@ export default function SellerSettings() {
 
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop();
-      const path = `${user.id}/avatar_${Date.now()}.${ext}`;
-      const { error: uploadError } = await supabase.storage
-        .from("kyc-documents")
-        .upload(path, file);
-      if (uploadError) throw uploadError;
-
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("kyc-documents").getPublicUrl(path);
-      setAvatarUrl(publicUrl);
-
-      await supabase
-        .from("profiles")
-        .update({ avatar_url: publicUrl })
-        .eq("user_id", user.id);
+      const { avatarUrl: url } =
+        await apiService.modules.sellerPortal.uploadAvatar(file);
+      setAvatarUrl(url);
       toast.success("Foto atualizada!");
     } catch (err: any) {
       toast.error("Erro ao enviar foto: " + (err.message || ""));
@@ -572,13 +520,7 @@ export default function SellerSettings() {
 
     setSaving(true);
     try {
-      await supabase
-        .from("profiles")
-        .update({
-          full_name: fullName,
-        })
-        .eq("user_id", user.id);
-
+      await apiService.modules.sellerPortal.updateProfile(fullName);
       toast.success("Perfil salvo com sucesso!");
     } catch (err: any) {
       toast.error("Erro ao salvar: " + (err.message || ""));
@@ -777,7 +719,7 @@ export default function SellerSettings() {
               </div>
             )}
 
-            {activeTab === "seguranca" && <SecurityTab userId={user?.id} />}
+            {activeTab === "seguranca" && <SecurityTab />}
 
             {activeTab === "taxas" && (
               <div className="rounded-2xl border border-border bg-card p-6 sm:p-8">
@@ -788,7 +730,14 @@ export default function SellerSettings() {
                   Taxas aplicadas nas suas transações
                 </p>
 
-                {!sellerFee ? (
+                {feesLoading ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2
+                      size={18}
+                      className="animate-spin text-muted-foreground"
+                    />
+                  </div>
+                ) : !sellerFee ? (
                   <p className="text-sm text-muted-foreground py-8 text-center">
                     Nenhuma taxa configurada ainda.
                   </p>
@@ -796,22 +745,44 @@ export default function SellerSettings() {
                   <div className="space-y-3">
                     {(
                       [
-                        { label: "Pix", prefix: "pix" },
-                        { label: "Cartão de Crédito", prefix: "card" },
-                        { label: "Boleto", prefix: "boleto" },
-                        { label: "Cripto", prefix: "crypto" },
-                        { label: "Saque", prefix: "withdrawal" },
+                        {
+                          label: "Pix",
+                          fixed: sellerFee.pixFixedFee,
+                          variable: sellerFee.pixVariableFee,
+                          min: sellerFee.pixMinFee,
+                        },
+                        {
+                          label: "Cartão de Crédito",
+                          fixed: sellerFee.cardFixedFee,
+                          variable: sellerFee.cardVariableFee,
+                          min: sellerFee.cardMinFee,
+                        },
+                        {
+                          label: "Boleto",
+                          fixed: sellerFee.boletoFixedFee,
+                          variable: sellerFee.boletoVariableFee,
+                          min: sellerFee.boletoMinFee,
+                        },
+                        {
+                          label: "Cripto",
+                          fixed: sellerFee.cryptoFixedFee,
+                          variable: sellerFee.cryptoVariableFee,
+                          min: sellerFee.cryptoMinFee,
+                        },
+                        {
+                          label: "Saque",
+                          fixed: sellerFee.withdrawalFixedFee,
+                          variable: sellerFee.withdrawalVariableFee,
+                          min: sellerFee.withdrawalMinFee,
+                        },
                       ] as const
-                    ).map(({ label, prefix }) => {
-                      const fixed = sellerFee[`${prefix}_fixed_fee`] || 0;
-                      const variable = sellerFee[`${prefix}_variable_fee`] || 0;
-                      const min = sellerFee[`${prefix}_min_fee`] || 0;
+                    ).map(({ label, fixed, variable, min }) => {
                       const hasAny = fixed > 0 || variable > 0 || min > 0;
                       if (!hasAny) return null;
 
                       return (
                         <div
-                          key={prefix}
+                          key={label}
                           className="flex items-center justify-between py-3 px-4 rounded-xl bg-muted/30 border border-border/50"
                         >
                           <span className="text-sm font-medium text-foreground">

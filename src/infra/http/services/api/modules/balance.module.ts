@@ -14,20 +14,16 @@ export interface IBalanceDto {
 }
 
 export interface IBalanceModule {
-  get(sellerId: string): Promise<IBalanceDto>;
+  get: (sellerId?: string) => Promise<IBalanceDto>;
 }
 
 export class BalanceModule extends BaseApiModule implements IBalanceModule {
   private readonly baseUrl = "/api/v1/balance";
 
-  async get(sellerId: string): Promise<IBalanceDto> {
+  async get(sellerId?: string): Promise<IBalanceDto> {
     const response = await this.getClient().get<IApiEnvelope<IBalanceDto>>(
       this.baseUrl,
-      {
-        params: {
-          sellerId,
-        },
-      },
+      sellerId ? { params: { sellerId } } : undefined,
     );
     return response.data;
   }

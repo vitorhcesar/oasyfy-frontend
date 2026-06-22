@@ -1,4 +1,4 @@
-import { supabase } from "@/infra/integrations/supabase/client";
+import { useApiService } from "@/presentation/hooks/use-api-service";
 import { AdminLayout } from "@/presentation/layouts/AdminLayout";
 import { cn } from "@/presentation/utils/cn";
 import { Check, Clock, RotateCcw, X } from "lucide-react";
@@ -29,6 +29,7 @@ type RefundRequest = {
 };
 
 export default function AdminRefunds() {
+  const apiService = useApiService();
   const [refunds, setRefunds] = useState<RefundRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>("");
@@ -41,65 +42,14 @@ export default function AdminRefunds() {
 
   const fetchRefunds = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("refund_requests")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
+    try {
+      const data = await apiService.modules.adminFinance.listRefundRequests();
+      setRefunds(data as RefundRequest[]);
+    } catch (error) {
       console.error(error);
+    } finally {
       setLoading(false);
-      return;
     }
-
-    // Fetch related transaction and seller data
-    const refundsData = (data ?? []) as RefundRequest[];
-    const txIds = [...new Set(refundsData.map((r) => r.transaction_id))];
-    const sellerIds = [...new Set(refundsData.map((r) => r.seller_id))];
-
-    const [txResult, profileResult, kycResult] = await Promise.all([
-      txIds.length > 0
-        ? supabase
-            .from("transactions")
-            .select("id, customer_name, customer_email, method, amount")
-            .in("id", txIds)
-        : { data: [] },
-      sellerIds.length > 0
-        ? supabase
-            .from("profiles")
-            .select("user_id, full_name, account_id")
-            .in("user_id", sellerIds)
-        : { data: [] },
-      sellerIds.length > 0
-        ? supabase
-            .from("kyc_submissions")
-            .select("user_id, email")
-            .in("user_id", sellerIds)
-        : { data: [] },
-    ]);
-
-    const txMap = new Map((txResult.data ?? []).map((t: any) => [t.id, t]));
-    const profileMap = new Map(
-      (profileResult.data ?? []).map((p: any) => [p.user_id, p]),
-    );
-    const kycMap = new Map(
-      (kycResult.data ?? []).map((k: any) => [k.user_id, k]),
-    );
-
-    const enriched = refundsData.map((r) => {
-      const profile = profileMap.get(r.seller_id);
-      const kyc = kycMap.get(r.seller_id);
-      return {
-        ...r,
-        transaction: txMap.get(r.transaction_id),
-        seller_profile: profile
-          ? { ...profile, email: kyc?.email || null }
-          : undefined,
-      };
-    });
-
-    setRefunds(enriched);
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -110,36 +60,22 @@ export default function AdminRefunds() {
     if (!noteModal) return;
     setActionLoading(noteModal.id);
 
-    const { error } = await supabase
-      .from("refund_requests")
-      .update({
-        status: noteModal.action,
-        admin_note: adminNote || null,
-        reviewed_by: (await supabase.auth.getUser()).data.user?.id,
-        reviewed_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", noteModal.id);
-
-    if (error) {
-      toast.error("Erro ao processar reembolso");
-    } else {
+    try {
+      await apiService.modules.adminFinance.reviewRefundRequest(
+        Number(noteModal.id),
+        {
+          status: noteModal.action,
+          adminNote: adminNote || null,
+        },
+      );
       toast.success(
         noteModal.action === "approved"
           ? "Reembolso aprovado"
           : "Reembolso rejeitado",
       );
-      // If approved, update transaction status
-      if (noteModal.action === "approved") {
-        const refund = refunds.find((r) => r.id === noteModal.id);
-        if (refund) {
-          await supabase
-            .from("transactions")
-            .update({ status: "refunded" })
-            .eq("id", refund.transaction_id);
-        }
-      }
       fetchRefunds();
+    } catch {
+      toast.error("Erro ao processar reembolso");
     }
     setActionLoading(null);
     setNoteModal(null);

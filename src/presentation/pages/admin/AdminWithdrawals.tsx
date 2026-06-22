@@ -1,4 +1,4 @@
-import { supabase } from "@/infra/integrations/supabase/client";
+import { useApiService } from "@/presentation/hooks/use-api-service";
 import { Calendar } from "@/presentation/components/ui/calendar";
 import {
   Dialog,
@@ -81,6 +81,7 @@ type ApprovalModalData = {
 } | null;
 
 export default function AdminWithdrawals() {
+  const apiService = useApiService();
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [loading, setLoading] = useState(true);
   const [filterSeller, setFilterSeller] = useState("");
@@ -98,58 +99,12 @@ export default function AdminWithdrawals() {
 
   const fetchWithdrawals = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("transactions")
-      .select("*")
-      .eq("method", "withdrawal")
-      .order("created_at", { ascending: false })
-      .limit(1000);
-
-    const items = (data ?? []) as Withdrawal[];
-    const sellerIds = [
-      ...new Set(items.map((w) => w.seller_id).filter(Boolean)),
-    ];
-
-    let profileMap = new Map<
-      string,
-      { full_name: string | null; user_id: string }
-    >();
-    if (sellerIds.length > 0) {
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("user_id, full_name")
-        .in("user_id", sellerIds as string[]);
-      profileMap = new Map((profiles ?? []).map((p) => [p.user_id, p]));
+    try {
+      const data = await apiService.modules.adminFinance.listWithdrawals();
+      setWithdrawals(data as Withdrawal[]);
+    } finally {
+      setLoading(false);
     }
-
-    let kycMap = new Map<string, { email: string; pix_key: string }>();
-    if (sellerIds.length > 0) {
-      const { data: kycs } = await supabase
-        .from("kyc_submissions")
-        .select("user_id, email, bank_data")
-        .in("user_id", sellerIds as string[]);
-      kycMap = new Map(
-        (kycs ?? []).map((k) => {
-          const bd = k.bank_data as any;
-          const pixKey = Array.isArray(bd)
-            ? bd[0]?.pixKey || bd[0]?.pix_key || ""
-            : bd?.pixKey || bd?.pix_key || "";
-          return [k.user_id, { email: k.email || "", pix_key: pixKey }];
-        }),
-      );
-    }
-
-    const enriched = items.map((w) => ({
-      ...w,
-      seller_name: w.seller_id
-        ? profileMap.get(w.seller_id)?.full_name || ""
-        : "",
-      seller_email: w.seller_id ? kycMap.get(w.seller_id)?.email || "" : "",
-      pix_key: w.seller_id ? kycMap.get(w.seller_id)?.pix_key || "" : "",
-    }));
-
-    setWithdrawals(enriched);
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -171,121 +126,43 @@ export default function AdminWithdrawals() {
       withdrawalFee: 0,
     });
 
-    const [kycRes, ipsRes, txRes, profileRes, sellerFeeRes, globalFeesRes] =
-      await Promise.all([
-        supabase
-          .from("kyc_submissions")
-          .select("bank_data, cpf, cnpj")
-          .eq("user_id", w.seller_id)
-          .single(),
-        supabase
-          .from("authorized_ips")
-          .select("ip_address")
-          .eq("seller_id", w.seller_id),
-        supabase
-          .from("transactions")
-          .select("amount, status")
-          .eq("seller_id", w.seller_id),
-        supabase
-          .from("profiles")
-          .select("account_id")
-          .eq("user_id", w.seller_id)
-          .single(),
-        supabase
-          .from("seller_fees")
-          .select("withdrawal_variable_fee, withdrawal_fixed_fee")
-          .eq("seller_id", w.seller_id)
-          .single(),
-        supabase
-          .from("global_fees")
-          .select("withdrawal_variable_fee, withdrawal_fixed_fee")
-          .limit(1)
-          .single(),
-      ]);
-
-    const allTx = txRes.data ?? [];
-    const balance = allTx
-      .filter((t: any) => t.status === "completed")
-      .reduce((sum: number, t: any) => sum + t.amount, 0);
-
-    // Calculate withdrawal fee
-    const fees = sellerFeeRes.data || globalFeesRes.data;
-    const varFee = Number(fees?.withdrawal_variable_fee || 0);
-    const fixedFee = Number(fees?.withdrawal_fixed_fee || 0);
-    const withdrawalAmount = Math.abs(w.amount);
-    const withdrawalFee = Math.round(
-      (withdrawalAmount * varFee) / 100 + fixedFee,
-    );
-
-    setApprovalModal({
-      withdrawal: w,
-      bankData: (kycRes.data?.bank_data as BankData) || null,
-      sellerIps: (ipsRes.data ?? []).map((ip: any) => ip.ip_address),
-      balance,
-      accountId: profileRes.data?.account_id || "",
-      cpf: kycRes.data?.cpf || null,
-      cnpj: kycRes.data?.cnpj || null,
-      withdrawalFee,
-    });
-    // Fetch withdrawal history for this seller
-    // const { data: historyData } = await supabase
-    //   .from("transactions")
-    //   .select("*")
-    //   .eq("method", "withdrawal")
-    //   .eq("seller_id", w.seller_id)
-    //   .order("created_at", { ascending: false })
-    //   .limit(50);
-
-    setModalLoading(false);
-  };
-
-  const appendLog = (existingMeta: any, logEntry: Record<string, any>) => {
-    const logs = Array.isArray(existingMeta?.logs)
-      ? [...existingMeta.logs]
-      : [];
-    logs.push({ ...logEntry, timestamp: new Date().toISOString() });
-    return { ...(existingMeta || {}), ...logEntry, logs };
+    try {
+      const ctx = await apiService.modules.adminFinance.getWithdrawalContext(
+        Number(w.id),
+      );
+      setApprovalModal({
+        withdrawal: w,
+        bankData: (ctx.bankData as BankData) || null,
+        sellerIps: ctx.sellerIps,
+        balance: ctx.balance,
+        accountId: ctx.accountId,
+        cpf: ctx.cpf,
+        cnpj: ctx.cnpj,
+        withdrawalFee: ctx.withdrawalFee,
+      });
+    } finally {
+      setModalLoading(false);
+    }
   };
 
   const handleApprove = async (type: "manual" | "api") => {
     if (!approvalModal) return;
     setActionLoading(approvalModal.withdrawal.id);
 
-    const existingMeta = (approvalModal.withdrawal as any).metadata || {};
     const bd = approvalModal.bankData;
-    const pixKey = bd?.pixKey || bd?.pix_key || existingMeta.pix_key || null;
-    const bankName =
-      bd?.bankName || bd?.bank_name || existingMeta.bank_name || null;
-    const newStatus = type === "manual" ? "completed" : "transferring";
-    const logEntry = {
-      event: type === "manual" ? "approved_manual" : "sent_to_api",
-      approval_type: type,
-      approved_at: new Date().toISOString(),
-      withdrawal_fee: approvalModal.withdrawalFee,
-      status: newStatus,
-      pix_key: pixKey,
-      acquirer: type === "manual" ? "manual" : "api",
-      bank_name: bankName,
-    };
+    const pixKey = bd?.pixKey || bd?.pix_key || null;
+    const bankName = bd?.bankName || bd?.bank_name || null;
 
-    const { error } = await supabase
-      .from("transactions")
-      .update({
-        status: newStatus,
-        updated_at: new Date().toISOString(),
-        pix_code: pixKey,
-        acquirer: type === "manual" ? "manual" : "api",
-        fee_amount: approvalModal.withdrawalFee,
-        net_amount:
-          Math.abs(approvalModal.withdrawal.amount) -
-          approvalModal.withdrawalFee,
-        metadata: appendLog(existingMeta, logEntry),
-      })
-      .eq("id", approvalModal.withdrawal.id);
-
-    if (error) {
-      toast.error("Erro ao processar");
-    } else {
+    try {
+      await apiService.modules.adminFinance.approveWithdrawal(
+        Number(approvalModal.withdrawal.id),
+        {
+          type,
+          feeAmount: approvalModal.withdrawalFee,
+          pixKey,
+          bankName,
+        },
+      );
       toast.success(
         type === "manual"
           ? "Saque aprovado manualmente"
@@ -293,32 +170,11 @@ export default function AdminWithdrawals() {
       );
       setApprovalModal(null);
       fetchWithdrawals();
+    } catch {
+      toast.error("Erro ao processar");
     }
     setActionLoading(null);
   };
-
-  // const updateStatus = async (id: string, newStatus: string) => {
-  //   setActionLoading(id);
-  //   const { error } = await supabase
-  //     .from("transactions")
-  //     .update({ status: newStatus, updated_at: new Date().toISOString() })
-  //     .eq("id", id);
-  //   if (error) {
-  //     toast.error("Erro ao atualizar status");
-  //   } else {
-  //     toast.success(
-  //       `Saque ${
-  //         newStatus === "completed"
-  //           ? "aprovado"
-  //           : newStatus === "transferring"
-  //           ? "marcado como transferindo"
-  //           : "cancelado"
-  //       }`
-  //     );
-  //     fetchWithdrawals();
-  //   }
-  //   setActionLoading(null);
-  // };
 
   const filtered = useMemo(() => {
     return withdrawals.filter((w) => {
@@ -1183,32 +1039,21 @@ export default function AdminWithdrawals() {
                                   return;
                                 }
                                 setActionLoading(approvalModal.withdrawal.id);
-                                const existingMeta =
-                                  (approvalModal.withdrawal as any).metadata ||
-                                  {};
-                                const logEntry = {
-                                  event: "denied",
-                                  denial_reason: denyReason.trim(),
-                                  denied_at: new Date().toISOString(),
-                                  withdrawal_fee: approvalModal.withdrawalFee,
-                                  status: "cancelled",
-                                };
-                                const { error } = await supabase
-                                  .from("transactions")
-                                  .update({
-                                    status: "cancelled",
-                                    updated_at: new Date().toISOString(),
-                                    metadata: appendLog(existingMeta, logEntry),
-                                  })
-                                  .eq("id", approvalModal.withdrawal.id);
-                                if (error) {
-                                  toast.error("Erro ao negar saque");
-                                } else {
+                                try {
+                                  await apiService.modules.adminFinance.denyWithdrawal(
+                                    Number(approvalModal.withdrawal.id),
+                                    {
+                                      reason: denyReason.trim(),
+                                      feeAmount: approvalModal.withdrawalFee,
+                                    },
+                                  );
                                   toast.success("Saque negado");
                                   setApprovalModal(null);
                                   setShowDenyInput(false);
                                   setDenyReason("");
                                   fetchWithdrawals();
+                                } catch {
+                                  toast.error("Erro ao negar saque");
                                 }
                                 setActionLoading(null);
                               }}

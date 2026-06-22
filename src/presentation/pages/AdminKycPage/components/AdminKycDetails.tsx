@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import { useAdminKycDetailsStore } from "../stores/admin-kyc-details.store";
 import type { TKycDocumentKey } from "../types/kyc-documents-review.type";
 import { IKycSubmissionView } from "../types/kyc-submission-view.type";
-import { checkAndUpdateDocumentsStatus } from "../utils/check-and-update-documents-status.util";
 import { statusDot } from "../utils/status-dot.util";
 import { statusText } from "../utils/status-text.util";
 import { AdminKycDetailsBalanceTab } from "./AdminKycDetailsBalanceTab";
@@ -15,6 +14,8 @@ import { AdminKycDetailsHeader } from "./AdminKycDetailsHeader";
 import AdminKycDetailsKycTab from "./AdminKycDetailsKycTab";
 import AdminKycDetailsTabs from "./AdminKycDetailsTabs";
 import BlockReasonModal from "./BlockReasonModal";
+import { SectionLabel } from "./SectionLabel";
+import { StatusPill } from "./StatusPill";
 
 interface IAdminKycDetailsProps {
   submission: IKycSubmissionView;
@@ -47,6 +48,28 @@ export function AdminKycDetails({
         "Não foi possível enviar o e-mail de aprovação para o seller",
       );
     }
+  };
+
+  const handleApproveDocument = async (key: TKycDocumentKey) => {
+    const result = await apiService.modules.adminKycSubmissions.approveDocument(
+      Number(submission.id),
+      key,
+    );
+    if (result.documentsStatus === "approved") {
+      await autoApproveIfComplete();
+    }
+    onUpdate();
+  };
+
+  const handleRejectDocument = async (key: TKycDocumentKey, reason: string) => {
+    await apiService.modules.adminKycSubmissions.rejectDocument(
+      Number(submission.id),
+      key,
+      { reason },
+    );
+    setDocRejectingKey(null);
+    setDocRejectReason("");
+    onUpdate();
   };
 
   const kycDocuments: {
@@ -166,27 +189,7 @@ export function AdminKycDetails({
                             <XCircle size={13} />
                           </button>
                           <button
-                            onClick={async () => {
-                              const updated = {
-                                ...documentsReview,
-                                [doc.key]: { status: "approved" as const },
-                              };
-                              const newDocStatus =
-                                checkAndUpdateDocumentsStatus(
-                                  updated,
-                                  submission.person_type,
-                                );
-                              await supabase
-                                .from("kyc_submissions")
-                                .update({
-                                  documents_review: updated,
-                                  documents_status: newDocStatus,
-                                })
-                                .eq("id", submission.id);
-                              if (newDocStatus === "approved")
-                                await autoApproveIfComplete();
-                              onUpdate();
-                            }}
+                            onClick={() => handleApproveDocument(doc.key)}
                             className="p-1.5 rounded text-muted-foreground/40 hover:text-primary transition-colors"
                           >
                             <CheckCircle size={13} />
@@ -208,26 +211,7 @@ export function AdminKycDetails({
                       )}
                       {doc.url && docStatus === "rejected" && (
                         <button
-                          onClick={async () => {
-                            const updated = {
-                              ...documentsReview,
-                              [doc.key]: { status: "approved" as const },
-                            };
-                            const newDocStatus = checkAndUpdateDocumentsStatus(
-                              updated,
-                              submission.person_type,
-                            );
-                            await supabase
-                              .from("kyc_submissions")
-                              .update({
-                                documents_review: updated,
-                                documents_status: newDocStatus,
-                              })
-                              .eq("id", submission.id);
-                            if (newDocStatus === "approved")
-                              await autoApproveIfComplete();
-                            onUpdate();
-                          }}
+                          onClick={() => handleApproveDocument(doc.key)}
                           className="p-1.5 rounded text-muted-foreground/40 hover:text-primary transition-colors"
                         >
                           <CheckCircle size={13} />
@@ -262,29 +246,12 @@ export function AdminKycDetails({
                         maxLength={500}
                       />
                       <button
-                        onClick={async () => {
+                        onClick={() => {
                           if (!docRejectReason.trim()) return;
-                          const updated = {
-                            ...documentsReview,
-                            [doc.key]: {
-                              status: "rejected" as const,
-                              reason: docRejectReason.trim(),
-                            },
-                          };
-                          const newDocStatus = checkAndUpdateDocumentsStatus(
-                            updated,
-                            submission.person_type,
+                          void handleRejectDocument(
+                            doc.key,
+                            docRejectReason.trim(),
                           );
-                          await supabase
-                            .from("kyc_submissions")
-                            .update({
-                              documents_review: updated,
-                              documents_status: newDocStatus,
-                            })
-                            .eq("id", submission.id);
-                          setDocRejectingKey(null);
-                          setDocRejectReason("");
-                          onUpdate();
                         }}
                         disabled={!docRejectReason.trim()}
                         className="text-xs font-medium text-destructive hover:text-destructive/80 disabled:opacity-40 transition-colors"

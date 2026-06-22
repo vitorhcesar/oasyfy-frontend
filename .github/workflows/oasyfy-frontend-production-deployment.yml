@@ -38,8 +38,6 @@ jobs:
 
           printf "%s" "${PROD_ENV}" > /tmp/prod.env
           grep -q "^VITE_API_URL=." /tmp/prod.env || { echo "::error::PROD_ENV must define VITE_API_URL (required at build time)"; exit 1; }
-          grep -q "^VITE_SUPABASE_URL=." /tmp/prod.env || { echo "::error::PROD_ENV must define VITE_SUPABASE_URL (required at build time)"; exit 1; }
-          grep -q "^VITE_SUPABASE_PUBLISHABLE_KEY=." /tmp/prod.env || { echo "::error::PROD_ENV must define VITE_SUPABASE_PUBLISHABLE_KEY (required at build time)"; exit 1; }
 
   build-and-push:
     runs-on: ubuntu-latest

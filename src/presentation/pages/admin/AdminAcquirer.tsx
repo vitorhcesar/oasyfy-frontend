@@ -1,5 +1,5 @@
 import cartwaveLogo from "@/assets/cartwave-logo.png";
-import { supabase } from "@/infra/integrations/supabase/client";
+import { useApiService } from "@/presentation/hooks/use-api-service";
 import { Badge } from "@/presentation/components/ui/badge";
 import { Button } from "@/presentation/components/ui/button";
 import {
@@ -103,6 +103,7 @@ interface IAcquirerCost {
 }
 
 export default function AdminAcquirer() {
+  const apiService = useApiService();
   const [activeTab, setActiveTab] = useState<TTabKey>("conexoes");
   const [connections, setConnections] = useState<IAcquirerConnection[]>([]);
   const [loading, setLoading] = useState(true);
@@ -138,55 +139,48 @@ export default function AdminAcquirer() {
   );
 
   const fetchConnections = async () => {
-    const { data, error } = await supabase
-      .from("acquirer_connections")
-      .select("*")
-      .order("name");
-
-    if (error) {
+    try {
+      const data = await apiService.modules.adminConfig.listAcquirerConnections();
+      setConnections(
+        data.map((c) => {
+          const row = c as unknown as IAcquirerConnection;
+          return {
+            ...row,
+            client_id: row.client_id ?? "",
+            access_token: row.access_token ?? "",
+            hmac_key: row.hmac_key ?? "",
+            branch_id: row.branch_id ?? "",
+            account_number: row.account_number ?? "",
+          };
+        }),
+      );
+    } catch (error) {
       toast.error("Erro ao carregar adquirentes");
       console.error(error);
-    } else {
-      setConnections(
-        data
-          ? data.map((c) => ({
-              ...c,
-              client_id: c.client_id ?? "",
-              access_token: c.access_token ?? "",
-              hmac_key: c.hmac_key ?? "",
-              branch_id: c.branch_id ?? "",
-              account_number: c.account_number ?? "",
-            }))
-          : [],
-      );
     }
     setLoading(false);
   };
 
   const fetchRoutingRules = useCallback(async () => {
-    const { data, error } = await supabase
-      .from("gateway_routing_rules")
-      .select("*")
-      .order("method")
-      .order("priority");
-
-    if (error) {
+    try {
+      const data = await apiService.modules.adminConfig.listRoutingRules();
+      setRoutingRules((data as unknown as IRoutingRule[]) || []);
+    } catch (error) {
       console.error(error);
-    } else {
-      setRoutingRules((data as IRoutingRule[]) || []);
     }
     setLoadingRouting(false);
-  }, []);
+  }, [apiService]);
 
   const fetchCosts = useCallback(async () => {
     setLoadingCosts(true);
-    const { data, error } = await supabase
-      .from("acquirer_costs")
-      .select("*")
-      .order("acquirer_id");
-    if (!error) setCosts((data as unknown as IAcquirerCost[]) || []);
+    try {
+      const data = await apiService.modules.adminConfig.listAcquirerCosts();
+      setCosts((data as unknown as IAcquirerCost[]) || []);
+    } catch (error) {
+      console.error(error);
+    }
     setLoadingCosts(false);
-  }, []);
+  }, [apiService]);
 
   useEffect(() => {
     fetchConnections();
@@ -228,29 +222,27 @@ export default function AdminAcquirer() {
       formData.branchId &&
       formData.accountNumber;
 
-    const { error } = await supabase
-      .from("acquirer_connections")
-      .update({
-        client_id: formData.clientId,
-        access_token: formData.accessToken,
-        hmac_key: formData.hmacKey,
-        branch_id: formData.branchId,
-        account_number: formData.accountNumber,
-        status: hasCredentials ? "connected" : "disconnected",
-        is_active: !!hasCredentials,
-      })
-      .eq("id", configModal.id);
-
-    setSaving(false);
-
-    if (error) {
-      toast.error("Erro ao salvar credenciais");
-      console.error(error);
-    } else {
+    try {
+      await apiService.modules.adminConfig.updateAcquirerConnection(
+        Number(configModal.id),
+        {
+          clientId: formData.clientId,
+          accessToken: formData.accessToken,
+          hmacKey: formData.hmacKey,
+          branchId: formData.branchId,
+          accountNumber: formData.accountNumber,
+          status: hasCredentials ? "connected" : "disconnected",
+          isActive: !!hasCredentials,
+        },
+      );
       toast.success(`Credenciais da ${configModal.name} salvas com sucesso!`);
       setConfigModal(null);
       fetchConnections();
+    } catch (error) {
+      toast.error("Erro ao salvar credenciais");
+      console.error(error);
     }
+    setSaving(false);
   };
 
   const toggleActive = async (conn: IAcquirerConnection) => {
@@ -260,16 +252,16 @@ export default function AdminAcquirer() {
     }
     const next = !conn.is_active;
 
-    const { error } = await supabase
-      .from("acquirer_connections")
-      .update({ is_active: next })
-      .eq("id", conn.id);
-
-    if (error) {
-      toast.error("Erro ao atualizar status");
-    } else {
+    try {
+      await apiService.modules.adminConfig.setAcquirerConnectionActive(
+        Number(conn.id),
+        next,
+      );
       toast.success(next ? `${conn.name} ativada` : `${conn.name} desativada`);
       fetchConnections();
+    } catch (error) {
+      toast.error("Erro ao atualizar status");
+      console.error(error);
     }
   };
 
@@ -608,52 +600,53 @@ export default function AdminAcquirer() {
         ? Math.max(...existing.map((r) => r.priority)) + 1
         : 1;
 
-    const { error } = await supabase.from("gateway_routing_rules").insert({
-      method,
-      acquirer_id: acquirerId,
-      priority: nextPriority,
-      is_active: true,
-      weight: 100,
-    });
-
-    if (error) {
-      toast.error("Erro ao adicionar regra");
-      console.error(error);
-    } else {
+    try {
+      await apiService.modules.adminConfig.createRoutingRule({
+        method,
+        acquirer_id: acquirerId,
+        priority: nextPriority,
+        is_active: true,
+        weight: 100,
+      });
       toast.success("Regra adicionada");
       fetchRoutingRules();
+    } catch (error) {
+      toast.error("Erro ao adicionar regra");
+      console.error(error);
     }
   };
 
   const removeRoutingRule = async (ruleId: string) => {
-    const { error } = await supabase
-      .from("gateway_routing_rules")
-      .delete()
-      .eq("id", ruleId);
-    if (error) {
-      toast.error("Erro ao remover regra");
-    } else {
+    try {
+      await apiService.modules.adminConfig.deleteRoutingRule(Number(ruleId));
       toast.success("Regra removida");
       fetchRoutingRules();
+    } catch (error) {
+      toast.error("Erro ao remover regra");
+      console.error(error);
     }
   };
 
   const toggleRoutingRule = async (rule: IRoutingRule) => {
-    const { error } = await supabase
-      .from("gateway_routing_rules")
-      .update({ is_active: !rule.is_active })
-      .eq("id", rule.id);
-    if (error) toast.error("Erro ao atualizar");
-    else fetchRoutingRules();
+    try {
+      await apiService.modules.adminConfig.updateRoutingRule(Number(rule.id), {
+        is_active: !rule.is_active,
+      });
+      fetchRoutingRules();
+    } catch {
+      toast.error("Erro ao atualizar");
+    }
   };
 
   const updateRulePriority = async (ruleId: string, newPriority: number) => {
-    const { error } = await supabase
-      .from("gateway_routing_rules")
-      .update({ priority: newPriority })
-      .eq("id", ruleId);
-    if (error) toast.error("Erro ao atualizar prioridade");
-    else fetchRoutingRules();
+    try {
+      await apiService.modules.adminConfig.updateRoutingRule(Number(ruleId), {
+        priority: newPriority,
+      });
+      fetchRoutingRules();
+    } catch {
+      toast.error("Erro ao atualizar prioridade");
+    }
   };
 
   const getAcquirerName = (acquirerId: string) => {
@@ -1168,35 +1161,10 @@ export default function AdminAcquirer() {
     setSavingCosts(true);
     try {
       const acquirerCosts = costs.filter((c) => c.acquirer_id === acquirerId);
-      for (const cost of acquirerCosts) {
-        if (
-          cost.fixed_cost === 0 &&
-          cost.variable_cost === 0 &&
-          cost.min_cost === 0
-        ) {
-          if (cost.id)
-            await supabase.from("acquirer_costs").delete().eq("id", cost.id);
-          continue;
-        }
-        const payload = {
-          acquirer_id: cost.acquirer_id,
-          operation_type: cost.operation_type,
-          method: cost.method,
-          fixed_cost: cost.fixed_cost,
-          variable_cost: cost.variable_cost,
-          min_cost: cost.min_cost,
-        };
-        if (cost.id) {
-          await supabase
-            .from("acquirer_costs")
-            .update(payload)
-            .eq("id", cost.id);
-        } else {
-          await supabase.from("acquirer_costs").upsert(payload, {
-            onConflict: "acquirer_id,operation_type,method",
-          });
-        }
-      }
+      await apiService.modules.adminConfig.saveAcquirerCosts(
+        Number(acquirerId),
+        acquirerCosts as unknown as Record<string, unknown>[],
+      );
       toast.success("Custos salvos com sucesso");
       await fetchCosts();
     } catch (err) {

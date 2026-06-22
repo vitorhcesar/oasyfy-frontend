@@ -1,4 +1,4 @@
-import { supabase } from "@/infra/integrations/supabase/client";
+import { useApiService } from "@/presentation/hooks/use-api-service";
 import { Calendar } from "@/presentation/components/ui/calendar";
 import {
   Dialog,
@@ -99,6 +99,7 @@ const statusOptions = [
 ];
 
 export default function AdminTransactions() {
+  const apiService = useApiService();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
@@ -136,11 +137,8 @@ export default function AdminTransactions() {
     }
     setPixSearchLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("search-pix", {
-        body: { pix_code: code.trim() },
-      });
-      if (error) throw error;
-      setPixSearchResults((data?.transactions as Transaction[]) ?? []);
+      const rows = await apiService.modules.pix.searchTransactions(code.trim());
+      setPixSearchResults((rows as Transaction[]) ?? []);
     } catch {
       setPixSearchResults([]);
     }
@@ -149,13 +147,12 @@ export default function AdminTransactions() {
 
   const fetchTransactions = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("transactions")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(1000);
-    setTransactions((data as Transaction[]) ?? []);
-    setLoading(false);
+    try {
+      const data = await apiService.modules.adminFinance.listTransactions();
+      setTransactions(data as Transaction[]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -170,32 +167,26 @@ export default function AdminTransactions() {
       return;
     }
     const fetchSeller = async () => {
-      const [profileRes, kycRes] = await Promise.all([
-        supabase
-          .from("profiles")
-          .select("full_name, account_id")
-          .eq("user_id", selectedTx.seller_id!)
-          .single(),
-        supabase
-          .from("kyc_submissions")
-          .select("email, cpf, cnpj")
-          .eq("user_id", selectedTx.seller_id!)
-          .single(),
-      ]);
-      setSellerInfo(
-        profileRes.data
-          ? { ...profileRes.data, email: kycRes.data?.email || undefined }
-          : null,
-      );
-      setSellerKyc(
-        kycRes.data
-          ? {
-              email: kycRes.data.email ?? undefined,
-              cpf: kycRes.data.cpf ?? undefined,
-              cnpj: kycRes.data.cnpj ?? undefined,
-            }
-          : null,
-      );
+      const sellerId = Number(selectedTx.seller_id);
+      if (Number.isNaN(sellerId)) return;
+
+      const info =
+        await apiService.modules.adminFinance.getTransactionSellerInfo(sellerId);
+      if (!info) {
+        setSellerInfo(null);
+        setSellerKyc(null);
+        return;
+      }
+      setSellerInfo({
+        full_name: info.fullName,
+        account_id: info.accountId,
+        email: info.email ?? undefined,
+      });
+      setSellerKyc({
+        email: info.email ?? undefined,
+        cpf: info.cpf ?? undefined,
+        cnpj: info.cnpj ?? undefined,
+      });
     };
     fetchSeller();
   }, [selectedTx?.seller_id]);
@@ -205,40 +196,18 @@ export default function AdminTransactions() {
     if (!selectedTx || !refundReason.trim()) return;
     setActionLoading(true);
     try {
-      const updates = {
-        status: "refunded",
-        refund_reason: refundReason.trim(),
-        is_fake_refund: fake,
-        updated_at: new Date().toISOString(),
-      };
-      const { error } = await supabase
-        .from("transactions")
-        .update(updates)
-        .eq("id", selectedTx.id);
-      if (error) throw error;
-
-      // Also create refund_request record
-      await supabase.from("refund_requests").insert({
-        transaction_id: selectedTx.id,
-        seller_id: selectedTx.seller_id!,
-        amount: selectedTx.amount,
-        reason: refundReason.trim(),
-        status: "approved",
-        admin_note: fake
-          ? "Reembolso fake - saldo não devolvido"
-          : "Reembolso real aprovado pelo admin",
-        reviewed_at: new Date().toISOString(),
-      });
-
+      const updated = await apiService.modules.adminFinance.refundTransaction(
+        Number(selectedTx.id),
+        { reason: refundReason.trim(), isFake: fake },
+      );
       toast.success(fake ? "Reembolso fake aplicado" : "Reembolso realizado");
-      setSelectedTx({ ...selectedTx, ...updates } as Transaction);
+      setSelectedTx(updated as Transaction);
       setShowRefundForm(false);
       setShowFakeRefundForm(false);
       setRefundReason("");
       fetchTransactions();
-    } catch (err) {
+    } catch {
       toast.error("Erro ao processar reembolso");
-      console.error(err);
     }
     setActionLoading(false);
   };
@@ -249,18 +218,15 @@ export default function AdminTransactions() {
     if (isLocking && !lockReason.trim()) return;
     setActionLoading(true);
     try {
-      const updates = {
-        is_locked: isLocking,
-        lock_reason: isLocking ? lockReason.trim() : null,
-        updated_at: new Date().toISOString(),
-      };
-      const { error } = await supabase
-        .from("transactions")
-        .update(updates)
-        .eq("id", selectedTx.id);
-      if (error) throw error;
+      const updated = await apiService.modules.adminFinance.lockTransaction(
+        Number(selectedTx.id),
+        {
+          locked: isLocking,
+          lockReason: isLocking ? lockReason.trim() : null,
+        },
+      );
       toast.success(isLocking ? "Venda travada" : "Venda destravada");
-      setSelectedTx({ ...selectedTx, ...updates } as Transaction);
+      setSelectedTx(updated as Transaction);
       setShowLockForm(false);
       setLockReason("");
       fetchTransactions();

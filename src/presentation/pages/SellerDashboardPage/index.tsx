@@ -210,7 +210,6 @@ export default function SellerDashboardPage() {
           availableBalance={Math.max(0, stats.availableBalance)}
           cardBalance={cardBalance}
           pixBoletoBalance={pixBoletoBalance}
-          userId={user.id}
           onSuccess={() => invalidateSellerData()}
         />
       )}

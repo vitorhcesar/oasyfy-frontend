@@ -1,3 +1,4 @@
+import type { ICreateSellerFeeRequestDto } from "@/infra/http/services/api/modules/seller-fee.module";
 import { IGetFullSellerFeeResponseDto } from "@/infra/http/services/api/modules/seller-fee.module";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import useFullSellerFeeQuery from "@/presentation/hooks/use-full-seller-fee-query";
@@ -181,6 +182,42 @@ interface IAdminKycDetailsFeesTabProps {
   sellerId: number;
 }
 
+function mapSellerFeeToPayload(
+  fee: IGetFullSellerFeeResponseDto,
+  overrides: Record<string, number>,
+): ICreateSellerFeeRequestDto {
+  return {
+    pixFixedFee: overrides.pixFixedFee ?? fee.pixFixedFee,
+    pixVariableFee: overrides.pixVariableFee ?? fee.pixVariableFee,
+    pixMinFee: overrides.pixMinFee ?? fee.pixMinFee,
+    pixRetentionFee: overrides.pixRetentionFee ?? fee.pixRetentionFee,
+    pixRetentionDays: overrides.pixRetentionDays ?? fee.pixRetentionDays,
+    cardFixedFee: overrides.cardFixedFee ?? fee.cardFixedFee,
+    cardVariableFee: overrides.cardVariableFee ?? fee.cardVariableFee,
+    cardMinFee: overrides.cardMinFee ?? fee.cardMinFee,
+    cardRetentionFee: overrides.cardRetentionFee ?? fee.cardRetentionFee,
+    cardRetentionDays: overrides.cardRetentionDays ?? fee.cardRetentionDays,
+    boletoFixedFee: overrides.boletoFixedFee ?? fee.boletoFixedFee,
+    boletoVariableFee: overrides.boletoVariableFee ?? fee.boletoVariableFee,
+    boletoMinFee: overrides.boletoMinFee ?? fee.boletoMinFee,
+    boletoRetentionFee: overrides.boletoRetentionFee ?? fee.boletoRetentionFee,
+    boletoRetentionDays: overrides.boletoRetentionDays ?? fee.boletoRetentionDays,
+    cryptoFixedFee: overrides.cryptoFixedFee ?? fee.cryptoFixedFee,
+    cryptoVariableFee: overrides.cryptoVariableFee ?? fee.cryptoVariableFee,
+    cryptoMinFee: overrides.cryptoMinFee ?? fee.cryptoMinFee,
+    cryptoRetentionFee: overrides.cryptoRetentionFee ?? fee.cryptoRetentionFee,
+    cryptoRetentionDays: overrides.cryptoRetentionDays ?? fee.cryptoRetentionDays,
+    withdrawalFixedFee: overrides.withdrawalFixedFee ?? fee.withdrawalFixedFee,
+    withdrawalVariableFee:
+      overrides.withdrawalVariableFee ?? fee.withdrawalVariableFee,
+    withdrawalMinFee: overrides.withdrawalMinFee ?? fee.withdrawalMinFee,
+    billingGoal: overrides.billingGoal ?? fee.billingGoal,
+    withdrawalMinAmount: overrides.withdrawalMinAmount ?? fee.withdrawalMinAmount,
+    withdrawalMaxAmount: overrides.withdrawalMaxAmount ?? fee.withdrawalMaxAmount,
+    withdrawalDailyMax: overrides.withdrawalDailyMax ?? fee.withdrawalDailyMax,
+  };
+}
+
 export function AdminKycDetailsFeesTab({
   sellerId,
 }: IAdminKycDetailsFeesTabProps) {
@@ -197,20 +234,61 @@ export function AdminKycDetailsFeesTab({
 
   const [saving, setSaving] = useState(false);
 
+  useEffect(() => {
+    if (!sellerFee) {
+      return;
+    }
+
+    setFeeId(String(sellerFee.id));
+    setFees({
+      pixFixedFee: sellerFee.pixFixedFee,
+      pixVariableFee: sellerFee.pixVariableFee,
+      pixMinFee: sellerFee.pixMinFee,
+      pixRetentionFee: sellerFee.pixRetentionFee,
+      pixRetentionDays: sellerFee.pixRetentionDays,
+      cardFixedFee: sellerFee.cardFixedFee,
+      cardVariableFee: sellerFee.cardVariableFee,
+      cardMinFee: sellerFee.cardMinFee,
+      cardRetentionFee: sellerFee.cardRetentionFee,
+      cardRetentionDays: sellerFee.cardRetentionDays,
+      boletoFixedFee: sellerFee.boletoFixedFee,
+      boletoVariableFee: sellerFee.boletoVariableFee,
+      boletoMinFee: sellerFee.boletoMinFee,
+      boletoRetentionFee: sellerFee.boletoRetentionFee,
+      boletoRetentionDays: sellerFee.boletoRetentionDays,
+      cryptoFixedFee: sellerFee.cryptoFixedFee,
+      cryptoVariableFee: sellerFee.cryptoVariableFee,
+      cryptoMinFee: sellerFee.cryptoMinFee,
+      cryptoRetentionFee: sellerFee.cryptoRetentionFee,
+      cryptoRetentionDays: sellerFee.cryptoRetentionDays,
+      withdrawalFixedFee: sellerFee.withdrawalFixedFee,
+      withdrawalVariableFee: sellerFee.withdrawalVariableFee,
+      withdrawalMinFee: sellerFee.withdrawalMinFee,
+      billingGoal: sellerFee.billingGoal,
+      withdrawalMinAmount: sellerFee.withdrawalMinAmount,
+      withdrawalMaxAmount: sellerFee.withdrawalMaxAmount,
+      withdrawalDailyMax: sellerFee.withdrawalDailyMax,
+    });
+  }, [sellerFee]);
+
   const handleSaveFees = async () => {
+    if (!sellerFee) {
+      return;
+    }
+
     setSaving(true);
+
+    const payload = mapSellerFeeToPayload(sellerFee, fees);
 
     await tryOrToastError(
       async () => {
         if (feeId) {
           await apiService.modules.sellerFee.updateSellerFee({
             id: feeId,
-            ...fees,
+            ...payload,
           });
         } else {
-          await apiService.modules.sellerFee.createSellerFee({
-            ...fees,
-          });
+          await apiService.modules.sellerFee.createSellerFee(payload);
         }
 
         await invalidateSellerFeeQuery();

@@ -1,7 +1,7 @@
-import { supabase } from "@/infra/integrations/supabase/client";
+import { getApiBaseUrl } from "@/infra/http/services/api/api-env";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
+import { useApiService } from "@/presentation/hooks/use-api-service";
 import { useKycStatus } from "@/presentation/hooks/use-kyc-status";
-import { useAuthStore } from "@/presentation/stores/useAuthStore";
 import {
   AlertTriangle,
   Banknote,
@@ -21,9 +21,7 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-const GATEWAY_BASE = `${
-  import.meta.env.VITE_SUPABASE_URL
-}/functions/v1/api-gateway`;
+const GATEWAY_BASE = `${getApiBaseUrl()}/api/v1/gateway`;
 
 const PERMISSIONS = [
   {
@@ -31,28 +29,28 @@ const PERMISSIONS = [
     label: "Consulta",
     icon: SearchCheck,
     description: "Consultar transações e vendas",
-    endpoints: ["GET /consulta"],
+    endpoints: ["GET /transactions"],
   },
   {
     id: "venda",
     label: "Venda",
     icon: CreditCard,
     description: "Criar vendas e gerar PIX",
-    endpoints: ["POST /venda", "POST /pix"],
+    endpoints: ["POST /sales", "POST /pix"],
   },
   {
     id: "saque",
     label: "Saque",
     icon: Banknote,
     description: "Solicitar saques via API",
-    endpoints: ["POST /saque"],
+    endpoints: ["POST /withdrawals"],
   },
   {
     id: "rastreio",
     label: "Rastreio",
     icon: PackageSearch,
     description: "Rastrear status de transações",
-    endpoints: ["GET /rastreio"],
+    endpoints: ["GET /tracking"],
   },
 ];
 
@@ -126,55 +124,73 @@ export default function SellerApi() {
 }
 
 function ApiKeysTab() {
-  const { user } = useAuthStore();
-  const [keys, setKeys] = useState<any[]>([]);
+  const apiService = useApiService();
+  const [keys, setKeys] = useState<
+    {
+      id: number;
+      name: string;
+      api_key: string;
+      permissions: string[];
+      created_at: string;
+    }[]
+  >([]);
   const [loading, setLoading] = useState(true);
-  const [visibleKeys, setVisibleKeys] = useState<Record<string, boolean>>({});
+  const [visibleKeys, setVisibleKeys] = useState<Record<number, boolean>>({});
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!user) return;
-    supabase
-      .from("api_keys")
-      .select("*")
-      .eq("seller_id", user.id)
-      .order("created_at", { ascending: false })
-      .then(({ data }) => {
-        setKeys(data || []);
-        setLoading(false);
-      });
-  }, [user]);
+    apiService.modules.sellerPortal
+      .listApiKeys()
+      .then((data) => {
+        setKeys(
+          data.map((k) => ({
+            id: k.id,
+            name: k.name,
+            api_key: k.apiKey,
+            permissions: k.permissions,
+            created_at: k.createdAt,
+          })),
+        );
+      })
+      .finally(() => setLoading(false));
+  }, [apiService]);
 
   const handleCreate = async (name: string, permissions: string[]) => {
-    if (!user) return;
     const apiKey = generateKey();
-    const { data, error } = await supabase
-      .from("api_keys")
-      .insert({
-        seller_id: user.id,
+    try {
+      const data = await apiService.modules.sellerPortal.createApiKey({
         name,
-        api_key: apiKey,
+        apiKey,
         permissions,
-      })
-      .select()
-      .single();
-    if (error) {
+      });
+      setKeys((prev) => [
+        {
+          id: data.id,
+          name: data.name,
+          api_key: data.apiKey,
+          permissions: data.permissions,
+          created_at: data.createdAt,
+        },
+        ...prev,
+      ]);
+      setVisibleKeys((prev) => ({ ...prev, [data.id]: true }));
+      toast.success("Chave criada com sucesso");
+      setShowCreateModal(false);
+    } catch {
       toast.error("Erro ao criar chave");
-      return;
     }
-    setKeys((prev) => [data, ...prev]);
-    setVisibleKeys((prev) => ({ ...prev, [data.id]: true }));
-    toast.success("Chave criada com sucesso");
-    setShowCreateModal(false);
   };
 
-  const handleDelete = async (id: string) => {
-    const { error } = await supabase.from("api_keys").delete().eq("id", id);
-    if (error) return toast.error("Erro ao excluir");
-    setKeys((prev) => prev.filter((k) => k.id !== id));
-    setShowDeleteModal(null);
-    toast.success("Chave excluída");
+  const handleDelete = async (id: number) => {
+    try {
+      await apiService.modules.sellerPortal.deleteApiKey(id);
+      setKeys((prev) => prev.filter((k) => k.id !== id));
+      setShowDeleteModal(null);
+      toast.success("Chave excluída");
+    } catch {
+      toast.error("Erro ao excluir");
+    }
   };
 
   return (
@@ -483,60 +499,69 @@ function CreateKeyModal({
 }
 
 function AuthorizedIpsTab() {
-  const { user } = useAuthStore();
-  const [ips, setIps] = useState<any[]>([]);
+  const apiService = useApiService();
+  const [ips, setIps] = useState<
+    { id: number; ip_address: string; created_at: string }[]
+  >([]);
   const [loading, setLoading] = useState(true);
   const [newIp, setNewIp] = useState("");
   const [adding, setAdding] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!user) return;
-    supabase
-      .from("authorized_ips")
-      .select("*")
-      .eq("seller_id", user.id)
-      .order("created_at", { ascending: false })
-      .then(({ data }) => {
-        setIps(data || []);
-        setLoading(false);
-      });
-  }, [user]);
+    apiService.modules.sellerPortal
+      .listAuthorizedIps()
+      .then((data) => {
+        setIps(
+          data.map((ip) => ({
+            id: ip.id,
+            ip_address: ip.ipAddress,
+            created_at: ip.createdAt,
+          })),
+        );
+      })
+      .finally(() => setLoading(false));
+  }, [apiService]);
 
   const handleAdd = async () => {
-    if (!user || !newIp.trim()) return;
+    if (!newIp.trim()) return;
     const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
     if (!ipRegex.test(newIp.trim())) return toast.error("IP inválido");
     setAdding(true);
-    const { data, error } = await supabase
-      .from("authorized_ips")
-      .insert({ seller_id: user.id, ip_address: newIp.trim() })
-      .select()
-      .single();
-    if (error) {
-      toast.error(
-        error.message.includes("duplicate")
-          ? "IP já cadastrado"
-          : "Erro ao adicionar"
+    try {
+      const data = await apiService.modules.sellerPortal.createAuthorizedIp(
+        newIp.trim(),
       );
+      setIps((prev) => [
+        {
+          id: data.id,
+          ip_address: data.ipAddress,
+          created_at: data.createdAt,
+        },
+        ...prev,
+      ]);
+      setNewIp("");
+      toast.success("IP adicionado");
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error && err.message.includes("duplicate")
+          ? "IP já cadastrado"
+          : "Erro ao adicionar";
+      toast.error(message);
+    } finally {
       setAdding(false);
-      return;
     }
-    setIps((prev) => [data, ...prev]);
-    setNewIp("");
-    toast.success("IP adicionado");
-    setAdding(false);
   };
 
-  const handleDelete = async (id: string) => {
-    const { error } = await supabase
-      .from("authorized_ips")
-      .delete()
-      .eq("id", id);
-    if (error) return toast.error("Erro ao remover");
-    setIps((prev) => prev.filter((ip) => ip.id !== id));
-    setShowDeleteModal(null);
-    toast.success("IP removido");
+  const handleDelete = async (id: number) => {
+    try {
+      await apiService.modules.sellerPortal.deleteAuthorizedIp(id);
+      setIps((prev) => prev.filter((ip) => ip.id !== id));
+      setShowDeleteModal(null);
+      toast.success("IP removido");
+    } catch {
+      toast.error("Erro ao remover");
+    }
   };
 
   return (

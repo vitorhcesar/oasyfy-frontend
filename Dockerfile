@@ -15,7 +15,6 @@ RUN --mount=type=secret,id=prod_env,target=.env.production \
     sh -c '\
       echo "Build version: ${APP_VERSION}" && \
       grep -q "^VITE_API_URL=." .env.production || { echo "VITE_API_URL missing in build env"; exit 1; } && \
-      grep -q "^VITE_SUPABASE_URL=." .env.production || { echo "VITE_SUPABASE_URL missing in build env"; exit 1; } && \
       bun run build \
     '
 

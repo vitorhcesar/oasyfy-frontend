@@ -1,4 +1,4 @@
-import { supabase } from "@/infra/integrations/supabase/client";
+import { useApiService } from "@/presentation/hooks/use-api-service";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import { Badge } from "@/presentation/components/ui/badge";
 import { Button } from "@/presentation/components/ui/button";
@@ -17,6 +17,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 export default function SellerDeposit() {
+  const apiService = useApiService();
   const [amount, setAmount] = useState("");
   const [name, setName] = useState("");
   const [document, setDocument] = useState("");
@@ -55,37 +56,30 @@ export default function SellerDeposit() {
     setPixData(null);
 
     try {
-      const { data, error: fnError } = await supabase.functions.invoke(
-        "cartwave-pix",
-        {
-          body: {
-            action: "create-pix",
-            amount: amountCents,
-            debtor_name: name.trim(),
-            ...(document.trim()
-              ? {
-                  debtor_document: document.replace(/\D/g, ""),
-                  type_document:
-                    document.replace(/\D/g, "").length > 11 ? "CNPJ" : "CPF",
-                }
-              : {}),
-          },
-        }
-      );
+      const data = await apiService.modules.pix.createCartwavePix({
+        amount: amountCents,
+        debtor_name: name.trim(),
+        ...(document.trim()
+          ? {
+              debtor_document: document.replace(/\D/g, ""),
+              type_document:
+                document.replace(/\D/g, "").length > 11 ? "CNPJ" : "CPF",
+            }
+          : {}),
+      });
 
-      if (fnError) {
-        setError(fnError.message || "Erro ao gerar PIX");
-        toast.error("Erro ao gerar PIX");
-      } else if (data?.error) {
-        setError(data.error);
-        toast.error(data.error);
+      if (data?.error) {
+        setError(String(data.error));
+        toast.error(String(data.error));
       } else {
         setPixData(data);
         toast.success("PIX gerado com sucesso!");
       }
     } catch (err) {
-      setError("Erro de conexão");
-      toast.error("Erro de conexão");
+      const message =
+        err instanceof Error ? err.message : "Erro de conexão";
+      setError(message);
+      toast.error(message);
     } finally {
       setLoading(false);
     }

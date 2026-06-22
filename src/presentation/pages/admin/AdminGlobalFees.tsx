@@ -1,4 +1,4 @@
-import { supabase } from "@/infra/integrations/supabase/client";
+import { useApiService } from "@/presentation/hooks/use-api-service";
 import {
   Tabs,
   TabsContent,
@@ -272,36 +272,30 @@ const tabConfig: {
 ];
 
 export default function AdminGlobalFees() {
+  const apiService = useApiService();
   const [fees, setFees] = useState<Omit<GlobalFees, "id">>(defaultFees);
-  const [feeId, setFeeId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    supabase
-      .from("global_fees")
-      .select("*")
-      .limit(1)
-      .then(({ data }) => {
-        if (data && data.length > 0) {
-          const row = data[0] as any;
-          setFeeId(row.id);
-          const { id, created_at, updated_at, ...rest } = row;
-          setFees(rest);
-        }
-        setLoading(false);
-      });
-  }, []);
+    apiService.modules.adminConfig.getGlobalFees().then((data) => {
+      if (data) {
+        const { id: _id, ...rest } = data as Record<string, number | string>;
+        setFees(rest as Omit<GlobalFees, "id">);
+      }
+      setLoading(false);
+    });
+  }, [apiService]);
 
   const handleSave = async () => {
     setSaving(true);
-    if (feeId) {
-      const { error } = await supabase
-        .from("global_fees")
-        .update(fees as any)
-        .eq("id", feeId);
-      if (error) toast.error("Erro ao salvar taxas");
-      else toast.success("Taxas globais salvas com sucesso!");
+    try {
+      await apiService.modules.adminConfig.updateGlobalFees(
+        fees as Record<string, number>,
+      );
+      toast.success("Taxas globais salvas com sucesso!");
+    } catch {
+      toast.error("Erro ao salvar taxas");
     }
     setSaving(false);
   };

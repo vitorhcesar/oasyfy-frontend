@@ -1,4 +1,5 @@
 import { createAuthClient } from "better-auth/react";
+import { twoFactorClient } from "better-auth/client/plugins";
 import { getApiBaseUrl } from "../http/services/api/api-env";
 
 /**
@@ -12,4 +13,11 @@ export const authClient = createAuthClient({
   fetchOptions: {
     credentials: "include",
   },
+  plugins: [
+    twoFactorClient({
+      onTwoFactorRedirect() {
+        // Fluxo tratado inline nos formulários de login.
+      },
+    }),
+  ],
 });

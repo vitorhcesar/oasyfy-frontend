@@ -1,4 +1,4 @@
-import { supabase } from "@/infra/integrations/supabase/client";
+import { useApiService } from "@/presentation/hooks/use-api-service";
 import {
   Dialog,
   DialogContent,
@@ -97,6 +97,7 @@ const emptyForm = {
 };
 
 export default function AdminGoals() {
+  const apiService = useApiService();
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -109,19 +110,20 @@ export default function AdminGoals() {
 
   const fetchGoals = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("seller_goals")
-      .select("*")
-      .order("created_at", { ascending: false });
-    setGoals((data as Goal[]) ?? []);
+    const data = await apiService.modules.adminConfig.listSellerGoals();
+    setGoals(data as Goal[]);
     setLoading(false);
   };
 
   const fetchSellers = async () => {
-    const { data } = await supabase
-      .from("profiles")
-      .select("user_id, full_name, account_id");
-    setSellers(data ?? []);
+    const data = await apiService.modules.adminSellers.listSellers();
+    setSellers(
+      data.map((s) => ({
+        user_id: String(s.userId),
+        full_name: s.fullName,
+        account_id: s.accountId,
+      })),
+    );
   };
 
   useEffect(() => {
@@ -190,42 +192,40 @@ export default function AdminGoals() {
       is_active: form.is_active,
     };
 
-    let error;
-    if (editingId) {
-      ({ error } = await supabase
-        .from("seller_goals")
-        .update(payload)
-        .eq("id", editingId));
-    } else {
-      ({ error } = await supabase.from("seller_goals").insert(payload));
-    }
-
-    if (error) {
-      console.error(error);
-      toast.error("Erro ao salvar meta");
-    } else {
+    try {
+      if (editingId) {
+        await apiService.modules.adminConfig.updateSellerGoal(
+          Number(editingId),
+          payload,
+        );
+      } else {
+        await apiService.modules.adminConfig.createSellerGoal(payload);
+      }
       toast.success(editingId ? "Meta atualizada" : "Meta criada");
       setShowForm(false);
       fetchGoals();
+    } catch (error) {
+      console.error(error);
+      toast.error("Erro ao salvar meta");
     }
     setSaving(false);
   };
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase.from("seller_goals").delete().eq("id", id);
-    if (error) {
-      toast.error("Erro ao excluir");
-    } else {
+    try {
+      await apiService.modules.adminConfig.deleteSellerGoal(Number(id));
       toast.success("Meta excluída");
       fetchGoals();
+    } catch {
+      toast.error("Erro ao excluir");
     }
   };
 
   const toggleActive = async (goal: Goal) => {
-    await supabase
-      .from("seller_goals")
-      .update({ is_active: !goal.is_active })
-      .eq("id", goal.id);
+    await apiService.modules.adminConfig.toggleSellerGoalActive(
+      Number(goal.id),
+      !goal.is_active,
+    );
     fetchGoals();
   };
 

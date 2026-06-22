@@ -1,4 +1,4 @@
-import { supabase } from "@/infra/integrations/supabase/client";
+import { Transaction } from "@/domain/entities/transaction.entity";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import { WithdrawalModal } from "@/presentation/components/seller/WithdrawalModal";
 import { Calendar } from "@/presentation/components/ui/calendar";
@@ -8,6 +8,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/presentation/components/ui/popover";
+import useSellerFeeQuery from "@/presentation/hooks/use-seller-fee-query";
+import { useSellerKycSubmissionQuery } from "@/presentation/hooks/use-seller-kyc-submission-query";
+import useSellerTransactionsQuery from "@/presentation/hooks/use-seller-transactions-query";
 import { useAuthStore } from "@/presentation/stores/useAuthStore";
 import { cn } from "@/presentation/utils/cn";
 import { format } from "date-fns";
@@ -25,7 +28,7 @@ import {
   Search,
   XCircle,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 function isPaid(status: string) {
   return status === "paid" || status === "completed";
@@ -50,6 +53,28 @@ interface SellerFee {
   card_retention_days: number;
   boleto_retention_days: number;
   crypto_retention_days: number;
+}
+
+function mapTransactionToWithdrawal(t: Transaction): Withdrawal {
+  return {
+    id: String(t.id),
+    amount: t.amount,
+    fee_amount: t.feeAmount,
+    net_amount: t.netAmount,
+    status: t.status,
+    description: t.description,
+    pix_code: t.pixCode,
+    acquirer: t.acquirer,
+    metadata: t.metadata as Record<string, any> | null,
+    created_at:
+      t.createdAt instanceof Date
+        ? t.createdAt.toISOString()
+        : String(t.createdAt),
+    updated_at:
+      t.updatedAt instanceof Date
+        ? t.updatedAt.toISOString()
+        : String(t.updatedAt),
+  };
 }
 
 function formatCurrency(cents: number) {
@@ -121,12 +146,13 @@ function StatusBadge({ status }: { status: string }) {
 
 export default function SellerTransfers() {
   const { user } = useAuthStore();
-  const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
-  const [allTx, setAllTx] = useState<
-    { amount: number; method: string; status: string; created_at: string }[]
-  >([]);
-  const [fees, setFees] = useState<SellerFee | null>(null);
-  const [loading, setLoading] = useState(true);
+  const {
+    data: transactions,
+    isLoading: txLoading,
+    invalidateQuery: invalidateTransactions,
+  } = useSellerTransactionsQuery();
+  const { data: sellerFee, isLoading: feeLoading } = useSellerFeeQuery();
+  const { submission, isLoading: kycLoading } = useSellerKycSubmissionQuery();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
@@ -134,51 +160,49 @@ export default function SellerTransfers() {
   const [withdrawalOpen, setWithdrawalOpen] = useState(false);
   const [detailW, setDetailW] = useState<Withdrawal | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
-  const [withdrawalBlocked, setWithdrawalBlocked] = useState(false);
-  const [blockReason, setBlockReason] = useState<string | null>(null);
 
-  const fetchData = async () => {
-    if (!user) return;
-    setLoading(true);
-    const [wRes, txRes, feeRes, kycRes] = await Promise.all([
-      supabase
-        .from("transactions")
-        .select(
-          "id, amount, fee_amount, net_amount, status, description, pix_code, acquirer, metadata, created_at, updated_at",
-        )
-        .eq("seller_id", user.id)
-        .eq("method", "withdrawal")
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("transactions")
-        .select("amount, method, status, created_at")
-        .eq("seller_id", user.id)
-        .neq("method", "withdrawal"),
-      supabase
-        .from("seller_fees")
-        .select(
-          "pix_retention_days, card_retention_days, boleto_retention_days, crypto_retention_days",
-        )
-        .eq("seller_id", user.id)
-        .limit(1),
-      supabase
-        .from("kyc_submissions")
-        .select("withdrawals_blocked, withdrawal_block_reason")
-        .eq("user_id", user.id)
-        .limit(1)
-        .maybeSingle(),
-    ]);
-    setWithdrawals((wRes.data as Withdrawal[]) || []);
-    setAllTx((txRes.data as any[]) || []);
-    setFees((feeRes.data?.[0] as SellerFee) || null);
-    setWithdrawalBlocked(kycRes.data?.withdrawals_blocked || false);
-    setBlockReason(kycRes.data?.withdrawal_block_reason || null);
-    setLoading(false);
+  const loading = txLoading || feeLoading || kycLoading;
+
+  const withdrawals = useMemo(
+    () =>
+      transactions
+        .filter((t) => t.method === "withdrawal")
+        .map(mapTransactionToWithdrawal),
+    [transactions],
+  );
+
+  const allTx = useMemo(
+    () =>
+      transactions
+        .filter((t) => t.method !== "withdrawal")
+        .map((t) => ({
+          amount: t.amount,
+          method: t.method,
+          status: t.status,
+          created_at:
+            t.createdAt instanceof Date
+              ? t.createdAt.toISOString()
+              : String(t.createdAt),
+        })),
+    [transactions],
+  );
+
+  const fees = useMemo<SellerFee | null>(() => {
+    if (!sellerFee) return null;
+    return {
+      pix_retention_days: sellerFee.pixRetentionDays,
+      card_retention_days: sellerFee.cardRetentionDays,
+      boleto_retention_days: sellerFee.boletoRetentionDays,
+      crypto_retention_days: sellerFee.cryptoRetentionDays,
+    };
+  }, [sellerFee]);
+
+  const withdrawalBlocked = submission?.withdrawalsBlocked ?? false;
+  const blockReason = submission?.withdrawalBlockReason ?? null;
+
+  const refetchData = () => {
+    void invalidateTransactions();
   };
-
-  useEffect(() => {
-    fetchData();
-  }, [user]);
 
   // Balance calculations
   const now = new Date();
@@ -643,8 +667,7 @@ export default function SellerTransfers() {
           availableBalance={availableBalance}
           cardBalance={cardBalance}
           pixBoletoBalance={pixBoletoBalance}
-          userId={user.id}
-          onSuccess={fetchData}
+          onSuccess={refetchData}
         />
       )}
 

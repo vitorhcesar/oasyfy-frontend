@@ -2,6 +2,14 @@ import { HttpClient, IHttpClient } from "../../http-client";
 import { apiAxios } from "./axios-instance";
 import { AccountModule, IAccountModule } from "./modules/account.module";
 import {
+  AdminConfigModule,
+  IAdminConfigModule,
+} from "./modules/admin-config.module";
+import {
+  AdminFinanceModule,
+  IAdminFinanceModule,
+} from "./modules/admin-finance.module";
+import {
   AdminBannerModule,
   IAdminBannerModule,
 } from "./modules/admin-banner.module";
@@ -21,6 +29,12 @@ import { BalanceModule, IBalanceModule } from "./modules/balance.module";
 import { BannerModule, IBannerModule } from "./modules/banner.module";
 import { EmailModule, IEmailModule } from "./modules/email.module";
 import {
+  IManageAdminsModule,
+  ManageAdminsModule,
+} from "./modules/manage-admins.module";
+import { IPixModule, PixModule } from "./modules/pix.module";
+import { IWhatsappModule, WhatsappModule } from "./modules/whatsapp.module";
+import {
   GatewayThemeModule,
   IGatewayThemeModule,
 } from "./modules/gateway-theme.module";
@@ -31,6 +45,10 @@ import {
 import { IRateLimitModule, RateLimitModule } from "./modules/rate-limit.module";
 import { ISellerFeeModule, SellerFeeModule } from "./modules/seller-fee.module";
 import { ISellerModule, SellerModule } from "./modules/seller.module";
+import {
+  ISellerPortalModule,
+  SellerPortalModule,
+} from "./modules/seller-portal.module";
 import { ISessionModule, SessionModule } from "./modules/session.module";
 import {
   ITransactionModule,
@@ -44,6 +62,8 @@ export interface IApiServiceModules {
   adminSellers: IAdminSellersModule;
   adminKycSubmissions: IAdminKycSubmissionsModule;
   adminBanners: IAdminBannerModule;
+  adminFinance: IAdminFinanceModule;
+  adminConfig: IAdminConfigModule;
 
   account: IAccountModule;
   balance: IBalanceModule;
@@ -55,8 +75,12 @@ export interface IApiServiceModules {
   transaction: ITransactionModule;
   sellerFee: ISellerFeeModule;
   seller: ISellerModule;
+  sellerPortal: ISellerPortalModule;
   gatewayTheme: IGatewayThemeModule;
   email: IEmailModule;
+  pix: IPixModule;
+  whatsapp: IWhatsappModule;
+  manageAdmins: IManageAdminsModule;
 }
 
 function attachModules(httpClient: IHttpClient): IApiServiceModules {
@@ -66,6 +90,8 @@ function attachModules(httpClient: IHttpClient): IApiServiceModules {
     adminSellers: new AdminSellersModule(httpClient),
     adminKycSubmissions: new AdminKycSubmissionsModule(httpClient),
     adminBanners: new AdminBannerModule(httpClient),
+    adminFinance: new AdminFinanceModule(httpClient),
+    adminConfig: new AdminConfigModule(httpClient),
 
     account: new AccountModule(httpClient),
     balance: new BalanceModule(httpClient),
@@ -78,7 +104,11 @@ function attachModules(httpClient: IHttpClient): IApiServiceModules {
     transaction: new TransactionModule(httpClient),
     sellerFee: new SellerFeeModule(httpClient),
     seller: new SellerModule(httpClient),
+    sellerPortal: new SellerPortalModule(httpClient),
     email: new EmailModule(httpClient),
+    pix: new PixModule(httpClient),
+    whatsapp: new WhatsappModule(httpClient),
+    manageAdmins: new ManageAdminsModule(httpClient),
   };
 }
 

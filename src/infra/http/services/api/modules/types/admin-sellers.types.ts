@@ -8,6 +8,7 @@ export type TAdminSellerKycStatus =
 export interface IAdminSellerDto {
   userId: number;
   fullName: string | null;
+  accountId: string;
   createdAt: string | null;
   kycStatus: TAdminSellerKycStatus;
 }

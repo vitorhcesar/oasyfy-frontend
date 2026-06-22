@@ -1,7 +1,7 @@
-import { supabase } from "@/infra/integrations/supabase/client";
+import { Transaction } from "@/domain/entities/transaction.entity";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import { Dialog, DialogContent } from "@/presentation/components/ui/dialog";
-import { useAuthStore } from "@/presentation/stores/useAuthStore";
+import useSellerTransactionsQuery from "@/presentation/hooks/use-seller-transactions-query";
 import { cn } from "@/presentation/utils/cn";
 import {
   ArrowDownLeft,
@@ -18,7 +18,7 @@ import {
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
-interface Transaction {
+interface TransactionView {
   id: string;
   amount: number;
   currency: string;
@@ -38,6 +38,30 @@ interface Transaction {
   lock_reason: string | null;
   is_locked: boolean;
   is_fake_refund: boolean;
+}
+
+function toTransactionView(tx: Transaction): TransactionView {
+  return {
+    id: String(tx.id),
+    amount: tx.amount,
+    currency: tx.currency,
+    status: tx.status,
+    method: tx.method,
+    customer_name: tx.customerName,
+    customer_email: tx.customerEmail,
+    description: tx.description,
+    created_at: tx.createdAt.toISOString(),
+    updated_at: tx.updatedAt.toISOString(),
+    fee_amount: tx.feeAmount,
+    net_amount: tx.netAmount,
+    pix_code: tx.pixCode,
+    acquirer: tx.acquirer,
+    metadata: tx.metadata,
+    refund_reason: tx.refundReason,
+    lock_reason: tx.lockReason,
+    is_locked: tx.isLocked,
+    is_fake_refund: tx.isFakeRefund,
+  };
 }
 
 type StatusFilter =
@@ -121,31 +145,25 @@ const methodLabels: Record<string, string> = {
 };
 
 export default function SellerTransactions() {
-  const { user } = useAuthStore();
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: rawTransactions, isPending: loading } =
+    useSellerTransactionsQuery();
+  const transactions = useMemo(
+    () =>
+      rawTransactions
+        .filter(
+          (tx) =>
+            tx.method !== "withdrawal" &&
+            tx.customerName !== "Ajuste administrativo",
+        )
+        .map(toTransactionView),
+    [rawTransactions],
+  );
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [methodFilter, setMethodFilter] = useState<MethodFilter>("all");
   const [page, setPage] = useState(1);
-  const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
+  const [selectedTx, setSelectedTx] = useState<TransactionView | null>(null);
   const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    if (!user) return;
-    const fetchTx = async () => {
-      const { data } = await supabase
-        .from("transactions")
-        .select("*")
-        .eq("seller_id", user.id)
-        .neq("method", "withdrawal")
-        .neq("customer_name", "Ajuste administrativo")
-        .order("created_at", { ascending: false });
-      setTransactions((data as Transaction[]) ?? []);
-      setLoading(false);
-    };
-    fetchTx();
-  }, [user]);
 
   const filtered = useMemo(() => {
     return transactions.filter((t) => {

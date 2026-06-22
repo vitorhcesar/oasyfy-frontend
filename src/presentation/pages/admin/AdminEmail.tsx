@@ -1,4 +1,5 @@
-import { supabase } from "@/infra/integrations/supabase/client";
+import { authClient } from "@/infra/auth/auth-client";
+import { useApiService } from "@/presentation/hooks/use-api-service";
 import {
   Dialog,
   DialogContent,
@@ -46,6 +47,7 @@ const defaultSettings: SmtpSettings = {
 };
 
 export default function AdminEmail() {
+  const apiService = useApiService();
   const [settings, setSettings] = useState<SmtpSettings>(defaultSettings);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -64,15 +66,10 @@ export default function AdminEmail() {
 
   const fetchSettings = async () => {
     setLoading(true);
-    const { data } = await supabase
-      .from("smtp_settings")
-      .select("*")
-      .limit(1)
-      .maybeSingle();
+    const data = await apiService.modules.adminConfig.getSmtpSettings();
     if (data) {
       setSettings({ ...(data as unknown as SmtpSettings), is_active: true });
-      // If credentials exist, mask them
-      if ((data as any).host) setIsMasked(true);
+      if ((data as { host?: string }).host) setIsMasked(true);
     }
     setLoading(false);
   };
@@ -90,26 +87,13 @@ export default function AdminEmail() {
         encryption: settings.encryption,
         is_active: true,
       };
-      if (settings.id) {
-        const { error } = await supabase
-          .from("smtp_settings")
-          .update(payload)
-          .eq("id", settings.id);
-        if (error) throw error;
-      } else {
-        const { data, error } = await supabase
-          .from("smtp_settings")
-          .insert(payload)
-          .select()
-          .single();
-        if (error) throw error;
-        if (data) setSettings(data as unknown as SmtpSettings);
-      }
+      const saved = await apiService.modules.adminConfig.updateSmtpSettings(payload);
+      setSettings(saved as unknown as SmtpSettings);
       toast.success("Configurações SMTP salvas com sucesso");
       setIsMasked(true);
       setShowPassword(false);
-    } catch (err: any) {
-      toast.error(err.message || "Erro ao salvar");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Erro ao salvar");
     }
     setSaving(false);
   };
@@ -121,16 +105,14 @@ export default function AdminEmail() {
     }
     setTesting(true);
     try {
-      const { data, error } = await supabase.functions.invoke("test-smtp", {
-        body: { test_email: testEmail },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      toast.success(data?.message || "E-mail de teste enviado!");
+      await apiService.modules.email.testConnection(testEmail);
+      toast.success("E-mail de teste enviado!");
       setTestDialogOpen(false);
       setTestEmail("");
-    } catch (err: any) {
-      toast.error(err.message || "Erro ao enviar e-mail de teste");
+    } catch (err: unknown) {
+      toast.error(
+        err instanceof Error ? err.message : "Erro ao enviar e-mail de teste",
+      );
     }
     setTesting(false);
   };
@@ -142,43 +124,24 @@ export default function AdminEmail() {
     }
     setClearing(true);
     try {
-      // Verify 2FA first
-      const { data: factors } = await supabase.auth.mfa.listFactors();
-      const totpFactor = factors?.totp?.find((f) => f.status === "verified");
-      if (!totpFactor) {
+      const session = await authClient.getSession();
+      if (!session.data?.user?.twoFactorEnabled) {
         toast.error("Você precisa ter 2FA ativado para limpar credenciais");
         setClearing(false);
         return;
       }
 
-      const { data: challenge, error: chErr } =
-        await supabase.auth.mfa.challenge({ factorId: totpFactor.id });
-      if (chErr) {
-        toast.error(chErr.message);
-        setClearing(false);
-        return;
-      }
-
-      const { error: vErr } = await supabase.auth.mfa.verify({
-        factorId: totpFactor.id,
-        challengeId: challenge.id,
+      const { error } = await authClient.twoFactor.verifyTotp({
         code: clearMfaCode,
       });
-      if (vErr) {
+      if (error) {
         toast.error("Código 2FA inválido");
         setClearMfaCode("");
         setClearing(false);
         return;
       }
 
-      // 2FA verified — delete SMTP settings
-      if (settings.id) {
-        const { error } = await supabase
-          .from("smtp_settings")
-          .delete()
-          .eq("id", settings.id);
-        if (error) throw error;
-      }
+      await apiService.modules.adminConfig.deleteSmtpSettings();
       setSettings(defaultSettings);
       setIsMasked(false);
       setClearDialogOpen(false);

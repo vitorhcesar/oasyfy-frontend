@@ -1,4 +1,5 @@
-import { supabase } from "@/infra/integrations/supabase/client";
+import { useApiService } from "@/presentation/hooks/use-api-service";
+import useSellerFeeQuery from "@/presentation/hooks/use-seller-fee-query";
 import { useThemeContext } from "@/presentation/hooks/use-theme";
 import { useAuthStore } from "@/presentation/stores/useAuthStore";
 import { cn } from "@/presentation/utils/cn";
@@ -29,6 +30,8 @@ interface ISellerTopbarProps {
 }
 
 export function SellerTopbar({ onMenuToggle }: ISellerTopbarProps) {
+  const apiService = useApiService();
+  const { data: sellerFee } = useSellerFeeQuery();
   const navigate = useNavigate();
 
   const { user, signOut } = useAuthStore();
@@ -51,34 +54,21 @@ export function SellerTopbar({ onMenuToggle }: ISellerTopbarProps) {
 
   useEffect(() => {
     if (!user) return;
+
     Promise.all([
-      supabase
-        .from("profiles")
-        .select("avatar_url")
-        .eq("user_id", user.id)
-        .limit(1),
-      supabase
-        .from("seller_fees")
-        .select("billing_goal")
-        .eq("seller_id", user.id)
-        .limit(1),
-      supabase
-        .from("transactions")
-        .select("amount")
-        .eq("seller_id", user.id)
-        .in("status", ["paid", "completed"])
-        .neq("method", "withdrawal"),
-    ]).then(([profileRes, feesRes, txRes]) => {
-      if (profileRes.data?.[0]?.avatar_url)
-        setAvatarUrl(profileRes.data[0].avatar_url);
-      const goal = (feesRes.data as any)?.[0]?.billing_goal;
-      if (goal) setBillingGoal(Number(goal));
-      const revenue =
-        (txRes.data as any[])?.reduce((s: number, t: any) => s + t.amount, 0) ??
-        0;
-      setTotalRevenue(revenue);
+      apiService.modules.sellerPortal.getProfile(),
+      apiService.modules.balance.get(),
+    ]).then(([profile, balance]) => {
+      if (profile.avatarUrl) setAvatarUrl(profile.avatarUrl);
+      setTotalRevenue(balance.grossSalesAmount);
     });
-  }, [user]);
+  }, [user, apiService]);
+
+  useEffect(() => {
+    if (sellerFee?.billingGoal) {
+      setBillingGoal(sellerFee.billingGoal);
+    }
+  }, [sellerFee?.billingGoal]);
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {

@@ -1,3 +1,4 @@
+import { getApiBaseUrl } from "@/infra/http/services/api/api-env";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import {
   ArrowRight,
@@ -20,9 +21,7 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 
-const BASE_URL = `${
-  import.meta.env.VITE_SUPABASE_URL
-}/functions/v1/api-gateway`;
+const BASE_URL = `${getApiBaseUrl()}/api/v1/gateway`;
 
 /* ── Shared sub-components ── */
 

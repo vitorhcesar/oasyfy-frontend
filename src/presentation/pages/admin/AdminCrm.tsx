@@ -1,4 +1,4 @@
-import { supabase } from "@/infra/integrations/supabase/client";
+import { useApiService } from "@/presentation/hooks/use-api-service";
 import { AdminLayout } from "@/presentation/layouts/AdminLayout";
 import { CheckCircle, Loader2, MessageSquare, Send } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -14,6 +14,7 @@ interface CrmSettings {
 }
 
 export default function AdminCrm() {
+  const apiService = useApiService();
   const [settings, setSettings] = useState<CrmSettings>({
     id: "",
     api_url: "",
@@ -30,50 +31,27 @@ export default function AdminCrm() {
 
   useEffect(() => {
     const load = async () => {
-      const { data } = await supabase
-        .from("crm_settings")
-        .select("*")
-        .limit(1)
-        .maybeSingle();
+      const data = await apiService.modules.adminConfig.getCrmSettings();
       if (data) setSettings(data as unknown as CrmSettings);
       setLoading(false);
     };
     load();
-  }, []);
+  }, [apiService]);
 
   const handleSave = async () => {
     setSaving(true);
-    if (settings.id) {
-      const { error } = await supabase
-        .from("crm_settings")
-        .update({
-          api_url: settings.api_url,
-          api_token: settings.api_token,
-          instance_name: settings.instance_name,
-          welcome_message: settings.welcome_message,
-          is_active: settings.is_active,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", settings.id);
-      if (error) toast.error("Erro ao salvar");
-      else toast.success("Configurações salvas");
-    } else {
-      const { data, error } = await supabase
-        .from("crm_settings")
-        .insert({
-          api_url: settings.api_url,
-          api_token: settings.api_token,
-          instance_name: settings.instance_name,
-          welcome_message: settings.welcome_message,
-          is_active: settings.is_active,
-        })
-        .select()
-        .single();
-      if (error) toast.error("Erro ao salvar");
-      else {
-        setSettings(data as unknown as CrmSettings);
-        toast.success("Configurações salvas");
-      }
+    try {
+      const saved = await apiService.modules.adminConfig.updateCrmSettings({
+        api_url: settings.api_url,
+        api_token: settings.api_token,
+        instance_name: settings.instance_name,
+        welcome_message: settings.welcome_message,
+        is_active: settings.is_active,
+      });
+      setSettings(saved as unknown as CrmSettings);
+      toast.success("Configurações salvas");
+    } catch {
+      toast.error("Erro ao salvar");
     }
     setSaving(false);
   };
@@ -85,17 +63,16 @@ export default function AdminCrm() {
     }
     setTesting(true);
     try {
-      const { data, error } = await supabase.functions.invoke(
-        "send-whatsapp-welcome",
-        {
-          body: { phone: testPhone.trim(), name: "Teste", test: true },
-        },
-      );
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
+      await apiService.modules.whatsapp.sendWelcome({
+        phone: testPhone.trim(),
+        name: "Teste",
+        test: true,
+      });
       toast.success("Mensagem de teste enviada!");
-    } catch (err: any) {
-      toast.error(err.message || "Erro ao enviar teste");
+    } catch (err: unknown) {
+      toast.error(
+        err instanceof Error ? err.message : "Erro ao enviar teste",
+      );
     }
     setTesting(false);
   };
