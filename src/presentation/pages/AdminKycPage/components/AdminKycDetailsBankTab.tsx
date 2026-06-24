@@ -1,4 +1,6 @@
 import { useApiService } from "@/presentation/hooks/use-api-service";
+import { tryOrToastError } from "@/presentation/utils/try-or-toast-error";
+import { useState } from "react";
 import { IKycSubmissionView } from "../types/kyc-submission-view.type";
 import { ActionButton } from "./ActionButton";
 import { Row } from "./Row";
@@ -17,6 +19,7 @@ export default function AdminKycDetailsBankTab({
   autoApproveIfComplete,
 }: IAdminKycDetailsBankTabProps) {
   const apiService = useApiService();
+  const [loading, setLoading] = useState(false);
   const bankData = submission.bank_data;
 
   return (
@@ -58,23 +61,43 @@ export default function AdminKycDetailsBankTab({
           {submission.bank_status !== "approved" && (
             <div className="flex items-center gap-2 pt-4 border-t border-border/30">
               <ActionButton
-                onClick={async () => {
-                  await apiService.modules.adminKycSubmissions.rejectBank(
-                    Number(submission.id),
+                onClick={() => {
+                  setLoading(true);
+                  void tryOrToastError(
+                    async () => {
+                      await apiService.modules.adminKycSubmissions.rejectBank(
+                        Number(submission.id),
+                      );
+                      onUpdate();
+                    },
+                    {
+                      defaultErrorMessage: "Erro ao recusar banco",
+                      finallyFn: () => setLoading(false),
+                    },
                   );
-                  onUpdate();
                 }}
+                loading={loading}
                 variant="reject"
                 label="Recusar"
               />
               <ActionButton
-                onClick={async () => {
-                  await apiService.modules.adminKycSubmissions.approveBank(
-                    Number(submission.id),
+                onClick={() => {
+                  setLoading(true);
+                  void tryOrToastError(
+                    async () => {
+                      await apiService.modules.adminKycSubmissions.approveBank(
+                        Number(submission.id),
+                      );
+                      await autoApproveIfComplete();
+                      onUpdate();
+                    },
+                    {
+                      defaultErrorMessage: "Erro ao aprovar banco",
+                      finallyFn: () => setLoading(false),
+                    },
                   );
-                  await autoApproveIfComplete();
-                  onUpdate();
                 }}
+                loading={loading}
                 variant="approve"
                 label="Aprovar"
               />
