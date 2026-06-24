@@ -3,7 +3,7 @@ import { WithdrawalModal } from "@/presentation/components/seller/WithdrawalModa
 import useSellerFeeQuery from "@/presentation/hooks/use-seller-fee-query";
 import { useSellerKycSubmissionQuery } from "@/presentation/hooks/use-seller-kyc-submission-query";
 import useSellerTransactionsQuery from "@/presentation/hooks/use-seller-transactions-query";
-import { useAuthStore } from "@/presentation/stores/useAuthStore";
+import { useUserContext } from "@/presentation/context/UserContext";
 import { cn } from "@/presentation/utils/cn";
 import { Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -21,7 +21,7 @@ import { useSellerDashboardStore } from "./stores/seller-dashboard.store";
 export default function SellerDashboardPage() {
   const navigate = useNavigate();
 
-  const { user } = useAuthStore();
+  const user = useUserContext();
 
   const {
     kycStatus,

@@ -3,7 +3,7 @@ import type { IGetFullSellerFeeResponseDto } from "@/infra/http/services/api/mod
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import { useSellerKycSubmissionQuery } from "@/presentation/hooks/use-seller-kyc-submission-query";
-import { useAuthStore } from "@/presentation/stores/useAuthStore";
+import { useUserContext } from "@/presentation/context/UserContext";
 import { translateError } from "@/presentation/utils/translate-error";
 import {
   Copy,
@@ -93,7 +93,7 @@ function SecurityTab() {
       setSessions((prev) => prev.filter((s) => s.id !== sessionId));
       if (active) {
         await authClient.signOut();
-        window.location.href = "/login-seller";
+        window.location.href = "/login/seller";
         return;
       }
       toast.success("Sessão encerrada");
@@ -104,7 +104,7 @@ function SecurityTab() {
 
   const handleEndAll = async () => {
     await authClient.revokeSessions();
-    window.location.href = "/login-seller";
+        window.location.href = "/login/seller";
   };
 
   const isActive = (createdAt: string) => {
@@ -318,7 +318,7 @@ function SecurityTab() {
                     } else {
                       toast.success("Senha alterada com sucesso");
                       if (logoutAll) {
-                        window.location.href = "/login-seller";
+                        window.location.href = "/login/seller";
                         return;
                       }
                       setShowPasswordModal(false);
@@ -428,7 +428,7 @@ function SecurityTab() {
 }
 
 export default function SellerSettings() {
-  const { user } = useAuthStore();
+  const user = useUserContext();
   const apiService = useApiService();
   const { submission } = useSellerKycSubmissionQuery();
   const [loading, setLoading] = useState(true);

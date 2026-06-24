@@ -1,5 +1,6 @@
 import { AppError } from "@/domain/errors/app.error";
 import { authClient } from "@/infra/auth";
+import { savePendingVerification } from "../seller-login-verification-storage";
 import { Input } from "@/presentation/components/Input";
 import { Label } from "@/presentation/components/Label";
 import { PasswordChecks } from "@/presentation/components/PasswordChecks";
@@ -107,6 +108,10 @@ export default function SignUpForm({
           Number(signUpResult.data.user.id)
         );
 
+        // Persiste o e-mail antes do signOut para que o FormPanel, ao remontar
+        // pelo PublicRoute (isLoading=true), já leia o sessionStorage e exiba
+        // o formulário de código diretamente.
+        savePendingVerification(email);
         await authClient.signOut();
         await onSuccess();
       },

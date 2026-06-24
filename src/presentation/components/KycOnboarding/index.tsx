@@ -1,5 +1,5 @@
 import { useApiService } from "@/presentation/hooks/use-api-service";
-import { useAuthStore } from "@/presentation/stores/useAuthStore";
+import { useUserContext } from "@/presentation/context/UserContext";
 import { getErrorMessageOrDefault } from "@/presentation/utils/get-error-message-or-default";
 import { useState } from "react";
 import KycOnboardingContent from "./KycOnboardingContent";
@@ -23,7 +23,7 @@ interface IKycOnboardingProps {
 }
 
 export default function KycOnboarding({ onComplete }: IKycOnboardingProps) {
-  const { user } = useAuthStore();
+  const user = useUserContext();
 
   const apiService = useApiService();
 

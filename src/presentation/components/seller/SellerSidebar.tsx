@@ -1,6 +1,6 @@
 import { NavLink } from "@/presentation/components/NavLink";
 import { useSellerKycSubmissionQuery } from "@/presentation/hooks/use-seller-kyc-submission-query";
-import { useAuthStore } from "@/presentation/stores/useAuthStore";
+import { useAuthContext } from "@/presentation/context/AuthContext";
 import { cn } from "@/presentation/utils/cn";
 import {
   ArrowDownLeft,
@@ -38,7 +38,7 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
     location.pathname.startsWith("/seller/kyc") ||
     location.pathname.startsWith("/seller/2fa");
 
-  const { signOut } = useAuthStore();
+  const { signOut } = useAuthContext();
 
   const { fullyApproved: kycApproved, isLoading: kycLoading } =
     useSellerKycSubmissionQuery();

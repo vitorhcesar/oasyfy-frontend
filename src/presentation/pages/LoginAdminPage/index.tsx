@@ -7,6 +7,7 @@ import { Input } from "@/presentation/components/Input";
 import { PasswordInput } from "@/presentation/components/PasswordInput";
 import { TwoFactorLoginStep } from "@/presentation/components/auth/TwoFactorLoginStep";
 import { Button } from "@/presentation/components/ui/button";
+import { useAuthContext } from "@/presentation/context/AuthContext";
 import { tryOrToastError } from "@/presentation/utils/try-or-toast-error";
 import { ArrowRight, Mail, Shield } from "lucide-react";
 import { useState } from "react";
@@ -16,6 +17,7 @@ const clientIpService = new ClientIpService();
 
 export default function LoginAdmin() {
   const navigate = useNavigate();
+  const { signOut } = useAuthContext();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -71,7 +73,7 @@ export default function LoginAdmin() {
         defaultErrorMessage: "Erro ao entrar",
         defaultErrorTitle: "Erro ao entrar",
         errorFn: () => {
-          authClient.signOut();
+          void signOut();
         },
         finallyFn: () => {
           setLoading(false);
@@ -152,13 +154,13 @@ export default function LoginAdmin() {
                 } catch (err) {
                   if (err instanceof AppError) {
                     setError(err.message);
-                    await authClient.signOut();
+                    await signOut();
                   }
                 }
               }}
               onCancel={() => {
                 setNeedsTwoFactor(false);
-                void authClient.signOut();
+                void signOut();
               }}
             />
           ) : (

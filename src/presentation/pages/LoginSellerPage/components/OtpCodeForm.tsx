@@ -13,6 +13,7 @@ interface IOtpCodeFormProps {
   password: string;
   setView: (view: "login" | "signup" | "forgotPassword") => void;
   resendSignUpVerificationCode: () => Promise<void>;
+  onVerificationDone: () => void;
 }
 
 export default function OtpCodeForm({
@@ -20,6 +21,7 @@ export default function OtpCodeForm({
   password,
   setView,
   resendSignUpVerificationCode,
+  onVerificationDone,
 }: IOtpCodeFormProps) {
   const navigate = useNavigate();
 
@@ -49,6 +51,7 @@ export default function OtpCodeForm({
         });
 
         if (loginResult.error) {
+          onVerificationDone();
           toast({
             title: "E-mail verificado com sucesso!",
             description: "Faça login para continuar",
@@ -62,18 +65,9 @@ export default function OtpCodeForm({
           description: "Redirecionando você para o painel de vendas...",
         });
 
-        // const gate = await ensureSellerPortalAccess();
-        // if (gate.kind === "error") {
-        //   setError(gate.message);
-        //   return;
-        // }
-        // if (gate.kind === "needs_verification") {
-        //   await openSignupVerification();
-        //   return;
-        // }
+        onVerificationDone();
 
         setTimeout(() => {
-          console.log("navigate to seller");
           navigate("/seller");
         }, 1000);
       },
@@ -184,14 +178,15 @@ export default function OtpCodeForm({
       </div>
 
       <div className="flex items-center justify-center mt-6">
-        <Button
-          variant="ghost"
-          onClick={() => {
-            setView("login");
-            setError("");
-          }}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
-        >
+          <Button
+            variant="ghost"
+            onClick={() => {
+              onVerificationDone();
+              setView("login");
+              setError("");
+            }}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
+          >
           <ArrowLeft size={14} />
           Voltar ao login
         </Button>

@@ -1,8 +1,8 @@
-import { useAuthStore } from "@/presentation/stores/useAuthStore";
+import { useUserContext } from "@/presentation/context/UserContext";
 import { useSellerKycSubmissionQuery } from "./use-seller-kyc-submission-query";
 
 export function useKycStatus() {
-  const { user } = useAuthStore();
+  const user = useUserContext();
   const { fullyApproved, submission, isLoading } = useSellerKycSubmissionQuery();
 
   if (!user) {

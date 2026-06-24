@@ -1,72 +1,39 @@
-import type { ICreateSellerFeeRequestDto } from "@/infra/http/services/api/modules/seller-fee.module";
-import { IGetFullSellerFeeResponseDto } from "@/infra/http/services/api/modules/seller-fee.module";
+import type { IGetFullSellerFeeResponseDto } from "@/infra/http/services/api/modules/seller-fee.module";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import useFullSellerFeeQuery from "@/presentation/hooks/use-full-seller-fee-query";
+import useSellerFeeTemplatesQuery from "@/presentation/hooks/use-seller-fee-templates-query";
 import { cn } from "@/presentation/utils/cn";
 import { tryOrToastError } from "@/presentation/utils/try-or-toast-error";
-import { ChevronDown, Loader2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { ChevronDown, Layers, Loader2 } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
-interface IFeeInputProps {
-  label: string;
-  value: number;
-  onChange: (v: number) => void;
-  step?: number;
-}
-
-function FeeInput({ label, value, onChange, step = 0.01 }: IFeeInputProps) {
-  const [raw, setRaw] = useState(value ? String(value) : "");
-
-  useEffect(() => {
-    setRaw(value ? String(value) : "");
-  }, [value]);
-
-  return (
-    <div>
-      <label className="text-xs text-muted-foreground/60 uppercase tracking-wider">
-        {label}
-      </label>
-      <input
-        type="number"
-        step={step}
-        min={0}
-        value={raw}
-        onChange={(e) => {
-          setRaw(e.target.value);
-          onChange(Number(e.target.value) || 0);
-        }}
-        placeholder="0"
-        className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/30 transition-all"
-      />
-    </div>
-  );
+interface IAdminKycDetailsFeesTabProps {
+  sellerId: number;
 }
 
 type TFeePrefix = "pix" | "card" | "boleto" | "crypto" | "withdrawal";
 
-interface IFeeSectionProps {
+interface IReadonlyFeeSectionProps {
   title: string;
   prefix: TFeePrefix;
-  hasRetention: boolean;
-  isWithdrawal?: boolean;
   fees: IGetFullSellerFeeResponseDto;
-  setFees: React.Dispatch<React.SetStateAction<Record<string, number>>>;
-  onSave: () => void;
-  saving: boolean;
 }
 
-function FeeSection({
-  title,
-  prefix,
-  hasRetention,
-  isWithdrawal,
-  fees,
-  setFees,
-  onSave,
-  saving,
-}: IFeeSectionProps) {
+function FeeValue({ label, value, suffix = "" }: { label: string; value: number; suffix?: string }) {
+  return (
+    <div>
+      <p className="text-[10px] text-muted-foreground/60 uppercase tracking-wider mb-0.5">{label}</p>
+      <p className="text-sm font-medium text-foreground tabular-nums">
+        {value.toFixed(2)}{suffix}
+      </p>
+    </div>
+  );
+}
+
+function ReadonlyFeeSection({ title, prefix, fees }: IReadonlyFeeSectionProps) {
   const [open, setOpen] = useState(false);
+  const isWithdrawal = prefix === "withdrawal";
 
   return (
     <div className="rounded-xl border border-border/40 overflow-hidden">
@@ -78,268 +45,150 @@ function FeeSection({
         <ChevronDown
           size={14}
           className={cn(
-            "text-muted-foreground",
-            "transition-transform duration-200",
+            "text-muted-foreground transition-transform duration-200",
             open && "rotate-180",
           )}
         />
       </button>
 
       {open && (
-        <div className="px-4 pb-4 pt-1 border-t border-border/30 space-y-3">
+        <div className="px-4 pb-4 pt-1 border-t border-border/30">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <FeeInput
-              label="Taxa fixa (R$)"
-              value={fees[`${prefix}FixedFee`] ?? 0}
-              onChange={(v) =>
-                setFees((f) => ({ ...f, [`${prefix}FixedFee`]: v }))
-              }
-            />
-            <FeeInput
-              label="Taxa variável (%)"
-              value={fees[`${prefix}VariableFee`] ?? 0}
-              onChange={(v) =>
-                setFees((f) => ({ ...f, [`${prefix}VariableFee`]: v }))
-              }
-            />
-            <FeeInput
-              label="Taxa mínima (R$)"
-              value={fees[`${prefix}MinFee`] ?? 0}
-              onChange={(v) =>
-                setFees((f) => ({ ...f, [`${prefix}MinFee`]: v }))
-              }
-            />
-            {hasRetention && prefix !== "withdrawal" && (
+            <FeeValue label="Taxa fixa (R$)" value={fees[`${prefix}FixedFee`] ?? 0} />
+            <FeeValue label="Taxa variável (%)" value={fees[`${prefix}VariableFee`] ?? 0} suffix="%" />
+            <FeeValue label="Taxa mínima (R$)" value={fees[`${prefix}MinFee`] ?? 0} />
+            {!isWithdrawal && (
               <>
-                <FeeInput
-                  label="Retenção (%)"
-                  value={fees[`${prefix}RetentionFee`] ?? 0}
-                  onChange={(v) =>
-                    setFees((f) => ({ ...f, [`${prefix}RetentionFee`]: v }))
-                  }
-                />
-                <FeeInput
-                  label="Dias retenção"
-                  value={fees[`${prefix}RetentionDays`] ?? 0}
-                  onChange={(v) =>
-                    setFees((f) => ({ ...f, [`${prefix}RetentionDays`]: v }))
-                  }
-                  step={1}
-                />
+                <FeeValue label="Retenção (%)" value={fees[`${prefix}RetentionFee`] ?? 0} suffix="%" />
+                <FeeValue label="Dias retenção" value={fees[`${prefix}RetentionDays`] ?? 0} />
+              </>
+            )}
+            {isWithdrawal && (
+              <>
+                <FeeValue label="Mín. por saque (R$)" value={fees.withdrawalMinAmount ?? 0} />
+                <FeeValue label="Máx. por saque (R$)" value={fees.withdrawalMaxAmount ?? 0} />
+                <FeeValue label="Limite diário (R$)" value={fees.withdrawalDailyMax ?? 0} />
               </>
             )}
           </div>
-          {isWithdrawal && (
-            <>
-              <div className="border-t border-border/30 pt-3">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                  Limites de saque
-                </p>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  <FeeInput
-                    label="Mínimo por saque (R$)"
-                    value={fees.withdrawalMinAmount ?? 0}
-                    onChange={(v) =>
-                      setFees((f) => ({ ...f, withdrawalMinAmount: v }))
-                    }
-                    step={1}
-                  />
-                  <FeeInput
-                    label="Máximo por saque (R$)"
-                    value={fees.withdrawalMaxAmount ?? 0}
-                    onChange={(v) =>
-                      setFees((f) => ({ ...f, withdrawalMaxAmount: v }))
-                    }
-                    step={1}
-                  />
-                  <FeeInput
-                    label="Limite diário (R$)"
-                    value={fees.withdrawalDailyMax ?? 0}
-                    onChange={(v) =>
-                      setFees((f) => ({ ...f, withdrawalDailyMax: v }))
-                    }
-                    step={1}
-                  />
-                </div>
-              </div>
-            </>
-          )}
-          <button
-            onClick={onSave}
-            disabled={saving}
-            className="w-full py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-1.5"
-          >
-            {saving && <Loader2 size={12} className="animate-spin" />}
-            Salvar {title.toLowerCase()}
-          </button>
         </div>
       )}
     </div>
   );
 }
 
-interface IAdminKycDetailsFeesTabProps {
-  sellerId: number;
-}
-
-function mapSellerFeeToPayload(
-  fee: IGetFullSellerFeeResponseDto,
-  overrides: Record<string, number>,
-): ICreateSellerFeeRequestDto {
-  return {
-    pixFixedFee: overrides.pixFixedFee ?? fee.pixFixedFee,
-    pixVariableFee: overrides.pixVariableFee ?? fee.pixVariableFee,
-    pixMinFee: overrides.pixMinFee ?? fee.pixMinFee,
-    pixRetentionFee: overrides.pixRetentionFee ?? fee.pixRetentionFee,
-    pixRetentionDays: overrides.pixRetentionDays ?? fee.pixRetentionDays,
-    cardFixedFee: overrides.cardFixedFee ?? fee.cardFixedFee,
-    cardVariableFee: overrides.cardVariableFee ?? fee.cardVariableFee,
-    cardMinFee: overrides.cardMinFee ?? fee.cardMinFee,
-    cardRetentionFee: overrides.cardRetentionFee ?? fee.cardRetentionFee,
-    cardRetentionDays: overrides.cardRetentionDays ?? fee.cardRetentionDays,
-    boletoFixedFee: overrides.boletoFixedFee ?? fee.boletoFixedFee,
-    boletoVariableFee: overrides.boletoVariableFee ?? fee.boletoVariableFee,
-    boletoMinFee: overrides.boletoMinFee ?? fee.boletoMinFee,
-    boletoRetentionFee: overrides.boletoRetentionFee ?? fee.boletoRetentionFee,
-    boletoRetentionDays: overrides.boletoRetentionDays ?? fee.boletoRetentionDays,
-    cryptoFixedFee: overrides.cryptoFixedFee ?? fee.cryptoFixedFee,
-    cryptoVariableFee: overrides.cryptoVariableFee ?? fee.cryptoVariableFee,
-    cryptoMinFee: overrides.cryptoMinFee ?? fee.cryptoMinFee,
-    cryptoRetentionFee: overrides.cryptoRetentionFee ?? fee.cryptoRetentionFee,
-    cryptoRetentionDays: overrides.cryptoRetentionDays ?? fee.cryptoRetentionDays,
-    withdrawalFixedFee: overrides.withdrawalFixedFee ?? fee.withdrawalFixedFee,
-    withdrawalVariableFee:
-      overrides.withdrawalVariableFee ?? fee.withdrawalVariableFee,
-    withdrawalMinFee: overrides.withdrawalMinFee ?? fee.withdrawalMinFee,
-    billingGoal: overrides.billingGoal ?? fee.billingGoal,
-    withdrawalMinAmount: overrides.withdrawalMinAmount ?? fee.withdrawalMinAmount,
-    withdrawalMaxAmount: overrides.withdrawalMaxAmount ?? fee.withdrawalMaxAmount,
-    withdrawalDailyMax: overrides.withdrawalDailyMax ?? fee.withdrawalDailyMax,
-  };
-}
-
-export function AdminKycDetailsFeesTab({
-  sellerId,
-}: IAdminKycDetailsFeesTabProps) {
+export function AdminKycDetailsFeesTab({ sellerId }: IAdminKycDetailsFeesTabProps) {
   const apiService = useApiService();
 
   const {
-    data: sellerFee,
-    isLoading: isLoadingSellerFee,
-    invalidateQuery: invalidateSellerFeeQuery,
+    data: currentFee,
+    isLoading: isLoadingCurrentFee,
+    invalidateQuery: invalidateCurrentFee,
   } = useFullSellerFeeQuery(sellerId);
 
-  const [fees, setFees] = useState<Record<string, number>>({});
-  const [feeId, setFeeId] = useState<string | null>(null);
+  const { data: templates, isLoading: isLoadingTemplates } = useSellerFeeTemplatesQuery();
 
+  const [selectedFeeId, setSelectedFeeId] = useState<number | null>(null);
   const [saving, setSaving] = useState(false);
 
-  useEffect(() => {
-    if (!sellerFee) {
-      return;
-    }
+  const effectiveFeeId = selectedFeeId ?? currentFee?.id ?? null;
+  const hasChanged = selectedFeeId !== null && selectedFeeId !== currentFee?.id;
 
-    setFeeId(String(sellerFee.id));
-    setFees({
-      pixFixedFee: sellerFee.pixFixedFee,
-      pixVariableFee: sellerFee.pixVariableFee,
-      pixMinFee: sellerFee.pixMinFee,
-      pixRetentionFee: sellerFee.pixRetentionFee,
-      pixRetentionDays: sellerFee.pixRetentionDays,
-      cardFixedFee: sellerFee.cardFixedFee,
-      cardVariableFee: sellerFee.cardVariableFee,
-      cardMinFee: sellerFee.cardMinFee,
-      cardRetentionFee: sellerFee.cardRetentionFee,
-      cardRetentionDays: sellerFee.cardRetentionDays,
-      boletoFixedFee: sellerFee.boletoFixedFee,
-      boletoVariableFee: sellerFee.boletoVariableFee,
-      boletoMinFee: sellerFee.boletoMinFee,
-      boletoRetentionFee: sellerFee.boletoRetentionFee,
-      boletoRetentionDays: sellerFee.boletoRetentionDays,
-      cryptoFixedFee: sellerFee.cryptoFixedFee,
-      cryptoVariableFee: sellerFee.cryptoVariableFee,
-      cryptoMinFee: sellerFee.cryptoMinFee,
-      cryptoRetentionFee: sellerFee.cryptoRetentionFee,
-      cryptoRetentionDays: sellerFee.cryptoRetentionDays,
-      withdrawalFixedFee: sellerFee.withdrawalFixedFee,
-      withdrawalVariableFee: sellerFee.withdrawalVariableFee,
-      withdrawalMinFee: sellerFee.withdrawalMinFee,
-      billingGoal: sellerFee.billingGoal,
-      withdrawalMinAmount: sellerFee.withdrawalMinAmount,
-      withdrawalMaxAmount: sellerFee.withdrawalMaxAmount,
-      withdrawalDailyMax: sellerFee.withdrawalDailyMax,
-    });
-  }, [sellerFee]);
-
-  const handleSaveFees = async () => {
-    if (!sellerFee) {
-      return;
-    }
-
+  const handleAssign = async () => {
+    if (!selectedFeeId) return;
     setSaving(true);
-
-    const payload = mapSellerFeeToPayload(sellerFee, fees);
-
     await tryOrToastError(
       async () => {
-        if (feeId) {
-          await apiService.modules.sellerFee.updateSellerFee({
-            id: feeId,
-            ...payload,
-          });
-        } else {
-          await apiService.modules.sellerFee.createSellerFee(payload);
-        }
-
-        await invalidateSellerFeeQuery();
-
-        toast.success("Taxas salvas!");
+        await apiService.modules.sellerFee.assignSellerFee(sellerId, selectedFeeId);
+        await invalidateCurrentFee();
+        setSelectedFeeId(null);
+        toast.success("Plano de taxa atribuído com sucesso!");
       },
       {
-        defaultErrorMessage: "Erro ao salvar taxas",
-        finallyFn: () => {
-          setSaving(false);
-        },
+        defaultErrorMessage: "Erro ao atribuir plano de taxa",
+        finallyFn: () => setSaving(false),
       },
     );
   };
 
+  if (isLoadingCurrentFee || isLoadingTemplates) {
+    return (
+      <div className="py-16 flex justify-center">
+        <Loader2 className="animate-spin text-primary" size={24} />
+      </div>
+    );
+  }
+
   return (
-    <div className="animate-fade-in">
-      {isLoadingSellerFee || !sellerFee ? (
-        <div className="py-16 flex justify-center">
-          <Loader2 className="animate-spin text-primary" size={24} />
+    <div className="animate-fade-in space-y-5">
+      {/* Seletor de template */}
+      <div className="rounded-xl border border-border/40 p-4 space-y-3 bg-card/40">
+        <div className="flex items-center gap-2 mb-1">
+          <Layers size={15} className="text-primary" />
+          <p className="text-xs font-semibold text-foreground uppercase tracking-wider">
+            Plano de taxa
+          </p>
         </div>
-      ) : (
-        <div className="space-y-3">
+
+        {currentFee && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <span>Plano atual:</span>
+            <span className="font-semibold text-foreground">{currentFee.name}</span>
+          </div>
+        )}
+
+        <div className="space-y-2">
+          <label className="text-xs text-muted-foreground/70 uppercase tracking-wider">
+            Selecionar novo plano
+          </label>
+          <select
+            value={effectiveFeeId ?? ""}
+            onChange={(e) => {
+              const val = Number(e.target.value);
+              setSelectedFeeId(val === currentFee?.id ? null : val);
+            }}
+            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+          >
+            {templates.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.name} — Pix {t.pixVariableFee}% · Saque {t.withdrawalVariableFee}%
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {hasChanged && (
+          <button
+            onClick={handleAssign}
+            disabled={saving}
+            className="w-full py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-1.5"
+          >
+            {saving && <Loader2 size={12} className="animate-spin" />}
+            Atribuir plano
+          </button>
+        )}
+      </div>
+
+      {/* Visualização read-only do plano atual */}
+      {currentFee && (
+        <div className="space-y-2">
+          <p className="text-xs text-muted-foreground/60 uppercase tracking-wider px-1">
+            Valores do plano atual
+          </p>
           {(
             [
-              { title: "Pix", prefix: "pix", hasRetention: true },
-              {
-                title: "Cartão de Crédito",
-                prefix: "card",
-                hasRetention: true,
-              },
-              { title: "Boleto", prefix: "boleto", hasRetention: true },
-              { title: "Cripto", prefix: "crypto", hasRetention: true },
-              {
-                title: "Saque",
-                prefix: "withdrawal",
-                hasRetention: false,
-                isWithdrawal: true,
-              },
+              { title: "Pix", prefix: "pix" },
+              { title: "Cartão de Crédito", prefix: "card" },
+              { title: "Boleto", prefix: "boleto" },
+              { title: "Cripto", prefix: "crypto" },
+              { title: "Saque", prefix: "withdrawal" },
             ] as const
           ).map((item) => (
-            <FeeSection
+            <ReadonlyFeeSection
               key={item.prefix}
               title={item.title}
               prefix={item.prefix}
-              hasRetention={item.hasRetention}
-              isWithdrawal={"isWithdrawal" in item}
-              fees={sellerFee}
-              setFees={setFees}
-              onSave={handleSaveFees}
-              saving={saving}
+              fees={currentFee}
             />
           ))}
         </div>

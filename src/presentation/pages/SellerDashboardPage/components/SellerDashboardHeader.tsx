@@ -5,7 +5,7 @@ import {
   PopoverTrigger,
 } from "@/presentation/components/ui/popover";
 import { useHideBalance } from "@/presentation/hooks/use-hide-balance";
-import { useAuthStore } from "@/presentation/stores/useAuthStore";
+import { useUserContext } from "@/presentation/context/UserContext";
 import { cn } from "@/presentation/utils/cn";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -19,7 +19,7 @@ interface ISellerDashboardHeaderProps {
 export default function SellerDashboardHeader({
   onClickWithdrawal,
 }: ISellerDashboardHeaderProps) {
-  const { user } = useAuthStore();
+  const user = useUserContext();
   const name = user?.name || user?.email?.split("@")[0] || "Seller";
 
   const { hideBalance, toggleHideBalance } = useHideBalance();

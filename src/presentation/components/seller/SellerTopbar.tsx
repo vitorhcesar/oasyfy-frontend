@@ -1,7 +1,8 @@
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import useSellerFeeQuery from "@/presentation/hooks/use-seller-fee-query";
 import { useThemeContext } from "@/presentation/hooks/use-theme";
-import { useAuthStore } from "@/presentation/stores/useAuthStore";
+import { useAuthContext } from "@/presentation/context/AuthContext";
+import { useUserContext } from "@/presentation/context/UserContext";
 import { cn } from "@/presentation/utils/cn";
 import {
   BookOpen,
@@ -34,7 +35,8 @@ export function SellerTopbar({ onMenuToggle }: ISellerTopbarProps) {
   const { data: sellerFee } = useSellerFeeQuery();
   const navigate = useNavigate();
 
-  const { user, signOut } = useAuthStore();
+  const user = useUserContext();
+  const { signOut } = useAuthContext();
   const { theme, toggleTheme } = useThemeContext();
 
   const [open, setOpen] = useState(false);

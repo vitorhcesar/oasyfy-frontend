@@ -1,6 +1,7 @@
 import { NavLink } from "@/presentation/components/NavLink";
 import { useThemeContext } from "@/presentation/hooks/use-theme";
-import { useAuthStore } from "@/presentation/stores/useAuthStore";
+import { useAuthContext } from "@/presentation/context/AuthContext";
+import { useUserContext } from "@/presentation/context/UserContext";
 import { cn } from "@/presentation/utils/cn";
 import {
   ArrowLeftRight,
@@ -11,6 +12,7 @@ import {
   DollarSign,
   FileCheck,
   Image,
+  Layers,
   LayoutDashboard,
   LogOut,
   Mail,
@@ -44,6 +46,7 @@ const settingsSubItems = [
   { title: "Geral", url: "/admin/general", icon: Sliders },
   { title: "Adquirente", url: "/admin/acquirer", icon: CreditCard },
   { title: "Taxas globais", url: "/admin/global-fees", icon: DollarSign },
+  { title: "Planos de taxa", url: "/admin/fee-templates", icon: Layers },
   { title: "E-mail", url: "/admin/email", icon: Mail },
   {
     title: "CRM",
@@ -72,7 +75,8 @@ interface AdminSidebarProps {
 }
 
 export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
-  const { user, signOut } = useAuthStore();
+  const user = useUserContext();
+  const { signOut } = useAuthContext();
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -89,6 +93,7 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
     location.pathname.startsWith("/admin/general") ||
     location.pathname.startsWith("/admin/acquirer") ||
     location.pathname.startsWith("/admin/global-fees") ||
+    location.pathname.startsWith("/admin/fee-templates") ||
     location.pathname.startsWith("/admin/email") ||
     location.pathname.startsWith("/admin/crm") ||
     location.pathname.startsWith("/admin/2fa") ||

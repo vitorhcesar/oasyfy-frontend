@@ -15,6 +15,7 @@ export interface IGetSellerFeeResponseDto {
 
 export interface IGetFullSellerFeeResponseDto {
   id: number;
+  name: string;
   pixFixedFee: number;
   pixVariableFee: number;
   pixMinFee: number;
@@ -47,6 +48,7 @@ export interface IGetFullSellerFeeResponseDto {
 }
 
 export interface ICreateSellerFeeRequestDto {
+  name: string;
   pixFixedFee: number;
   pixVariableFee: number;
   pixMinFee: number;
@@ -88,16 +90,20 @@ export interface ISellerFeeModule {
   getSellerFee(): Promise<IGetSellerFeeResponseDto>;
   getMyFullSellerFee(): Promise<IGetFullSellerFeeResponseDto>;
   getFullSellerFee(sellerId?: number): Promise<IGetFullSellerFeeResponseDto>;
+  listSellerFees(): Promise<IGetFullSellerFeeResponseDto[]>;
   createSellerFee(
     payload: ICreateSellerFeeRequestDto,
   ): Promise<TCreateSellerFeeResponseDto>;
   updateSellerFee(
     payload: IUpdateSellerFeeRequestDto,
   ): Promise<TUpdateSellerFeeResponseDto>;
+  assignSellerFee(userId: number, sellerFeeId: number): Promise<void>;
+  deleteSellerFee(sellerFeeId: number): Promise<void>;
 }
 
 export class SellerFeeModule extends BaseApiModule implements ISellerFeeModule {
   private readonly baseUrl = "/api/v1/seller-fee";
+  private readonly adminBaseUrl = "/api/v1/seller-fees";
 
   async getSellerFee(): Promise<IGetSellerFeeResponseDto> {
     const response = await this.getClient().get<
@@ -122,6 +128,13 @@ export class SellerFeeModule extends BaseApiModule implements ISellerFeeModule {
     return response.data;
   }
 
+  async listSellerFees(): Promise<IGetFullSellerFeeResponseDto[]> {
+    const response = await this.getClient().get<
+      IApiEnvelope<IGetFullSellerFeeResponseDto[]>
+    >(this.adminBaseUrl);
+    return response.data;
+  }
+
   async createSellerFee(
     payload: ICreateSellerFeeRequestDto,
   ): Promise<TCreateSellerFeeResponseDto> {
@@ -139,5 +152,16 @@ export class SellerFeeModule extends BaseApiModule implements ISellerFeeModule {
       IApiEnvelope<TUpdateSellerFeeResponseDto>
     >(`${this.baseUrl}/${id}`, data);
     return response.data;
+  }
+
+  async assignSellerFee(userId: number, sellerFeeId: number): Promise<void> {
+    await this.getClient().patch(
+      `/api/v1/users/${userId}/seller-fee`,
+      { sellerFeeId },
+    );
+  }
+
+  async deleteSellerFee(sellerFeeId: number): Promise<void> {
+    await this.getClient().delete(`${this.adminBaseUrl}/${sellerFeeId}`);
   }
 }

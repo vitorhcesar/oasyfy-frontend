@@ -7,11 +7,16 @@ import { Label } from "@/presentation/components/Label";
 import { PasswordInput } from "@/presentation/components/PasswordInput";
 import { TwoFactorLoginStep } from "@/presentation/components/auth/TwoFactorLoginStep";
 import { Button } from "@/presentation/components/ui/button";
+import { useAuthContext } from "@/presentation/context/AuthContext";
 import { translateError } from "@/presentation/utils/translate-error";
 import { tryOrToastError } from "@/presentation/utils/try-or-toast-error";
 import { ArrowRight, Mail, X } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  clearPendingVerification,
+  savePendingVerification,
+} from "../seller-login-verification-storage";
 
 const clientIpService = new ClientIpService();
 
@@ -33,6 +38,7 @@ export default function LoginForm({
   setView,
 }: ILoginFormProps) {
   const navigate = useNavigate();
+  const { signOut } = useAuthContext();
 
   const [error, setError] = useState("");
 
@@ -40,8 +46,16 @@ export default function LoginForm({
   const [needsTwoFactor, setNeedsTwoFactor] = useState(false);
 
   const completeSellerLogin = async () => {
+    // Persiste o e-mail ANTES de ensureSellerPortalAccess, pois esse gate chama
+    // authClient.signOut() internamente, o que desmonta/remonta o FormPanel via
+    // PublicRoute (isLoading=true). Ao remontar, o useEffect do FormPanel lê o
+    // sessionStorage e já exibe o formulário de código sem perder o e-mail.
+    savePendingVerification(email);
+
     const gate = await ensureSellerPortalAccess();
+
     if (gate.kind === "error") {
+      clearPendingVerification();
       setError(gate.message);
       return;
     }
@@ -50,6 +64,7 @@ export default function LoginForm({
       return;
     }
 
+    clearPendingVerification();
     navigate("/seller");
   };
 
@@ -135,7 +150,7 @@ export default function LoginForm({
           onVerified={completeSellerLogin}
           onCancel={() => {
             setNeedsTwoFactor(false);
-            void authClient.signOut();
+            void signOut();
           }}
         />
       ) : (

@@ -3,7 +3,7 @@ import type {
   TSellerDashboardKycStatus,
   TSellerKycDocumentsReview,
 } from "@/infra/http/services/api/modules/kyc-submission.module";
-import { useAuthStore } from "@/presentation/stores/useAuthStore";
+import { useUserContext } from "@/presentation/context/UserContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useApiService } from "./use-api-service";
 
@@ -21,7 +21,7 @@ export interface IUseSellerKycSubmissionResult {
 }
 
 export function useSellerKycSubmissionQuery(): IUseSellerKycSubmissionResult {
-  const { user } = useAuthStore();
+  const user = useUserContext();
 
   const apiService = useApiService();
 

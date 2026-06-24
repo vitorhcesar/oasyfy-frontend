@@ -11,7 +11,7 @@ import {
 import useSellerFeeQuery from "@/presentation/hooks/use-seller-fee-query";
 import { useSellerKycSubmissionQuery } from "@/presentation/hooks/use-seller-kyc-submission-query";
 import useSellerTransactionsQuery from "@/presentation/hooks/use-seller-transactions-query";
-import { useAuthStore } from "@/presentation/stores/useAuthStore";
+import { useUserContext } from "@/presentation/context/UserContext";
 import { cn } from "@/presentation/utils/cn";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -145,7 +145,7 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export default function SellerTransfers() {
-  const { user } = useAuthStore();
+  const user = useUserContext();
   const {
     data: transactions,
     isLoading: txLoading,

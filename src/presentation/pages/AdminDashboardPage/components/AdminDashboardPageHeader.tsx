@@ -5,7 +5,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/presentation/components/ui/popover";
-import { useAuthStore } from "@/presentation/stores/useAuthStore";
+import { useUserContext } from "@/presentation/context/UserContext";
 import { cn } from "@/presentation/utils/cn";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -14,7 +14,7 @@ import { useAdminDashboardPageStore } from "../stores/admin-dashboard-page.store
 import { TAdminDashboardPeriod } from "../types/admin-dashboard-period.type";
 
 export default function AdminDashboardPageHeader() {
-  const { user } = useAuthStore();
+  const user = useUserContext();
   const name = user?.name || user?.email || "Admin";
 
   const {

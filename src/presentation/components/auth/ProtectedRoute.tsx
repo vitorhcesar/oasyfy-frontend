@@ -1,4 +1,5 @@
-import { useAuthStore } from "@/presentation/stores/useAuthStore";
+import { useAuthContext } from "@/presentation/context/AuthContext";
+import { UserContextProvider } from "@/presentation/context/UserContext";
 import { Navigate } from "react-router-dom";
 
 interface ProtectedRouteProps {
@@ -10,9 +11,9 @@ export function ProtectedRoute({
   children,
   requiredRole,
 }: ProtectedRouteProps) {
-  const { user, role, loading, isBanned, signOut } = useAuthStore();
+  const { user, role, isLoading, isBanned, signOut } = useAuthContext();
 
-  if (loading || (user && role === null)) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-6">
         <div className="relative w-16 h-16">
@@ -37,7 +38,6 @@ export function ProtectedRoute({
     return <Navigate to="/login/seller" replace />;
   }
 
-  // Banned seller screen
   if (isBanned && role === "seller") {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4 px-6 text-center">
@@ -76,8 +76,9 @@ export function ProtectedRoute({
   }
 
   if (requiredRole && role !== requiredRole) {
+    if (!role) return <Navigate to="/login/seller" replace />;
     return <Navigate to={role === "admin" ? "/admin" : "/seller"} replace />;
   }
 
-  return <>{children}</>;
+  return <UserContextProvider user={user}>{children}</UserContextProvider>;
 }

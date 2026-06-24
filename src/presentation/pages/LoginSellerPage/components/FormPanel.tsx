@@ -1,6 +1,11 @@
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import { tryOrToastError } from "@/presentation/utils/try-or-toast-error";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  clearPendingVerification,
+  loadPendingVerification,
+  savePendingVerification,
+} from "../seller-login-verification-storage";
 import ForgotPasswordForm from "./ForgotPasswordForm";
 import LoginForm from "./LoginForm";
 import LoginSellerMobileLogo from "./MobileLogo";
@@ -17,10 +22,20 @@ export default function LoginSellerFormPanel() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  useEffect(() => {
+    const pending = loadPendingVerification();
+    if (pending?.email) {
+      setEmail(pending.email);
+      setFormView("code");
+    }
+  }, []);
+
   const sendSignUpVerificationCodeAndOpenCodeFormView = async () => {
     await tryOrToastError(
       async () => {
         await apiService.modules.account.sendSignupVerificationCode(email);
+
+        savePendingVerification(email);
 
         if (formView !== "code") {
           setFormView("code");
@@ -46,6 +61,7 @@ export default function LoginSellerFormPanel() {
             resendSignUpVerificationCode={
               sendSignUpVerificationCodeAndOpenCodeFormView
             }
+            onVerificationDone={clearPendingVerification}
           />
         )}
 

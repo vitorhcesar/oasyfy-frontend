@@ -8,7 +8,7 @@ import {
 } from "@/presentation/components/ui/card";
 import { Input } from "@/presentation/components/ui/input";
 import { AdminLayout } from "@/presentation/layouts/AdminLayout";
-import { useAuthStore } from "@/presentation/stores/useAuthStore";
+import { useUserContext } from "@/presentation/context/UserContext";
 import { Loader2, Mail, Shield, Trash2, UserPlus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -22,7 +22,7 @@ interface IAdminUser {
 
 export default function AdminManagers() {
   const apiService = useApiService();
-  const { user } = useAuthStore();
+  const user = useUserContext();
   const [admins, setAdmins] = useState<IAdminUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState("");
