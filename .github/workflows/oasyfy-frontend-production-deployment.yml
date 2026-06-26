@@ -125,7 +125,7 @@ jobs:
           ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "
             flock /tmp/oasyfy-deploy.lock -c '
               cd ${REMOTE_APP_DIR} &&
-              APP_VERSION=${{ github.ref_name }} sudo -E docker compose -f docker-compose.prod.yml up -d --no-build --remove-orphans &&
+              sudo APP_VERSION=${{ github.ref_name }} docker compose -f docker-compose.prod.yml up -d --no-build --remove-orphans &&
               sudo docker image prune -f
             '
           "

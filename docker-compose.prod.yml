@@ -1,6 +1,7 @@
 services:
   frontend:
     image: ghcr.io/vitorhcesar/oasyfy-frontend:${APP_VERSION:-latest}
+    pull_policy: never
     container_name: oasyfy-frontend
     ports:
       - "3000:80"
