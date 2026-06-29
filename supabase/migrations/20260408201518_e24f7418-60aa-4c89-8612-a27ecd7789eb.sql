@@ -1,1 +1,0 @@
-ALTER TABLE public.kyc_submissions ADD COLUMN bank_data jsonb DEFAULT NULL;

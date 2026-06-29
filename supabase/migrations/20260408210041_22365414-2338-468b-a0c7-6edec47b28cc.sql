@@ -1,1 +1,0 @@
-ALTER TABLE public.kyc_submissions ADD COLUMN email text;

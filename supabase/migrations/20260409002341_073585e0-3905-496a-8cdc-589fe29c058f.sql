@@ -1,1 +1,0 @@
-ALTER TABLE public.seller_fees ADD COLUMN billing_goal bigint NOT NULL DEFAULT 0;
