@@ -27,11 +27,14 @@ App em `http://localhost:3000`. Requisições `/api` são proxyadas para o backe
 | `bun run build` | Build de produção |
 | `bun run type-check` | TypeScript |
 | `bun run test` | Vitest |
+| `bun run test:e2e` | Playwright (smoke das páginas públicas) |
 | `bun run lint-check` | ESLint |
 
 ## Deploy
 
-Deploy de produção via tag GitHub → GHCR → VPS (nginx). `VITE_API_URL` deve estar definido no build.
+Deploy de produção via tag GitHub → GHCR → VPS (nginx). O workflow executa **testes unitários e E2E** antes do build.
+
+`VITE_API_URL` deve estar definido no build.
 
 ## Arquitetura
 

@@ -19,6 +19,54 @@ env:
   REMOTE_APP_DIR: ~/oasyfy-frontend/oasyfy-frontend
 
 jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Type check
+        run: bun run type-check
+
+      - name: Lint
+        run: bun run lint-check
+
+      - name: Unit test
+        run: bun run test
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build app for preview
+        env:
+          VITE_API_URL: http://127.0.0.1:8080
+        run: bun run build
+
+      - name: Install Playwright browser
+        run: bunx playwright install --with-deps chromium
+
+      - name: E2E smoke tests
+        run: bun run test:e2e
+
   validate-secrets:
     runs-on: ubuntu-latest
     environment: oasyfy-frontend-env
@@ -42,7 +90,7 @@ jobs:
   build-and-push:
     runs-on: ubuntu-latest
     environment: oasyfy-frontend-env
-    needs: validate-secrets
+    needs: [quality, e2e, validate-secrets]
 
     steps:
       - name: Checkout repository
