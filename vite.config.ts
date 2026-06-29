@@ -23,10 +23,6 @@ export default defineConfig(({ mode }) => ({
   ),
   resolve: {
     alias: {
-      "@/integrations": path.resolve(
-        __dirname,
-        "./src/infrastructure/integrations"
-      ),
       "@": path.resolve(__dirname, "./src"),
     },
     dedupe: [
