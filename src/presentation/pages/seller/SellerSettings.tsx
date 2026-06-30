@@ -4,6 +4,7 @@ import { useApiService } from "@/presentation/hooks/use-api-service";
 import useFullSellerFeeQuery from "@/presentation/hooks/use-full-seller-fee-query";
 import { useSellerKycSubmissionQuery } from "@/presentation/hooks/use-seller-kyc-submission-query";
 import { useUserContext } from "@/presentation/context/UserContext";
+import { getErrorMessageOrDefault } from "@/presentation/utils/get-error-message-or-default";
 import { translateError } from "@/presentation/utils/translate-error";
 import {
   Copy,
@@ -517,7 +518,11 @@ export default function SellerSettings() {
       await refetchSession();
       toast.success("Perfil salvo com sucesso!");
     } catch (err: unknown) {
-      toast.error("Erro ao salvar: " + translateError(err));
+      toast.error(
+        translateError(
+          getErrorMessageOrDefault(err, "Erro ao salvar perfil"),
+        ),
+      );
     } finally {
       setSaving(false);
     }
