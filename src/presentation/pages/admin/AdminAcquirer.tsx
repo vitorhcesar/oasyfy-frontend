@@ -1,4 +1,13 @@
 import cartwaveLogo from "@/assets/cartwave-logo.png";
+import useAdminAcquirerConnectionsQuery, {
+  type TAcquirerConnectionView,
+} from "@/presentation/hooks/use-admin-acquirer-connections-query";
+import useAdminAcquirerCostsQuery, {
+  type TAcquirerCostView,
+} from "@/presentation/hooks/use-admin-acquirer-costs-query";
+import useAdminRoutingRulesQuery, {
+  type TRoutingRuleView,
+} from "@/presentation/hooks/use-admin-routing-rules-query";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import { Badge } from "@/presentation/components/ui/badge";
 import { Button } from "@/presentation/components/ui/button";
@@ -40,7 +49,7 @@ import {
   Trash2,
   Wallet,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 const tabs = [
@@ -63,50 +72,35 @@ type TTabKey = (typeof tabs)[number]["key"];
 const METHODS_DEPOSIT = ["pix", "card", "boleto", "crypto"] as const;
 const METHODS_WITHDRAWAL = ["pix", "ted", "crypto"] as const;
 
-interface IRoutingRule {
-  id: string;
-  method: string;
-  acquirer_id: string;
-  priority: number;
-  is_active: boolean;
-  weight: number;
-}
+interface IRoutingRule extends TRoutingRuleView {}
 
 const logoMap: Record<string, string> = {
   cartwave: cartwaveLogo,
 };
 
-interface IAcquirerConnection {
-  id: string;
-  name: string;
-  logo_key: string | null;
-  description: string | null;
-  status: string;
-  methods: string[];
-  api_url: string;
-  client_id: string;
-  access_token: string;
-  hmac_key: string;
-  branch_id: string;
-  account_number: string;
-  is_active: boolean;
-}
+interface IAcquirerConnection extends TAcquirerConnectionView {}
 
-interface IAcquirerCost {
-  id?: string;
-  acquirer_id: string;
-  operation_type: "deposit" | "withdrawal";
-  method: string;
-  fixed_cost: number;
-  variable_cost: number;
-  min_cost: number;
-}
+interface IAcquirerCost extends TAcquirerCostView {}
 
 export default function AdminAcquirer() {
   const apiService = useApiService();
+  const {
+    data: connections,
+    isLoading: loading,
+    isError: connectionsError,
+    invalidateQuery: invalidateConnections,
+  } = useAdminAcquirerConnectionsQuery();
+  const {
+    data: routingRules,
+    isLoading: loadingRouting,
+    invalidateQuery: invalidateRoutingRules,
+  } = useAdminRoutingRulesQuery();
+  const {
+    data: costsFromQuery,
+    isLoading: loadingCosts,
+    invalidateQuery: invalidateCosts,
+  } = useAdminAcquirerCostsQuery();
   const [activeTab, setActiveTab] = useState<TTabKey>("conexoes");
-  const [connections, setConnections] = useState<IAcquirerConnection[]>([]);
-  const [loading, setLoading] = useState(true);
   const [configModal, setConfigModal] = useState<IAcquirerConnection | null>(
     null,
   );
@@ -122,71 +116,25 @@ export default function AdminAcquirer() {
   });
   const [reconfiguring, setReconfiguring] = useState(false);
 
-  // Routing state
-  const [routingRules, setRoutingRules] = useState<IRoutingRule[]>([]);
-  const [loadingRouting, setLoadingRouting] = useState(true);
-
-  // Cost state
   const [costs, setCosts] = useState<IAcquirerCost[]>([]);
-  const [loadingCosts, setLoadingCosts] = useState(true);
   const [savingCosts, setSavingCosts] = useState(false);
   const [expandedCostAcquirer, setExpandedCostAcquirer] = useState<
     string | null
   >(null);
 
+  useEffect(() => {
+    if (connectionsError) {
+      toast.error("Erro ao carregar adquirentes");
+    }
+  }, [connectionsError]);
+
+  useEffect(() => {
+    setCosts(costsFromQuery);
+  }, [costsFromQuery]);
+
   const activeConnections = connections.filter(
     (c) => c.is_active && c.status === "connected",
   );
-
-  const fetchConnections = async () => {
-    try {
-      const data = await apiService.modules.adminConfig.listAcquirerConnections();
-      setConnections(
-        data.map((c) => {
-          const row = c as unknown as IAcquirerConnection;
-          return {
-            ...row,
-            client_id: row.client_id ?? "",
-            access_token: row.access_token ?? "",
-            hmac_key: row.hmac_key ?? "",
-            branch_id: row.branch_id ?? "",
-            account_number: row.account_number ?? "",
-          };
-        }),
-      );
-    } catch (error) {
-      toast.error("Erro ao carregar adquirentes");
-      console.error(error);
-    }
-    setLoading(false);
-  };
-
-  const fetchRoutingRules = useCallback(async () => {
-    try {
-      const data = await apiService.modules.adminConfig.listRoutingRules();
-      setRoutingRules((data as unknown as IRoutingRule[]) || []);
-    } catch (error) {
-      console.error(error);
-    }
-    setLoadingRouting(false);
-  }, [apiService]);
-
-  const fetchCosts = useCallback(async () => {
-    setLoadingCosts(true);
-    try {
-      const data = await apiService.modules.adminConfig.listAcquirerCosts();
-      setCosts((data as unknown as IAcquirerCost[]) || []);
-    } catch (error) {
-      console.error(error);
-    }
-    setLoadingCosts(false);
-  }, [apiService]);
-
-  useEffect(() => {
-    fetchConnections();
-    fetchRoutingRules();
-    fetchCosts();
-  }, [fetchRoutingRules, fetchCosts]);
 
   const isConfigured = (conn: IAcquirerConnection) =>
     !!(
@@ -237,7 +185,7 @@ export default function AdminAcquirer() {
       );
       toast.success(`Credenciais da ${configModal.name} salvas com sucesso!`);
       setConfigModal(null);
-      fetchConnections();
+      await invalidateConnections();
     } catch (error) {
       toast.error("Erro ao salvar credenciais");
       console.error(error);
@@ -258,7 +206,7 @@ export default function AdminAcquirer() {
         next,
       );
       toast.success(next ? `${conn.name} ativada` : `${conn.name} desativada`);
-      fetchConnections();
+      await invalidateConnections();
     } catch (error) {
       toast.error("Erro ao atualizar status");
       console.error(error);
@@ -609,7 +557,7 @@ export default function AdminAcquirer() {
         weight: 100,
       });
       toast.success("Regra adicionada");
-      fetchRoutingRules();
+      await invalidateRoutingRules();
     } catch (error) {
       toast.error("Erro ao adicionar regra");
       console.error(error);
@@ -620,7 +568,7 @@ export default function AdminAcquirer() {
     try {
       await apiService.modules.adminConfig.deleteRoutingRule(Number(ruleId));
       toast.success("Regra removida");
-      fetchRoutingRules();
+      await invalidateRoutingRules();
     } catch (error) {
       toast.error("Erro ao remover regra");
       console.error(error);
@@ -632,7 +580,7 @@ export default function AdminAcquirer() {
       await apiService.modules.adminConfig.updateRoutingRule(Number(rule.id), {
         is_active: !rule.is_active,
       });
-      fetchRoutingRules();
+      await invalidateRoutingRules();
     } catch {
       toast.error("Erro ao atualizar");
     }
@@ -643,7 +591,7 @@ export default function AdminAcquirer() {
       await apiService.modules.adminConfig.updateRoutingRule(Number(ruleId), {
         priority: newPriority,
       });
-      fetchRoutingRules();
+      await invalidateRoutingRules();
     } catch {
       toast.error("Erro ao atualizar prioridade");
     }
@@ -1166,7 +1114,7 @@ export default function AdminAcquirer() {
         acquirerCosts as unknown as Record<string, unknown>[],
       );
       toast.success("Custos salvos com sucesso");
-      await fetchCosts();
+      await invalidateCosts();
     } catch (err) {
       console.error(err);
       if (err instanceof Error) {

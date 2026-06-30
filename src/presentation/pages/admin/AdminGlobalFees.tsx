@@ -1,3 +1,4 @@
+import useAdminGlobalFeesQuery from "@/presentation/hooks/use-admin-global-fees-query";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import {
   Tabs,
@@ -273,19 +274,16 @@ const tabConfig: {
 
 export default function AdminGlobalFees() {
   const apiService = useApiService();
+  const { data: feesData, isLoading, invalidateQuery } = useAdminGlobalFeesQuery();
   const [fees, setFees] = useState<Omit<GlobalFees, "id">>(defaultFees);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    apiService.modules.adminConfig.getGlobalFees().then((data) => {
-      if (data) {
-        const { id: _id, ...rest } = data as Record<string, number | string>;
-        setFees(rest as Omit<GlobalFees, "id">);
-      }
-      setLoading(false);
-    });
-  }, [apiService]);
+    if (feesData) {
+      const { id: _id, ...rest } = feesData;
+      setFees(rest as Omit<GlobalFees, "id">);
+    }
+  }, [feesData]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -294,6 +292,7 @@ export default function AdminGlobalFees() {
         fees as Record<string, number>,
       );
       toast.success("Taxas globais salvas com sucesso!");
+      await invalidateQuery();
     } catch {
       toast.error("Erro ao salvar taxas");
     }
@@ -316,7 +315,7 @@ export default function AdminGlobalFees() {
           </div>
           <button
             onClick={handleSave}
-            disabled={saving || loading}
+            disabled={saving || isLoading}
             className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-all disabled:opacity-50 shadow-sm shrink-0"
           >
             {saving ? (
@@ -328,7 +327,7 @@ export default function AdminGlobalFees() {
           </button>
         </div>
 
-        {loading ? (
+        {isLoading ? (
           <div className="flex justify-center py-20">
             <Loader2 size={20} className="animate-spin text-muted-foreground" />
           </div>

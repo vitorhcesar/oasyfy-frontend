@@ -1,4 +1,5 @@
 import { authClient } from "@/infra/auth/auth-client";
+import useAdminSmtpSettingsQuery from "@/presentation/hooks/use-admin-smtp-settings-query";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import {
   Dialog,
@@ -48,8 +49,9 @@ const defaultSettings: SmtpSettings = {
 
 export default function AdminEmail() {
   const apiService = useApiService();
+  const { data: smtpData, isLoading, invalidateQuery } =
+    useAdminSmtpSettingsQuery();
   const [settings, setSettings] = useState<SmtpSettings>(defaultSettings);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [testing, setTesting] = useState(false);
@@ -61,18 +63,10 @@ export default function AdminEmail() {
   const [clearing, setClearing] = useState(false);
 
   useEffect(() => {
-    fetchSettings();
-  }, []);
-
-  const fetchSettings = async () => {
-    setLoading(true);
-    const data = await apiService.modules.adminConfig.getSmtpSettings();
-    if (data) {
-      setSettings({ ...(data as unknown as SmtpSettings), is_active: true });
-      if ((data as { host?: string }).host) setIsMasked(true);
-    }
-    setLoading(false);
-  };
+    if (!smtpData) return;
+    setSettings({ ...(smtpData as unknown as SmtpSettings), is_active: true });
+    if (smtpData.host) setIsMasked(true);
+  }, [smtpData]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -92,6 +86,7 @@ export default function AdminEmail() {
       toast.success("Configurações SMTP salvas com sucesso");
       setIsMasked(true);
       setShowPassword(false);
+      await invalidateQuery();
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Erro ao salvar");
     }
@@ -147,6 +142,7 @@ export default function AdminEmail() {
       setClearDialogOpen(false);
       setClearMfaCode("");
       toast.success("Credenciais SMTP removidas com sucesso");
+      await invalidateQuery();
     } catch (err: any) {
       toast.error(err.message || "Erro ao limpar credenciais");
     }
@@ -156,7 +152,7 @@ export default function AdminEmail() {
   const inputClass =
     "w-full px-4 py-3 rounded-xl bg-background border border-border/60 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all duration-200";
 
-  if (loading) {
+  if (isLoading) {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center min-h-[400px]">

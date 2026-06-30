@@ -1,42 +1,35 @@
+import useAdminCrmSettingsQuery, {
+  type TCrmSettingsView,
+} from "@/presentation/hooks/use-admin-crm-settings-query";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import { AdminLayout } from "@/presentation/layouts/AdminLayout";
 import { CheckCircle, Loader2, MessageSquare, Send } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-interface CrmSettings {
-  id: string;
-  api_url: string;
-  api_token: string;
-  instance_name: string;
-  welcome_message: string;
-  is_active: boolean;
-}
+const defaultSettings: TCrmSettingsView = {
+  id: "",
+  api_url: "",
+  api_token: "",
+  instance_name: "",
+  welcome_message:
+    "Olá {name}! 🎉 Bem-vindo(a) à nossa plataforma! Sua conta foi verificada com sucesso. Estamos aqui para ajudá-lo(a) no que precisar.",
+  is_active: false,
+};
 
 export default function AdminCrm() {
   const apiService = useApiService();
-  const [settings, setSettings] = useState<CrmSettings>({
-    id: "",
-    api_url: "",
-    api_token: "",
-    instance_name: "",
-    welcome_message:
-      "Olá {name}! 🎉 Bem-vindo(a) à nossa plataforma! Sua conta foi verificada com sucesso. Estamos aqui para ajudá-lo(a) no que precisar.",
-    is_active: false,
-  });
-  const [loading, setLoading] = useState(true);
+  const { data: crmData, isLoading, invalidateQuery } = useAdminCrmSettingsQuery();
+  const [settings, setSettings] = useState<TCrmSettingsView>(defaultSettings);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const [testPhone, setTestPhone] = useState("");
 
   useEffect(() => {
-    const load = async () => {
-      const data = await apiService.modules.adminConfig.getCrmSettings();
-      if (data) setSettings(data as unknown as CrmSettings);
-      setLoading(false);
-    };
-    load();
-  }, [apiService]);
+    if (crmData) {
+      setSettings(crmData as unknown as TCrmSettingsView);
+    }
+  }, [crmData]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -48,8 +41,9 @@ export default function AdminCrm() {
         welcome_message: settings.welcome_message,
         is_active: settings.is_active,
       });
-      setSettings(saved as unknown as CrmSettings);
+      setSettings(saved as unknown as TCrmSettingsView);
       toast.success("Configurações salvas");
+      await invalidateQuery();
     } catch {
       toast.error("Erro ao salvar");
     }
@@ -82,7 +76,7 @@ export default function AdminCrm() {
   const labelClass =
     "text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5 block";
 
-  if (loading) {
+  if (isLoading) {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center py-24">
