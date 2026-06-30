@@ -5,8 +5,8 @@ test.describe("Public pages", () => {
     await page.goto("/login/seller");
 
     await expect(page.getByRole("heading", { name: "Entrar" })).toBeVisible();
-    await expect(page.getByLabel("Email")).toBeVisible();
-    await expect(page.getByLabel("Senha")).toBeVisible();
+    await expect(page.getByRole("textbox", { name: "Email" })).toBeVisible();
+    await expect(page.getByRole("textbox", { name: "Senha" })).toBeVisible();
   });
 
   test("admin login page renders", async ({ page }) => {
