@@ -3,6 +3,7 @@ import { BaseApiModule } from "./base-api.module";
 
 export interface ISellerProfileDto {
   fullName: string | null;
+  displayName: string;
   avatarUrl: string | null;
   accountId: string;
   email: string | null;
@@ -69,7 +70,7 @@ export interface ISellerAuthorizedIpDto {
 
 export interface ISellerPortalModule {
   getProfile: () => Promise<ISellerProfileDto>;
-  updateProfile: (fullName: string) => Promise<ISellerProfileDto>;
+  updateProfile: (displayName: string) => Promise<ISellerProfileDto>;
   uploadAvatar: (file: File) => Promise<{ avatarUrl: string }>;
   getWithdrawalContext: () => Promise<ISellerWithdrawalContextDto>;
   requestWithdrawal: (
@@ -109,10 +110,10 @@ export class SellerPortalModule
     return response.data;
   }
 
-  async updateProfile(fullName: string): Promise<ISellerProfileDto> {
+  async updateProfile(displayName: string): Promise<ISellerProfileDto> {
     const response = await this.getClient().patch<
       IApiEnvelope<ISellerProfileDto>
-    >(`${this.baseUrl}/profile`, { fullName });
+    >(`${this.baseUrl}/profile`, { displayName });
     return response.data;
   }
 

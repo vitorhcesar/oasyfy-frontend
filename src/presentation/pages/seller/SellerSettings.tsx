@@ -430,6 +430,7 @@ function SecurityTab() {
 export default function SellerSettings() {
   const user = useUserContext();
   const apiService = useApiService();
+  const { refetch: refetchSession } = authClient.useSession();
   const { submission } = useSellerKycSubmissionQuery();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<
@@ -455,6 +456,7 @@ export default function SellerSettings() {
       .getProfile()
       .then((profile) => {
         setFullName(profile.fullName || user.name || "");
+        setDisplayName(profile.displayName || user.name || "");
         setAvatarUrl(profile.avatarUrl);
         setAccountId(profile.accountId || "");
         if (profile.email) setEmail(profile.email);
@@ -497,8 +499,8 @@ export default function SellerSettings() {
 
   const handleSave = async () => {
     if (!user) return;
-    if (!fullName.trim()) {
-      toast.error("O nome é obrigatório");
+    if (!displayName.trim()) {
+      toast.error("O nome de exibição é obrigatório");
       return;
     }
     if (!phone.trim()) {
@@ -508,10 +510,14 @@ export default function SellerSettings() {
 
     setSaving(true);
     try {
-      await apiService.modules.sellerPortal.updateProfile(fullName);
+      const profile = await apiService.modules.sellerPortal.updateProfile(
+        displayName.trim(),
+      );
+      setDisplayName(profile.displayName);
+      await refetchSession();
       toast.success("Perfil salvo com sucesso!");
-    } catch (err: any) {
-      toast.error("Erro ao salvar: " + (err.message || ""));
+    } catch (err: unknown) {
+      toast.error("Erro ao salvar: " + translateError(err));
     } finally {
       setSaving(false);
     }
