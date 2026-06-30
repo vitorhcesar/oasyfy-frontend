@@ -1,3 +1,7 @@
+import useAdminGoalsQuery, {
+  type TAdminGoalView,
+} from "@/presentation/hooks/use-admin-goals-query";
+import useAdminSellersQuery from "@/presentation/hooks/use-admin-sellers-query";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import {
   Dialog,
@@ -25,24 +29,10 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
-type Goal = {
-  id: string;
-  title: string;
-  description: string | null;
-  goal_type: "revenue" | "transaction_count" | "avg_ticket" | "new_customers";
-  target_value: number;
-  reward_type: "balance_bonus" | "fee_discount" | "badge" | "custom";
-  reward_value: number;
-  reward_description: string | null;
-  seller_id: string | null;
-  start_date: string;
-  end_date: string | null;
-  is_active: boolean;
-  created_at: string;
-};
+type Goal = TAdminGoalView;
 
 const goalTypeConfig = {
   revenue: {
@@ -98,38 +88,17 @@ const emptyForm = {
 
 export default function AdminGoals() {
   const apiService = useApiService();
-  const [goals, setGoals] = useState<Goal[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: goals, isLoading, invalidateQuery } = useAdminGoalsQuery();
+  const { data: sellersDto } = useAdminSellersQuery();
+  const sellers = sellersDto.map((s) => ({
+    user_id: String(s.userId),
+    full_name: s.fullName,
+    account_id: s.accountId,
+  }));
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
-  const [sellers, setSellers] = useState<
-    { user_id: string; full_name: string | null; account_id: string }[]
-  >([]);
-
-  const fetchGoals = async () => {
-    setLoading(true);
-    const data = await apiService.modules.adminConfig.listSellerGoals();
-    setGoals(data as Goal[]);
-    setLoading(false);
-  };
-
-  const fetchSellers = async () => {
-    const data = await apiService.modules.adminSellers.listSellers();
-    setSellers(
-      data.map((s) => ({
-        user_id: String(s.userId),
-        full_name: s.fullName,
-        account_id: s.accountId,
-      })),
-    );
-  };
-
-  useEffect(() => {
-    fetchGoals();
-    fetchSellers();
-  }, []);
 
   const openCreate = () => {
     setForm(emptyForm);
@@ -203,7 +172,7 @@ export default function AdminGoals() {
       }
       toast.success(editingId ? "Meta atualizada" : "Meta criada");
       setShowForm(false);
-      fetchGoals();
+      await invalidateQuery();
     } catch (error) {
       console.error(error);
       toast.error("Erro ao salvar meta");
@@ -215,7 +184,7 @@ export default function AdminGoals() {
     try {
       await apiService.modules.adminConfig.deleteSellerGoal(Number(id));
       toast.success("Meta excluída");
-      fetchGoals();
+      await invalidateQuery();
     } catch {
       toast.error("Erro ao excluir");
     }
@@ -226,7 +195,7 @@ export default function AdminGoals() {
       Number(goal.id),
       !goal.is_active,
     );
-    fetchGoals();
+    await invalidateQuery();
   };
 
   const formatCurrency = (v: number) =>
@@ -319,7 +288,7 @@ export default function AdminGoals() {
         </div>
 
         {/* Goals List */}
-        {loading ? (
+        {isLoading ? (
           <div className="flex justify-center py-24">
             <div className="relative w-10 h-10">
               <div className="absolute inset-0 rounded-full border-2 border-muted" />

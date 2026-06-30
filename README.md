@@ -36,6 +36,8 @@ Deploy de produção via tag GitHub → GHCR → VPS (nginx). O workflow executa
 
 `VITE_API_URL` deve estar definido no build.
 
+E2E autenticado (opcional): defina `PLAYWRIGHT_ADMIN_EMAIL` e `PLAYWRIGHT_ADMIN_PASSWORD` nos secrets do CI para rodar login admin no pipeline.
+
 ## Arquitetura
 
 Camadas em `src/`: `presentation`, `domain`, `infra`, `app`, `shared`.

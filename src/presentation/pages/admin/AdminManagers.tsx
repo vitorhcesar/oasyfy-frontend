@@ -1,3 +1,4 @@
+import useAdminManagersQuery from "@/presentation/hooks/use-admin-managers-query";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import { Button } from "@/presentation/components/ui/button";
 import {
@@ -13,41 +14,26 @@ import { Loader2, Mail, Shield, Trash2, UserPlus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-interface IAdminUser {
-  user_id: string;
-  email: string;
-  full_name: string | null;
-  created_at: string;
-}
-
 export default function AdminManagers() {
   const apiService = useApiService();
   const user = useUserContext();
-  const [admins, setAdmins] = useState<IAdminUser[]>([]);
-  const [loading, setLoading] = useState(true);
+  const {
+    data: admins,
+    isLoading: loading,
+    isError,
+    invalidateQuery,
+  } = useAdminManagersQuery();
+
+  useEffect(() => {
+    if (isError) {
+      toast.error("Erro ao carregar administradores");
+    }
+  }, [isError]);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [adding, setAdding] = useState(false);
   const [removing, setRemoving] = useState<string | null>(null);
-
-  const fetchAdmins = async () => {
-    setLoading(true);
-    try {
-      const managers = await apiService.modules.manageAdmins.listManagers();
-      setAdmins(managers);
-    } catch (err) {
-      console.error(err);
-      toast.error("Erro ao carregar administradores");
-      setAdmins([]);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchAdmins();
-  }, []);
 
   const handleAddAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,7 +59,7 @@ export default function AdminManagers() {
       setEmail("");
       setPassword("");
       setFullName("");
-      fetchAdmins();
+      await invalidateQuery();
     } catch (err) {
       console.error(err);
 
@@ -101,7 +87,7 @@ export default function AdminManagers() {
       });
 
       toast.success("Administrador removido com sucesso");
-      fetchAdmins();
+      await invalidateQuery();
     } catch (err) {
       console.error(err);
 

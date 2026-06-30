@@ -27,8 +27,8 @@ import AdminGoals from "./presentation/pages/admin/AdminGoals";
 import AdminManagers from "./presentation/pages/admin/AdminManagers";
 import AdminRefunds from "./presentation/pages/admin/AdminRefunds";
 import AdminSubscriptions from "./presentation/pages/admin/AdminSubscriptions";
-import AdminTransactions from "./presentation/pages/admin/AdminTransactions";
-import AdminWithdrawals from "./presentation/pages/admin/AdminWithdrawals";
+import AdminTransactionsPage from "./presentation/pages/AdminTransactionsPage";
+import AdminWithdrawalsPage from "./presentation/pages/AdminWithdrawalsPage";
 import Seller2FA from "./presentation/pages/seller/Seller2FA";
 import SellerApi from "./presentation/pages/seller/SellerApi";
 import SellerApiDocs from "./presentation/pages/seller/SellerApiDocs";
@@ -225,7 +225,7 @@ export default function App() {
                   path="/admin/transactions"
                   element={
                     <ProtectedRoute requiredRole="admin">
-                      <AdminTransactions />
+                      <AdminTransactionsPage />
                     </ProtectedRoute>
                   }
                 />
@@ -281,7 +281,7 @@ export default function App() {
                   path="/admin/withdrawals"
                   element={
                     <ProtectedRoute requiredRole="admin">
-                      <AdminWithdrawals />
+                      <AdminWithdrawalsPage />
                     </ProtectedRoute>
                   }
                 />

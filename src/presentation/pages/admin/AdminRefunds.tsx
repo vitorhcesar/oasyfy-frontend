@@ -1,37 +1,14 @@
+import useAdminRefundsQuery from "@/presentation/hooks/use-admin-refunds-query";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import { AdminLayout } from "@/presentation/layouts/AdminLayout";
 import { cn } from "@/presentation/utils/cn";
 import { Check, Clock, RotateCcw, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
-
-type RefundRequest = {
-  id: string;
-  transaction_id: string;
-  seller_id: string;
-  amount: number;
-  reason: string;
-  status: "pending" | "approved" | "rejected";
-  admin_note: string | null;
-  reviewed_at: string | null;
-  created_at: string;
-  transaction?: {
-    customer_name: string;
-    customer_email: string | null;
-    method: string;
-    amount: number;
-  };
-  seller_profile?: {
-    full_name: string | null;
-    account_id: string;
-    email?: string | null;
-  };
-};
 
 export default function AdminRefunds() {
   const apiService = useApiService();
-  const [refunds, setRefunds] = useState<RefundRequest[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: refunds, isLoading, invalidateQuery } = useAdminRefundsQuery();
   const [filterStatus, setFilterStatus] = useState<string>("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [noteModal, setNoteModal] = useState<{
@@ -39,22 +16,6 @@ export default function AdminRefunds() {
     action: "approved" | "rejected";
   } | null>(null);
   const [adminNote, setAdminNote] = useState("");
-
-  const fetchRefunds = async () => {
-    setLoading(true);
-    try {
-      const data = await apiService.modules.adminFinance.listRefundRequests();
-      setRefunds(data as RefundRequest[]);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchRefunds();
-  }, []);
 
   const handleAction = async () => {
     if (!noteModal) return;
@@ -73,7 +34,7 @@ export default function AdminRefunds() {
           ? "Reembolso aprovado"
           : "Reembolso rejeitado",
       );
-      fetchRefunds();
+      await invalidateQuery();
     } catch {
       toast.error("Erro ao processar reembolso");
     }
@@ -194,7 +155,7 @@ export default function AdminRefunds() {
         </div>
 
         {/* List */}
-        {loading ? (
+        {isLoading ? (
           <div className="flex justify-center py-24">
             <div className="relative w-10 h-10">
               <div className="absolute inset-0 rounded-full border-2 border-muted" />
