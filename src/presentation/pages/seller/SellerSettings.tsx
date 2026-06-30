@@ -1,7 +1,7 @@
 import { authClient } from "@/infra/auth/auth-client";
-import type { IGetFullSellerFeeResponseDto } from "@/infra/http/services/api/modules/seller-fee.module";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import { useApiService } from "@/presentation/hooks/use-api-service";
+import useFullSellerFeeQuery from "@/presentation/hooks/use-full-seller-fee-query";
 import { useSellerKycSubmissionQuery } from "@/presentation/hooks/use-seller-kyc-submission-query";
 import { useUserContext } from "@/presentation/context/UserContext";
 import { translateError } from "@/presentation/utils/translate-error";
@@ -445,19 +445,7 @@ export default function SellerSettings() {
   const [accountId, setAccountId] = useState("");
   const [phone, setPhone] = useState("");
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
-  const [sellerFee, setSellerFee] =
-    useState<IGetFullSellerFeeResponseDto | null>(null);
-  const [feesLoading, setFeesLoading] = useState(true);
-
-  useEffect(() => {
-    if (!user) return;
-    setFeesLoading(true);
-    apiService.modules.sellerFee
-      .getMyFullSellerFee()
-      .then(setSellerFee)
-      .catch(() => setSellerFee(null))
-      .finally(() => setFeesLoading(false));
-  }, [user, apiService]);
+  const { data: sellerFee, isLoading: feesLoading } = useFullSellerFeeQuery();
 
   useEffect(() => {
     if (!user) return;
@@ -743,6 +731,14 @@ export default function SellerSettings() {
                   </p>
                 ) : (
                   <div className="space-y-3">
+                    {sellerFee.name && (
+                      <div className="flex items-center gap-2 px-1 pb-1 text-sm text-muted-foreground">
+                        <span>Plano atual:</span>
+                        <span className="font-semibold text-foreground">
+                          {sellerFee.name}
+                        </span>
+                      </div>
+                    )}
                     {(
                       [
                         {
