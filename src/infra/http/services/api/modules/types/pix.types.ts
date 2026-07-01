@@ -1,3 +1,40 @@
+export interface ICreatePixChargeBody {
+  amount: number;
+  customer_name: string;
+  customer_email?: string;
+  comment?: string;
+}
+
+/** Resposta bruta do failover PIX (Woovi/Cartwave). */
+export interface IPixChargeResponse {
+  error?: string;
+  pix_copy_and_paste?: string;
+  pix_copy_paste?: string;
+  copy_and_paste?: string;
+  emv?: string;
+  brCode?: string;
+  brcode?: string;
+  base_64_image?: string;
+  woovi_charge?: {
+    brCode?: string;
+    qrCodeImage?: string;
+  };
+  charge?: {
+    brCode?: string;
+    qrCodeImage?: string;
+  };
+  qr_code?: {
+    emv?: string;
+    base64?: string;
+  };
+  _routing?: {
+    acquirer?: string;
+    provider?: string;
+    failover_attempts?: number;
+  };
+  [key: string]: unknown;
+}
+
 export interface ICartwaveCreatePixBody {
   amount: number;
   debtor_name: string;
@@ -5,21 +42,7 @@ export interface ICartwaveCreatePixBody {
   type_document?: string;
 }
 
-/** Resposta bruta do Cartwave (não usa envelope da API). */
-export interface ICartwavePixResponse {
-  error?: string;
-  pix_copy_paste?: string;
-  qr_code?: {
-    emv?: string;
-    base64?: string;
-  };
-  emv?: string;
-  base_64_image?: string;
-  _routing?: {
-    acquirer?: string;
-    failover_attempts?: number;
-  };
-  [key: string]: unknown;
-}
+/** @deprecated Use IPixChargeResponse */
+export type ICartwavePixResponse = IPixChargeResponse;
 
 export type TPixSearchTransactionRow = Record<string, unknown>;

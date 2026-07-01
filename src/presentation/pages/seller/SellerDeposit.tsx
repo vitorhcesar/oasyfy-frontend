@@ -11,6 +11,7 @@ import {
 } from "@/presentation/components/ui/card";
 import { Input } from "@/presentation/components/ui/input";
 import { Label } from "@/presentation/components/ui/label";
+import { normalizePixChargeResponse } from "@/presentation/utils/normalize-pix-charge-response.util";
 import { cn } from "@/presentation/utils/cn";
 import { AlertCircle, CheckCircle2, Copy, Loader2, QrCode } from "lucide-react";
 import { useState } from "react";
@@ -22,7 +23,9 @@ export default function SellerDeposit() {
   const [name, setName] = useState("");
   const [document, setDocument] = useState("");
   const [loading, setLoading] = useState(false);
-  const [pixData, setPixData] = useState<any>(null);
+  const [pixData, setPixData] = useState<ReturnType<
+    typeof normalizePixChargeResponse
+  > | null>(null);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
 
@@ -56,23 +59,23 @@ export default function SellerDeposit() {
     setPixData(null);
 
     try {
-      const data = await apiService.modules.pix.createCartwavePix({
+      const data = await apiService.modules.pix.createPixCharge({
         amount: amountCents,
-        debtor_name: name.trim(),
-        ...(document.trim()
-          ? {
-              debtor_document: document.replace(/\D/g, ""),
-              type_document:
-                document.replace(/\D/g, "").length > 11 ? "CNPJ" : "CPF",
-            }
-          : {}),
+        customer_name: name.trim(),
+        comment: document.trim()
+          ? `Doc: ${document.replace(/\D/g, "")}`
+          : "Depósito via portal",
       });
 
-      if (data?.error) {
-        setError(String(data.error));
-        toast.error(String(data.error));
+      const normalized = normalizePixChargeResponse(data);
+
+      if (normalized.error || !normalized.pixCode) {
+        const message =
+          normalized.error || "Não foi possível gerar o código PIX";
+        setError(message);
+        toast.error(message);
       } else {
-        setPixData(data);
+        setPixData(normalized);
         toast.success("PIX gerado com sucesso!");
       }
     } catch (err) {
@@ -92,9 +95,8 @@ export default function SellerDeposit() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const pixCode =
-    pixData?.pix_copy_paste || pixData?.qr_code?.emv || pixData?.emv || "";
-  const qrCodeImage = pixData?.qr_code?.base64 || pixData?.base_64_image || "";
+  const pixCode = pixData?.pixCode ?? "";
+  const qrCodeImage = pixData?.qrCodeImage ?? "";
 
   const reset = () => {
     setPixData(null);
@@ -112,7 +114,8 @@ export default function SellerDeposit() {
             Depósito via PIX
           </h1>
           <p className="text-xs text-muted-foreground mt-1">
-            Gere um QR Code PIX para depositar na sua conta.
+            Gere um QR Code PIX para depositar na sua conta (roteamento
+            Woovi/Cartwave).
           </p>
         </div>
 
@@ -195,9 +198,9 @@ export default function SellerDeposit() {
                     Escaneie o QR Code ou copie o código para pagar.
                   </CardDescription>
                 </div>
-                {pixData?._routing && (
+                {pixData.acquirer && (
                   <Badge variant="outline" className="text-[10px]">
-                    via {pixData._routing.acquirer}
+                    via {pixData.acquirer}
                   </Badge>
                 )}
               </div>
@@ -217,7 +220,9 @@ export default function SellerDeposit() {
                       src={
                         qrCodeImage.startsWith("data:")
                           ? qrCodeImage
-                          : `data:image/png;base64,${qrCodeImage}`
+                          : qrCodeImage.startsWith("http")
+                            ? qrCodeImage
+                            : `data:image/png;base64,${qrCodeImage}`
                       }
                       alt="QR Code PIX"
                       className="w-48 h-48"
@@ -241,7 +246,7 @@ export default function SellerDeposit() {
                       variant="outline"
                       className={cn(
                         "gap-1.5 shrink-0",
-                        copied && "text-primary border-primary/30"
+                        copied && "text-primary border-primary/30",
                       )}
                       onClick={() => copyToClipboard(pixCode)}
                     >
@@ -252,10 +257,10 @@ export default function SellerDeposit() {
                 </div>
               )}
 
-              {pixData?._routing?.failover_attempts > 0 && (
+              {(pixData.failoverAttempts ?? 0) > 0 && (
                 <p className="text-[10px] text-muted-foreground text-center">
-                  Failover: {pixData._routing.failover_attempts} tentativa(s)
-                  antes do sucesso
+                  Failover: {pixData.failoverAttempts} tentativa(s) antes do
+                  sucesso
                 </p>
               )}
 

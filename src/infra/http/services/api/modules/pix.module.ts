@@ -2,15 +2,17 @@ import type { IApiEnvelope } from "../api-types";
 import { BaseApiModule } from "./base-api.module";
 import type {
   ICartwaveCreatePixBody,
-  ICartwavePixResponse,
+  ICreatePixChargeBody,
+  IPixChargeResponse,
   TPixSearchTransactionRow,
 } from "./types/pix.types";
 
 export interface IPixModule {
   searchTransactions: (pixCode: string) => Promise<TPixSearchTransactionRow[]>;
-  createCartwavePix: (
-    body: ICartwaveCreatePixBody,
-  ) => Promise<ICartwavePixResponse>;
+  /** Failover Woovi/Cartwave via roteamento admin (POST /pix/woovi/create). */
+  createPixCharge: (body: ICreatePixChargeBody) => Promise<IPixChargeResponse>;
+  /** @deprecated Prefer createPixCharge */
+  createCartwavePix: (body: ICartwaveCreatePixBody) => Promise<IPixChargeResponse>;
 }
 
 export class PixModule extends BaseApiModule implements IPixModule {
@@ -27,10 +29,23 @@ export class PixModule extends BaseApiModule implements IPixModule {
     return response.data.transactions;
   }
 
+  async createPixCharge(body: ICreatePixChargeBody): Promise<IPixChargeResponse> {
+    return this.getClient().post<IPixChargeResponse>(
+      `${this.baseUrl}/woovi/create`,
+      {
+        correlation_id: `seller-deposit-${Date.now()}`,
+        amount: body.amount,
+        customer_name: body.customer_name,
+        ...(body.customer_email ? { customer_email: body.customer_email } : {}),
+        ...(body.comment ? { comment: body.comment } : {}),
+      },
+    );
+  }
+
   async createCartwavePix(
     body: ICartwaveCreatePixBody,
-  ): Promise<ICartwavePixResponse> {
-    return this.getClient().post<ICartwavePixResponse>(
+  ): Promise<IPixChargeResponse> {
+    return this.getClient().post<IPixChargeResponse>(
       `${this.baseUrl}/cartwave/create`,
       body,
     );

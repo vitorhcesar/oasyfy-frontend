@@ -14,6 +14,7 @@ export const acquirerOptions = [
   { value: "Rede", label: "Rede" },
   { value: "Stone", label: "Stone" },
   { value: "Cartwave", label: "Cartwave" },
+  { value: "Woovi", label: "Woovi" },
 ];
 
 export const statusOptions = [

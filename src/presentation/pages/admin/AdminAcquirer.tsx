@@ -1,4 +1,7 @@
-import cartwaveLogo from "@/assets/cartwave-logo.png";
+import { AcquirerGuideTab } from "@/presentation/components/admin/AcquirerGuideTab";
+import { AcquirerBrandLogo, getAcquirerLogoSrc } from "@/presentation/components/admin/AcquirerBrandLogo";
+import { AcquirerConfigDialog } from "@/presentation/components/admin/AcquirerConfigDialog";
+import type { IAcquirerCredentialsForm } from "@/presentation/utils/acquirer-connection-config.util";
 import useAdminAcquirerConnectionsQuery, {
   type TAcquirerConnectionView,
 } from "@/presentation/hooks/use-admin-acquirer-connections-query";
@@ -11,15 +14,7 @@ import useAdminRoutingRulesQuery, {
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import { Badge } from "@/presentation/components/ui/badge";
 import { Button } from "@/presentation/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/presentation/components/ui/dialog";
 import { Input } from "@/presentation/components/ui/input";
-import { Label } from "@/presentation/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -32,13 +27,10 @@ import { AdminLayout } from "@/presentation/layouts/AdminLayout";
 import { cn } from "@/presentation/utils/cn";
 import {
   ArrowRightLeft,
+  BookOpen,
   Calculator,
   ChevronDown,
   ChevronUp,
-  Copy,
-  ExternalLink,
-  Eye,
-  EyeOff,
   GripVertical,
   Link2,
   Loader2,
@@ -64,6 +56,7 @@ const tabs = [
     icon: Wallet,
   },
   { key: "conexoes", label: "Conexões", icon: Link2 },
+  { key: "guia", label: "Guia", icon: BookOpen },
   { key: "regras-custos", label: "Regras de custos", icon: Calculator },
 ] as const;
 
@@ -73,10 +66,6 @@ const METHODS_DEPOSIT = ["pix", "card", "boleto", "crypto"] as const;
 const METHODS_WITHDRAWAL = ["pix", "ted", "crypto"] as const;
 
 interface IRoutingRule extends TRoutingRuleView {}
-
-const logoMap: Record<string, string> = {
-  cartwave: cartwaveLogo,
-};
 
 interface IAcquirerConnection extends TAcquirerConnectionView {}
 
@@ -104,17 +93,8 @@ export default function AdminAcquirer() {
   const [configModal, setConfigModal] = useState<IAcquirerConnection | null>(
     null,
   );
-  const [showToken, setShowToken] = useState(false);
-  const [showHmac, setShowHmac] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [formData, setFormData] = useState({
-    clientId: "",
-    accessToken: "",
-    hmacKey: "",
-    branchId: "",
-    accountNumber: "",
-  });
-  const [reconfiguring, setReconfiguring] = useState(false);
+  const [bootstrapping, setBootstrapping] = useState(false);
 
   const [costs, setCosts] = useState<IAcquirerCost[]>([]);
   const [savingCosts, setSavingCosts] = useState(false);
@@ -136,54 +116,34 @@ export default function AdminAcquirer() {
     (c) => c.is_active && c.status === "connected",
   );
 
-  const isConfigured = (conn: IAcquirerConnection) =>
-    !!(
-      conn.client_id &&
-      conn.access_token &&
-      conn.hmac_key &&
-      conn.branch_id &&
-      conn.account_number
-    );
-
   const openConfig = (conn: IAcquirerConnection) => {
-    const configured = isConfigured(conn);
-    setFormData({
-      clientId: configured ? "" : conn.client_id || "",
-      accessToken: configured ? "" : conn.access_token || "",
-      hmacKey: configured ? "" : conn.hmac_key || "",
-      branchId: configured ? "" : conn.branch_id || "",
-      accountNumber: configured ? "" : conn.account_number || "",
-    });
-    setShowToken(false);
-    setShowHmac(false);
     setConfigModal(conn);
   };
 
-  const saveConfig = async () => {
-    if (!configModal) return;
+  const saveConfig = async (
+    connectionId: number,
+    payload: IAcquirerCredentialsForm & {
+      status: string;
+      isActive: boolean;
+    },
+  ) => {
     setSaving(true);
-
-    const hasCredentials =
-      formData.clientId &&
-      formData.accessToken &&
-      formData.hmacKey &&
-      formData.branchId &&
-      formData.accountNumber;
 
     try {
       await apiService.modules.adminConfig.updateAcquirerConnection(
-        Number(configModal.id),
+        connectionId,
         {
-          clientId: formData.clientId,
-          accessToken: formData.accessToken,
-          hmacKey: formData.hmacKey,
-          branchId: formData.branchId,
-          accountNumber: formData.accountNumber,
-          status: hasCredentials ? "connected" : "disconnected",
-          isActive: !!hasCredentials,
+          apiUrl: payload.apiUrl,
+          clientId: payload.clientId,
+          accessToken: payload.accessToken,
+          hmacKey: payload.hmacKey,
+          branchId: payload.branchId,
+          accountNumber: payload.accountNumber,
+          status: payload.status,
+          isActive: payload.isActive,
         },
       );
-      toast.success(`Credenciais da ${configModal.name} salvas com sucesso!`);
+      toast.success("Credenciais salvas com sucesso!");
       setConfigModal(null);
       await invalidateConnections();
     } catch (error) {
@@ -191,6 +151,19 @@ export default function AdminAcquirer() {
       console.error(error);
     }
     setSaving(false);
+  };
+
+  const ensureDefaultConnections = async () => {
+    setBootstrapping(true);
+    try {
+      await apiService.modules.adminConfig.ensureDefaultAcquirerConnections();
+      toast.success("Adquirentes Woovi e Cartwave carregadas.");
+      await invalidateConnections();
+    } catch (error) {
+      toast.error("Erro ao carregar adquirentes padrão");
+      console.error(error);
+    }
+    setBootstrapping(false);
   };
 
   const toggleActive = async (conn: IAcquirerConnection) => {
@@ -230,6 +203,34 @@ export default function AdminAcquirer() {
         <div className="flex items-center justify-center py-12">
           <Loader2 className="animate-spin text-muted-foreground" size={20} />
         </div>
+      ) : connections.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-border/60 bg-muted/20 p-10 text-center space-y-4">
+          <div className="w-12 h-12 rounded-xl bg-muted/50 flex items-center justify-center mx-auto">
+            <Link2 size={22} className="text-muted-foreground/50" />
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-foreground">
+              Nenhuma adquirente cadastrada
+            </p>
+            <p className="text-xs text-muted-foreground max-w-md mx-auto">
+              Carregue Woovi e Cartwave para habilitar o botão{" "}
+              <strong>Configurar</strong> e definir credenciais + roteamento PIX.
+            </p>
+          </div>
+          <Button
+            size="sm"
+            className="gap-2"
+            onClick={ensureDefaultConnections}
+            disabled={bootstrapping}
+          >
+            {bootstrapping ? (
+              <Loader2 size={14} className="animate-spin" />
+            ) : (
+              <Plus size={14} />
+            )}
+            Carregar adquirentes padrão
+          </Button>
+        </div>
       ) : (
         <div className="grid gap-3">
           {connections.map((conn) => (
@@ -238,12 +239,7 @@ export default function AdminAcquirer() {
               className="rounded-xl border border-border/40 bg-card p-4 flex items-center gap-4 hover:border-border/80 transition-colors"
             >
               <div className="w-12 h-12 rounded-lg bg-background border border-border/30 flex items-center justify-center overflow-hidden shrink-0">
-                <img
-                  src={conn.logo_key ? (logoMap[conn.logo_key] ?? "") : ""}
-                  alt={conn.name}
-                  className="w-8 h-8 object-contain"
-                  loading="lazy"
-                />
+                <AcquirerBrandLogo connection={conn} />
               </div>
 
               <div className="flex-1 min-w-0">
@@ -306,228 +302,17 @@ export default function AdminAcquirer() {
         </div>
       )}
 
-      <Dialog
+      <AcquirerConfigDialog
+        connection={configModal}
         open={!!configModal}
-        onOpenChange={() => {
-          setConfigModal(null);
-          setReconfiguring(false);
+        saving={saving}
+        onOpenChange={(open) => {
+          if (!open) {
+            setConfigModal(null);
+          }
         }}
-      >
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-base">
-              {configModal?.logo_key && (
-                <img
-                  src={logoMap[configModal.logo_key] || ""}
-                  alt=""
-                  className="w-6 h-6 object-contain"
-                />
-              )}
-              Configurar {configModal?.name}
-            </DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-4 py-2">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 rounded-lg px-3 py-2">
-              <ExternalLink size={13} />
-              <span>API Base: </span>
-              <code className="text-foreground font-mono text-[11px]">
-                {configModal?.api_url}
-              </code>
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(configModal?.api_url || "");
-                  toast.success("URL copiada");
-                }}
-              >
-                <Copy
-                  size={11}
-                  className="text-muted-foreground hover:text-foreground"
-                />
-              </button>
-            </div>
-
-            {configModal && isConfigured(configModal) && !reconfiguring ? (
-              <div className="space-y-4">
-                <div className="rounded-lg border border-primary/20 bg-primary/5 p-4 space-y-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                    <span className="text-xs font-medium text-foreground">
-                      Credenciais configuradas
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="space-y-0.5">
-                      <span className="text-[10px] text-muted-foreground">
-                        ID do Cliente
-                      </span>
-                      <p className="text-xs font-mono text-foreground">
-                        ••••••••••••
-                      </p>
-                    </div>
-                    <div className="space-y-0.5">
-                      <span className="text-[10px] text-muted-foreground">
-                        Chave Secreta
-                      </span>
-                      <p className="text-xs font-mono text-foreground">
-                        ••••••••••••
-                      </p>
-                    </div>
-                    <div className="space-y-0.5">
-                      <span className="text-[10px] text-muted-foreground">
-                        Chave HMAC
-                      </span>
-                      <p className="text-xs font-mono text-foreground">
-                        ••••••••••••
-                      </p>
-                    </div>
-                    <div className="space-y-0.5">
-                      <span className="text-[10px] text-muted-foreground">
-                        Agência
-                      </span>
-                      <p className="text-xs font-mono text-foreground">••••</p>
-                    </div>
-                    <div className="space-y-0.5">
-                      <span className="text-[10px] text-muted-foreground">
-                        Nº da Conta
-                      </span>
-                      <p className="text-xs font-mono text-foreground">
-                        ••••••
-                      </p>
-                    </div>
-                  </div>
-                  <p className="text-[10px] text-muted-foreground">
-                    Por segurança, as credenciais não podem ser visualizadas
-                    após salvas.
-                  </p>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full text-xs gap-1.5"
-                  onClick={() => setReconfiguring(true)}
-                >
-                  <Settings2 size={13} />
-                  Reconfigurar credenciais
-                </Button>
-              </div>
-            ) : (
-              <>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">ID do Cliente (Client ID)</Label>
-                  <Input
-                    placeholder="9E54779D..."
-                    value={formData.clientId}
-                    onChange={(e) =>
-                      setFormData((p) => ({ ...p, clientId: e.target.value }))
-                    }
-                    className="text-xs font-mono"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label className="text-xs">
-                    Chave Secreta (Access Token)
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      type={showToken ? "text" : "password"}
-                      placeholder="eyJhbGciOiJIUzI1NiIs..."
-                      value={formData.accessToken}
-                      onChange={(e) =>
-                        setFormData((p) => ({
-                          ...p,
-                          accessToken: e.target.value,
-                        }))
-                      }
-                      className="pr-10 text-xs font-mono"
-                    />
-                    <button
-                      type="button"
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      onClick={() => setShowToken(!showToken)}
-                    >
-                      {showToken ? <EyeOff size={14} /> : <Eye size={14} />}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Chave HMAC</Label>
-                  <div className="relative">
-                    <Input
-                      type={showHmac ? "text" : "password"}
-                      placeholder="57373705c83bc5efe..."
-                      value={formData.hmacKey}
-                      onChange={(e) =>
-                        setFormData((p) => ({ ...p, hmacKey: e.target.value }))
-                      }
-                      className="pr-10 text-xs font-mono"
-                    />
-                    <button
-                      type="button"
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      onClick={() => setShowHmac(!showHmac)}
-                    >
-                      {showHmac ? <EyeOff size={14} /> : <Eye size={14} />}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Agência (Branch)</Label>
-                    <Input
-                      placeholder="0001"
-                      value={formData.branchId}
-                      onChange={(e) =>
-                        setFormData((p) => ({ ...p, branchId: e.target.value }))
-                      }
-                      className="text-xs font-mono"
-                      maxLength={4}
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs">Nº da Conta</Label>
-                    <Input
-                      placeholder="401050"
-                      value={formData.accountNumber}
-                      onChange={(e) =>
-                        setFormData((p) => ({
-                          ...p,
-                          accountNumber: e.target.value,
-                        }))
-                      }
-                      className="text-xs font-mono"
-                    />
-                  </div>
-                </div>
-              </>
-            )}
-          </div>
-
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setConfigModal(null);
-                setReconfiguring(false);
-              }}
-            >
-              Cancelar
-            </Button>
-            {(!configModal || !isConfigured(configModal) || reconfiguring) && (
-              <Button size="sm" onClick={saveConfig} disabled={saving}>
-                {saving && (
-                  <Loader2 size={13} className="animate-spin mr-1.5" />
-                )}
-                Salvar credenciais
-              </Button>
-            )}
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        onSave={saveConfig}
+      />
     </div>
   );
 
@@ -604,7 +389,7 @@ export default function AdminAcquirer() {
 
   const getAcquirerLogo = (acquirerId: string) => {
     const conn = connections.find((c) => c.id === acquirerId);
-    return conn?.logo_key ? (logoMap[conn.logo_key] ?? null) : null;
+    return conn ? getAcquirerLogoSrc(conn) : null;
   };
 
   const renderRoutingDeposit = () => {
@@ -863,8 +648,9 @@ export default function AdminAcquirer() {
               Regras de roteamento de saque
             </h2>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Configure a prioridade das adquirentes para saques. Se a primeira
-              falhar, o sistema tenta a próxima.
+              Configure a prioridade das adquirentes para saques. Saques PIX via
+              Woovi usam o roteamento de depósito PIX (aba Depósito, method
+              pix).
             </p>
           </div>
           <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground bg-muted/30 rounded-md px-2.5 py-1.5">
@@ -1157,7 +943,7 @@ export default function AdminAcquirer() {
 
         {connectedAcquirers.map((conn) => {
           const isExpanded = expandedCostAcquirer === conn.id;
-          const logo = conn.logo_key ? logoMap[conn.logo_key] : null;
+          const logo = getAcquirerLogoSrc(conn);
 
           return (
             <div
@@ -1179,7 +965,10 @@ export default function AdminAcquirer() {
                       className="w-6 h-6 object-contain"
                     />
                   ) : (
-                    <Link2 size={16} className="text-muted-foreground" />
+                    <AcquirerBrandLogo
+                      connection={conn}
+                      imageClassName="w-6 h-6 object-contain"
+                    />
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -1413,6 +1202,8 @@ export default function AdminAcquirer() {
         return renderRoutingWithdrawal();
       case "regras-custos":
         return renderCosts();
+      case "guia":
+        return <AcquirerGuideTab />;
       default:
         return null;
     }

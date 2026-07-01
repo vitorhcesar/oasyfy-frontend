@@ -46,6 +46,7 @@ export interface IAdminConfigModule {
   getCrmSettings(): Promise<Record<string, unknown> | null>;
   updateCrmSettings(payload: Record<string, unknown>): Promise<Record<string, unknown>>;
   listAcquirerConnections(): Promise<Record<string, unknown>[]>;
+  ensureDefaultAcquirerConnections(): Promise<Record<string, unknown>[]>;
   updateAcquirerConnection(
     id: number,
     payload: Record<string, unknown>,
@@ -185,11 +186,19 @@ export class AdminConfigModule
     return response.data;
   }
 
+  async ensureDefaultAcquirerConnections() {
+    const response = await this.getClient().post<
+      IApiEnvelope<Record<string, unknown>[]>
+    >(`${this.baseUrl}/acquirer-connections/ensure-defaults`);
+    return response.data;
+  }
+
   async updateAcquirerConnection(
     id: number,
     payload: Record<string, unknown>,
   ) {
     await this.getClient().put(`${this.baseUrl}/acquirer-connections/${id}`, {
+      apiUrl: payload.apiUrl ?? payload.api_url,
       clientId: payload.clientId ?? payload.client_id,
       accessToken: payload.accessToken ?? payload.access_token,
       hmacKey: payload.hmacKey ?? payload.hmac_key,
