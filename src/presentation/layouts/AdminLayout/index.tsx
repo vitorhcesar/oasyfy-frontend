@@ -6,7 +6,7 @@ export function AdminLayout({ children }: PropsWithChildren) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="min-h-screen flex w-full bg-background relative overflow-hidden">
+    <div className="h-screen flex w-full bg-background relative overflow-hidden">
       {/* Color blobs */}
       <div className="pointer-events-none fixed inset-0 z-0">
         <div className="absolute -top-20 -left-20 w-[600px] h-[600px] rounded-full bg-primary/20 blur-[150px]" />
@@ -17,7 +17,10 @@ export function AdminLayout({ children }: PropsWithChildren) {
         mobileOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
-      <main className="flex-1 min-w-0 relative z-10 flex flex-col">
+      <main
+        id="layout-main-scroll"
+        className="flex-1 min-w-0 h-full overflow-y-auto relative z-10 flex flex-col"
+      >
         {/* Mobile topbar */}
         <div className="md:hidden h-14 flex items-center px-4 border-b border-border/50 bg-card/30 backdrop-blur-sm">
           <button

@@ -289,7 +289,7 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
       {/* Desktop sidebar */}
       <aside
         className={cn(
-          "hidden md:flex h-screen sticky top-0 flex-col bg-card/60 backdrop-blur-md border-r border-border/20 transition-all duration-300 ease-in-out",
+          "hidden md:flex h-full shrink-0 flex-col bg-card/60 backdrop-blur-md border-r border-border/20 transition-all duration-300 ease-in-out",
           collapsed ? "w-[68px]" : "w-60",
         )}
       >

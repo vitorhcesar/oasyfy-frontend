@@ -322,7 +322,7 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
     <>
       {/* Desktop sidebar */}
       <aside
-        className={`hidden md:flex h-screen sticky top-0 flex-col border-r border-border bg-card transition-all duration-300 ease-in-out ${
+        className={`hidden md:flex h-full shrink-0 flex-col border-r border-border bg-card transition-all duration-300 ease-in-out ${
           collapsed ? "w-[72px]" : "w-64"
         }`}
       >
