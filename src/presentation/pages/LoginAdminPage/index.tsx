@@ -10,8 +10,13 @@ import { Button } from "@/presentation/components/ui/button";
 import { useAuthContext } from "@/presentation/context/AuthContext";
 import { tryOrToastError } from "@/presentation/utils/try-or-toast-error";
 import { ArrowRight, Mail, Shield } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  clearPendingAdminTwoFactor,
+  hasPendingAdminTwoFactor,
+  savePendingAdminTwoFactor,
+} from "./admin-login-two-factor-storage";
 
 const clientIpService = new ClientIpService();
 
@@ -25,6 +30,12 @@ export default function LoginAdmin() {
   const [loading, setLoading] = useState(false);
   const [needsTwoFactor, setNeedsTwoFactor] = useState(false);
 
+  useEffect(() => {
+    if (hasPendingAdminTwoFactor()) {
+      setNeedsTwoFactor(true);
+    }
+  }, []);
+
   const completeAdminLogin = async () => {
     const ctx = await fetchSessionContext();
 
@@ -32,6 +43,7 @@ export default function LoginAdmin() {
       throw new AppError("Acesso restrito a administradores", 403);
     }
 
+    clearPendingAdminTwoFactor();
     navigate("/admin");
   };
 
@@ -63,6 +75,7 @@ export default function LoginAdmin() {
         }
 
         if (isTwoFactorRedirect(signInResult.data)) {
+          savePendingAdminTwoFactor();
           setNeedsTwoFactor(true);
           return;
         }
@@ -159,6 +172,7 @@ export default function LoginAdmin() {
                 }
               }}
               onCancel={() => {
+                clearPendingAdminTwoFactor();
                 setNeedsTwoFactor(false);
                 void signOut();
               }}

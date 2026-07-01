@@ -36,6 +36,10 @@ export function TwoFactorLoginStep({
         return;
       }
 
+      // Garante que o cliente Better Auth sincronize a sessão criada após o TOTP
+      // antes do callback de conclusão do login (gate de papel / redirect).
+      await authClient.getSession();
+
       await onVerified();
     } catch {
       toast.error("Erro ao verificar 2FA");

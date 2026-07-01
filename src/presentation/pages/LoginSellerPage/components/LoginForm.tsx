@@ -1,22 +1,18 @@
 import { ClientIpService } from "@/app/modules/client/services/client-ip.service";
 import { AppError } from "@/domain/errors/app.error";
-import { authClient, ensureSellerPortalAccess } from "@/infra/auth";
+import { authClient } from "@/infra/auth";
 import { isTwoFactorRedirect } from "@/infra/auth/two-factor-utils";
 import { Input } from "@/presentation/components/Input";
 import { Label } from "@/presentation/components/Label";
 import { PasswordInput } from "@/presentation/components/PasswordInput";
-import { TwoFactorLoginStep } from "@/presentation/components/auth/TwoFactorLoginStep";
 import { Button } from "@/presentation/components/ui/button";
-import { useAuthContext } from "@/presentation/context/AuthContext";
 import { translateError } from "@/presentation/utils/translate-error";
 import { tryOrToastError } from "@/presentation/utils/try-or-toast-error";
 import { ArrowRight, Mail, X } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  clearPendingVerification,
-  savePendingVerification,
-} from "../seller-login-verification-storage";
+import { completeSellerPortalLogin } from "../seller-login-completion";
+import { savePendingTwoFactor } from "../seller-login-two-factor-storage";
 
 const clientIpService = new ClientIpService();
 
@@ -26,7 +22,8 @@ interface ILoginFormProps {
   password: string;
   setPassword: (password: string) => void;
   openSignupVerification: () => Promise<void>;
-  setView: (view: "login" | "signup" | "forgotPassword") => void;
+  openTwoFactorStep: () => void;
+  setView: (view: "login" | "signup" | "forgotPassword" | "twoFactor") => void;
 }
 
 export default function LoginForm({
@@ -35,38 +32,14 @@ export default function LoginForm({
   password,
   setPassword,
   openSignupVerification,
+  openTwoFactorStep,
   setView,
 }: ILoginFormProps) {
   const navigate = useNavigate();
-  const { signOut } = useAuthContext();
 
   const [error, setError] = useState("");
 
   const [loading, setLoading] = useState(false);
-  const [needsTwoFactor, setNeedsTwoFactor] = useState(false);
-
-  const completeSellerLogin = async () => {
-    // Persiste o e-mail ANTES de ensureSellerPortalAccess, pois esse gate chama
-    // authClient.signOut() internamente, o que desmonta/remonta o FormPanel via
-    // PublicRoute (isLoading=true). Ao remontar, o useEffect do FormPanel lê o
-    // sessionStorage e já exibe o formulário de código sem perder o e-mail.
-    savePendingVerification(email);
-
-    const gate = await ensureSellerPortalAccess();
-
-    if (gate.kind === "error") {
-      clearPendingVerification();
-      setError(gate.message);
-      return;
-    }
-    if (gate.kind === "needs_verification") {
-      await openSignupVerification();
-      return;
-    }
-
-    clearPendingVerification();
-    navigate("/seller");
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,11 +79,19 @@ export default function LoginForm({
         }
 
         if (isTwoFactorRedirect(signInResult.data)) {
-          setNeedsTwoFactor(true);
+          // After that 2FA is pending before the session refetch triggered by
+          // sign-in remounts this page via PublicRoute.
+          savePendingTwoFactor(email);
+          openTwoFactorStep();
           return;
         }
 
-        await completeSellerLogin();
+        await completeSellerPortalLogin({
+          email,
+          navigate,
+          openSignupVerification,
+          onError: setError,
+        });
       },
       {
         defaultErrorMessage: "Erro ao entrar",
@@ -145,77 +126,65 @@ export default function LoginForm({
         </p>
       </header>
 
-      {needsTwoFactor ? (
-        <TwoFactorLoginStep
-          onVerified={completeSellerLogin}
-          onCancel={() => {
-            setNeedsTwoFactor(false);
-            void signOut();
-          }}
-        />
-      ) : (
-        <>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="px-3 py-2.5 rounded-lg bg-destructive/5 border border-destructive/15 text-destructive text-[13px] flex items-center gap-2">
-                <X size={14} className="flex-shrink-0" />
-                <span>{error}</span>
-              </div>
-            )}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {error && (
+          <div className="px-3 py-2.5 rounded-lg bg-destructive/5 border border-destructive/15 text-destructive text-[13px] flex items-center gap-2">
+            <X size={14} className="flex-shrink-0" />
+            <span>{error}</span>
+          </div>
+        )}
 
-            <div>
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                placeholder="seu@email.com"
-                startComponent={
-                  <Mail size={16} className="text-muted-foreground/50" />
-                }
-              />
-            </div>
+        <div>
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            placeholder="seu@email.com"
+            startComponent={
+              <Mail size={16} className="text-muted-foreground/50" />
+            }
+          />
+        </div>
 
-            <div>
-              <Label htmlFor="password">Senha</Label>
-              <PasswordInput
-                id="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={8}
-                placeholder="••••••••"
-              />
+        <div>
+          <Label htmlFor="password">Senha</Label>
+          <PasswordInput
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={8}
+            placeholder="••••••••"
+          />
 
-              <div className="text-right mt-1.5">
-                <button
-                  type="button"
-                  onClick={handleGoToForgotPassword}
-                  className="text-xs text-primary hover:text-primary/80 font-medium transition-colors"
-                >
-                  Esqueci minha senha
-                </button>
-              </div>
-            </div>
-
-            <Button className="w-full !mt-4" loading={loading}>
-              Entrar <ArrowRight size={15} />
-            </Button>
-          </form>
-
-          <div className="text-center mt-6">
+          <div className="text-right mt-1.5">
             <button
-              onClick={handleGoToSignup}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              type="button"
+              onClick={handleGoToForgotPassword}
+              className="text-xs text-primary hover:text-primary/80 font-medium transition-colors"
             >
-              Não tem conta?{" "}
-              <span className="text-primary font-medium">Cadastre-se</span>
+              Esqueci minha senha
             </button>
           </div>
-        </>
-      )}
+        </div>
+
+        <Button className="w-full !mt-4" loading={loading}>
+          Entrar <ArrowRight size={15} />
+        </Button>
+      </form>
+
+      <div className="text-center mt-6">
+        <button
+          onClick={handleGoToSignup}
+          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+        >
+          Não tem conta?{" "}
+          <span className="text-primary font-medium">Cadastre-se</span>
+        </button>
+      </div>
     </>
   );
 }
