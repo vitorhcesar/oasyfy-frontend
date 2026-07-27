@@ -10,10 +10,7 @@ export default function LoginSellerLeftPanel() {
           className="animate-auth-reveal-left"
         />
 
-        <div
-          className="max-w-md animate-auth-reveal-up"
-          style={{ animationDelay: "140ms" }}
-        >
+        <div className="max-w-md animate-auth-reveal-up [animation-delay:60ms]">
           <p className="mb-4 text-xs font-semibold uppercase tracking-[0.22em] text-white/45">
             Plataforma de pagamentos
           </p>
@@ -28,10 +25,7 @@ export default function LoginSellerLeftPanel() {
           </p>
         </div>
 
-        <div
-          className="animate-auth-reveal-up flex items-center gap-3 text-sm text-white/40"
-          style={{ animationDelay: "280ms" }}
-        >
+        <div className="animate-auth-reveal-up flex items-center gap-3 text-sm text-white/40 [animation-delay:120ms]">
           <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#5F2998]" />
           Infraestrutura pronta para escalar
         </div>

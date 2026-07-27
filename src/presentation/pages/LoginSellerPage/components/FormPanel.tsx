@@ -2,7 +2,7 @@ import { TwoFactorLoginStep } from "@/presentation/components/auth/TwoFactorLogi
 import { useAuthContext } from "@/presentation/context/AuthContext";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import { tryOrToastError } from "@/presentation/utils/try-or-toast-error";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { completeSellerPortalLogin } from "../seller-login-completion";
 import {
@@ -28,6 +28,7 @@ export default function LoginSellerFormPanel() {
   const { signOut } = useAuthContext();
 
   const [formView, setFormView] = useState<TFormView>("login");
+  const skipFormSwapRef = useRef(true);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -46,6 +47,10 @@ export default function LoginSellerFormPanel() {
       setEmail(pending.email);
       setFormView("code");
     }
+  }, []);
+
+  useEffect(() => {
+    skipFormSwapRef.current = false;
   }, []);
 
   const sendSignUpVerificationCodeAndOpenCodeFormView = async () => {
@@ -80,11 +85,16 @@ export default function LoginSellerFormPanel() {
       <div className="relative w-full max-w-[460px]">
         <LoginSellerMobileLogo />
 
-        <div className="relative">
+        <div className="relative animate-liquid-glass">
           <div className="auth-glass-glow" aria-hidden />
-          <div className="liquid-glass auth-glass-sheen animate-liquid-glass relative z-10 rounded-[20px] p-7 sm:rounded-3xl sm:p-9">
+          <div className="liquid-glass auth-glass-sheen relative z-10 rounded-[20px] p-7 sm:rounded-3xl sm:p-9">
             <span className="auth-glass-sheen-beam" aria-hidden />
-            <div key={formView} className="animate-auth-form-swap">
+            <div
+              key={formView}
+              className={
+                skipFormSwapRef.current ? undefined : "animate-auth-form-swap"
+              }
+            >
               {formView === "code" && (
                 <OtpCodeForm
                   email={email}
@@ -162,7 +172,7 @@ export default function LoginSellerFormPanel() {
           </div>
         </div>
 
-        <p className="mt-6 animate-auth-reveal-up text-center text-xs leading-relaxed text-muted-foreground/60" style={{ animationDelay: "420ms" }}>
+        <p className="mt-6 text-center text-xs leading-relaxed text-muted-foreground/60">
           Ao continuar, você concorda com os Termos de Uso e Política de
           Privacidade.
         </p>
