@@ -1,6 +1,6 @@
-# Oasyfy Frontend
+# OmegaPay Frontend
 
-SPA React da plataforma Oasyfy — painéis admin e seller, KYC, transações e documentação de API.
+SPA React da plataforma OmegaPay — painéis admin e seller, KYC, transações e documentação de API.
 
 ## Stack
 

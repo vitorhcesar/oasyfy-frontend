@@ -3,7 +3,7 @@ import axios, { type AxiosInstance } from "axios";
 import { getApiBaseUrl } from "./api-env";
 
 /**
- * Instância Axios configurada para o backend Oasyfy.
+ * Instância Axios configurada para o backend OmegaPay.
  * Use nos repositórios/casos de uso via {@link HttpClient} para manter a borda da aplicação na infraestrutura.
  */
 export const apiAxios: AxiosInstance = axios.create({

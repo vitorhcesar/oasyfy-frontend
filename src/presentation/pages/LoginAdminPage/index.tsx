@@ -120,7 +120,7 @@ export default function LoginAdmin() {
 
         <div className="relative text-center px-16 animate-fade-in">
           <span className="text-3xl font-bold text-foreground block mb-8">
-            Oasyfy
+            OmegaPay
           </span>
           <p className="text-muted-foreground text-[13px] leading-relaxed max-w-[280px] mx-auto">
             Gerencie rotas, monitore transações e controle todo o gateway em um
@@ -144,7 +144,7 @@ export default function LoginAdmin() {
       <div className="flex-1 flex items-center justify-center px-6">
         <div className="w-full max-w-[380px] animate-fade-in">
           <div className="lg:hidden flex justify-center mb-8">
-            <span className="text-2xl font-bold text-foreground">Oasyfy</span>
+            <span className="text-2xl font-bold text-foreground">OmegaPay</span>
           </div>
 
           <div className="mb-8">
@@ -152,7 +152,7 @@ export default function LoginAdmin() {
               <Shield className="text-primary" size={18} />
             </div>
             <h1 className="text-xl font-semibold tracking-tight">
-              Oasyfy Admin
+              OmegaPay Admin
             </h1>
             <p className="text-[13px] text-muted-foreground mt-2">
               Acesse o painel administrativo do gateway (Better Auth)
@@ -191,7 +191,7 @@ export default function LoginAdmin() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                placeholder="admin@oasyfy.com"
+                placeholder="admin@omegapay.com"
                 startComponent={
                   <Mail size={15} className="text-muted-foreground/40" />
                 }

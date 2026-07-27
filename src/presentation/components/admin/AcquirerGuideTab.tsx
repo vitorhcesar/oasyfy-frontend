@@ -110,7 +110,7 @@ export function AcquirerGuideTab() {
       {/* Checklist geral */}
       <Card className="border-border/40">
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm">Checklist geral (Oasyfy)</CardTitle>
+          <CardTitle className="text-sm">Checklist geral (OmegaPay)</CardTitle>
           <CardDescription className="text-xs">
             Antes de ir para produção, confira todos os itens.
           </CardDescription>
@@ -197,14 +197,14 @@ export function AcquirerGuideTab() {
               <GuideStep number={4} title="Cadastrar webhooks (um por evento)">
                 <p>
                   Woovi exige <strong>um webhook por tipo de evento</strong>,
-                  todos apontando para a mesma URL do Oasyfy:
+                  todos apontando para a mesma URL do OmegaPay:
                 </p>
                 <CopyBlock label="URL do webhook" value={wooviWebhookUrl} />
                 <p>
                   Em cada webhook, defina um valor em{" "}
                   <strong>Authorization</strong> (secret). Exemplo:{" "}
                   <code>meu-secret-webhook-woovi</code>. Você repetirá esse
-                  mesmo valor no Oasyfy no campo &quot;Secret do webhook&quot;.
+                  mesmo valor no OmegaPay no campo &quot;Secret do webhook&quot;.
                 </p>
                 <p className="font-medium text-foreground">
                   Eventos obrigatórios:
@@ -227,7 +227,7 @@ export function AcquirerGuideTab() {
   -H "Content-Type: application/json" \\
   -d '{
     "webhook": {
-      "name": "oasyfy-charge-completed",
+      "name": "omegapay-charge-completed",
       "event": "OPENPIX:CHARGE_COMPLETED",
       "url": "${wooviWebhookUrl}",
       "authorization": "meu-secret-webhook-woovi",
@@ -240,7 +240,7 @@ export function AcquirerGuideTab() {
               <GuideStep number={5} title="Chave PIX do beneficiário (saques)">
                 <p>
                   Saques enviam PIX para a chave cadastrada no{" "}
-                  <strong>KYC do seller</strong> no Oasyfy (aba bancária do
+                  <strong>KYC do seller</strong> no OmegaPay (aba bancária do
                   onboarding). Não é configurado na Woovi — a Woovi só executa o
                   pagamento para o alias informado na API.
                 </p>
@@ -250,7 +250,7 @@ export function AcquirerGuideTab() {
 
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-4">
-              Parte B — No Oasyfy (aba Conexões)
+              Parte B — No OmegaPay (aba Conexões)
             </h3>
             <div className="space-y-0">
               <GuideStep number={1} title="Carregar e abrir Woovi">
@@ -311,7 +311,7 @@ export function AcquirerGuideTab() {
                   </li>
                 </ul>
                 <p>
-                  Correlation ID do saque = ID da transação de saque no Oasyfy.
+                  Correlation ID do saque = ID da transação de saque no OmegaPay.
                   Webhook <code>OPENPIX:MOVEMENT_CONFIRMED</code> conclui o
                   saque.
                 </p>
@@ -384,7 +384,7 @@ export function AcquirerGuideTab() {
               <GuideStep number={2} title="Configurar webhook de PIX">
                 <p>
                   Cadastre a URL de notificação de pagamento PIX apontando para
-                  o Oasyfy:
+                  o OmegaPay:
                 </p>
                 <CopyBlock label="URL do webhook" value={cartwaveWebhookUrl} />
                 <p>
@@ -402,7 +402,7 @@ export function AcquirerGuideTab() {
                 </ul>
                 <p>
                   Evento principal de pagamento:{" "}
-                  <code>QR_CODE_COPY_AND_PASTE_PAID</code>. O Oasyfy valida
+                  <code>QR_CODE_COPY_AND_PASTE_PAID</code>. O OmegaPay valida
                   assinatura antes de atualizar a transação.
                 </p>
               </GuideStep>
@@ -419,7 +419,7 @@ export function AcquirerGuideTab() {
 
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-4">
-              Parte B — No Oasyfy (aba Conexões)
+              Parte B — No OmegaPay (aba Conexões)
             </h3>
             <div className="space-y-0">
               <GuideStep number={1} title="Abrir Cartwave e preencher todos os campos">
@@ -503,7 +503,7 @@ Content-Type: application/json`} />
               <thead>
                 <tr className="border-b border-border/40">
                   <th className="py-2 pr-3 font-medium text-foreground">
-                    Oasyfy (Conexões)
+                    OmegaPay (Conexões)
                   </th>
                   <th className="py-2 pr-3 font-medium text-foreground">
                     Woovi
@@ -556,11 +556,11 @@ Content-Type: application/json`} />
             },
             {
               q: "Webhook Woovi retorna 401",
-              a: "Secret do webhook no Oasyfy (hmac_key) deve ser idêntico ao Authorization configurado na Woovi.",
+              a: "Secret do webhook no OmegaPay (hmac_key) deve ser idêntico ao Authorization configurado na Woovi.",
             },
             {
               q: "Webhook retorna 404 transação não encontrada",
-              a: "Correlation ID da cobrança/saque deve ser o ID da transação Oasyfy. Gere PIX/saque pelo sistema, não só pela Woovi isolada.",
+              a: "Correlation ID da cobrança/saque deve ser o ID da transação OmegaPay. Gere PIX/saque pelo sistema, não só pela Woovi isolada.",
             },
             {
               q: "Saque retorna 502",

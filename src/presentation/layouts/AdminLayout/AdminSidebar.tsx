@@ -126,7 +126,7 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
           collapsed ? "justify-center px-2" : "px-5"
         } border-b border-border`}
       >
-        <span className="text-lg font-bold text-foreground">Oasyfy</span>
+        <span className="text-lg font-bold text-foreground">OmegaPay</span>
         {onClose && !collapsed && (
           <button
             onClick={onClose}

@@ -5,7 +5,7 @@ export default function LoginSellerLeftPanel() {
         {/* Top: Logo */}
         <div>
           <h2 className="text-xl font-bold text-primary-foreground tracking-tight">
-            Oasyfy
+            OmegaPay
           </h2>
         </div>
 

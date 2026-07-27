@@ -52,7 +52,7 @@ export default function EmailStep() {
     <div className="flex-1 flex items-center justify-center px-6">
       <div className="w-full max-w-md animate-fade-in">
         <div className="mb-8 lg:hidden text-center">
-          <span className="text-xl font-bold text-foreground">Oasyfy</span>
+          <span className="text-xl font-bold text-foreground">OmegaPay</span>
         </div>
 
         <div className="mb-6">

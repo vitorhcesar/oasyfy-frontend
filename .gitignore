@@ -26,7 +26,7 @@ dist-ssr
 # Other
 up.sh
 packed_**
-oasyfy-frontend.tar.gz
+omegapay-frontend.tar.gz
 **.tsbuildinfo
 
 # Environments

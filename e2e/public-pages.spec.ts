@@ -12,7 +12,7 @@ test.describe("Public pages", () => {
   test("admin login page renders", async ({ page }) => {
     await page.goto("/login/admin");
 
-    await expect(page.getByText("Oasyfy Admin")).toBeVisible();
+    await expect(page.getByText("OmegaPay Admin")).toBeVisible();
     await expect(
       page.getByRole("button", { name: /Entrar como Admin/i }),
     ).toBeVisible();

@@ -178,7 +178,7 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
             <span className="text-lg font-bold text-primary">O</span>
           ) : (
             <span className="text-lg font-bold tracking-tight text-foreground">
-              Oasyfy
+              OmegaPay
             </span>
           )}
           {isMobile && onClose && (
