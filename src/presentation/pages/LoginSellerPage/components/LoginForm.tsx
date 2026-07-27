@@ -120,16 +120,18 @@ export default function LoginForm({
   return (
     <>
       <header className="mb-7">
-        <h1 className="text-xl font-semibold text-foreground">Entrar</h1>
-        <p className="text-sm text-muted-foreground mt-1">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+          Entrar
+        </h1>
+        <p className="mt-2 text-base text-muted-foreground">
           Acesse sua conta para continuar
         </p>
       </header>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="px-3 py-2.5 rounded-lg bg-destructive/5 border border-destructive/15 text-destructive text-[13px] flex items-center gap-2">
-            <X size={14} className="flex-shrink-0" />
+          <div className="flex items-center gap-2 rounded-xl border border-destructive/20 bg-destructive/10 px-3.5 py-3 text-sm text-destructive">
+            <X size={15} className="flex-shrink-0" />
             <span>{error}</span>
           </div>
         )}
@@ -143,8 +145,9 @@ export default function LoginForm({
             onChange={(e) => setEmail(e.target.value)}
             required
             placeholder="seu@email.com"
+            className="auth-field h-12 rounded-xl text-base"
             startComponent={
-              <Mail size={16} className="text-muted-foreground/50" />
+              <Mail size={17} className="text-muted-foreground/50" />
             }
           />
         </div>
@@ -158,31 +161,36 @@ export default function LoginForm({
             required
             minLength={8}
             placeholder="••••••••"
+            className="auth-field h-12 rounded-xl text-base"
           />
 
-          <div className="text-right mt-1.5">
+          <div className="mt-2.5 text-right">
             <button
               type="button"
               onClick={handleGoToForgotPassword}
-              className="text-xs text-primary hover:text-primary/80 font-medium transition-colors"
+              className="text-sm font-medium text-primary transition-colors hover:text-primary/80"
             >
               Esqueci minha senha
             </button>
           </div>
         </div>
 
-        <Button className="w-full !mt-4" loading={loading}>
-          Entrar <ArrowRight size={15} />
+        <Button
+          className="auth-cta !mt-3 h-12 w-full rounded-xl text-base font-semibold"
+          loading={loading}
+          rippleColor="rgba(15, 6, 23, 0.2)"
+        >
+          Entrar <ArrowRight size={16} />
         </Button>
       </form>
 
-      <div className="text-center mt-6">
+      <div className="mt-7 text-center">
         <button
           onClick={handleGoToSignup}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="text-base text-muted-foreground transition-colors hover:text-foreground"
         >
           Não tem conta?{" "}
-          <span className="text-primary font-medium">Cadastre-se</span>
+          <span className="font-semibold text-primary">Cadastre-se</span>
         </button>
       </div>
     </>

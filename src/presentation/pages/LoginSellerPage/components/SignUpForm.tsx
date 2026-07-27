@@ -137,19 +137,19 @@ export default function SignUpForm({
 
   return (
     <>
-      <div className="mb-7">
-        <h1 className="text-xl font-semibold text-foreground">
+      <header className="mb-7">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">
           Crie sua conta
         </h1>
-        <p className="text-sm text-muted-foreground mt-1">
+        <p className="mt-2 text-base text-muted-foreground">
           Preencha seus dados para começar
         </p>
-      </div>
+      </header>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-3.5">
         {error && (
-          <div className="px-3 py-2.5 rounded-lg bg-destructive/5 border border-destructive/15 text-destructive text-[13px] flex items-center gap-2">
-            <X size={14} className="flex-shrink-0" />
+          <div className="flex items-center gap-2 rounded-xl border border-destructive/20 bg-destructive/10 px-3.5 py-3 text-sm text-destructive">
+            <X size={15} className="flex-shrink-0" />
             <span>{error}</span>
           </div>
         )}
@@ -162,8 +162,9 @@ export default function SignUpForm({
             onChange={(e) => setFullName(e.target.value)}
             required
             placeholder="João Silva"
+            className="auth-field h-12 rounded-xl text-base"
             startComponent={
-              <User size={16} className="text-muted-foreground/50" />
+              <User size={17} className="text-muted-foreground/50" />
             }
           />
         </div>
@@ -177,13 +178,14 @@ export default function SignUpForm({
             onChange={(e) => setEmail(e.target.value)}
             required
             placeholder="seu@email.com"
+            className="auth-field h-12 rounded-xl text-base"
             startComponent={
-              <Mail size={16} className="text-muted-foreground/50" />
+              <Mail size={17} className="text-muted-foreground/50" />
             }
           />
           {email && !emailValidationSchema.safeParse(email).success && (
-            <p className="text-xs text-destructive flex items-center gap-1 mt-1.5 pl-1">
-              <X size={11} /> Email inválido
+            <p className="mt-1.5 flex items-center gap-1 pl-1 text-sm text-destructive">
+              <X size={12} /> Email inválido
             </p>
           )}
         </div>
@@ -197,13 +199,14 @@ export default function SignUpForm({
             onChange={(e) => setPhone(e.target.value)}
             required
             placeholder="(11) 99999-9999"
+            className="auth-field h-12 rounded-xl text-base"
             startComponent={
-              <Phone size={16} className="text-muted-foreground/50" />
+              <Phone size={17} className="text-muted-foreground/50" />
             }
           />
           {phone && !phoneValidationSchema.safeParse(phone).success && (
-            <p className="text-xs text-destructive flex items-center gap-1 mt-1.5 pl-1">
-              <X size={11} /> Telefone inválido
+            <p className="mt-1.5 flex items-center gap-1 pl-1 text-sm text-destructive">
+              <X size={12} /> Telefone inválido
             </p>
           )}
         </div>
@@ -217,6 +220,7 @@ export default function SignUpForm({
             required
             minLength={8}
             placeholder="••••••••"
+            className="auth-field h-12 rounded-xl text-base"
           />
 
           {password && <PasswordChecks password={password} />}
@@ -231,25 +235,28 @@ export default function SignUpForm({
             required
             minLength={8}
             placeholder="••••••••"
+            className="auth-field h-12 rounded-xl text-base"
           />
         </div>
 
         <Button
           type="submit"
           disabled={loading}
-          className="w-full h-10 !mt-3"
+          className="auth-cta !mt-3 h-12 w-full rounded-xl text-base font-semibold"
           loading={loading}
+          rippleColor="rgba(15, 6, 23, 0.2)"
         >
-          Criar conta <ArrowRight size={15} />
+          Criar conta <ArrowRight size={16} />
         </Button>
       </form>
 
-      <div className="text-center mt-6">
+      <div className="mt-7 text-center">
         <button
           onClick={handleGoToLogin}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="text-base text-muted-foreground transition-colors hover:text-foreground"
         >
-          Já tem conta? <span className="text-primary font-medium">Entrar</span>
+          Já tem conta?{" "}
+          <span className="font-semibold text-primary">Entrar</span>
         </button>
       </div>
     </>

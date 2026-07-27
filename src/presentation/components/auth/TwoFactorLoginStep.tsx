@@ -1,6 +1,5 @@
 import { authClient } from "@/infra/auth/auth-client";
 import { Button } from "@/presentation/components/ui/button";
-import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -50,10 +49,10 @@ export function TwoFactorLoginStep({
   return (
     <form onSubmit={handleVerify} className="space-y-4">
       <div>
-        <p className="text-sm font-medium text-foreground">
+        <p className="text-base font-medium text-foreground">
           Verificação em duas etapas
         </p>
-        <p className="text-xs text-muted-foreground mt-1">
+        <p className="mt-1.5 text-sm text-muted-foreground">
           Digite o código de 6 dígitos do seu autenticador.
         </p>
       </div>
@@ -64,22 +63,28 @@ export function TwoFactorLoginStep({
         onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
         placeholder="000000"
         maxLength={6}
-        className="w-full px-4 py-2.5 rounded-xl bg-background border border-border/40 text-center text-lg font-mono tracking-[0.4em] text-foreground placeholder:text-muted-foreground/20 focus:outline-none focus:ring-2 focus:ring-primary/15 focus:border-primary/30 transition-all duration-300"
+        className="auth-field w-full rounded-xl border border-border/40 px-4 py-3 text-center text-xl font-mono tracking-[0.4em] text-foreground transition-all duration-300 placeholder:text-muted-foreground/20 focus:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/15"
       />
 
       <div className="flex gap-2">
         {onCancel && (
-          <Button type="button" variant="outline" className="flex-1" onClick={onCancel}>
+          <Button
+            type="button"
+            variant="outline"
+            className="h-12 flex-1 rounded-xl text-base"
+            onClick={onCancel}
+          >
             Voltar
           </Button>
         )}
         <Button
           type="submit"
-          className="flex-1"
+          className="auth-cta h-12 flex-1 rounded-xl text-base font-semibold"
           disabled={loading || code.length !== 6}
           loading={loading}
+          rippleColor="rgba(15, 6, 23, 0.2)"
         >
-          {loading ? <Loader2 size={14} className="animate-spin" /> : "Verificar"}
+          Verificar
         </Button>
       </div>
     </form>

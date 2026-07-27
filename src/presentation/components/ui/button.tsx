@@ -118,7 +118,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       >
         {loading ? (
-          <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent opacity-70" />
         ) : (
           children
         )}

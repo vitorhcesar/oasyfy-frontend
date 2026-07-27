@@ -1,3 +1,4 @@
+import { AuthBrandMark } from "@/presentation/components/auth/AuthBrandMark";
 import { Check, ShieldCheck } from "lucide-react";
 import EmailStep from "./components/EmailStep";
 import NewPasswordStep from "./components/NewPasswordStep";
@@ -10,6 +11,9 @@ export default function ResetPasswordPage() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center px-6">
         <div className="w-full max-w-sm text-center animate-fade-in">
+          <div className="mb-6 flex justify-center">
+            <AuthBrandMark size="md" variant="black" />
+          </div>
           <div className="relative w-16 h-16 mx-auto mb-6">
             <div className="relative w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
               <Check className="text-primary" size={28} />
@@ -30,6 +34,9 @@ export default function ResetPasswordPage() {
     <div className="min-h-screen bg-background flex">
       <div className="hidden lg:flex lg:w-1/2 bg-primary/[0.03] items-center justify-center relative overflow-hidden">
         <div className="relative text-center px-12">
+          <div className="mb-8 flex justify-center">
+            <AuthBrandMark size="lg" variant="purple" />
+          </div>
           <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto mb-8 shadow-xl shadow-primary/10">
             <ShieldCheck className="text-primary" size={36} />
           </div>

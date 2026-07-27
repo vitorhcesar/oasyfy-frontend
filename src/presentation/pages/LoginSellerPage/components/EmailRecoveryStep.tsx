@@ -68,24 +68,22 @@ export default function EmailRecoveryStep({
 
   return (
     <>
-      <div className="mb-8">
-        <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+      <header className="mb-8">
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15 ring-1 ring-primary/25">
           <Mail className="text-primary" size={22} />
         </div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">
           Recuperar senha
         </h1>
-        <p className="text-sm text-muted-foreground mt-2">
+        <p className="mt-2 text-base text-muted-foreground">
           Informe seu email para receber um código de 6 dígitos
         </p>
-      </div>
+      </header>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="px-4 py-3 rounded-xl bg-destructive/5 border border-destructive/15 text-destructive text-[13px] font-medium flex items-start gap-2.5 animate-fade-in">
-            <div className="w-5 h-5 rounded-full bg-destructive/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <X size={10} />
-            </div>
+          <div className="flex items-start gap-2.5 rounded-xl border border-destructive/20 bg-destructive/10 px-3.5 py-3 text-sm text-destructive animate-fade-in">
+            <X size={15} className="mt-0.5 flex-shrink-0" />
             <span>{error}</span>
           </div>
         )}
@@ -99,16 +97,18 @@ export default function EmailRecoveryStep({
             onChange={(e) => setEmail(e.target.value)}
             required
             placeholder="seu@email.com"
+            className="auth-field h-12 rounded-xl text-base"
           />
         </div>
 
         <Button
           type="submit"
           disabled={loading}
-          className="w-full !py-[25px] !mt-4"
+          className="auth-cta !mt-3 h-12 w-full rounded-xl text-base font-semibold"
           loading={loading}
+          rippleColor="rgba(15, 6, 23, 0.2)"
         >
-          Enviar código <ArrowRight size={16} />
+          Enviar código <ArrowRight size={17} />
         </Button>
       </form>
     </>

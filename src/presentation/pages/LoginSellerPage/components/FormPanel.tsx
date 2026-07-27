@@ -76,83 +76,87 @@ export default function LoginSellerFormPanel() {
   };
 
   return (
-    <div className="flex-1 flex items-center justify-center px-6 py-8">
-      <div className="w-full max-w-[400px]">
+    <div className="relative flex flex-1 items-center justify-center px-6 py-10">
+      <div className="relative w-full max-w-[460px]">
         <LoginSellerMobileLogo />
 
-        {formView === "code" && (
-          <OtpCodeForm
-            email={email}
-            password={password}
-            setView={setFormView}
-            resendSignUpVerificationCode={
-              sendSignUpVerificationCodeAndOpenCodeFormView
-            }
-            onVerificationDone={clearPendingVerification}
-          />
-        )}
-
-        {formView === "twoFactor" && (
-          <>
-            <header className="mb-7">
-              <h1 className="text-xl font-semibold text-foreground">Entrar</h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                Confirme o código do autenticador para continuar
-              </p>
-            </header>
-
-            {twoFactorError && (
-              <div className="px-3 py-2.5 rounded-lg bg-destructive/5 border border-destructive/15 text-destructive text-[13px] mb-4">
-                {twoFactorError}
-              </div>
-            )}
-
-            <TwoFactorLoginStep
-              onVerified={handleTwoFactorVerified}
-              onCancel={() => {
-                clearPendingTwoFactor();
-                setTwoFactorError("");
-                setFormView("login");
-                void signOut();
-              }}
+        <div className="liquid-glass animate-liquid-glass rounded-[20px] p-7 sm:rounded-3xl sm:p-9">
+          {formView === "code" && (
+            <OtpCodeForm
+              email={email}
+              password={password}
+              setView={setFormView}
+              resendSignUpVerificationCode={
+                sendSignUpVerificationCodeAndOpenCodeFormView
+              }
+              onVerificationDone={clearPendingVerification}
             />
-          </>
-        )}
+          )}
 
-        {formView === "login" && (
-          <LoginForm
-            email={email}
-            setEmail={setEmail}
-            password={password}
-            setView={setFormView}
-            setPassword={setPassword}
-            openSignupVerification={
-              sendSignUpVerificationCodeAndOpenCodeFormView
-            }
-            openTwoFactorStep={() => setFormView("twoFactor")}
-          />
-        )}
+          {formView === "twoFactor" && (
+            <>
+              <header className="mb-7">
+                <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                  Entrar
+                </h1>
+                <p className="mt-2 text-base text-muted-foreground">
+                  Confirme o código do autenticador para continuar
+                </p>
+              </header>
 
-        {formView === "signup" && (
-          <SignUpForm
-            email={email}
-            setEmail={setEmail}
-            password={password}
-            setView={setFormView}
-            setPassword={setPassword}
-            onSuccess={sendSignUpVerificationCodeAndOpenCodeFormView}
-          />
-        )}
+              {twoFactorError && (
+                <div className="mb-4 rounded-xl border border-destructive/20 bg-destructive/10 px-3.5 py-3 text-sm text-destructive">
+                  {twoFactorError}
+                </div>
+              )}
 
-        {formView === "forgotPassword" && (
-          <ForgotPasswordForm
-            email={email}
-            setEmail={setEmail}
-            setFormView={setFormView}
-          />
-        )}
+              <TwoFactorLoginStep
+                onVerified={handleTwoFactorVerified}
+                onCancel={() => {
+                  clearPendingTwoFactor();
+                  setTwoFactorError("");
+                  setFormView("login");
+                  void signOut();
+                }}
+              />
+            </>
+          )}
 
-        <p className="text-center text-[11px] text-muted-foreground/50 mt-8">
+          {formView === "login" && (
+            <LoginForm
+              email={email}
+              setEmail={setEmail}
+              password={password}
+              setView={setFormView}
+              setPassword={setPassword}
+              openSignupVerification={
+                sendSignUpVerificationCodeAndOpenCodeFormView
+              }
+              openTwoFactorStep={() => setFormView("twoFactor")}
+            />
+          )}
+
+          {formView === "signup" && (
+            <SignUpForm
+              email={email}
+              setEmail={setEmail}
+              password={password}
+              setView={setFormView}
+              setPassword={setPassword}
+              onSuccess={sendSignUpVerificationCodeAndOpenCodeFormView}
+            />
+          )}
+
+          {formView === "forgotPassword" && (
+            <ForgotPasswordForm
+              email={email}
+              setEmail={setEmail}
+              setFormView={setFormView}
+            />
+          )}
+        </div>
+
+        <p className="mt-6 text-center text-xs leading-relaxed text-muted-foreground/60">
           Ao continuar, você concorda com os Termos de Uso e Política de
           Privacidade.
         </p>

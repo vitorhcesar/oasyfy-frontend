@@ -78,7 +78,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground antialiased font-sans;
     font-feature-settings: "cv11", "ss01";
   }
 }
@@ -120,8 +120,307 @@
 
 :root {
   --button-ripple-color: rgba(0, 0, 0, 0.15);
+
+  /* Liquid Glass — tokens (design.md §3) */
+  --glass-bg: rgba(255, 255, 255, 0.06);
+  --glass-bg-tint: rgba(46, 14, 79, 0.35);
+  --glass-bg-strong: rgba(15, 6, 23, 0.72);
+  --glass-blur: 28px;
+  --glass-border: rgba(255, 255, 255, 0.16);
+  --glass-highlight: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(255, 255, 255, 0.04) 42%,
+    transparent 70%
+  );
+  --glass-shadow: 0 24px 80px -20px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(95, 41, 152, 0.12);
 }
 
 .dark {
   --button-ripple-color: rgba(255, 255, 255, 0.3);
 }
+
+/**
+ * Liquid Glass — placa única de chrome / auth panel
+ * Conteúdo (inputs, KPIs) permanece sólido; não empilhar glass.
+ */
+.liquid-glass {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--glass-bg-tint) 70%, var(--glass-bg));
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.35);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.liquid-glass > * {
+  position: relative;
+  z-index: 1;
+}
+
+.liquid-glass::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--glass-highlight);
+  opacity: 0.85;
+  mix-blend-mode: soft-light;
+}
+
+.liquid-glass::after {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+}
+
+@keyframes liquid-glass-materialize {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+    filter: blur(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+.animate-liquid-glass {
+  animation: liquid-glass-materialize 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .liquid-glass {
+    background: var(--glass-bg-strong);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .liquid-glass::before {
+    opacity: 0.35;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-liquid-glass {
+    animation: none;
+  }
+
+  .auth-ambient-blob {
+    animation: none !important;
+  }
+}
+
+/**
+ * Auth ambient — fundo único animado (sem split de painéis)
+ */
+.auth-ambient {
+  background: #0f0617;
+}
+
+.auth-ambient-blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  will-change: transform, opacity;
+}
+
+.auth-ambient-blob--a {
+  top: -12%;
+  left: -8%;
+  width: min(52vw, 560px);
+  height: min(52vw, 560px);
+  background: rgba(95, 41, 152, 0.42);
+  animation: auth-blob-drift-a 18s ease-in-out infinite;
+}
+
+.auth-ambient-blob--b {
+  top: 35%;
+  right: -10%;
+  width: min(48vw, 520px);
+  height: min(48vw, 520px);
+  background: rgba(46, 14, 79, 0.55);
+  animation: auth-blob-drift-b 22s ease-in-out infinite;
+}
+
+.auth-ambient-blob--c {
+  bottom: -18%;
+  left: 22%;
+  width: min(42vw, 440px);
+  height: min(42vw, 440px);
+  background: rgba(123, 44, 191, 0.28);
+  animation: auth-blob-drift-c 20s ease-in-out infinite;
+}
+
+.auth-ambient-blob--d {
+  top: 12%;
+  left: 42%;
+  width: min(28vw, 320px);
+  height: min(28vw, 320px);
+  background: rgba(157, 78, 221, 0.18);
+  animation: auth-blob-drift-d 16s ease-in-out infinite;
+}
+
+.auth-ambient-veil {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+      ellipse 70% 55% at 50% -10%,
+      rgba(95, 41, 152, 0.22),
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 50% 40% at 85% 70%,
+      rgba(46, 14, 79, 0.35),
+      transparent 55%
+    );
+}
+
+.auth-ambient-grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.035;
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    white 1px,
+    transparent 0
+  );
+  background-size: 28px 28px;
+}
+
+@keyframes auth-blob-drift-a {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.85;
+  }
+  40% {
+    transform: translate(8%, 12%) scale(1.12);
+    opacity: 1;
+  }
+  70% {
+    transform: translate(3%, 6%) scale(0.94);
+    opacity: 0.75;
+  }
+}
+
+@keyframes auth-blob-drift-b {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.9;
+  }
+  35% {
+    transform: translate(-10%, -8%) scale(1.08);
+    opacity: 1;
+  }
+  65% {
+    transform: translate(-4%, 6%) scale(0.92);
+    opacity: 0.7;
+  }
+}
+
+@keyframes auth-blob-drift-c {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translate(12%, -10%) scale(1.15);
+    opacity: 1;
+  }
+}
+
+@keyframes auth-blob-drift-d {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.7;
+  }
+  45% {
+    transform: translate(-14%, 10%) scale(1.2);
+    opacity: 1;
+  }
+}
+
+/**
+ * Auth skin — login / cadastro
+ * Canvas dark + uma placa Liquid Glass (design.md §5 / §12).
+ * Escopo local: não altera o tema global do dashboard.
+ */
+.auth-skin {
+  --background: 268 58% 6%;
+  --foreground: 0 0% 98%;
+  --card: 268 30% 10%;
+  --card-foreground: 0 0% 98%;
+  --popover: 268 30% 10%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 269 58% 45%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 269 55% 18%;
+  --secondary-foreground: 0 0% 98%;
+  --muted: 268 25% 12%;
+  --muted-foreground: 0 0% 58%;
+  --accent: 269 55% 18%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 72% 55%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 270 15% 18%;
+  --input: 268 28% 14%;
+  --ring: 269 58% 45%;
+  --radius: 1rem;
+  --button-ripple-color: rgba(15, 6, 23, 0.2);
+  --glass-bg: rgba(255, 255, 255, 0.07);
+  --glass-bg-tint: rgba(46, 14, 79, 0.42);
+  --glass-bg-strong: rgba(15, 6, 23, 0.82);
+  --glass-blur: 32px;
+  --glass-border: rgba(255, 255, 255, 0.18);
+  font-family: "Afacad", "Albert Sans", system-ui, sans-serif;
+  font-size: 17px;
+  line-height: 1.5;
+  color-scheme: dark;
+}
+
+.auth-skin label {
+  font-size: 0.9375rem;
+  line-height: 1.4;
+}
+
+.auth-skin input,
+.auth-skin textarea,
+.auth-skin button {
+  font-size: 1rem;
+}
+
+/* Inputs/campos: superfície sólida legível (não glass) */
+.auth-skin .auth-field {
+  background-color: rgba(15, 6, 23, 0.72) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.auth-skin .auth-cta {
+  background-color: #ffffff;
+  color: #0f0617;
+  font-size: 1.0625rem;
+}
+
+.auth-skin .auth-cta:hover {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+.auth-skin .auth-cta:disabled {
+  opacity: 0.45;
+}
+
+/* Auth panel usa .liquid-glass — uma placa só (design.md §5) */

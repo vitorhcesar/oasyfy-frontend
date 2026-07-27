@@ -1,3 +1,4 @@
+import { AuthBrandMark } from "@/presentation/components/auth/AuthBrandMark";
 import { Input } from "@/presentation/components/Input";
 import { Label } from "@/presentation/components/Label";
 import { Button } from "@/presentation/components/ui/button";
@@ -51,8 +52,8 @@ export default function EmailStep() {
   return (
     <div className="flex-1 flex items-center justify-center px-6">
       <div className="w-full max-w-md animate-fade-in">
-        <div className="mb-8 lg:hidden text-center">
-          <span className="text-xl font-bold text-foreground">OmegaPay</span>
+        <div className="mb-8 lg:hidden">
+          <AuthBrandMark size="md" variant="black" />
         </div>
 
         <div className="mb-6">

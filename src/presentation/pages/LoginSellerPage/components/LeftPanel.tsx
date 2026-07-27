@@ -1,45 +1,41 @@
+import { AuthBrandMark } from "@/presentation/components/auth/AuthBrandMark";
+
 export default function LoginSellerLeftPanel() {
   return (
-    <div className="hidden lg:flex lg:w-[45%] relative flex-col justify-between overflow-hidden bg-primary">
-      <div className="relative z-10 flex flex-col justify-between h-full px-10 xl:px-14 py-10">
-        {/* Top: Logo */}
-        <div>
-          <h2 className="text-xl font-bold text-primary-foreground tracking-tight">
-            OmegaPay
-          </h2>
-        </div>
+    <aside className="relative hidden lg:flex lg:w-[48%] xl:w-[46%] flex-col justify-between">
+      <div className="relative z-10 flex h-full flex-col justify-between px-10 py-10 xl:px-14 xl:py-12">
+        <AuthBrandMark
+          size="lg"
+          variant="white"
+          className="animate-fade-in"
+        />
 
-        {/* Center: Main copy */}
-        <div className="max-w-sm">
-          <p className="text-primary-foreground/60 text-xs font-semibold uppercase tracking-[0.2em] mb-4">
+        <div
+          className="max-w-md animate-fade-in"
+          style={{ animationDelay: "80ms" }}
+        >
+          <p className="mb-4 text-xs font-semibold uppercase tracking-[0.22em] text-white/45">
             Plataforma de pagamentos
           </p>
-          <h1 className="text-[2.5rem] xl:text-5xl font-bold text-primary-foreground leading-[1.1] mb-6">
+          <h1 className="mb-5 text-[2.85rem] font-bold leading-[1.08] tracking-tight text-white xl:text-[3.25rem]">
             Receba pagamentos
             <br />
             de forma simples.
           </h1>
-          <p className="text-primary-foreground/70 text-sm leading-relaxed max-w-xs">
+          <p className="max-w-sm text-base leading-relaxed text-white/55 xl:text-lg">
             PIX instantâneo, taxas justas e um painel completo para gerenciar
-            suas vendas.
+            suas vendas — com a clareza de um produto de alto nível.
           </p>
         </div>
 
-        {/* Bottom: Stats row */}
-        <div className="flex items-center gap-8 text-primary-foreground/80">
-          <div>
-            <p className="text-2xl font-bold text-primary-foreground">2.5k+</p>
-            <p className="text-xs text-primary-foreground/50 mt-0.5">
-              Sellers ativos
-            </p>
-          </div>
-          <div className="w-px h-8 bg-primary-foreground/15" />
-          <div>
-            <p className="text-2xl font-bold text-primary-foreground">99.9%</p>
-            <p className="text-xs text-primary-foreground/50 mt-0.5">Uptime</p>
-          </div>
+        <div
+          className="animate-fade-in flex items-center gap-3 text-sm text-white/40"
+          style={{ animationDelay: "160ms" }}
+        >
+          <span className="h-1.5 w-1.5 rounded-full bg-[#5F2998]" />
+          Infraestrutura pronta para escalar
         </div>
       </div>
-    </div>
+    </aside>
   );
 }

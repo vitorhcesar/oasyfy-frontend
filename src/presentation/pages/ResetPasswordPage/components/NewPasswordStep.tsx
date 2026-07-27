@@ -1,3 +1,4 @@
+import { AuthBrandMark } from "@/presentation/components/auth/AuthBrandMark";
 import { Label } from "@/presentation/components/Label";
 import { OtpInput } from "@/presentation/components/OtpInput";
 import { PasswordChecks } from "@/presentation/components/PasswordChecks";
@@ -88,8 +89,8 @@ export default function NewPasswordStep() {
   return (
     <div className="flex-1 flex items-center justify-center px-6">
       <div className="w-full max-w-md animate-fade-in">
-        <div className="mb-8 lg:hidden text-center">
-          <span className="text-xl font-bold text-foreground">OmegaPay</span>
+        <div className="mb-8 lg:hidden">
+          <AuthBrandMark size="md" variant="black" />
         </div>
 
         <div className="mb-6">

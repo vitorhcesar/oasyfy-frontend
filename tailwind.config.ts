@@ -14,6 +14,11 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ['"Afacad"', '"Albert Sans"', "system-ui", "sans-serif"],
+        display: ['"Afacad"', '"Albert Sans"', "system-ui", "sans-serif"],
+        body: ['"Albert Sans"', '"Afacad"', "system-ui", "sans-serif"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

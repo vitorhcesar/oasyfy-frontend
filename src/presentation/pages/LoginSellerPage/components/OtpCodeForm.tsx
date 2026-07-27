@@ -119,22 +119,22 @@ export default function OtpCodeForm({
 
   return (
     <div>
-      <div className="mb-8">
-        <div className="w-11 h-11 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-          <Mail className="text-primary" size={20} />
+      <header className="mb-8">
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15 ring-1 ring-primary/25">
+          <Mail className="text-primary" size={22} />
         </div>
-        <h1 className="text-xl font-semibold text-foreground">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">
           Verifique seu e-mail
         </h1>
-        <p className="text-sm text-muted-foreground mt-1.5">
+        <p className="mt-2 text-base text-muted-foreground">
           Enviamos um código de 6 dígitos para{" "}
           <span className="font-medium text-foreground">{email}</span>
         </p>
-      </div>
+      </header>
 
       {error && (
-        <div className="mb-4 px-3 py-2.5 rounded-lg bg-destructive/5 border border-destructive/15 text-destructive text-[13px] flex items-center gap-2">
-          <X size={14} className="flex-shrink-0" />
+        <div className="mb-4 flex items-center gap-2 rounded-xl border border-destructive/20 bg-destructive/10 px-3.5 py-3 text-sm text-destructive">
+          <X size={15} className="flex-shrink-0" />
           <span>{error}</span>
         </div>
       )}
@@ -147,14 +147,14 @@ export default function OtpCodeForm({
       />
 
       {loading && (
-        <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground mb-4">
-          <Loader2 size={14} className="animate-spin" />
+        <div className="mb-4 flex items-center justify-center gap-2 text-base text-muted-foreground">
+          <Loader2 size={15} className="animate-spin" />
           Verificando...
         </div>
       )}
 
-      <div className="text-center space-y-2">
-        <p className="text-xs text-muted-foreground">
+      <div className="space-y-2 text-center">
+        <p className="text-sm text-muted-foreground">
           {signupVerifyCountdown > 0 ? (
             <>
               Reenviar em{" "}
@@ -171,23 +171,23 @@ export default function OtpCodeForm({
           type="button"
           onClick={handleResendSignupCode}
           disabled={loading || signupVerifyCountdown > 0}
-          className="text-xs font-medium text-primary hover:text-primary/80 disabled:text-muted-foreground disabled:cursor-not-allowed transition-colors"
+          className="text-sm font-medium text-primary transition-colors hover:text-primary/80 disabled:cursor-not-allowed disabled:text-muted-foreground"
         >
           Reenviar código
         </button>
       </div>
 
-      <div className="flex items-center justify-center mt-6">
-          <Button
-            variant="ghost"
-            onClick={() => {
-              onVerificationDone();
-              setView("login");
-              setError("");
-            }}
-            className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
-          >
-          <ArrowLeft size={14} />
+      <div className="mt-6 flex items-center justify-center">
+        <Button
+          variant="ghost"
+          onClick={() => {
+            onVerificationDone();
+            setView("login");
+            setError("");
+          }}
+          className="flex items-center gap-1.5 text-base text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ArrowLeft size={15} />
           Voltar ao login
         </Button>
       </div>

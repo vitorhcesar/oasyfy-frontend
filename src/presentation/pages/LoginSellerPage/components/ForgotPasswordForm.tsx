@@ -53,7 +53,7 @@ export default function ForgotPasswordForm({
         <Button
           variant="ghost"
           onClick={resetRecoveryState}
-          className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5 mx-auto"
+          className="text-base text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5 mx-auto"
           disabled={loading}
         >
           <ArrowLeft size={14} />

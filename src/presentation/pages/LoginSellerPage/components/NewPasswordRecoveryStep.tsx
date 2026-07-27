@@ -3,6 +3,7 @@ import { Label } from "@/presentation/components/Label";
 import { OtpInput } from "@/presentation/components/OtpInput";
 import { PasswordChecks } from "@/presentation/components/PasswordChecks";
 import { PasswordInput } from "@/presentation/components/PasswordInput";
+import { Button } from "@/presentation/components/ui/button";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import { toast } from "@/presentation/hooks/use-toast";
 import { cn } from "@/presentation/utils/cn";
@@ -84,33 +85,29 @@ export default function NewPasswordRecoveryStep({
 
   return (
     <>
-      <div className="mb-8">
-        <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+      <header className="mb-8">
+        <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15 ring-1 ring-primary/25">
           <Lock className="text-primary" size={22} />
         </div>
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">
           Nova senha
         </h1>
-        <p className="text-sm text-muted-foreground mt-2">
+        <p className="mt-2 text-base text-muted-foreground">
           Escolha uma nova senha segura para sua conta
         </p>
-      </div>
+      </header>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="px-4 py-3 rounded-xl bg-destructive/5 border border-destructive/15 text-destructive text-[13px] font-medium flex items-start gap-2.5 animate-fade-in">
-            <div className="w-5 h-5 rounded-full bg-destructive/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <X size={10} />
-            </div>
+          <div className="flex items-start gap-2.5 rounded-xl border border-destructive/20 bg-destructive/10 px-3.5 py-3 text-sm text-destructive animate-fade-in">
+            <X size={15} className="mt-0.5 flex-shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
         {success && (
-          <div className="px-4 py-3 rounded-xl bg-primary/5 border border-primary/15 text-primary text-[13px] font-medium flex items-start gap-2.5 animate-fade-in">
-            <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <Check size={10} />
-            </div>
+          <div className="flex items-start gap-2.5 rounded-xl border border-primary/20 bg-primary/10 px-3.5 py-3 text-sm text-primary animate-fade-in">
+            <Check size={15} className="mt-0.5 flex-shrink-0" />
             <span>{success}</span>
           </div>
         )}
@@ -121,7 +118,7 @@ export default function NewPasswordRecoveryStep({
             value={otpCode}
             onChange={setOtpCode}
             disabled={loading}
-            className={cn("size-[37px] sm:size-[55px]")}
+            className={cn("size-[40px] sm:size-[58px]")}
           />
         </div>
 
@@ -134,6 +131,7 @@ export default function NewPasswordRecoveryStep({
             required
             minLength={8}
             placeholder="••••••••"
+            className="auth-field h-12 rounded-xl text-base"
           />
 
           {password && (
@@ -153,22 +151,19 @@ export default function NewPasswordRecoveryStep({
             required
             minLength={8}
             placeholder="••••••••"
+            className="auth-field h-12 rounded-xl text-base"
           />
         </div>
 
-        <button
+        <Button
           type="submit"
           disabled={loading}
-          className="w-full py-3.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:brightness-110 active:scale-[0.98] transition-all duration-200 disabled:opacity-40 flex items-center justify-center gap-2 mt-2 shadow-lg shadow-primary/20"
+          className="auth-cta !mt-3 h-12 w-full rounded-xl text-base font-semibold"
+          loading={loading}
+          rippleColor="rgba(15, 6, 23, 0.2)"
         >
-          {loading ? (
-            <div className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-          ) : (
-            <>
-              Atualizar senha <ArrowRight size={16} />
-            </>
-          )}
-        </button>
+          Atualizar senha <ArrowRight size={17} />
+        </Button>
       </form>
     </>
   );

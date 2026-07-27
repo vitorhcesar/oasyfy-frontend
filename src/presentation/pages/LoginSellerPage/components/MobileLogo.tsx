@@ -1,10 +1,10 @@
+import { AuthBrandMark } from "@/presentation/components/auth/AuthBrandMark";
+
 export default function LoginSellerMobileLogo() {
   return (
-    <div className="lg:hidden mb-10">
-      <h2 className="text-xl font-bold text-foreground tracking-tight">
-        OmegaPay
-      </h2>
-      <p className="text-xs text-muted-foreground mt-1">
+    <div className="mb-10 lg:hidden animate-fade-in">
+      <AuthBrandMark size="lg" variant="white" />
+      <p className="mt-2 text-sm text-muted-foreground">
         Plataforma de pagamentos
       </p>
     </div>

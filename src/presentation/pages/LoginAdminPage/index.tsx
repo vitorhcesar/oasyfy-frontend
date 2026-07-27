@@ -3,6 +3,8 @@ import { AppError } from "@/domain/errors/app.error";
 import { authClient } from "@/infra/auth/auth-client";
 import { fetchSessionContext } from "@/infra/auth/session-context-api";
 import { isTwoFactorRedirect } from "@/infra/auth/two-factor-utils";
+import { AuthAmbientBackground } from "@/presentation/components/auth/AuthAmbientBackground";
+import { AuthBrandMark } from "@/presentation/components/auth/AuthBrandMark";
 import { Input } from "@/presentation/components/Input";
 import { PasswordInput } from "@/presentation/components/PasswordInput";
 import { TwoFactorLoginStep } from "@/presentation/components/auth/TwoFactorLoginStep";
@@ -96,133 +98,138 @@ export default function LoginAdmin() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
-      <div className="hidden lg:flex lg:w-[45%] relative items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.04] via-transparent to-primary/[0.02]" />
-        <div className="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-transparent via-border/40 to-transparent" />
-        <div
-          className="absolute top-[20%] left-[20%] w-80 h-80 bg-primary/[0.03] rounded-full blur-[100px] animate-pulse"
-          style={{ animationDuration: "8s" }}
-        />
-        <div
-          className="absolute bottom-[20%] right-[20%] w-64 h-64 bg-primary/[0.05] rounded-full blur-[80px] animate-pulse"
-          style={{ animationDuration: "10s", animationDelay: "2s" }}
-        />
+    <div className="auth-skin relative flex min-h-screen overflow-hidden bg-[#0F0617] text-foreground">
+      <AuthAmbientBackground />
 
-        <div
-          className="absolute inset-0 opacity-[0.015]"
-          style={{
-            backgroundImage:
-              "linear-gradient(hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)",
-            backgroundSize: "60px 60px",
-          }}
-        />
+      <div className="relative z-10 flex min-h-screen w-full">
+        <aside className="relative hidden lg:flex lg:w-[48%] xl:w-[46%] flex-col justify-between">
+          <div className="relative z-10 flex h-full flex-col justify-between px-10 py-10 xl:px-14 xl:py-12">
+            <AuthBrandMark
+              size="lg"
+              variant="white"
+              className="animate-fade-in"
+            />
 
-        <div className="relative text-center px-16 animate-fade-in">
-          <span className="text-3xl font-bold text-foreground block mb-8">
-            OmegaPay
-          </span>
-          <p className="text-muted-foreground text-[13px] leading-relaxed max-w-[280px] mx-auto">
-            Gerencie rotas, monitore transações e controle todo o gateway em um
-            só lugar.
-          </p>
-          <div className="flex items-center justify-center gap-8 mt-10">
-            {["Controle total", "Monitoramento", "Seguro"].map((t, i) => (
-              <div
-                key={t}
-                className="flex items-center gap-2 text-[12px] text-muted-foreground/70 animate-fade-in"
-                style={{ animationDelay: `${i * 150}ms` }}
-              >
-                <div className="w-1 h-1 rounded-full bg-primary/60" />
-                {t}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="flex-1 flex items-center justify-center px-6">
-        <div className="w-full max-w-[380px] animate-fade-in">
-          <div className="lg:hidden flex justify-center mb-8">
-            <span className="text-2xl font-bold text-foreground">OmegaPay</span>
-          </div>
-
-          <div className="mb-8">
-            <div className="w-10 h-10 rounded-xl bg-primary/8 flex items-center justify-center mb-5 border border-primary/10">
-              <Shield className="text-primary" size={18} />
+            <div
+              className="max-w-md animate-fade-in"
+              style={{ animationDelay: "80ms" }}
+            >
+              <p className="mb-4 text-xs font-semibold uppercase tracking-[0.22em] text-white/45">
+                Painel administrativo
+              </p>
+              <h1 className="mb-5 text-[2.85rem] font-bold leading-[1.08] tracking-tight text-white xl:text-[3.25rem]">
+                Controle total
+                <br />
+                do gateway.
+              </h1>
+              <p className="max-w-sm text-base leading-relaxed text-white/55 xl:text-lg">
+                Gerencie rotas, monitore transações e opere a plataforma com a
+                mesma clareza de um produto de alto nível.
+              </p>
             </div>
-            <h1 className="text-xl font-semibold tracking-tight">
-              OmegaPay Admin
-            </h1>
-            <p className="text-[13px] text-muted-foreground mt-2">
-              Acesse o painel administrativo do gateway (Better Auth)
+
+            <div
+              className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white/40 animate-fade-in"
+              style={{ animationDelay: "160ms" }}
+            >
+              {["Controle total", "Monitoramento", "Seguro"].map((t) => (
+                <span key={t} className="flex items-center gap-2">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#5F2998]" />
+                  {t}
+                </span>
+              ))}
+            </div>
+          </div>
+        </aside>
+
+        <div className="relative flex flex-1 items-center justify-center px-6 py-10">
+          <div className="relative w-full max-w-[460px]">
+            <div className="mb-10 lg:hidden">
+              <AuthBrandMark size="lg" variant="white" />
+            </div>
+
+            <div className="liquid-glass animate-liquid-glass rounded-[20px] p-7 sm:rounded-3xl sm:p-9">
+              <header className="mb-7">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15 ring-1 ring-primary/25">
+                  <Shield className="text-primary" size={20} />
+                </div>
+                <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                  OmegaPay Admin
+                </h1>
+                <p className="mt-2 text-base text-muted-foreground">
+                  Acesse o painel administrativo do gateway
+                </p>
+              </header>
+
+              {needsTwoFactor ? (
+                <TwoFactorLoginStep
+                  onVerified={async () => {
+                    try {
+                      await completeAdminLogin();
+                    } catch (err) {
+                      if (err instanceof AppError) {
+                        setError(err.message);
+                        await signOut();
+                      }
+                    }
+                  }}
+                  onCancel={() => {
+                    clearPendingAdminTwoFactor();
+                    setNeedsTwoFactor(false);
+                    void signOut();
+                  }}
+                />
+              ) : (
+                <form onSubmit={handleLogin} className="space-y-4">
+                  {error && (
+                    <div className="flex items-center gap-2 rounded-xl border border-destructive/20 bg-destructive/10 px-3.5 py-3 text-sm text-destructive animate-fade-in">
+                      <span className="h-1.5 w-1.5 flex-shrink-0 rounded-full bg-destructive" />
+                      {error}
+                    </div>
+                  )}
+
+                  <Input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    placeholder="admin@omegapay.com"
+                    className="auth-field h-12 rounded-xl text-base"
+                    startComponent={
+                      <Mail size={16} className="text-muted-foreground/40" />
+                    }
+                  />
+
+                  <PasswordInput
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    placeholder="Senha"
+                    className="auth-field h-12 rounded-xl text-base"
+                  />
+
+                  <Button
+                    disabled={loading}
+                    className="auth-cta !mt-3 h-12 w-full rounded-xl text-base font-semibold"
+                    loading={loading}
+                    rippleColor="rgba(15, 6, 23, 0.2)"
+                  >
+                    Entrar como Admin <ArrowRight size={16} />
+                  </Button>
+                </form>
+              )}
+            </div>
+
+            <p className="mt-6 text-center text-base text-muted-foreground">
+              É um seller?{" "}
+              <a
+                href="/login/seller"
+                className="font-semibold text-primary transition-colors hover:text-primary/80"
+              >
+                Acesse aqui
+              </a>
             </p>
           </div>
-
-          {needsTwoFactor ? (
-            <TwoFactorLoginStep
-              onVerified={async () => {
-                try {
-                  await completeAdminLogin();
-                } catch (err) {
-                  if (err instanceof AppError) {
-                    setError(err.message);
-                    await signOut();
-                  }
-                }
-              }}
-              onCancel={() => {
-                clearPendingAdminTwoFactor();
-                setNeedsTwoFactor(false);
-                void signOut();
-              }}
-            />
-          ) : (
-            <form onSubmit={handleLogin} className="space-y-3.5">
-              {error && (
-                <div className="px-3.5 py-2.5 rounded-xl bg-destructive/5 border border-destructive/15 text-destructive text-[12px] font-medium flex items-center gap-2 animate-fade-in">
-                  <span className="w-1 h-1 rounded-full bg-destructive flex-shrink-0" />
-                  {error}
-                </div>
-              )}
-
-              <Input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                placeholder="admin@omegapay.com"
-                startComponent={
-                  <Mail size={15} className="text-muted-foreground/40" />
-                }
-              />
-
-              <PasswordInput
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                placeholder="Senha"
-              />
-
-              <Button
-                disabled={loading}
-                className="w-full !mt-3"
-                loading={loading}
-              >
-                Entrar como Admin <ArrowRight size={15} />
-              </Button>
-            </form>
-          )}
-
-          <p className="text-center text-[13px] text-muted-foreground mt-6">
-            É um seller?{" "}
-            <a
-              href="/login/seller"
-              className="text-primary font-medium hover:text-primary/80 transition-colors duration-200"
-            >
-              Acesse aqui
-            </a>
-          </p>
         </div>
       </div>
     </div>
