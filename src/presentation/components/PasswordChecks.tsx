@@ -51,7 +51,7 @@ export function PasswordChecks({
           />
         ))}
       </div>
-      <p className="text-[11px] text-muted-foreground">
+      <p className="text-sm text-muted-foreground">
         Força:{" "}
         <span className="font-medium text-foreground">{strengthLabel}</span>
       </p>
@@ -59,7 +59,7 @@ export function PasswordChecks({
         {passwordChecks.map((c) => (
           <p
             key={c.label}
-            className={`text-[11px] flex items-center gap-1 ${
+            className={`text-sm flex items-center gap-1 ${
               c.ok ? "text-primary" : "text-muted-foreground/40"
             }`}
           >

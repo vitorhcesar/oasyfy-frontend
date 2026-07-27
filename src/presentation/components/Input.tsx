@@ -2,7 +2,7 @@ import { cn } from "@/presentation/utils/cn";
 import * as React from "react";
 
 const portalInputCore =
-  "w-full rounded-lg border border-border bg-background py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none ring-2 ring-transparent transition-colors focus:border-primary focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50";
+  "w-full rounded-xl border border-border bg-background py-3 text-base text-foreground placeholder:text-muted-foreground/50 outline-none ring-2 ring-transparent transition-colors focus:border-primary focus:ring-primary/20 disabled:cursor-not-allowed disabled:opacity-50";
 
 export interface IInputProps
   extends Omit<React.ComponentProps<"input">, "children" | "size"> {

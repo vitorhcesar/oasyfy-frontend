@@ -288,10 +288,10 @@ export function ColorsTab() {
                   <group.icon size={13} className="text-primary" />
                 </div>
                 <div>
-                  <h3 className="text-[13px] font-semibold text-foreground">
+                  <h3 className="text-sm font-semibold text-foreground">
                     {group.title}
                   </h3>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     {group.fields.length}{" "}
                     {group.fields.length === 1 ? "cor" : "cores"}
                   </p>
@@ -321,10 +321,10 @@ export function ColorsTab() {
             <div className="rounded-2xl border border-border/40 bg-card overflow-hidden">
               <div className="px-4 py-3 border-b border-border/20 flex items-center gap-2">
                 <Eye size={13} className="text-muted-foreground" />
-                <h3 className="text-[13px] font-semibold text-foreground">
+                <h3 className="text-sm font-semibold text-foreground">
                   Preview
                 </h3>
-                <span className="text-[10px] text-muted-foreground ml-auto">
+                <span className="text-xs text-muted-foreground ml-auto">
                   {mode === "light" ? "Modo claro" : "Modo escuro"}
                 </span>
               </div>

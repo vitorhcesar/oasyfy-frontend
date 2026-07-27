@@ -50,7 +50,7 @@ export default function AdminKycDetailsTabs({
         >
           {t.label}
           {t.pending > 0 && (
-            <span className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-amber-100 text-amber-700 text-[11px] md:text-xs font-bold leading-none">
+            <span className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-amber-100 text-amber-700 text-sm md:text-xs font-bold leading-none">
               {t.pending}
             </span>
           )}

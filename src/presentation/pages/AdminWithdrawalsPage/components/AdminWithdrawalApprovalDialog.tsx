@@ -182,7 +182,7 @@ export default function AdminWithdrawalApprovalDialog({
                 <div className="rounded-xl border border-border/50 bg-muted/20 p-4">
                   <div className="flex items-center gap-2 mb-3">
                     <User size={13} className="text-muted-foreground" />
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
                       Produtor
                     </p>
                   </div>
@@ -192,7 +192,7 @@ export default function AdminWithdrawalApprovalDialog({
                   <p className="text-xs text-muted-foreground mt-0.5">
                     {approvalModal.withdrawal.seller_email}
                   </p>
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-[11px] text-muted-foreground">
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm text-muted-foreground">
                     {approvalModal.accountId && (
                       <span>
                         ID:{" "}
@@ -223,7 +223,7 @@ export default function AdminWithdrawalApprovalDialog({
                 <div className="rounded-xl border border-border/50 bg-muted/20 p-4">
                   <div className="flex items-center gap-2 mb-3">
                     <Landmark size={13} className="text-muted-foreground" />
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
                       Dados Bancários
                     </p>
                   </div>
@@ -273,14 +273,14 @@ export default function AdminWithdrawalApprovalDialog({
                               </span>
                             )}
                             {accountType && (
-                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-background border border-border/50 text-muted-foreground uppercase font-medium">
+                              <span className="text-xs px-1.5 py-0.5 rounded bg-background border border-border/50 text-muted-foreground uppercase font-medium">
                                 {accountType}
                               </span>
                             )}
                           </div>
                           {pixKey && (
                             <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-primary/5 border border-primary/15">
-                              <span className="text-[10px] text-primary font-bold uppercase tracking-wider">
+                              <span className="text-xs text-primary font-bold uppercase tracking-wider">
                                 PIX{pixKeyType && ` · ${pixKeyType}`}
                               </span>
                               <span className="text-xs font-mono font-semibold text-foreground break-all">
@@ -310,7 +310,7 @@ export default function AdminWithdrawalApprovalDialog({
                   <div className="rounded-xl border border-border/50 bg-muted/20 p-4">
                     <div className="flex items-center gap-2 mb-3">
                       <Globe size={13} className="text-muted-foreground" />
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
                         IPs Autorizados
                       </p>
                     </div>
@@ -335,7 +335,7 @@ export default function AdminWithdrawalApprovalDialog({
                   <div className="rounded-xl border border-border/50 bg-muted/20 p-4">
                     <div className="flex items-center gap-2 mb-3">
                       <Wallet size={13} className="text-muted-foreground" />
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
+                      <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
                         Saldo
                       </p>
                     </div>
@@ -390,7 +390,7 @@ export default function AdminWithdrawalApprovalDialog({
                 <div className="rounded-xl border border-border/50 bg-muted/20 p-4">
                   <div className="flex items-center gap-2 mb-3">
                     <FileText size={13} className="text-muted-foreground" />
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">
+                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
                       Detalhes do Saque
                     </p>
                   </div>
@@ -603,7 +603,7 @@ export default function AdminWithdrawalApprovalDialog({
                                 <div className="flex items-center justify-between">
                                   <span
                                     className={cn(
-                                      "text-[12px] font-semibold",
+                                      "text-sm font-semibold",
                                       evtSuccess
                                         ? "text-primary"
                                         : evtFailed
@@ -651,7 +651,7 @@ export default function AdminWithdrawalApprovalDialog({
                                 )}
                                 {entry.api_response != null && (
                                   <div className="mt-1">
-                                    <p className="text-[11px] text-muted-foreground mb-0.5">
+                                    <p className="text-sm text-muted-foreground mb-0.5">
                                       Retorno da adquirente:
                                     </p>
                                     <div className="px-2.5 py-1.5 rounded-md bg-muted/40 border border-border/30">

@@ -19,12 +19,12 @@ interface IFeesChartProps {
 
 export default function FeesChart({ chartData }: IFeesChartProps) {
   return (
-    <div className="rounded-xl bg-card border border-border/50 p-3">
-      <h3 className="text-xs font-semibold text-foreground mb-2">
+    <div className="rounded-xl border border-border/50 bg-card p-5">
+      <h3 className="mb-4 text-base font-semibold text-foreground">
         Taxas arrecadadas
       </h3>
       {chartData.length > 0 ? (
-        <div className="h-28">
+        <div className="h-36">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={chartData}
@@ -75,7 +75,7 @@ export default function FeesChart({ chartData }: IFeesChartProps) {
           </ResponsiveContainer>
         </div>
       ) : (
-        <p className="text-xs text-muted-foreground text-center py-6">
+        <p className="py-8 text-center text-sm text-muted-foreground">
           Sem dados
         </p>
       )}

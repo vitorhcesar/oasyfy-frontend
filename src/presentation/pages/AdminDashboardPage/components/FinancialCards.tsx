@@ -15,8 +15,8 @@ export default function FinancialCards() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-8 mb-4">
-        <Loader2 size={18} className="animate-spin text-muted-foreground" />
+      <div className="mb-5 flex items-center justify-center py-10">
+        <Loader2 size={20} className="animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -33,66 +33,68 @@ export default function FinancialCards() {
     withdrawalVolume,
   } = data;
 
+  const cards = [
+    {
+      label: "Volume Total",
+      value: formatCompact(totalVolume),
+      icon: DollarSign,
+      iconClass: "text-primary",
+      change: volumeChange,
+    },
+    {
+      label: "Taxas Arrecadadas",
+      value: formatCompact(totalFees),
+      icon: TrendingUp,
+      iconClass: "text-success",
+      change: feesChange,
+    },
+    {
+      label: "Líquido Sellers",
+      value: formatCompact(totalNet),
+      icon: Wallet,
+      iconClass: "text-primary",
+    },
+    {
+      label: "Taxa Conversão",
+      value: `${conversionRate}%`,
+      icon: Percent,
+      iconClass: "text-primary",
+      meta: `${completedTransactionsCount}/${filteredTransactionsCount}`,
+    },
+    {
+      label: "Saques Realizados",
+      value: formatCompact(withdrawalVolume),
+      icon: ArrowDownRight,
+      iconClass: "text-warning",
+    },
+  ];
+
   return (
-    <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-4">
-      <div className="p-3 rounded-lg bg-card border border-border/50">
-        <div className="flex items-center gap-1.5 mb-1">
-          <DollarSign size={12} className="text-primary" />
-          <span className="text-[10px] text-muted-foreground">
-            Volume Total
-          </span>
+    <div className="mb-5 grid grid-cols-2 gap-3 md:grid-cols-5">
+      {cards.map((card) => (
+        <div
+          key={card.label}
+          className="rounded-xl border border-border/50 bg-card p-4"
+        >
+          <div className="mb-2 flex items-center gap-2">
+            <card.icon size={16} className={card.iconClass} />
+            <span className="text-sm text-muted-foreground">{card.label}</span>
+          </div>
+          <p className="text-xl font-bold tracking-tight text-foreground md:text-2xl">
+            {card.value}
+          </p>
+          {card.change != null && (
+            <div className="mt-1.5">
+              <ChangeIndicator value={card.change} />
+            </div>
+          )}
+          {card.meta && (
+            <span className="mt-1.5 block text-xs text-muted-foreground">
+              {card.meta}
+            </span>
+          )}
         </div>
-        <p className="text-sm font-bold text-foreground">
-          {formatCompact(totalVolume)}
-        </p>
-        <ChangeIndicator value={volumeChange} />
-      </div>
-      <div className="p-3 rounded-lg bg-card border border-border/50">
-        <div className="flex items-center gap-1.5 mb-1">
-          <TrendingUp size={12} className="text-success" />
-          <span className="text-[10px] text-muted-foreground">
-            Taxas Arrecadadas
-          </span>
-        </div>
-        <p className="text-sm font-bold text-foreground">
-          {formatCompact(totalFees)}
-        </p>
-        <ChangeIndicator value={feesChange} />
-      </div>
-      <div className="p-3 rounded-lg bg-card border border-border/50">
-        <div className="flex items-center gap-1.5 mb-1">
-          <Wallet size={12} className="text-primary" />
-          <span className="text-[10px] text-muted-foreground">
-            Líquido Sellers
-          </span>
-        </div>
-        <p className="text-sm font-bold text-foreground">
-          {formatCompact(totalNet)}
-        </p>
-      </div>
-      <div className="p-3 rounded-lg bg-card border border-border/50">
-        <div className="flex items-center gap-1.5 mb-1">
-          <Percent size={12} className="text-primary" />
-          <span className="text-[10px] text-muted-foreground">
-            Taxa Conversão
-          </span>
-        </div>
-        <p className="text-sm font-bold text-foreground">{conversionRate}%</p>
-        <span className="text-[9px] text-muted-foreground">
-          {completedTransactionsCount}/{filteredTransactionsCount}
-        </span>
-      </div>
-      <div className="p-3 rounded-lg bg-card border border-border/50">
-        <div className="flex items-center gap-1.5 mb-1">
-          <ArrowDownRight size={12} className="text-warning" />
-          <span className="text-[10px] text-muted-foreground">
-            Saques Realizados
-          </span>
-        </div>
-        <p className="text-sm font-bold text-foreground">
-          {formatCompact(withdrawalVolume)}
-        </p>
-      </div>
+      ))}
     </div>
   );
 }

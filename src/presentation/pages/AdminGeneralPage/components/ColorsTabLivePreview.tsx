@@ -40,7 +40,7 @@ export function ColorsTabLivePreview({
             style={{ backgroundColor: `hsl(${primary})` }}
           >
             <span
-              className="text-[10px] font-bold"
+              className="text-xs font-bold"
               style={{ color: `hsl(${theme.primaryForeground})` }}
             >
               O
@@ -52,13 +52,13 @@ export function ColorsTabLivePreview({
         </div>
         <div className="flex items-center gap-3">
           <span
-            className="text-[10px] font-medium"
+            className="text-xs font-medium"
             style={{ color: `hsl(${muted})` }}
           >
             Dashboard
           </span>
           <span
-            className="text-[10px] font-medium"
+            className="text-xs font-medium"
             style={{ color: `hsl(${muted})` }}
           >
             Transações
@@ -73,7 +73,7 @@ export function ColorsTabLivePreview({
       {/* Buttons */}
       <div className="flex items-center gap-2 flex-wrap">
         <div
-          className="px-3 py-1.5 rounded-lg text-[10px] font-semibold shadow-sm"
+          className="px-3 py-1.5 rounded-lg text-xs font-semibold shadow-sm"
           style={{
             backgroundColor: `hsl(${primary})`,
             color: `hsl(${theme.primaryForeground})`,
@@ -82,7 +82,7 @@ export function ColorsTabLivePreview({
           Primário
         </div>
         <div
-          className="px-3 py-1.5 rounded-lg text-[10px] font-semibold"
+          className="px-3 py-1.5 rounded-lg text-xs font-semibold"
           style={{
             backgroundColor: `hsl(${theme.successColor})`,
             color: "white",
@@ -91,7 +91,7 @@ export function ColorsTabLivePreview({
           Sucesso
         </div>
         <div
-          className="px-3 py-1.5 rounded-lg text-[10px] font-semibold"
+          className="px-3 py-1.5 rounded-lg text-xs font-semibold"
           style={{
             backgroundColor: `hsl(${theme.warningColor})`,
             color: "white",
@@ -100,7 +100,7 @@ export function ColorsTabLivePreview({
           Alerta
         </div>
         <div
-          className="px-3 py-1.5 rounded-lg text-[10px] font-semibold"
+          className="px-3 py-1.5 rounded-lg text-xs font-semibold"
           style={{
             backgroundColor: `hsl(${theme.destructiveColor})`,
             color: "white",
@@ -109,7 +109,7 @@ export function ColorsTabLivePreview({
           Erro
         </div>
         <div
-          className="px-3 py-1.5 rounded-lg text-[10px] font-semibold border"
+          className="px-3 py-1.5 rounded-lg text-xs font-semibold border"
           style={{ borderColor: `hsl(${border})`, color: `hsl(${fg})` }}
         >
           Outline
@@ -131,7 +131,7 @@ export function ColorsTabLivePreview({
               style={{ color: `hsl(${theme.successColor})` }}
             />
             <span
-              className="text-[10px] font-semibold"
+              className="text-xs font-semibold"
               style={{ color: `hsl(${cardFg})` }}
             >
               Aprovado
@@ -143,7 +143,7 @@ export function ColorsTabLivePreview({
           >
             R$ 1.234,56
           </p>
-          <p className="text-[9px] mt-1" style={{ color: `hsl(${muted})` }}>
+          <p className="text-xs mt-1" style={{ color: `hsl(${muted})` }}>
             Volume do período
           </p>
         </div>
@@ -160,7 +160,7 @@ export function ColorsTabLivePreview({
               style={{ color: `hsl(${theme.warningColor})` }}
             />
             <span
-              className="text-[10px] font-semibold"
+              className="text-xs font-semibold"
               style={{ color: `hsl(${cardFg})` }}
             >
               Pendente
@@ -172,7 +172,7 @@ export function ColorsTabLivePreview({
           >
             12
           </p>
-          <p className="text-[9px] mt-1" style={{ color: `hsl(${muted})` }}>
+          <p className="text-xs mt-1" style={{ color: `hsl(${muted})` }}>
             Transações
           </p>
         </div>
@@ -181,7 +181,7 @@ export function ColorsTabLivePreview({
       {/* Input */}
       <div className="flex items-center gap-2">
         <div
-          className="flex-1 rounded-lg px-3 py-2 text-[10px] flex items-center gap-2"
+          className="flex-1 rounded-lg px-3 py-2 text-xs flex items-center gap-2"
           style={{
             backgroundColor: `hsl(${card})`,
             border: `1px solid hsl(${border})`,
@@ -192,7 +192,7 @@ export function ColorsTabLivePreview({
           Pesquisar transações...
         </div>
         <div
-          className="px-3 py-2 rounded-lg text-[10px] font-semibold"
+          className="px-3 py-2 rounded-lg text-xs font-semibold"
           style={{
             backgroundColor: `hsl(${primary})`,
             color: `hsl(${theme.primaryForeground})`,
@@ -208,7 +208,7 @@ export function ColorsTabLivePreview({
         style={{ border: `1px solid hsl(${border})` }}
       >
         <div
-          className="flex items-center text-[9px] font-semibold px-3 py-2"
+          className="flex items-center text-xs font-semibold px-3 py-2"
           style={{ backgroundColor: `hsl(${mutedBg})`, color: `hsl(${muted})` }}
         >
           <span className="flex-1">Nome</span>
@@ -231,7 +231,7 @@ export function ColorsTabLivePreview({
         ].map((row, i) => (
           <div
             key={i}
-            className="flex items-center text-[10px] px-3 py-2"
+            className="flex items-center text-xs px-3 py-2"
             style={{
               backgroundColor: `hsl(${card})`,
               borderTop: `1px solid hsl(${border})`,

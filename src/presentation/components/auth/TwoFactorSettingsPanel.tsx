@@ -163,7 +163,7 @@ export function TwoFactorSettingsPanel({
         <h1 className="text-lg font-semibold text-foreground tracking-tight">
           Autenticação de dois fatores
         </h1>
-        <p className="text-[13px] text-muted-foreground mt-1">{description}</p>
+        <p className="text-sm text-muted-foreground mt-1">{description}</p>
       </div>
 
       {status === "loading" && (
@@ -180,7 +180,7 @@ export function TwoFactorSettingsPanel({
                 <AlertTriangle size={16} className="text-amber-500" />
               </div>
               <div>
-                <h3 className="text-[13px] font-medium text-foreground">
+                <h3 className="text-sm font-medium text-foreground">
                   2FA não ativado
                 </h3>
                 <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
@@ -202,10 +202,10 @@ export function TwoFactorSettingsPanel({
                 "Pronto! Sua conta estará protegida",
               ].map((step, i) => (
                 <div key={i} className="flex items-center gap-3">
-                  <span className="w-5 h-5 rounded-md bg-primary/8 text-primary text-[11px] md:text-xs font-semibold flex items-center justify-center shrink-0 border border-primary/10">
+                  <span className="w-5 h-5 rounded-md bg-primary/8 text-primary text-sm md:text-xs font-semibold flex items-center justify-center shrink-0 border border-primary/10">
                     {i + 1}
                   </span>
-                  <span className="text-[12px] text-muted-foreground">
+                  <span className="text-sm text-muted-foreground">
                     {step}
                   </span>
                 </div>
@@ -216,7 +216,7 @@ export function TwoFactorSettingsPanel({
           <button
             onClick={() => openPasswordModal("enable")}
             disabled={loading}
-            className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground text-[13px] font-medium hover:brightness-110 transition-all duration-300 disabled:opacity-40 flex items-center justify-center gap-2"
+            className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:brightness-110 transition-all duration-300 disabled:opacity-40 flex items-center justify-center gap-2"
           >
             {loading ? (
               <Loader2 size={14} className="animate-spin" />
@@ -236,7 +236,7 @@ export function TwoFactorSettingsPanel({
                 <Smartphone size={16} className="text-primary" />
               </div>
               <div>
-                <h3 className="text-[13px] font-medium text-foreground">
+                <h3 className="text-sm font-medium text-foreground">
                   Configurar autenticador
                 </h3>
                 <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
@@ -300,14 +300,14 @@ export function TwoFactorSettingsPanel({
                 setSecret("");
                 setVerifyCode("");
               }}
-              className="flex-1 py-2.5 rounded-xl border border-border/40 text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/20 transition-all duration-200"
+              className="flex-1 py-2.5 rounded-xl border border-border/40 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/20 transition-all duration-200"
             >
               Cancelar
             </button>
             <button
               onClick={handleVerify}
               disabled={loading || verifyCode.length !== 6}
-              className="flex-1 py-2.5 rounded-xl bg-primary text-primary-foreground text-[13px] font-medium hover:brightness-110 transition-all duration-300 disabled:opacity-40 flex items-center justify-center gap-2"
+              className="flex-1 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:brightness-110 transition-all duration-300 disabled:opacity-40 flex items-center justify-center gap-2"
             >
               {loading ? (
                 <Loader2 size={14} className="animate-spin" />
@@ -328,7 +328,7 @@ export function TwoFactorSettingsPanel({
                 <CheckCircle2 size={16} className="text-primary" />
               </div>
               <div>
-                <h3 className="text-[13px] font-medium text-foreground">
+                <h3 className="text-sm font-medium text-foreground">
                   2FA ativado
                 </h3>
                 <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
@@ -340,7 +340,7 @@ export function TwoFactorSettingsPanel({
 
           <div className="rounded-xl bg-primary/[0.03] border border-primary/10 p-4 flex items-start gap-3">
             <ShieldCheck size={15} className="text-primary shrink-0 mt-0.5" />
-            <p className="text-[12px] text-muted-foreground leading-relaxed">
+            <p className="text-sm text-muted-foreground leading-relaxed">
               A cada login, será solicitado o código do Google Authenticator para
               verificar sua identidade.
             </p>
@@ -349,7 +349,7 @@ export function TwoFactorSettingsPanel({
           <button
             onClick={() => openPasswordModal("disable")}
             disabled={disabling}
-            className="w-full py-2.5 rounded-xl border border-destructive/20 text-destructive text-[13px] font-medium hover:bg-destructive/5 transition-all duration-200 disabled:opacity-40 flex items-center justify-center gap-2"
+            className="w-full py-2.5 rounded-xl border border-destructive/20 text-destructive text-sm font-medium hover:bg-destructive/5 transition-all duration-200 disabled:opacity-40 flex items-center justify-center gap-2"
           >
             {disabling ? (
               <Loader2 size={14} className="animate-spin" />

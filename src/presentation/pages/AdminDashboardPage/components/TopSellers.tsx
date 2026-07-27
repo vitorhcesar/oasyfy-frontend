@@ -45,18 +45,18 @@ export default function TopSellers({
   };
 
   return (
-    <div className="rounded-xl bg-card border border-border/50 p-3">
-      <h3 className="text-xs font-semibold text-foreground mb-2">
+    <div className="rounded-xl border border-border/50 bg-card p-5">
+      <h3 className="mb-4 text-base font-semibold text-foreground">
         Top Sellers
       </h3>
 
       {topSellers.length > 0 ? (
-        <div className="space-y-2">
+        <div className="space-y-3">
           {topSellers.map((s, i) => (
-            <div key={s.sellerId} className="flex items-center gap-2">
+            <div key={s.sellerId} className="flex items-center gap-3">
               <span
                 className={cn(
-                  "w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-bold flex-shrink-0",
+                  "flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold",
                   i === 0
                     ? "bg-primary/15 text-primary"
                     : "bg-muted/60 text-muted-foreground",
@@ -64,22 +64,22 @@ export default function TopSellers({
               >
                 {i + 1}
               </span>
-              <div className="flex-1 min-w-0">
-                <p className="text-[11px] font-medium text-foreground truncate">
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-foreground">
                   {getSellerName(s.sellerId)}
                 </p>
-                <p className="text-[9px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   {s.count} tx · {formatCompact(s.volume)}
                 </p>
               </div>
-              <span className="text-[9px] text-muted-foreground">
+              <span className="text-xs text-muted-foreground">
                 {formatCompact(s.fees)} tax
               </span>
             </div>
           ))}
         </div>
       ) : (
-        <p className="text-xs text-muted-foreground text-center py-6">
+        <p className="py-8 text-center text-sm text-muted-foreground">
           Sem dados
         </p>
       )}

@@ -77,7 +77,7 @@ function FeeFormField({
 }: IFeeFormFieldProps) {
   return (
     <div>
-      <label className="text-[10px] text-muted-foreground/60 uppercase tracking-wider block mb-1">
+      <label className="text-xs text-muted-foreground/60 uppercase tracking-wider block mb-1">
         {label}
       </label>
       {isString ? (
@@ -241,7 +241,7 @@ function FeeFormModal({ editing, onClose, onSaved }: IFeeFormModalProps) {
         >
           {/* Nome */}
           <div>
-            <label className="text-[10px] text-muted-foreground/60 uppercase tracking-wider block mb-1">
+            <label className="text-xs text-muted-foreground/60 uppercase tracking-wider block mb-1">
               Nome do plano *
             </label>
             <input

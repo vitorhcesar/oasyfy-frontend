@@ -584,12 +584,12 @@ export default function SellerTransfers() {
                         <p className="text-xs md:text-sm font-medium text-foreground truncate">
                           {w.description || "Saque"}
                         </p>
-                        <p className="text-[11px] md:text-xs text-muted-foreground truncate font-mono">
+                        <p className="text-sm md:text-xs text-muted-foreground truncate font-mono">
                           {w.id.slice(0, 8)}...
                         </p>
                         {w.status === "rejected" &&
                           w.metadata?.denial_reason && (
-                            <p className="text-[11px] text-destructive truncate mt-0.5">
+                            <p className="text-sm text-destructive truncate mt-0.5">
                               Motivo: {w.metadata.denial_reason}
                             </p>
                           )}
@@ -632,12 +632,12 @@ export default function SellerTransfers() {
                         <p className="text-xs md:text-sm font-medium text-foreground truncate">
                           {w.description || "Saque"}
                         </p>
-                        <p className="text-[11px] md:text-xs text-muted-foreground font-mono">
+                        <p className="text-sm md:text-xs text-muted-foreground font-mono">
                           {w.id.slice(0, 8)}...
                         </p>
                         {w.status === "rejected" &&
                           w.metadata?.denial_reason && (
-                            <p className="text-[11px] text-destructive truncate mt-0.5">
+                            <p className="text-sm text-destructive truncate mt-0.5">
                               Motivo: {w.metadata.denial_reason}
                             </p>
                           )}
@@ -649,7 +649,7 @@ export default function SellerTransfers() {
                   </div>
                   <div className="flex items-center justify-between">
                     <StatusBadge status={w.status} />
-                    <span className="text-[11px] md:text-xs text-muted-foreground tabular-nums">
+                    <span className="text-sm md:text-xs text-muted-foreground tabular-nums">
                       {formatDateTime(w.created_at)}
                     </span>
                   </div>
@@ -717,7 +717,7 @@ export default function SellerTransfers() {
                     <span
                       className={cn(
                         "text-xs font-medium text-foreground truncate",
-                        mono && "font-mono text-[11px]",
+                        mono && "font-mono text-sm",
                       )}
                     >
                       {value}
@@ -788,7 +788,7 @@ export default function SellerTransfers() {
                     >
                       {formatCurrency(Math.abs(detailW.amount))}
                     </p>
-                    <p className="text-[11px] text-muted-foreground/60 mt-1.5 tabular-nums">
+                    <p className="text-sm text-muted-foreground/60 mt-1.5 tabular-nums">
                       {formatDateTime(detailW.created_at)}
                     </p>
                   </div>
@@ -796,7 +796,7 @@ export default function SellerTransfers() {
                   {/* Rejection reason */}
                   {isRejected && detailW.metadata?.denial_reason && (
                     <div className="mx-5 mb-1 px-3.5 py-3 rounded-xl bg-destructive/5 border border-destructive/10">
-                      <p className="text-[11px] font-semibold text-destructive mb-1">
+                      <p className="text-sm font-semibold text-destructive mb-1">
                         Motivo da rejeição
                       </p>
                       <p className="text-xs text-foreground leading-relaxed">
@@ -808,13 +808,13 @@ export default function SellerTransfers() {
                   {/* Pix destination card */}
                   {pixKey && (
                     <div className="mx-5 mt-3 mb-1">
-                      <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-2 px-1">
+                      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 px-1">
                         Destino do Pix
                       </p>
                       <div className="rounded-xl border border-primary/15 bg-primary/[0.03] p-4">
                         <div className="flex items-center justify-between mb-2">
                           <div>
-                            <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                            <p className="text-xs text-muted-foreground uppercase tracking-wider">
                               Chave {pixKeyType || "Pix"}
                             </p>
                             <p className="text-sm font-semibold text-foreground font-mono mt-0.5">
@@ -833,7 +833,7 @@ export default function SellerTransfers() {
                           </button>
                         </div>
                         {bankName && (
-                          <p className="text-[11px] text-muted-foreground mt-1">
+                          <p className="text-sm text-muted-foreground mt-1">
                             Banco:{" "}
                             <span className="font-medium text-foreground">
                               {bankName}
@@ -846,7 +846,7 @@ export default function SellerTransfers() {
 
                   {/* Info section */}
                   <div className="mx-5 mt-3">
-                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-2 px-1">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 px-1">
                       Informações
                     </p>
                     <div className="rounded-xl border border-border/30 divide-y divide-border/15 overflow-hidden bg-card">
@@ -880,7 +880,7 @@ export default function SellerTransfers() {
 
                   {/* Financial summary */}
                   <div className="mx-5 mt-3 mb-6">
-                    <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-2 px-1">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-2 px-1">
                       Resumo financeiro
                     </p>
                     <div className="rounded-xl border border-border/30 overflow-hidden">

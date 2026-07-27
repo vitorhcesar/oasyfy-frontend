@@ -1,4 +1,9 @@
 import { NavLink } from "@/presentation/components/NavLink";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/presentation/components/ui/collapsible";
 import { useSellerKycSubmissionQuery } from "@/presentation/hooks/use-seller-kyc-submission-query";
 import { useAuthContext } from "@/presentation/context/AuthContext";
 import { cn } from "@/presentation/utils/cn";
@@ -109,7 +114,7 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
     small = false,
   ) => {
     const iconSize = small ? 16 : 18;
-    const textSize = small ? "text-[13px]" : "text-sm";
+    const textSize = small ? "text-sm" : "text-sm";
     const py = small ? "py-2" : "py-2.5";
 
     if (item.locked) {
@@ -156,7 +161,7 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
     if (isCollapsed)
       return <div className="my-3 mx-2 border-t border-border/20" />;
     return (
-      <p className="px-3 mb-1.5 mt-5 text-[10px] font-bold uppercase tracking-[0.18em] text-muted-foreground/50">
+      <p className="px-3 mb-1.5 mt-5 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70">
         {children}
       </p>
     );
@@ -208,29 +213,26 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
           {/* Settings */}
           <SectionLabel collapsed={isCollapsed}>Conta</SectionLabel>
           {!isCollapsed ? (
-            <>
-              <button
-                onClick={() => setSettingsOpen(!settingsOpen)}
-                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:bg-primary/5 hover:text-foreground transition-all duration-150"
-              >
+            <Collapsible open={settingsOpen} onOpenChange={setSettingsOpen}>
+              <CollapsibleTrigger className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-muted-foreground hover:bg-primary/5 hover:text-foreground transition-all duration-150">
                 <Settings size={18} strokeWidth={1.7} className="shrink-0" />
                 <span className="flex-1 text-left">Configurações</span>
                 <ChevronDown
                   size={14}
                   className={cn(
-                    "shrink-0 text-muted-foreground/40 transition-transform duration-200",
+                    "shrink-0 text-muted-foreground/40 transition-transform duration-300",
                     settingsOpen && "rotate-180",
                   )}
                 />
-              </button>
-              {settingsOpen && (
-                <div className="ml-5 mt-0.5 space-y-0.5 border-l-2 border-primary/15 pl-3">
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="ml-5 mt-0.5 space-y-0.5 border-l-2 border-primary/15 py-1 pl-3">
                   {settingsSubItems.map((item) =>
                     renderItem(item, false, true),
                   )}
                 </div>
-              )}
-            </>
+              </CollapsibleContent>
+            </Collapsible>
           ) : (
             <NavLink
               to="/seller/settings"

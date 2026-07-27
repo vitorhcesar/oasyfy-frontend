@@ -415,7 +415,7 @@ export default function AdminEmail() {
                   placeholder="teste@email.com"
                 />
               </div>
-              <p className="text-[11px] text-muted-foreground/60 mt-1.5">
+              <p className="text-sm text-muted-foreground/60 mt-1.5">
                 Um e-mail padrão de teste será enviado para este endereço.
               </p>
             </div>

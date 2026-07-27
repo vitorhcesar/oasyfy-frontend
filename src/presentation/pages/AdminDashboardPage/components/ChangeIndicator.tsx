@@ -7,11 +7,11 @@ export default function ChangeIndicator({ value }: { value: number }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-0.5 text-[9px] font-semibold",
+        "inline-flex items-center gap-1 text-xs font-semibold",
         isPositive ? "text-emerald-500" : "text-destructive",
       )}
     >
-      {isPositive ? <TrendingUp size={9} /> : <TrendingDown size={9} />}
+      {isPositive ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
       {isPositive ? "+" : ""}
       {value}%
     </span>

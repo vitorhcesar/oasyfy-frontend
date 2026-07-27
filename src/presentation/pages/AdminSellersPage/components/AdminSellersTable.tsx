@@ -65,7 +65,7 @@ function TableRow({ seller, index }: ITableRowProps) {
                 .toUpperCase()}
             </span>
           </div>
-          <span className="font-medium text-foreground text-[13px]">
+          <span className="font-medium text-foreground text-sm">
             {seller.fullName || "Sem nome"}
           </span>
         </div>

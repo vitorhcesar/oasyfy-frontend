@@ -355,7 +355,7 @@ export default function SellerTransactions() {
                             {tx.customer_name}
                           </p>
                           {tx.customer_email && (
-                            <p className="text-[11px] md:text-xs text-muted-foreground truncate">
+                            <p className="text-sm md:text-xs text-muted-foreground truncate">
                               {tx.customer_email}
                             </p>
                           )}
@@ -421,7 +421,7 @@ export default function SellerTransactions() {
                             {tx.customer_name}
                           </p>
                           {tx.customer_email && (
-                            <p className="text-[11px] md:text-xs text-muted-foreground truncate">
+                            <p className="text-sm md:text-xs text-muted-foreground truncate">
                               {tx.customer_email}
                             </p>
                           )}
@@ -445,7 +445,7 @@ export default function SellerTransactions() {
                         <StatusBadge status={tx.status} />
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-[11px] md:text-xs text-muted-foreground tabular-nums">
+                        <span className="text-sm md:text-xs text-muted-foreground tabular-nums">
                           {formatDateTime(tx.created_at)}
                         </span>
                         <button
@@ -551,7 +551,7 @@ export default function SellerTransactions() {
                     <span
                       className={cn(
                         "text-xs font-medium text-foreground text-right max-w-[60%] break-all",
-                        mono && "font-mono text-[11px]"
+                        mono && "font-mono text-sm"
                       )}
                     >
                       {value}
@@ -577,7 +577,7 @@ export default function SellerTransactions() {
                   >
                     <div className="flex items-center justify-between mb-3">
                       <StatusBadge status={tx.status} />
-                      <span className="text-[11px] text-muted-foreground tabular-nums">
+                      <span className="text-sm text-muted-foreground tabular-nums">
                         {formatDateTime(tx.created_at)}
                       </span>
                     </div>
@@ -600,7 +600,7 @@ export default function SellerTransactions() {
                     {/* Pix destination */}
                     {pixKey && (
                       <div className="rounded-xl bg-primary/5 border border-primary/10 p-3">
-                        <p className="text-[11px] font-medium text-primary uppercase tracking-wider mb-2">
+                        <p className="text-sm font-medium text-primary uppercase tracking-wider mb-2">
                           Chave Pix
                         </p>
                         <div className="flex items-center justify-between gap-2">
@@ -622,12 +622,12 @@ export default function SellerTransactions() {
                           </button>
                         </div>
                         {pixKeyType && (
-                          <p className="text-[11px] text-muted-foreground mt-1">
+                          <p className="text-sm text-muted-foreground mt-1">
                             Tipo: {pixKeyType}
                           </p>
                         )}
                         {bankName && (
-                          <p className="text-[11px] text-muted-foreground capitalize">
+                          <p className="text-sm text-muted-foreground capitalize">
                             Banco: {bankName}
                           </p>
                         )}
@@ -700,7 +700,7 @@ export default function SellerTransactions() {
                     {/* Refund/lock reasons */}
                     {tx.refund_reason && (
                       <div className="rounded-xl bg-destructive/5 border border-destructive/10 p-3">
-                        <p className="text-[11px] font-medium text-destructive uppercase tracking-wider mb-1">
+                        <p className="text-sm font-medium text-destructive uppercase tracking-wider mb-1">
                           Motivo do estorno
                         </p>
                         <p className="text-xs text-foreground">
@@ -711,7 +711,7 @@ export default function SellerTransactions() {
 
                     {tx.lock_reason && (
                       <div className="rounded-xl bg-amber-500/5 border border-amber-500/10 p-3">
-                        <p className="text-[11px] font-medium text-amber-500 uppercase tracking-wider mb-1">
+                        <p className="text-sm font-medium text-amber-500 uppercase tracking-wider mb-1">
                           Motivo do bloqueio
                         </p>
                         <p className="text-xs text-foreground">
@@ -723,7 +723,7 @@ export default function SellerTransactions() {
                     {/* Metadata */}
                     {meta && Object.keys(meta).length > 0 && (
                       <div className="rounded-xl bg-muted/20 border border-border/40 p-3">
-                        <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-2">
+                        <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-2">
                           Metadados
                         </p>
                         <div className="space-y-1.5">
@@ -743,10 +743,10 @@ export default function SellerTransactions() {
                                 key={key}
                                 className="flex justify-between items-start gap-3"
                               >
-                                <span className="text-[11px] text-muted-foreground font-mono shrink-0">
+                                <span className="text-sm text-muted-foreground font-mono shrink-0">
                                   {key}
                                 </span>
-                                <span className="text-[11px] text-foreground text-right break-all font-mono">
+                                <span className="text-sm text-foreground text-right break-all font-mono">
                                   {typeof val === "object"
                                     ? JSON.stringify(val)
                                     : String(val)}

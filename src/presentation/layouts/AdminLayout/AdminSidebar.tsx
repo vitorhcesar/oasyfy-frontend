@@ -1,7 +1,13 @@
+import { AuthBrandMark } from "@/presentation/components/auth/AuthBrandMark";
 import { NavLink } from "@/presentation/components/NavLink";
-import { useThemeContext } from "@/presentation/hooks/use-theme";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/presentation/components/ui/collapsible";
 import { useAuthContext } from "@/presentation/context/AuthContext";
 import { useUserContext } from "@/presentation/context/UserContext";
+import { useThemeContext } from "@/presentation/hooks/use-theme";
 import { cn } from "@/presentation/utils/cn";
 import {
   ArrowLeftRight,
@@ -51,7 +57,7 @@ const settingsSubItems = [
   {
     title: "CRM",
     url: "/admin/crm",
-    icon: ({ size = 16, className }: { size?: number; className?: string }) => (
+    icon: ({ size = 18, className }: { size?: number; className?: string }) => (
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width={size}
@@ -104,44 +110,57 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
   const [settingsOpen, setSettingsOpen] = useState(isOnSettings);
   const [financialOpen, setFinancialOpen] = useState(isOnFinancial);
 
-  // Close mobile drawer on navigation
   useEffect(() => {
     if (mobileOpen && onClose) onClose();
     // eslint-disable-next-line
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (isOnFinancial) setFinancialOpen(true);
+  }, [isOnFinancial]);
+
+  useEffect(() => {
+    if (isOnSettings) setSettingsOpen(true);
+  }, [isOnSettings]);
 
   const handleSignOut = async () => {
     await signOut();
     navigate("/login/admin");
   };
 
-  const linkClass = `flex items-center gap-3 px-3 py-3 rounded-xl text-sm text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all duration-200`;
-  const activeClass = "bg-primary/10 text-primary font-semibold";
+  const logoVariant = theme === "dark" ? "white" : "black";
+
+  const linkClass =
+    "flex items-center gap-3 px-3.5 py-3 rounded-xl text-[15px] text-muted-foreground hover:bg-muted/40 hover:text-foreground transition-all duration-200";
+  const activeClass = "bg-primary/15 text-primary font-semibold";
 
   const sidebarContent = (
     <>
-      {/* Logo area */}
       <div
-        className={`h-16 flex items-center justify-between ${
-          collapsed ? "justify-center px-2" : "px-5"
-        } border-b border-border`}
+        className={cn(
+          "flex h-[4.5rem] items-center border-b border-white/10",
+          collapsed ? "justify-center px-2" : "justify-between px-5",
+        )}
       >
-        <span className="text-lg font-bold text-foreground">OmegaPay</span>
+        {collapsed ? (
+          <AuthBrandMark mark="icon" size="sm" variant={logoVariant} />
+        ) : (
+          <AuthBrandMark size="sm" variant={logoVariant} />
+        )}
         {onClose && !collapsed && (
           <button
             onClick={onClose}
-            className="md:hidden p-1.5 rounded-lg text-muted-foreground hover:bg-muted/30 transition-colors"
+            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted/30 md:hidden"
           >
             <X size={20} />
           </button>
         )}
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 py-5 px-3 overflow-y-auto">
+      <nav className="flex-1 overflow-y-auto px-3 py-5">
         {!collapsed && (
-          <p className="px-3 mb-3 text-xs md:text-sm font-semibold text-muted-foreground uppercase tracking-widest">
-            Menu
+          <p className="mb-2 px-3 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70">
+            Principal
           </p>
         )}
         {menuItems.map((item) => (
@@ -149,157 +168,158 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
             key={item.url}
             to={item.url}
             end={item.url === "/admin"}
-            className={`${linkClass} ${collapsed ? "justify-center" : ""}`}
+            className={cn(linkClass, collapsed && "justify-center")}
             activeClassName={activeClass}
           >
-            <item.icon size={20} className="flex-shrink-0" />
+            <item.icon size={19} className="flex-shrink-0" />
             {!collapsed && <span>{item.title}</span>}
           </NavLink>
         ))}
 
-        {/* Financial section */}
         {!collapsed && (
-          <div className="mt-4">
-            <button
-              onClick={() => setFinancialOpen(!financialOpen)}
-              className={cn(
-                linkClass,
-                "w-full",
-                isOnFinancial && "text-primary",
-              )}
-            >
-              <CreditCard size={20} className="flex-shrink-0" />
-              <span className="flex-1 text-left">Financeiro</span>
-              <ChevronDown
-                size={14}
+          <div className="mt-5">
+            <p className="mb-2 px-3 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70">
+              Comercial
+            </p>
+            <Collapsible open={financialOpen} onOpenChange={setFinancialOpen}>
+              <CollapsibleTrigger
                 className={cn(
-                  "flex-shrink-0 text-muted-foreground/40 transition-transform duration-200",
-                  financialOpen && "rotate-180",
+                  linkClass,
+                  "w-full",
+                  isOnFinancial && "text-primary",
                 )}
-              />
-            </button>
-            {financialOpen && (
-              <div className="ml-6 mt-1 space-y-0.5 border-l border-border/20 pl-3">
-                {financialSubItems.map((item) => (
-                  <NavLink
-                    key={item.url}
-                    to={item.url}
-                    end
-                    className={`${linkClass} text-[13px] py-2.5`}
-                    activeClassName={activeClass}
-                  >
-                    <item.icon size={16} className="flex-shrink-0" />
-                    <span>{item.title}</span>
-                  </NavLink>
-                ))}
-              </div>
-            )}
+              >
+                <CreditCard size={19} className="flex-shrink-0" />
+                <span className="flex-1 text-left">Financeiro</span>
+                <ChevronDown
+                  size={15}
+                  className={cn(
+                    "flex-shrink-0 text-muted-foreground/40 transition-transform duration-300",
+                    financialOpen && "rotate-180",
+                  )}
+                />
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="ml-5 mt-1 space-y-0.5 border-l border-border/25 py-1 pl-3">
+                  {financialSubItems.map((item) => (
+                    <NavLink
+                      key={item.url}
+                      to={item.url}
+                      end
+                      className={cn(linkClass, "py-2.5 text-sm")}
+                      activeClassName={activeClass}
+                    >
+                      <item.icon size={17} className="flex-shrink-0" />
+                      <span>{item.title}</span>
+                    </NavLink>
+                  ))}
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
           </div>
         )}
         {collapsed && (
           <NavLink
             to="/admin/transactions"
-            className={`${linkClass} justify-center mt-2`}
+            className={cn(linkClass, "mt-2 justify-center")}
             activeClassName={activeClass}
           >
-            <CreditCard size={20} className="flex-shrink-0" />
+            <CreditCard size={19} className="flex-shrink-0" />
           </NavLink>
         )}
 
-        {/* Settings section */}
         {!collapsed && (
-          <div className="mt-4">
-            <p className="px-3 mb-2 text-xs md:text-sm font-semibold text-muted-foreground uppercase tracking-widest">
+          <div className="mt-5">
+            <p className="mb-2 px-3 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70">
               Sistema
             </p>
-            <button
-              onClick={() => setSettingsOpen(!settingsOpen)}
-              className={cn(
-                linkClass,
-                "w-full",
-                isOnSettings && "text-primary",
-              )}
-            >
-              <Settings size={20} className="flex-shrink-0" />
-              <span className="flex-1 text-left">Configurações</span>
-              <ChevronDown
-                size={14}
+            <Collapsible open={settingsOpen} onOpenChange={setSettingsOpen}>
+              <CollapsibleTrigger
                 className={cn(
-                  "flex-shrink-0 text-muted-foreground/40 transition-transform duration-200",
-                  settingsOpen && "rotate-180",
+                  linkClass,
+                  "w-full",
+                  isOnSettings && "text-primary",
                 )}
-              />
-            </button>
-            {settingsOpen && (
-              <div className="ml-6 mt-1 space-y-0.5 border-l border-border/20 pl-3">
-                {settingsSubItems.map((item) => (
-                  <NavLink
-                    key={item.url}
-                    to={item.url}
-                    end
-                    className={`${linkClass} text-[13px] py-2.5`}
-                    activeClassName={activeClass}
-                  >
-                    <item.icon size={16} className="flex-shrink-0" />
-                    <span>{item.title}</span>
-                  </NavLink>
-                ))}
-              </div>
-            )}
+              >
+                <Settings size={19} className="flex-shrink-0" />
+                <span className="flex-1 text-left">Configurações</span>
+                <ChevronDown
+                  size={15}
+                  className={cn(
+                    "flex-shrink-0 text-muted-foreground/40 transition-transform duration-300",
+                    settingsOpen && "rotate-180",
+                  )}
+                />
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <div className="ml-5 mt-1 space-y-0.5 border-l border-border/25 py-1 pl-3">
+                  {settingsSubItems.map((item) => (
+                    <NavLink
+                      key={item.url}
+                      to={item.url}
+                      end
+                      className={cn(linkClass, "py-2.5 text-sm")}
+                      activeClassName={activeClass}
+                    >
+                      <item.icon size={17} className="flex-shrink-0" />
+                      <span>{item.title}</span>
+                    </NavLink>
+                  ))}
+                </div>
+              </CollapsibleContent>
+            </Collapsible>
           </div>
         )}
         {collapsed && (
           <NavLink
             to="/admin/general"
-            className={`${linkClass} justify-center mt-4`}
+            className={cn(linkClass, "mt-4 justify-center")}
             activeClassName={activeClass}
           >
-            <Settings size={20} className="flex-shrink-0" />
+            <Settings size={19} className="flex-shrink-0" />
           </NavLink>
         )}
       </nav>
 
-      {/* Theme + Collapse (desktop only) */}
-      <div className="hidden md:block px-3 pb-1 space-y-0.5">
+      <div className="hidden space-y-1 px-3 pb-1 md:block">
         <button
           onClick={toggleTheme}
-          className="w-full flex items-center justify-center p-3 rounded-xl text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all duration-200"
+          className="flex w-full items-center justify-center rounded-xl p-3 text-muted-foreground transition-all duration-200 hover:bg-muted/40 hover:text-foreground"
           title={theme === "dark" ? "Modo claro" : "Modo escuro"}
         >
           {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
         </button>
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="w-full flex items-center justify-center p-3 rounded-xl text-muted-foreground hover:bg-muted/50 hover:text-foreground transition-all duration-200"
+          className="flex w-full items-center justify-center rounded-xl p-3 text-muted-foreground transition-all duration-200 hover:bg-muted/40 hover:text-foreground"
         >
           {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
         </button>
       </div>
 
-      {/* Mobile theme toggle */}
-      <div className="md:hidden px-3 pb-2">
-        <button onClick={toggleTheme} className={`w-full ${linkClass}`}>
+      <div className="px-3 pb-2 md:hidden">
+        <button onClick={toggleTheme} className={cn("w-full", linkClass)}>
           {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
           <span>{theme === "dark" ? "Modo Claro" : "Modo Escuro"}</span>
         </button>
       </div>
 
-      {/* User area */}
-      <div className="border-t border-border p-3">
+      <div className="border-t border-white/10 p-3.5">
         <div
-          className={`flex items-center ${
-            collapsed ? "justify-center" : "gap-3"
-          }`}
+          className={cn(
+            "flex items-center",
+            collapsed ? "justify-center" : "gap-3",
+          )}
         >
-          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-            <span className="text-xs font-bold text-primary">{initials}</span>
+          <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-primary/15 ring-1 ring-primary/25">
+            <span className="text-sm font-bold text-primary">{initials}</span>
           </div>
           {!collapsed && (
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[15px] font-medium text-foreground">
                 {name}
               </p>
-              <p className="text-xs md:text-sm text-muted-foreground truncate">
+              <p className="truncate text-sm text-muted-foreground">
                 {user?.email}
               </p>
             </div>
@@ -307,7 +327,7 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
           {!collapsed && (
             <button
               onClick={handleSignOut}
-              className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-all duration-200 flex-shrink-0"
+              className="flex-shrink-0 rounded-lg p-2 text-muted-foreground transition-all duration-200 hover:bg-destructive/10 hover:text-destructive"
               title="Sair"
             >
               <LogOut size={18} />
@@ -320,23 +340,23 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
 
   return (
     <>
-      {/* Desktop sidebar */}
       <aside
-        className={`hidden md:flex h-full shrink-0 flex-col border-r border-border bg-card transition-all duration-300 ease-in-out ${
-          collapsed ? "w-[72px]" : "w-64"
-        }`}
+        className={cn(
+          "liquid-glass hidden h-full shrink-0 flex-col transition-all duration-300 ease-in-out md:flex",
+          "rounded-2xl",
+          collapsed ? "w-[76px]" : "w-[280px]",
+        )}
       >
         {sidebarContent}
       </aside>
 
-      {/* Mobile drawer */}
       {mobileOpen && (
         <>
           <div
-            className="fixed inset-0 bg-background/60 backdrop-blur-sm z-40 md:hidden"
+            className="fixed inset-0 z-40 bg-background/60 backdrop-blur-sm md:hidden"
             onClick={onClose}
           />
-          <aside className="fixed inset-y-0 left-0 w-72 flex flex-col bg-card border-r border-border/30 z-50 md:hidden animate-in slide-in-from-left duration-200">
+          <aside className="liquid-glass fixed inset-y-0 left-0 z-50 flex w-[300px] flex-col md:hidden animate-in slide-in-from-left duration-200">
             {sidebarContent}
           </aside>
         </>

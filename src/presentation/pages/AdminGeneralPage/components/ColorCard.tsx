@@ -35,10 +35,10 @@ export function ColorCard({ field, hex, onChange }: IColorCardProps) {
         </div>
       </label>
       <div className="flex-1 min-w-0">
-        <p className="text-[13px] font-semibold text-foreground leading-tight">
+        <p className="text-sm font-semibold text-foreground leading-tight">
           {field.label}
         </p>
-        <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
+        <p className="text-xs text-muted-foreground leading-tight mt-0.5">
           {field.description}
         </p>
       </div>
@@ -65,12 +65,12 @@ export function ColorCard({ field, hex, onChange }: IColorCardProps) {
               }
             }}
             onChange={(e) => setInputValue(e.target.value)}
-            className="w-20 text-[11px] font-mono bg-background border border-primary/40 rounded-lg px-2 py-1.5 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 text-center"
+            className="w-20 text-sm font-mono bg-background border border-primary/40 rounded-lg px-2 py-1.5 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 text-center"
           />
         ) : (
           <button
             onClick={() => setEditing(true)}
-            className="text-[11px] font-mono text-muted-foreground hover:text-foreground bg-muted/40 hover:bg-muted/70 rounded-lg px-2.5 py-1.5 transition-all"
+            className="text-sm font-mono text-muted-foreground hover:text-foreground bg-muted/40 hover:bg-muted/70 rounded-lg px-2.5 py-1.5 transition-all"
           >
             {hex.toUpperCase()}
           </button>

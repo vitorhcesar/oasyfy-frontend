@@ -35,12 +35,12 @@ export default function AdminDashboardPage() {
 
   return (
     <AdminLayout>
-      <div className="px-4 md:px-8 py-4 max-w-7xl mx-auto w-full">
+      <div className="mx-auto w-full max-w-7xl px-5 py-6 md:px-8 md:py-8">
         <AdminDashboardPageHeader />
 
         {isLoading ? (
-          <div className="flex items-center justify-center py-16">
-            <Loader2 size={20} className="animate-spin text-muted-foreground" />
+          <div className="flex items-center justify-center py-20">
+            <Loader2 size={24} className="animate-spin text-muted-foreground" />
           </div>
         ) : (
           <>
@@ -50,7 +50,7 @@ export default function AdminDashboardPage() {
 
             <SecondaryMetrics />
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+            <div className="mb-5 grid grid-cols-1 gap-4 md:grid-cols-3">
               <RevenueChart
                 chartData={chartData}
                 completedTransactionsCount={completedTransactions.length}
@@ -66,7 +66,7 @@ export default function AdminDashboardPage() {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+            <div className="mb-5 grid grid-cols-1 gap-4 md:grid-cols-3">
               <FeesChart chartData={chartData} />
               <PeakHour completedTransactions={completedTransactions} />
               <TopSellers

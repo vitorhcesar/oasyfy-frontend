@@ -41,14 +41,14 @@ export default function AdminTransactionsStats({
           >
             <div className="flex items-center gap-1.5 mb-1">
               <stat.icon size={12} className={stat.color} />
-              <span className="text-[10px] font-medium text-muted-foreground">
+              <span className="text-xs font-medium text-muted-foreground">
                 {stat.label}
               </span>
             </div>
             <p className="text-sm font-bold text-foreground leading-none">
               {formatCurrency(stat.value)}
             </p>
-            <p className="text-[10px] text-muted-foreground/50 mt-0.5">
+            <p className="text-xs text-muted-foreground/50 mt-0.5">
               {stat.count}/{stat.total}
             </p>
           </button>

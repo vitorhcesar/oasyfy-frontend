@@ -95,7 +95,7 @@ export default function AdminWithdrawalsTable({
               style={{ animationDelay: `${i * 20}ms` }}
             >
               <td className="px-5 py-3.5">
-                <p className="font-medium text-foreground text-[13px]">
+                <p className="font-medium text-foreground text-sm">
                   {w.seller_name || "Seller"}
                 </p>
                 {w.seller_email && (
@@ -104,7 +104,7 @@ export default function AdminWithdrawalsTable({
                   </p>
                 )}
               </td>
-              <td className="px-5 py-3.5 font-bold text-foreground text-[13px]">
+              <td className="px-5 py-3.5 font-bold text-foreground text-sm">
                 {formatCurrency(w.amount)}
               </td>
               <td className="px-5 py-3.5">

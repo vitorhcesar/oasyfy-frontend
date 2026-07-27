@@ -104,7 +104,7 @@ export default function SellerApi() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 text-[13px] font-medium border-b-2 transition-colors -mb-px ${
+              className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px ${
                 activeTab === tab.id
                   ? "border-primary text-primary"
                   : "border-transparent text-muted-foreground hover:text-foreground"
@@ -244,7 +244,7 @@ function ApiKeysTab() {
                   {(key.permissions || []).map((p: string) => (
                     <span
                       key={p}
-                      className="text-[11px] md:text-xs px-1.5 py-px rounded bg-muted text-muted-foreground uppercase tracking-wide"
+                      className="text-sm md:text-xs px-1.5 py-px rounded bg-muted text-muted-foreground uppercase tracking-wide"
                     >
                       {p}
                     </span>
@@ -422,7 +422,7 @@ function CreateKeyModal({
                       <span className="text-xs md:text-sm font-medium block">
                         {perm.label}
                       </span>
-                      <span className="text-[11px] md:text-xs opacity-70 block">
+                      <span className="text-sm md:text-xs opacity-70 block">
                         {perm.description}
                       </span>
                     </div>
@@ -466,9 +466,9 @@ function CreateKeyModal({
                       </div>
                     ))
                 )}
-                <p className="text-[11px] md:text-xs text-muted-foreground/70 mt-2 pt-2 border-t border-border/20">
+                <p className="text-sm md:text-xs text-muted-foreground/70 mt-2 pt-2 border-t border-border/20">
                   Header:{" "}
-                  <code className="text-[11px] md:text-xs">
+                  <code className="text-sm md:text-xs">
                     x-api-key: sua_chave
                   </code>
                 </p>

@@ -116,7 +116,7 @@ export default function AddBannerModal({
                   <span className="text-xs text-muted-foreground">
                     Clique para selecionar
                   </span>
-                  <span className="text-[11px] md:text-xs text-muted-foreground/60 mt-0.5">
+                  <span className="text-sm md:text-xs text-muted-foreground/60 mt-0.5">
                     PNG, JPG até 120MB
                   </span>
                   <input

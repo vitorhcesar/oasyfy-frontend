@@ -209,7 +209,7 @@ export default function AdminManagers() {
                         <p className="text-sm font-medium text-foreground truncate">
                           {admin.full_name || "Sem nome"}
                           {admin.user_id === user?.id && (
-                            <span className="ml-2 text-[11px] font-normal text-muted-foreground">
+                            <span className="ml-2 text-sm font-normal text-muted-foreground">
                               (você)
                             </span>
                           )}

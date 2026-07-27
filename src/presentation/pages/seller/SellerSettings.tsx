@@ -265,7 +265,7 @@ function SecurityTab() {
             <div className="flex items-center justify-between mt-5 pt-4 border-t border-border/30">
               <div className="relative group/tip">
                 <span className="text-xs md:text-sm text-muted-foreground cursor-help flex items-center gap-1">
-                  Esqueceu? <span className="text-[11px] md:text-xs">ⓘ</span>
+                  Esqueceu? <span className="text-sm md:text-xs">ⓘ</span>
                 </span>
                 <div className="absolute bottom-full left-0 mb-2 hidden group-hover/tip:block bg-card border border-border rounded-lg px-3 py-2 text-xs md:text-sm text-foreground shadow-lg w-56 z-10">
                   <span className="text-destructive font-medium">
@@ -390,11 +390,11 @@ function SecurityTab() {
                           {parsed.device}
                         </p>
                         {active ? (
-                          <span className="text-[11px] md:text-xs px-1.5 py-px rounded bg-emerald-500/15 text-emerald-500 font-medium uppercase tracking-wide">
+                          <span className="text-sm md:text-xs px-1.5 py-px rounded bg-emerald-500/15 text-emerald-500 font-medium uppercase tracking-wide">
                             Ativo
                           </span>
                         ) : (
-                          <span className="text-[11px] md:text-xs px-1.5 py-px rounded bg-muted text-muted-foreground font-medium uppercase tracking-wide">
+                          <span className="text-sm md:text-xs px-1.5 py-px rounded bg-muted text-muted-foreground font-medium uppercase tracking-wide">
                             Expirado
                           </span>
                         )}
@@ -564,7 +564,7 @@ export default function SellerSettings() {
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] transition-all duration-200 ${
+                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
                   activeTab === tab.key
                     ? "text-primary font-medium bg-primary/5"
                     : "text-muted-foreground hover:text-foreground"

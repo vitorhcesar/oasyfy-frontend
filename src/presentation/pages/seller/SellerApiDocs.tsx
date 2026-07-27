@@ -50,7 +50,7 @@ function CodeBlock({
   return (
     <div className="relative group rounded-xl overflow-hidden border border-border/20">
       <div className="flex items-center justify-between px-4 py-2 bg-muted/20 border-b border-border/10">
-        <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground/50">
+        <span className="text-xs font-mono uppercase tracking-widest text-muted-foreground/50">
           {language}
         </span>
         <button
@@ -79,7 +79,7 @@ function MethodBadge({ method }: { method: string }) {
   };
   return (
     <span
-      className={`text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider border ${
+      className={`text-xs font-bold px-2.5 py-1 rounded-md uppercase tracking-wider border ${
         styles[method] || "bg-muted/20 text-muted-foreground border-border/20"
       }`}
     >
@@ -131,21 +131,21 @@ function ParamTable({
               >
                 <td className="px-3 py-2.5 align-top">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <code className="font-mono text-foreground text-[11px]">
+                    <code className="font-mono text-foreground text-sm">
                       {p.name}
                     </code>
                     {p.required && (
-                      <span className="text-[9px] font-bold uppercase tracking-wider text-destructive/70 bg-destructive/5 px-1.5 py-0.5 rounded">
+                      <span className="text-xs font-bold uppercase tracking-wider text-destructive/70 bg-destructive/5 px-1.5 py-0.5 rounded">
                         req
                       </span>
                     )}
                   </div>
-                  <span className="text-muted-foreground/50 text-[10px] font-mono sm:hidden block mt-0.5">
+                  <span className="text-muted-foreground/50 text-xs font-mono sm:hidden block mt-0.5">
                     {p.type}
                   </span>
                 </td>
                 <td className="px-3 py-2.5 align-top hidden sm:table-cell">
-                  <span className="text-muted-foreground/60 font-mono text-[10px]">
+                  <span className="text-muted-foreground/60 font-mono text-xs">
                     {p.type}
                   </span>
                 </td>
@@ -753,7 +753,7 @@ function EndpointCard({
       >
         {!isInfo && <MethodBadge method={endpoint.method} />}
         {isInfo && (
-          <span className="text-[10px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider bg-muted/30 text-muted-foreground border border-border/20">
+          <span className="text-xs font-bold px-2.5 py-1 rounded-md uppercase tracking-wider bg-muted/30 text-muted-foreground border border-border/20">
             INFO
           </span>
         )}
@@ -794,7 +794,7 @@ function EndpointCard({
                       {h.value}
                     </span>
                     {h.required && (
-                      <span className="text-[9px] font-bold uppercase tracking-wider text-destructive/70 bg-destructive/5 px-1.5 py-0.5 rounded shrink-0">
+                      <span className="text-xs font-bold uppercase tracking-wider text-destructive/70 bg-destructive/5 px-1.5 py-0.5 rounded shrink-0">
                         req
                       </span>
                     )}
@@ -858,7 +858,7 @@ function EndpointCard({
               {testing && (
                 <div className="mt-4 space-y-3 p-4 rounded-xl bg-muted/10 border border-border/20">
                   <div>
-                    <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">
+                    <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">
                       API Key
                     </label>
                     <input
@@ -874,7 +874,7 @@ function EndpointCard({
                     endpoint.queryParams &&
                     endpoint.queryParams.length > 0 && (
                       <div>
-                        <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">
+                        <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">
                           Query string
                         </label>
                         <input
@@ -889,7 +889,7 @@ function EndpointCard({
 
                   {["POST", "PUT", "PATCH"].includes(endpoint.method) && (
                     <div>
-                      <label className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">
+                      <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/60 mb-1.5 block">
                         Body (JSON)
                       </label>
                       <textarea
@@ -917,11 +917,11 @@ function EndpointCard({
                   {testResponse && (
                     <div className="pt-2">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
+                        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/60">
                           Resposta
                         </span>
                         <span
-                          className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                          className={`text-xs font-bold px-2 py-0.5 rounded-md ${
                             testResponse.status >= 200 &&
                             testResponse.status < 300
                               ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
@@ -1004,7 +1004,7 @@ export default function SellerApiDocs() {
           {/* Base URL */}
           <div className="mt-4 flex items-center gap-2 px-4 py-3 rounded-xl bg-muted/15 border border-border/20">
             <Globe size={13} className="text-muted-foreground/50 shrink-0" />
-            <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50 shrink-0">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/50 shrink-0">
               Base URL
             </span>
             <code className="text-xs font-mono text-foreground/80 flex-1 truncate">
@@ -1017,7 +1017,7 @@ export default function SellerApiDocs() {
         <div className="flex gap-8">
           {/* Desktop sidebar */}
           <nav className="w-48 shrink-0 sticky top-4 self-start hidden md:block">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/40 mb-3 px-3">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/40 mb-3 px-3">
               Endpoints
             </p>
             <div className="space-y-0.5">
@@ -1099,10 +1099,10 @@ export default function SellerApiDocs() {
                     {section.permission !== "-" && (
                       <div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-muted/15 border border-border/15">
                         <Lock size={10} className="text-muted-foreground/40" />
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="text-xs text-muted-foreground">
                           Permissão:
                         </span>
-                        <code className="text-[10px] font-mono text-foreground/70">
+                        <code className="text-xs font-mono text-foreground/70">
                           {section.permission}
                         </code>
                       </div>
@@ -1166,7 +1166,7 @@ export default function SellerApiDocs() {
                         className="flex items-start gap-2.5 text-xs text-muted-foreground"
                       >
                         <div className="w-4 h-4 rounded-md bg-primary/5 flex items-center justify-center shrink-0 mt-0.5">
-                          <span className="text-[9px] font-bold text-primary">
+                          <span className="text-xs font-bold text-primary">
                             {i + 1}
                           </span>
                         </div>

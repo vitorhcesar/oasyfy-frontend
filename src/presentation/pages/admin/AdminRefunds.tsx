@@ -216,7 +216,7 @@ export default function AdminRefunds() {
                           <p className="text-xs text-muted-foreground/50 mb-0.5">
                             Cliente
                           </p>
-                          <p className="text-[13px] font-medium text-foreground">
+                          <p className="text-sm font-medium text-foreground">
                             {refund.transaction?.customer_name || "—"}
                           </p>
                           {refund.transaction?.customer_email && (
@@ -229,7 +229,7 @@ export default function AdminRefunds() {
                           <p className="text-xs text-muted-foreground/50 mb-0.5">
                             Produtor
                           </p>
-                          <p className="text-[13px] font-medium text-foreground">
+                          <p className="text-sm font-medium text-foreground">
                             {refund.seller_profile?.full_name ||
                               refund.seller_profile?.account_id ||
                               "—"}
@@ -244,7 +244,7 @@ export default function AdminRefunds() {
                           <p className="text-xs text-muted-foreground/50 mb-0.5">
                             Valor do reembolso
                           </p>
-                          <p className="text-[13px] font-bold text-foreground">
+                          <p className="text-sm font-bold text-foreground">
                             {formatCurrency(refund.amount)}
                           </p>
                           {refund.transaction && (
@@ -260,7 +260,7 @@ export default function AdminRefunds() {
                         <p className="text-xs text-muted-foreground/50 mb-1">
                           Motivo
                         </p>
-                        <p className="text-[12px] text-foreground leading-relaxed">
+                        <p className="text-sm text-foreground leading-relaxed">
                           {refund.reason}
                         </p>
                       </div>
@@ -270,7 +270,7 @@ export default function AdminRefunds() {
                           <p className="text-xs text-primary/60 mb-1">
                             Nota do admin
                           </p>
-                          <p className="text-[12px] text-foreground leading-relaxed">
+                          <p className="text-sm text-foreground leading-relaxed">
                             {refund.admin_note}
                           </p>
                         </div>

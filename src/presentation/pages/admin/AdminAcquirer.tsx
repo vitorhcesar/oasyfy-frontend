@@ -252,7 +252,7 @@ export default function AdminAcquirer() {
                       conn.status === "connected" ? "default" : "secondary"
                     }
                     className={cn(
-                      "text-[10px] px-1.5 py-0",
+                      "text-xs px-1.5 py-0",
                       conn.status === "connected" &&
                         "bg-primary/10 text-primary border-primary/20",
                       conn.status === "error" &&
@@ -273,7 +273,7 @@ export default function AdminAcquirer() {
                   {conn.methods.map((m) => (
                     <span
                       key={m}
-                      className="text-[10px] px-1.5 py-0.5 rounded bg-muted/50 text-muted-foreground font-medium"
+                      className="text-xs px-1.5 py-0.5 rounded bg-muted/50 text-muted-foreground font-medium"
                     >
                       {m}
                     </span>
@@ -430,7 +430,7 @@ export default function AdminAcquirer() {
               sistema tenta automaticamente a próxima.
             </p>
           </div>
-          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground bg-muted/30 rounded-md px-2.5 py-1.5">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/30 rounded-md px-2.5 py-1.5">
             <RotateCcw size={11} />
             Failover automático
           </div>
@@ -454,7 +454,7 @@ export default function AdminAcquirer() {
                 <div className="flex items-center gap-2">
                   <Badge
                     variant="outline"
-                    className="text-[10px] font-semibold uppercase tracking-wider px-2"
+                    className="text-xs font-semibold uppercase tracking-wider px-2"
                   >
                     {method}
                   </Badge>
@@ -473,7 +473,7 @@ export default function AdminAcquirer() {
                     methodAcquirers.length > 0
                   }
                 >
-                  <SelectTrigger className="h-7 w-auto text-[11px] gap-1.5 border-dashed">
+                  <SelectTrigger className="h-7 w-auto text-sm gap-1.5 border-dashed">
                     <Plus size={12} />
                     <SelectValue
                       placeholder={
@@ -521,7 +521,7 @@ export default function AdminAcquirer() {
                           className="text-muted-foreground/30 shrink-0"
                         />
 
-                        <div className="flex items-center justify-center w-6 h-6 rounded bg-muted/40 text-[10px] font-bold text-muted-foreground shrink-0">
+                        <div className="flex items-center justify-center w-6 h-6 rounded bg-muted/40 text-xs font-bold text-muted-foreground shrink-0">
                           {idx + 1}
                         </div>
 
@@ -539,7 +539,7 @@ export default function AdminAcquirer() {
                           </span>
                           {idx === 0 && (
                             <Badge
-                              className="ml-2 text-[9px] px-1 py-0 bg-primary/10 text-primary border-primary/20"
+                              className="ml-2 text-xs px-1 py-0 bg-primary/10 text-primary border-primary/20"
                               variant="outline"
                             >
                               Principal
@@ -547,7 +547,7 @@ export default function AdminAcquirer() {
                           )}
                           {idx > 0 && (
                             <Badge
-                              className="ml-2 text-[9px] px-1 py-0 bg-accent text-accent-foreground"
+                              className="ml-2 text-xs px-1 py-0 bg-accent text-accent-foreground"
                               variant="outline"
                             >
                               Fallback {idx}
@@ -568,7 +568,7 @@ export default function AdminAcquirer() {
                               }}
                               title="Subir prioridade"
                             >
-                              <span className="text-[10px]">▲</span>
+                              <span className="text-xs">▲</span>
                             </Button>
                           )}
                           {idx < rules.length - 1 && (
@@ -583,7 +583,7 @@ export default function AdminAcquirer() {
                               }}
                               title="Descer prioridade"
                             >
-                              <span className="text-[10px]">▼</span>
+                              <span className="text-xs">▼</span>
                             </Button>
                           )}
                         </div>
@@ -653,7 +653,7 @@ export default function AdminAcquirer() {
               pix).
             </p>
           </div>
-          <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground bg-muted/30 rounded-md px-2.5 py-1.5">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/30 rounded-md px-2.5 py-1.5">
             <RotateCcw size={11} />
             Failover automático
           </div>
@@ -683,7 +683,7 @@ export default function AdminAcquirer() {
                 <div className="flex items-center gap-2">
                   <Badge
                     variant="outline"
-                    className="text-[10px] font-semibold uppercase tracking-wider px-2"
+                    className="text-xs font-semibold uppercase tracking-wider px-2"
                   >
                     {methodLabels[method] || method}
                   </Badge>
@@ -699,7 +699,7 @@ export default function AdminAcquirer() {
                   <Select
                     onValueChange={(val) => addRoutingRule(routeMethod, val)}
                   >
-                    <SelectTrigger className="h-7 w-auto text-[11px] gap-1.5 border-dashed">
+                    <SelectTrigger className="h-7 w-auto text-sm gap-1.5 border-dashed">
                       <Plus size={12} />
                       <SelectValue placeholder="Adicionar" />
                     </SelectTrigger>
@@ -734,7 +734,7 @@ export default function AdminAcquirer() {
                           size={14}
                           className="text-muted-foreground/30 shrink-0"
                         />
-                        <div className="flex items-center justify-center w-6 h-6 rounded bg-muted/40 text-[10px] font-bold text-muted-foreground shrink-0">
+                        <div className="flex items-center justify-center w-6 h-6 rounded bg-muted/40 text-xs font-bold text-muted-foreground shrink-0">
                           {idx + 1}
                         </div>
                         {logo && (
@@ -750,7 +750,7 @@ export default function AdminAcquirer() {
                           </span>
                           {idx === 0 && (
                             <Badge
-                              className="ml-2 text-[9px] px-1 py-0 bg-primary/10 text-primary border-primary/20"
+                              className="ml-2 text-xs px-1 py-0 bg-primary/10 text-primary border-primary/20"
                               variant="outline"
                             >
                               Principal
@@ -758,7 +758,7 @@ export default function AdminAcquirer() {
                           )}
                           {idx > 0 && (
                             <Badge
-                              className="ml-2 text-[9px] px-1 py-0 bg-accent text-accent-foreground"
+                              className="ml-2 text-xs px-1 py-0 bg-accent text-accent-foreground"
                               variant="outline"
                             >
                               Fallback {idx}
@@ -778,7 +778,7 @@ export default function AdminAcquirer() {
                               }}
                               title="Subir prioridade"
                             >
-                              <span className="text-[10px]">▲</span>
+                              <span className="text-xs">▲</span>
                             </Button>
                           )}
                           {idx < rules.length - 1 && (
@@ -793,7 +793,7 @@ export default function AdminAcquirer() {
                               }}
                               title="Descer prioridade"
                             >
-                              <span className="text-[10px]">▼</span>
+                              <span className="text-xs">▼</span>
                             </Button>
                           )}
                         </div>
@@ -1012,7 +1012,7 @@ export default function AdminAcquirer() {
                               {methodLabel[method]}
                             </span>
                             <div>
-                              <label className="text-[10px] text-muted-foreground/60 mb-0.5 block">
+                              <label className="text-xs text-muted-foreground/60 mb-0.5 block">
                                 Fixo (R$)
                               </label>
                               <Input
@@ -1033,7 +1033,7 @@ export default function AdminAcquirer() {
                               />
                             </div>
                             <div>
-                              <label className="text-[10px] text-muted-foreground/60 mb-0.5 block">
+                              <label className="text-xs text-muted-foreground/60 mb-0.5 block">
                                 Variável (%)
                               </label>
                               <Input
@@ -1055,7 +1055,7 @@ export default function AdminAcquirer() {
                               />
                             </div>
                             <div>
-                              <label className="text-[10px] text-muted-foreground/60 mb-0.5 block">
+                              <label className="text-xs text-muted-foreground/60 mb-0.5 block">
                                 Mínimo (R$)
                               </label>
                               <Input
@@ -1098,7 +1098,7 @@ export default function AdminAcquirer() {
                               {methodLabel[method]}
                             </span>
                             <div>
-                              <label className="text-[10px] text-muted-foreground/60 mb-0.5 block">
+                              <label className="text-xs text-muted-foreground/60 mb-0.5 block">
                                 Fixo (R$)
                               </label>
                               <Input
@@ -1119,7 +1119,7 @@ export default function AdminAcquirer() {
                               />
                             </div>
                             <div>
-                              <label className="text-[10px] text-muted-foreground/60 mb-0.5 block">
+                              <label className="text-xs text-muted-foreground/60 mb-0.5 block">
                                 Variável (%)
                               </label>
                               <Input
@@ -1141,7 +1141,7 @@ export default function AdminAcquirer() {
                               />
                             </div>
                             <div>
-                              <label className="text-[10px] text-muted-foreground/60 mb-0.5 block">
+                              <label className="text-xs text-muted-foreground/60 mb-0.5 block">
                                 Mínimo (R$)
                               </label>
                               <Input

@@ -28,30 +28,30 @@ export default function RevenueChart({
   failedTransactionsCount,
 }: IRevenueChartProps) {
   return (
-    <div className="md:col-span-2 rounded-xl bg-card border border-border/50 p-3">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-xs font-semibold text-foreground">Faturamento</h3>
-        <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <ShieldCheck size={10} className="text-success" />
+    <div className="md:col-span-2 rounded-xl border border-border/50 bg-card p-5">
+      <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <h3 className="text-base font-semibold text-foreground">Faturamento</h3>
+        <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+          <span className="flex items-center gap-1.5">
+            <ShieldCheck size={14} className="text-success" />
             {completedTransactionsCount} aprovadas
           </span>
-          <span className="flex items-center gap-1">
-            <Clock size={10} className="text-warning" />
+          <span className="flex items-center gap-1.5">
+            <Clock size={14} className="text-warning" />
             {pendingTransactionsCount} pendentes
           </span>
-          <span className="flex items-center gap-1">
-            <Ban size={10} className="text-destructive" />
+          <span className="flex items-center gap-1.5">
+            <Ban size={14} className="text-destructive" />
             {failedTransactionsCount} falhadas
           </span>
         </div>
       </div>
       {chartData.length > 0 ? (
-        <div className="h-44">
+        <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
               data={chartData}
-              margin={{ top: 5, right: 5, left: -15, bottom: 0 }}
+              margin={{ top: 5, right: 5, left: -10, bottom: 0 }}
             >
               <defs>
                 <linearGradient id="adminFill" x1="0" y1="0" x2="0" y2="1">
@@ -81,7 +81,7 @@ export default function RevenueChart({
               <XAxis
                 dataKey="date"
                 tick={{
-                  fontSize: 9,
+                  fontSize: 12,
                   fill: "hsl(var(--muted-foreground))",
                 }}
                 axisLine={false}
@@ -89,7 +89,7 @@ export default function RevenueChart({
               />
               <YAxis
                 tick={{
-                  fontSize: 9,
+                  fontSize: 12,
                   fill: "hsl(var(--muted-foreground))",
                 }}
                 axisLine={false}
@@ -102,10 +102,10 @@ export default function RevenueChart({
                 contentStyle={{
                   backgroundColor: "hsl(var(--card))",
                   border: "1px solid hsl(var(--border))",
-                  borderRadius: "10px",
-                  fontSize: "10px",
+                  borderRadius: "12px",
+                  fontSize: "13px",
                   boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
-                  padding: "8px 12px",
+                  padding: "10px 14px",
                 }}
                 formatter={(value: number, name: string) => {
                   if (name === "volume")
@@ -141,7 +141,7 @@ export default function RevenueChart({
           </ResponsiveContainer>
         </div>
       ) : (
-        <p className="text-xs text-muted-foreground text-center py-8">
+        <p className="py-12 text-center text-sm text-muted-foreground">
           Sem dados no período
         </p>
       )}

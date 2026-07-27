@@ -107,12 +107,12 @@ export default function LoginAdmin() {
             <AuthBrandMark
               size="lg"
               variant="white"
-              className="animate-fade-in"
+              className="animate-auth-reveal-left"
             />
 
             <div
-              className="max-w-md animate-fade-in"
-              style={{ animationDelay: "80ms" }}
+              className="max-w-md animate-auth-reveal-up"
+              style={{ animationDelay: "140ms" }}
             >
               <p className="mb-4 text-xs font-semibold uppercase tracking-[0.22em] text-white/45">
                 Painel administrativo
@@ -129,12 +129,12 @@ export default function LoginAdmin() {
             </div>
 
             <div
-              className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white/40 animate-fade-in"
-              style={{ animationDelay: "160ms" }}
+              className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white/40 animate-auth-reveal-up"
+              style={{ animationDelay: "280ms" }}
             >
               {["Controle total", "Monitoramento", "Seguro"].map((t) => (
                 <span key={t} className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#5F2998]" />
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#5F2998]" />
                   {t}
                 </span>
               ))}
@@ -144,11 +144,14 @@ export default function LoginAdmin() {
 
         <div className="relative flex flex-1 items-center justify-center px-6 py-10">
           <div className="relative w-full max-w-[460px]">
-            <div className="mb-10 lg:hidden">
+            <div className="mb-10 animate-auth-reveal-up lg:hidden">
               <AuthBrandMark size="lg" variant="white" />
             </div>
 
-            <div className="liquid-glass animate-liquid-glass rounded-[20px] p-7 sm:rounded-3xl sm:p-9">
+            <div className="relative">
+              <div className="auth-glass-glow" aria-hidden />
+              <div className="liquid-glass auth-glass-sheen animate-liquid-glass relative z-10 rounded-[20px] p-7 sm:rounded-3xl sm:p-9">
+              <span className="auth-glass-sheen-beam" aria-hidden />
               <header className="mb-7">
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15 ring-1 ring-primary/25">
                   <Shield className="text-primary" size={20} />
@@ -219,8 +222,9 @@ export default function LoginAdmin() {
                 </form>
               )}
             </div>
+            </div>
 
-            <p className="mt-6 text-center text-base text-muted-foreground">
+            <p className="mt-6 animate-auth-reveal-up text-center text-base text-muted-foreground" style={{ animationDelay: "420ms" }}>
               É um seller?{" "}
               <a
                 href="/login/seller"

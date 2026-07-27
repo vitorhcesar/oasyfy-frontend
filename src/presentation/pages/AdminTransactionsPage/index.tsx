@@ -202,7 +202,7 @@ export default function AdminTransactionsPage() {
               <PopoverTrigger asChild>
                 <button
                   className={cn(
-                    "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all border",
+                    "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all border",
                     dateRange?.from
                       ? "bg-primary/10 text-primary border-primary/20"
                       : "bg-card border-border/50 text-muted-foreground hover:text-foreground",

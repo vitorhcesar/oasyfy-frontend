@@ -103,7 +103,7 @@ function InputField({
 }) {
   return (
     <div className="space-y-1.5">
-      <label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+      <label className="text-sm font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
         {Icon && <Icon size={12} className="text-muted-foreground/60" />}
         {label}
       </label>
@@ -118,7 +118,7 @@ function InputField({
           placeholder="0"
         />
         {suffix && (
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-medium text-muted-foreground/50">
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground/50">
             {suffix}
           </span>
         )}

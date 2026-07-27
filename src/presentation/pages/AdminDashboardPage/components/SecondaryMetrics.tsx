@@ -14,8 +14,8 @@ export default function SecondaryMetrics() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-6 mb-4">
-        <Loader2 size={18} className="animate-spin text-muted-foreground" />
+      <div className="mb-5 flex items-center justify-center py-8">
+        <Loader2 size={20} className="animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -29,50 +29,42 @@ export default function SecondaryMetrics() {
   } = data;
 
   return (
-    <div className="grid grid-cols-3 md:grid-cols-4 gap-2 mb-4">
-      <div className="p-2.5 rounded-lg bg-card border border-border/50 flex items-center gap-2.5">
-        <Activity size={12} className="text-primary flex-shrink-0" />
+    <div className="mb-5 grid grid-cols-2 gap-3 md:grid-cols-4">
+      <div className="flex items-center gap-3 rounded-xl border border-border/50 bg-card p-4">
+        <Activity size={18} className="flex-shrink-0 text-primary" />
         <div className="min-w-0">
-          <p className="text-[9px] text-muted-foreground leading-none">
-            Ticket Médio
-          </p>
-          <p className="text-xs font-bold text-foreground mt-0.5">
+          <p className="text-sm text-muted-foreground">Ticket Médio</p>
+          <p className="mt-0.5 text-lg font-bold text-foreground">
             {formatCurrency(averageTicket)}
           </p>
         </div>
       </div>
-      <div className="p-2.5 rounded-lg bg-card border border-border/50 flex items-center gap-2.5">
-        <RefreshCcw size={12} className="text-destructive flex-shrink-0" />
+      <div className="flex items-center gap-3 rounded-xl border border-border/50 bg-card p-4">
+        <RefreshCcw size={18} className="flex-shrink-0 text-destructive" />
         <div className="min-w-0">
-          <p className="text-[9px] text-muted-foreground leading-none">
-            Taxa Estorno
-          </p>
-          <p className="text-xs font-bold text-foreground mt-0.5">
+          <p className="text-sm text-muted-foreground">Taxa Estorno</p>
+          <p className="mt-0.5 text-lg font-bold text-foreground">
             {refundRate}%
           </p>
         </div>
       </div>
-      <div className="p-2.5 rounded-lg bg-card border border-border/50 flex items-center gap-2.5">
-        <BarChart3 size={12} className="text-primary flex-shrink-0" />
+      <div className="flex items-center gap-3 rounded-xl border border-border/50 bg-card p-4">
+        <BarChart3 size={18} className="flex-shrink-0 text-primary" />
         <div className="min-w-0">
-          <p className="text-[9px] text-muted-foreground leading-none">
-            Tx Aprovadas
-          </p>
-          <div className="flex items-center gap-1">
-            <p className="text-xs font-bold text-foreground mt-0.5">
+          <p className="text-sm text-muted-foreground">Tx Aprovadas</p>
+          <div className="mt-0.5 flex items-center gap-2">
+            <p className="text-lg font-bold text-foreground">
               {completedTransactionsCount}
             </p>
             <ChangeIndicator value={transactionsCountChange} />
           </div>
         </div>
       </div>
-      <div className="hidden md:flex p-2.5 rounded-lg bg-card border border-border/50 items-center gap-2.5">
-        <DollarSign size={12} className="text-primary flex-shrink-0" />
+      <div className="flex items-center gap-3 rounded-xl border border-border/50 bg-card p-4">
+        <DollarSign size={18} className="flex-shrink-0 text-primary" />
         <div className="min-w-0">
-          <p className="text-[9px] text-muted-foreground leading-none">
-            Margem (Taxas/Vol)
-          </p>
-          <p className="text-xs font-bold text-foreground mt-0.5">
+          <p className="text-sm text-muted-foreground">Margem (Taxas/Vol)</p>
+          <p className="mt-0.5 text-lg font-bold text-foreground">
             {feeMarginRate.toFixed(1)}%
           </p>
         </div>

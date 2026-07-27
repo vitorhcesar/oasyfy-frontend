@@ -113,7 +113,7 @@ export function AcquirerConfigDialog({
               imageClassName="w-6 h-6 object-contain"
             />
             Configurar {connection.name}
-            <span className="text-[10px] font-normal text-muted-foreground ml-1">
+            <span className="text-xs font-normal text-muted-foreground ml-1">
               ({getPixAcquirerProviderLabel(provider)})
             </span>
           </DialogTitle>
@@ -125,14 +125,14 @@ export function AcquirerConfigDialog({
               <p className="text-xs text-foreground font-medium">
                 Webhook Woovi / OpenPix
               </p>
-              <p className="text-[11px] text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 Cadastre esta URL no painel Woovi (um webhook por evento). Use o
                 mesmo valor de <strong>Authorization</strong> do webhook no campo
                 &quot;Secret do webhook&quot; abaixo.
               </p>
               <div className="flex items-center gap-2 text-xs bg-background/80 rounded-md px-2 py-1.5 border border-border/40">
                 <ExternalLink size={12} className="shrink-0 text-muted-foreground" />
-                <code className="text-[10px] font-mono break-all flex-1">
+                <code className="text-xs font-mono break-all flex-1">
                   {webhookUrl}
                 </code>
                 <button
@@ -145,7 +145,7 @@ export function AcquirerConfigDialog({
                   <Copy size={12} className="text-muted-foreground hover:text-foreground" />
                 </button>
               </div>
-              <ul className="text-[10px] text-muted-foreground space-y-0.5">
+              <ul className="text-xs text-muted-foreground space-y-0.5">
                 {WOOVI_WEBHOOK_EVENTS.map((item) => (
                   <li key={item.event}>
                     <code className="text-foreground">{item.event}</code> —{" "}
@@ -165,10 +165,10 @@ export function AcquirerConfigDialog({
                     Credenciais configuradas
                   </span>
                 </div>
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   API: <code>{connection.api_url}</code>
                 </p>
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   Por segurança, os secrets não são exibidos após salvar.
                 </p>
               </div>
@@ -198,7 +198,7 @@ export function AcquirerConfigDialog({
                   }
                   className="text-xs font-mono"
                 />
-                <p className="text-[10px] text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   Sandbox Woovi: <code>https://api.woovi-sandbox.com</code> —
                   Produção: <code>https://api.woovi.com</code>
                 </p>
@@ -273,7 +273,7 @@ export function AcquirerConfigDialog({
                     />
                   </div>
 
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     Saques PIX Out exigem scope <code>PAYMENT_POST</code> no app
                     Woovi.
                   </p>

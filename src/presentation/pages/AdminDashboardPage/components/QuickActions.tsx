@@ -51,28 +51,28 @@ export default function QuickActions() {
   ];
 
   return (
-    <div className="rounded-xl bg-card border border-border/50 p-3">
-      <h3 className="text-xs font-semibold text-foreground mb-2 flex items-center gap-1.5">
-        <Activity size={11} className="text-primary" /> Ações rápidas
+    <div className="rounded-xl border border-border/50 bg-card p-5">
+      <h3 className="mb-4 flex items-center gap-2 text-base font-semibold text-foreground">
+        <Activity size={16} className="text-primary" /> Ações rápidas
       </h3>
-      <div className="grid grid-cols-3 md:grid-cols-6 gap-1.5">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
         {quickActions.map((action) => (
           <button
             key={action.label}
             onClick={() => navigate(action.link)}
-            className="group flex items-center gap-2 p-2 rounded-lg hover:bg-muted/30 transition-all text-left"
+            className="group flex items-center gap-3 rounded-xl p-3 text-left transition-all hover:bg-muted/30"
           >
-            <div className="w-6 h-6 rounded-md bg-muted/60 flex items-center justify-center flex-shrink-0 group-hover:bg-primary/10 transition-colors">
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-muted/60 transition-colors group-hover:bg-primary/10">
               <action.icon
-                size={11}
-                className="text-muted-foreground group-hover:text-primary transition-colors"
+                size={18}
+                className="text-muted-foreground transition-colors group-hover:text-primary"
               />
             </div>
             <div className="min-w-0">
-              <p className="text-[11px] font-medium text-foreground leading-none">
+              <p className="text-sm font-semibold leading-none text-foreground">
                 {action.label}
               </p>
-              <p className="text-[9px] text-muted-foreground truncate mt-0.5">
+              <p className="mt-1 truncate text-xs text-muted-foreground">
                 {action.description}
               </p>
             </div>

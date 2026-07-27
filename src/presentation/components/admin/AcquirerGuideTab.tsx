@@ -23,12 +23,12 @@ function CopyBlock({ label, value }: { label?: string; value: string }) {
   return (
     <div className="space-y-1">
       {label ? (
-        <p className="text-[10px] font-medium text-muted-foreground uppercase tracking-wide">
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
           {label}
         </p>
       ) : null}
       <div className="flex items-start gap-2 rounded-lg border border-border/50 bg-muted/30 px-3 py-2">
-        <code className="text-[11px] font-mono text-foreground break-all flex-1">
+        <code className="text-sm font-mono text-foreground break-all flex-1">
           {value}
         </code>
         <button
@@ -57,7 +57,7 @@ function GuideStep({
 }) {
   return (
     <div className="flex gap-3">
-      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-[11px] font-bold">
+      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-bold">
         {number}
       </div>
       <div className="space-y-2 min-w-0 flex-1 pb-6 border-b border-border/30 last:border-0 last:pb-0">
@@ -141,7 +141,7 @@ export function AcquirerGuideTab() {
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
             <CardTitle className="text-sm">Woovi / OpenPix</CardTitle>
-            <Badge variant="outline" className="text-[10px]">
+            <Badge variant="outline" className="text-xs">
               PIX entrada + PIX saída
             </Badge>
           </div>
@@ -343,7 +343,7 @@ export function AcquirerGuideTab() {
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
             <CardTitle className="text-sm">Cartwave Hub</CardTitle>
-            <Badge variant="outline" className="text-[10px]">
+            <Badge variant="outline" className="text-xs">
               PIX entrada (cobrança)
             </Badge>
           </div>

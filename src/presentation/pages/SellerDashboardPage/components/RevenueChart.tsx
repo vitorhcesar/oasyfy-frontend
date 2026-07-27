@@ -63,7 +63,7 @@ export default function RevenueChart({
       <div className="flex items-start justify-between mb-4">
         <div>
           <h3 className="text-xs font-semibold text-foreground">Faturamento</h3>
-          <p className="text-[10px] text-muted-foreground mt-0.5">
+          <p className="text-xs text-muted-foreground mt-0.5">
             Histórico de transações aprovadas
           </p>
         </div>
@@ -81,7 +81,7 @@ export default function RevenueChart({
           </p>
           <p
             className={cn(
-              "text-[10px] text-muted-foreground transition-all",
+              "text-xs text-muted-foreground transition-all",
               hideBalance && "blur-md select-none"
             )}
           >

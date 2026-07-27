@@ -313,12 +313,12 @@ export default function SellerKyc() {
             >
               {t.label}
               {tabStatusMap[t.key] === "pending" && (
-                <span className="ml-2 px-2 py-0.5 rounded-full bg-amber-100 border border-amber-200/60 text-amber-700 text-[11px] md:text-xs font-semibold tracking-wide">
+                <span className="ml-2 px-2 py-0.5 rounded-full bg-amber-100 border border-amber-200/60 text-amber-700 text-sm md:text-xs font-semibold tracking-wide">
                   Em análise
                 </span>
               )}
               {tabStatusMap[t.key] === "approved" && (
-                <span className="ml-2 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-[11px] md:text-xs font-semibold tracking-wide">
+                <span className="ml-2 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm md:text-xs font-semibold tracking-wide">
                   Aprovado
                 </span>
               )}
@@ -326,7 +326,7 @@ export default function SellerKyc() {
                 <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-foreground rounded-full" />
               )}
               {t.key === "documents" && docRejected > 0 && (
-                <span className="ml-2 w-4 h-4 inline-flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[11px] md:text-xs font-bold">
+                <span className="ml-2 w-4 h-4 inline-flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-sm md:text-xs font-bold">
                   {docRejected}
                 </span>
               )}
@@ -661,7 +661,7 @@ export default function SellerKyc() {
 function BankStatusBadge({ status }: { status: string }) {
   return (
     <div
-      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] md:text-xs font-medium border ${
+      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs md:text-xs font-medium border ${
         status === "approved"
           ? "border-primary/20 bg-primary/5 text-primary"
           : status === "rejected"

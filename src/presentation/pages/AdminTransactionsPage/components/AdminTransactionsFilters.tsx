@@ -75,7 +75,7 @@ export default function AdminTransactionsFilters({
             <button
               onClick={onPixSearch}
               disabled={pixSearchLoading}
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 px-2 py-0.5 rounded bg-primary/10 text-primary text-[10px] font-medium"
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 px-2 py-0.5 rounded bg-primary/10 text-primary text-xs font-medium"
             >
               {pixSearchLoading ? "..." : "⏎"}
             </button>

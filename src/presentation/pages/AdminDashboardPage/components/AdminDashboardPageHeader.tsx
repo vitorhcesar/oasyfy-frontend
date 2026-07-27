@@ -27,21 +27,18 @@ export default function AdminDashboardPageHeader() {
   } = useAdminDashboardPageStore();
 
   return (
-    <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 animate-fade-in">
+    <header className="mb-6 flex animate-fade-in flex-col justify-between gap-4 sm:flex-row sm:items-center">
       <div>
-        <div className="flex items-center gap-2 mb-0.5">
-          <div className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-          <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-widest">
-            Painel Administrativo
-          </span>
-        </div>
-        <h1 className="text-xl font-bold text-foreground tracking-tight">
+        <p className="mb-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+          Painel administrativo
+        </p>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">
           Olá, {name.split(" ")[0]}
         </h1>
       </div>
 
-      <div className="flex items-center gap-2">
-        <div className="flex items-center gap-1 rounded-lg bg-muted/50 p-0.5">
+      <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-1 rounded-xl bg-muted/50 p-1">
           {(["7d", "30d", "90d"] as TAdminDashboardPeriod[]).map((p) => (
             <button
               key={p}
@@ -51,9 +48,9 @@ export default function AdminDashboardPageHeader() {
                 setCustomTo(undefined);
               }}
               className={cn(
-                "px-2.5 py-1 rounded-md text-[11px] font-medium transition-all",
+                "rounded-lg px-3.5 py-2 text-sm font-semibold uppercase transition-all",
                 period === p
-                  ? "bg-card text-foreground shadow-sm"
+                  ? "bg-primary/15 text-primary shadow-sm"
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
@@ -67,11 +64,11 @@ export default function AdminDashboardPageHeader() {
               variant="outline"
               size="sm"
               className={cn(
-                "h-7 text-[11px] gap-1.5 font-medium",
+                "h-10 gap-2 rounded-xl text-sm font-medium",
                 period === "custom" && "border-primary text-primary",
               )}
             >
-              <CalendarIcon size={12} />
+              <CalendarIcon size={15} />
               {period === "custom" && customFrom && customTo
                 ? `${format(customFrom, "dd/MM", {
                     locale: ptBR,
@@ -80,7 +77,7 @@ export default function AdminDashboardPageHeader() {
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-3" align="end">
-            <p className="text-xs font-medium text-foreground mb-2">
+            <p className="mb-2 text-sm font-medium text-foreground">
               Selecione o período
             </p>
             <Calendar

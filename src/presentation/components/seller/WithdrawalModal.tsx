@@ -309,7 +309,7 @@ export function WithdrawalModal({
                   setRawValue("");
                 }}
                 className={cn(
-                  "flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[12px] font-medium transition-all",
+                  "flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium transition-all",
                   tab === "card"
                     ? "bg-card text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
@@ -324,7 +324,7 @@ export function WithdrawalModal({
                   setRawValue("");
                 }}
                 className={cn(
-                  "flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[12px] font-medium transition-all",
+                  "flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium transition-all",
                   tab === "pix_boleto"
                     ? "bg-card text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
@@ -359,7 +359,7 @@ export function WithdrawalModal({
 
             {!hasBalance ? (
               <div className="text-center mb-5">
-                <p className="text-[13px] font-medium text-foreground">
+                <p className="text-sm font-medium text-foreground">
                   Você não possui saldo disponível para sacar
                 </p>
                 <p className="text-xs text-muted-foreground mt-2">
@@ -410,7 +410,7 @@ export function WithdrawalModal({
             <div className="flex items-center justify-end gap-3">
               <button
                 onClick={handleClose}
-                className="text-[12px] font-medium text-primary hover:text-primary/80 transition-colors"
+                className="text-sm font-medium text-primary hover:text-primary/80 transition-colors"
               >
                 Fechar
               </button>
@@ -419,7 +419,7 @@ export function WithdrawalModal({
                   disabled={!isValid}
                   onClick={() => setStep("confirm")}
                   className={cn(
-                    "px-5 py-2 rounded-lg text-[12px] font-medium transition-all",
+                    "px-5 py-2 rounded-lg text-sm font-medium transition-all",
                     isValid
                       ? "bg-primary text-primary-foreground hover:opacity-90"
                       : "bg-muted text-muted-foreground cursor-not-allowed"
@@ -492,14 +492,14 @@ export function WithdrawalModal({
               <div className="flex items-center justify-end gap-3 pt-1">
                 <button
                   onClick={() => setStep("amount")}
-                  className="text-[12px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
                 >
                   Voltar
                 </button>
                 <button
                   disabled={loading}
                   onClick={handleConfirm}
-                  className="px-5 py-2 rounded-lg bg-primary text-primary-foreground text-[12px] font-medium hover:opacity-90 transition-all flex items-center gap-1.5"
+                  className="px-5 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-all flex items-center gap-1.5"
                 >
                   {loading ? (
                     <Loader2 size={13} className="animate-spin" />
@@ -526,7 +526,7 @@ export function WithdrawalModal({
             </p>
             <button
               onClick={handleClose}
-              className="px-6 py-2 rounded-lg bg-primary text-primary-foreground text-[12px] font-medium hover:opacity-90 transition-all"
+              className="px-6 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-all"
             >
               Fechar
             </button>

@@ -75,15 +75,14 @@ export default function StatusAndMethod({
   }, [completedTransactions]);
 
   return (
-    <div className="rounded-xl bg-card border border-border/50 p-3 flex flex-col gap-4">
-      {/* Pie chart */}
+    <div className="flex flex-col gap-5 rounded-xl border border-border/50 bg-card p-5">
       {statusBreakdown.length > 0 && (
         <div>
-          <h3 className="text-xs font-semibold text-foreground mb-1">
+          <h3 className="mb-3 text-base font-semibold text-foreground">
             Status das transações
           </h3>
-          <div className="flex items-center gap-3">
-            <div className="w-20 h-20">
+          <div className="flex items-center gap-4">
+            <div className="h-28 w-28">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -91,8 +90,8 @@ export default function StatusAndMethod({
                     dataKey="value"
                     cx="50%"
                     cy="50%"
-                    innerRadius={18}
-                    outerRadius={36}
+                    innerRadius={28}
+                    outerRadius={48}
                     strokeWidth={0}
                   >
                     {statusBreakdown.map((entry, i) => (
@@ -102,17 +101,15 @@ export default function StatusAndMethod({
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            <div className="space-y-1">
+            <div className="space-y-2">
               {statusBreakdown.map((s) => (
-                <div key={s.name} className="flex items-center gap-1.5">
+                <div key={s.name} className="flex items-center gap-2">
                   <div
-                    className="w-2 h-2 rounded-full flex-shrink-0"
+                    className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
                     style={{ backgroundColor: s.color }}
                   />
-                  <span className="text-[10px] text-muted-foreground">
-                    {s.name}
-                  </span>
-                  <span className="text-[10px] font-semibold text-foreground">
+                  <span className="text-sm text-muted-foreground">{s.name}</span>
+                  <span className="text-sm font-semibold text-foreground">
                     {s.value}
                   </span>
                 </div>
@@ -122,13 +119,12 @@ export default function StatusAndMethod({
         </div>
       )}
 
-      {/* Method breakdown */}
       <div>
-        <h3 className="text-xs font-semibold text-foreground mb-2">
+        <h3 className="mb-3 text-base font-semibold text-foreground">
           Por método
         </h3>
         {methodBreakdown.length > 0 ? (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {methodBreakdown.map((m) => {
               const pct =
                 completedTransactions.length > 0
@@ -136,15 +132,15 @@ export default function StatusAndMethod({
                   : 0;
               return (
                 <div key={m.method}>
-                  <div className="flex items-center justify-between mb-0.5">
-                    <span className="text-[11px] font-medium text-foreground">
+                  <div className="mb-1 flex items-center justify-between">
+                    <span className="text-sm font-medium text-foreground">
                       {methodLabels[m.method] || m.method}
                     </span>
-                    <span className="text-[10px] text-muted-foreground">
+                    <span className="text-sm text-muted-foreground">
                       {formatCompact(m.volume)} ({pct}%)
                     </span>
                   </div>
-                  <div className="h-1 bg-muted/50 rounded-full overflow-hidden">
+                  <div className="h-1.5 overflow-hidden rounded-full bg-muted/50">
                     <div
                       className="h-full rounded-full transition-all"
                       style={{
@@ -159,7 +155,7 @@ export default function StatusAndMethod({
             })}
           </div>
         ) : (
-          <p className="text-xs text-muted-foreground text-center py-4">
+          <p className="py-6 text-center text-sm text-muted-foreground">
             Sem dados
           </p>
         )}

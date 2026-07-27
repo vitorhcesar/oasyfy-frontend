@@ -151,7 +151,7 @@ export default function SellerDeposit() {
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <Label className="text-xs">CPF/CNPJ do depositante</Label>
-                  <span className="text-[10px] text-muted-foreground/60 italic">
+                  <span className="text-xs text-muted-foreground/60 italic">
                     Opcional
                   </span>
                 </div>
@@ -199,7 +199,7 @@ export default function SellerDeposit() {
                   </CardDescription>
                 </div>
                 {pixData.acquirer && (
-                  <Badge variant="outline" className="text-[10px]">
+                  <Badge variant="outline" className="text-xs">
                     via {pixData.acquirer}
                   </Badge>
                 )}
@@ -239,7 +239,7 @@ export default function SellerDeposit() {
                     <Input
                       readOnly
                       value={pixCode}
-                      className="text-[11px] font-mono flex-1"
+                      className="text-sm font-mono flex-1"
                     />
                     <Button
                       size="sm"
@@ -258,7 +258,7 @@ export default function SellerDeposit() {
               )}
 
               {(pixData.failoverAttempts ?? 0) > 0 && (
-                <p className="text-[10px] text-muted-foreground text-center">
+                <p className="text-xs text-muted-foreground text-center">
                   Failover: {pixData.failoverAttempts} tentativa(s) antes do
                   sucesso
                 </p>

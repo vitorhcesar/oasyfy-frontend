@@ -45,7 +45,7 @@ export function AcquirerBrandLogo({
   return (
     <span
       className={cn(
-        "inline-flex items-center justify-center rounded-md bg-primary/10 text-primary text-[10px] font-semibold uppercase",
+        "inline-flex items-center justify-center rounded-md bg-primary/10 text-primary text-xs font-semibold uppercase",
         className,
       )}
     >

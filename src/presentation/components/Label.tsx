@@ -8,7 +8,7 @@ export function Label({ children, className, ...props }: ILabelProps) {
   return (
     <label
       className={cn(
-        "text-xs font-medium text-muted-foreground pb-1.5 block",
+        "text-sm font-medium text-muted-foreground pb-2 block",
         className,
       )}
       {...props}

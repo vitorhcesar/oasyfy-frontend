@@ -23,7 +23,7 @@ interface IReadonlyFeeSectionProps {
 function FeeValue({ label, value, suffix = "" }: { label: string; value: number; suffix?: string }) {
   return (
     <div>
-      <p className="text-[10px] text-muted-foreground/60 uppercase tracking-wider mb-0.5">{label}</p>
+      <p className="text-xs text-muted-foreground/60 uppercase tracking-wider mb-0.5">{label}</p>
       <p className="text-sm font-medium text-foreground tabular-nums">
         {value.toFixed(2)}{suffix}
       </p>

@@ -66,7 +66,7 @@ export default function BannerListItem({
               <ExternalLink size={9} /> {banner.linkUrl}
             </a>
           )}
-          <p className="text-[11px] md:text-xs text-muted-foreground mt-1">
+          <p className="text-sm md:text-xs text-muted-foreground mt-1">
             Ordem: {banner.displayOrder} ·{" "}
             {new Date(banner.createdAt).toLocaleDateString("pt-BR")}
           </p>

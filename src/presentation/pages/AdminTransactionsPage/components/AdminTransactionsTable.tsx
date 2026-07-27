@@ -66,22 +66,22 @@ export default function AdminTransactionsTable({
       <table className="w-full min-w-[700px]">
         <thead>
           <tr className="border-b border-border/30 bg-muted/20">
-            <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[10px] uppercase tracking-wider">
+            <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs uppercase tracking-wider">
               Cliente
             </th>
-            <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[10px] uppercase tracking-wider">
+            <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs uppercase tracking-wider">
               Valor
             </th>
-            <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[10px] uppercase tracking-wider">
+            <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs uppercase tracking-wider">
               Método
             </th>
-            <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[10px] uppercase tracking-wider">
+            <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs uppercase tracking-wider">
               Status
             </th>
-            <th className="text-left px-3 py-2 font-medium text-muted-foreground text-[10px] uppercase tracking-wider">
+            <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs uppercase tracking-wider">
               Data
             </th>
-            <th className="text-center px-3 py-2 font-medium text-muted-foreground text-[10px] uppercase tracking-wider w-16"></th>
+            <th className="text-center px-3 py-2 font-medium text-muted-foreground text-xs uppercase tracking-wider w-16"></th>
           </tr>
         </thead>
         <tbody>
@@ -96,7 +96,7 @@ export default function AdminTransactionsTable({
                   {tx.customer_name || "Cliente padrão"}
                 </p>
                 {tx.customer_email && (
-                  <p className="text-[10px] text-muted-foreground/50 truncate max-w-[160px]">
+                  <p className="text-xs text-muted-foreground/50 truncate max-w-[160px]">
                     {tx.customer_email}
                   </p>
                 )}
@@ -105,7 +105,7 @@ export default function AdminTransactionsTable({
                 {formatCurrency(tx.amount)}
               </td>
               <td className="px-3 py-2">
-                <span className="text-[10px] uppercase font-medium text-muted-foreground bg-muted/40 px-1.5 py-0.5 rounded">
+                <span className="text-xs uppercase font-medium text-muted-foreground bg-muted/40 px-1.5 py-0.5 rounded">
                   {tx.method}
                 </span>
               </td>
@@ -121,7 +121,7 @@ export default function AdminTransactionsTable({
                         <span
                           className={`w-1.5 h-1.5 rounded-full ${s.dot}`}
                         />
-                        <span className="text-[11px] font-medium text-foreground">
+                        <span className="text-sm font-medium text-foreground">
                           {s.label}
                         </span>
                       </span>
@@ -135,7 +135,7 @@ export default function AdminTransactionsTable({
                   )}
                 </div>
               </td>
-              <td className="px-3 py-2 text-muted-foreground text-[11px]">
+              <td className="px-3 py-2 text-muted-foreground text-sm">
                 {format(new Date(tx.created_at), "dd/MM/yy HH:mm", {
                   locale: ptBR,
                 })}
@@ -146,7 +146,7 @@ export default function AdminTransactionsTable({
                     e.stopPropagation();
                     onOpenDetail(tx);
                   }}
-                  className="text-[10px] font-medium text-primary hover:underline"
+                  className="text-xs font-medium text-primary hover:underline"
                 >
                   Ver
                 </button>
@@ -158,7 +158,7 @@ export default function AdminTransactionsTable({
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between px-3 py-2 border-t border-border/20 bg-muted/10">
-          <p className="text-[10px] text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             {(currentPage - 1) * perPage + 1}–
             {Math.min(currentPage * perPage, displayFiltered.length)} de{" "}
             {displayFiltered.length}
@@ -183,7 +183,7 @@ export default function AdminTransactionsTable({
                   key={page}
                   onClick={() => onPageChange(page)}
                   className={cn(
-                    "w-6 h-6 rounded text-[10px] font-medium transition-all",
+                    "w-6 h-6 rounded text-xs font-medium transition-all",
                     currentPage === page
                       ? "bg-primary text-primary-foreground"
                       : "text-muted-foreground hover:bg-muted/30",
