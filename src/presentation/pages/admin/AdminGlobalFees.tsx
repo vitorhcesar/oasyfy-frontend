@@ -1,12 +1,7 @@
 import useAdminGlobalFeesQuery from "@/presentation/hooks/use-admin-global-fees-query";
 import { useApiService } from "@/presentation/hooks/use-api-service";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/presentation/components/ui/tabs";
 import { AdminLayout } from "@/presentation/layouts/AdminLayout";
+import { cn } from "@/presentation/utils/cn";
 import {
   Bitcoin,
   Clock,
@@ -102,9 +97,9 @@ function InputField({
   min?: string;
 }) {
   return (
-    <div className="space-y-1.5">
-      <label className="text-sm font-medium text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-        {Icon && <Icon size={12} className="text-muted-foreground/60" />}
+    <div className="space-y-2">
+      <label className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+        {Icon && <Icon size={14} className="text-muted-foreground/70" />}
         {label}
       </label>
       <div className="relative">
@@ -114,14 +109,52 @@ function InputField({
           min={min}
           value={value}
           onChange={(e) => onChange(Number(e.target.value))}
-          className="w-full px-3 py-2.5 rounded-lg border border-border/50 bg-background text-sm font-medium text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary/50 transition-all placeholder:text-muted-foreground/40"
+          className="h-10 w-full rounded-xl border border-border/50 bg-background px-3 text-sm font-medium text-foreground transition-all placeholder:text-muted-foreground/40 focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/30"
           placeholder="0"
         />
         {suffix && (
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground/50">
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-medium text-muted-foreground">
             {suffix}
           </span>
         )}
+      </div>
+    </div>
+  );
+}
+
+function SectionHeader({
+  title,
+  description,
+  icon: Icon,
+  accent = "primary",
+}: {
+  title: string;
+  description?: string;
+  icon: React.ElementType;
+  accent?: "primary" | "warning" | "destructive";
+}) {
+  const accentClass =
+    accent === "warning"
+      ? "bg-warning/10 text-warning"
+      : accent === "destructive"
+        ? "bg-destructive/10 text-destructive"
+        : "bg-primary/10 text-primary";
+
+  return (
+    <div className="flex items-start gap-3 border-b border-border/50 pb-4">
+      <div
+        className={cn(
+          "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
+          accentClass,
+        )}
+      >
+        <Icon size={16} />
+      </div>
+      <div>
+        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+        {description ? (
+          <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>
+        ) : null}
       </div>
     </div>
   );
@@ -151,16 +184,14 @@ function FeeTabContent({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Fee section */}
-      <div>
-        <div className="flex items-center gap-2 mb-4">
-          <div className="h-5 w-0.5 rounded-full bg-primary" />
-          <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider">
-            Taxas de transação
-          </h3>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <div className="space-y-8">
+      <div className="space-y-5">
+        <SectionHeader
+          title="Taxas de transação"
+          description="Valores cobrados em cada operação deste método."
+          icon={Percent}
+        />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <InputField
             label="Taxa variável"
             icon={Percent}
@@ -185,16 +216,15 @@ function FeeTabContent({
         </div>
       </div>
 
-      {/* Retention section */}
       {hasRetention && (
-        <div>
-          <div className="flex items-center gap-2 mb-4">
-            <div className="h-5 w-0.5 rounded-full bg-warning" />
-            <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider">
-              Retenção
-            </h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-5">
+          <SectionHeader
+            title="Retenção"
+            description="Período e percentual retidos antes da liberação do saldo."
+            icon={Clock}
+            accent="warning"
+          />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <InputField
               label="Dias de retenção"
               icon={Clock}
@@ -214,16 +244,15 @@ function FeeTabContent({
         </div>
       )}
 
-      {/* Withdrawal limits */}
       {isWithdrawal && (
-        <div>
-          <div className="flex items-center gap-2 mb-4">
-            <div className="h-5 w-0.5 rounded-full bg-destructive" />
-            <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider">
-              Limites de saque
-            </h3>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="space-y-5">
+          <SectionHeader
+            title="Limites de saque"
+            description="Valores mínimo, máximo e teto diário por seller."
+            icon={Wallet}
+            accent="destructive"
+          />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <InputField
               label="Mínimo por saque"
               icon={DollarSign}
@@ -277,6 +306,7 @@ export default function AdminGlobalFees() {
   const { data: feesData, isLoading, invalidateQuery } = useAdminGlobalFeesQuery();
   const [fees, setFees] = useState<Omit<GlobalFees, "id">>(defaultFees);
   const [saving, setSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState<FeePrefix>("pix");
 
   useEffect(() => {
     if (feesData) {
@@ -299,73 +329,103 @@ export default function AdminGlobalFees() {
     setSaving(false);
   };
 
+  const currentTab = tabConfig.find((tab) => tab.value === activeTab)!;
+
   return (
     <AdminLayout>
-      <div className="w-full max-w-4xl mx-auto px-4 md:px-6 py-6 space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-          <div>
-            <h1 className="text-xl font-bold text-foreground tracking-tight">
-              Taxas globais
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Taxas padrão aplicadas quando o seller não possui taxas
-              personalizadas.
-            </p>
+      <div className="mx-auto w-full max-w-5xl px-5 py-6 md:px-8 md:py-9">
+        <header className="mb-7 animate-fade-in">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+                Sistema
+              </p>
+              <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-[2.15rem]">
+                Taxas globais
+              </h1>
+              <p className="mt-1.5 text-sm text-muted-foreground">
+                Taxas padrão aplicadas quando o seller não possui taxas
+                personalizadas.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={saving || isLoading}
+              className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90 disabled:opacity-50"
+            >
+              {saving ? (
+                <Loader2 size={15} className="animate-spin" />
+              ) : (
+                <Save size={15} />
+              )}
+              Salvar alterações
+            </button>
           </div>
-          <button
-            onClick={handleSave}
-            disabled={saving || isLoading}
-            className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-all disabled:opacity-50 shadow-sm shrink-0"
-          >
-            {saving ? (
-              <Loader2 size={14} className="animate-spin" />
-            ) : (
-              <Save size={14} />
-            )}
-            Salvar alterações
-          </button>
+        </header>
+
+        <div className="liquid-glass-control mb-6 flex flex-wrap items-center gap-0.5 rounded-2xl p-1">
+          {tabConfig.map((tab) => (
+            <button
+              key={tab.value}
+              type="button"
+              onClick={() => setActiveTab(tab.value)}
+              className={cn(
+                "inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-semibold transition-all",
+                activeTab === tab.value
+                  ? "bg-white text-[#0F0617] shadow-sm"
+                  : "text-muted-foreground hover:bg-white/10 hover:text-foreground",
+              )}
+            >
+              <tab.icon size={15} />
+              {tab.label}
+            </button>
+          ))}
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center py-20">
-            <Loader2 size={20} className="animate-spin text-muted-foreground" />
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="animate-spin text-muted-foreground" size={24} />
           </div>
         ) : (
-          <div className="rounded-2xl border border-border/40 bg-card shadow-sm overflow-hidden">
-            <Tabs defaultValue="pix" className="w-full">
-              <div className="border-b border-border/30 bg-muted/20 px-4 pt-3">
-                <TabsList className="bg-transparent p-0 h-auto gap-0 w-full justify-start">
-                  {tabConfig.map((tab) => (
-                    <TabsTrigger
-                      key={tab.value}
-                      value={tab.value}
-                      className="flex items-center gap-1.5 px-4 py-2.5 rounded-t-lg text-xs font-medium text-muted-foreground data-[state=active]:text-foreground data-[state=active]:bg-card data-[state=active]:border data-[state=active]:border-b-0 data-[state=active]:border-border/40 data-[state=active]:shadow-sm border border-transparent -mb-px transition-all"
-                    >
-                      <tab.icon size={13} />
-                      {tab.label}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
+          <div className="animate-fade-in admin-surface p-5 md:p-6" key={activeTab}>
+            <div className="mb-6 flex items-center gap-2.5">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
+                <currentTab.icon size={16} className="text-primary" />
               </div>
-              <div className="p-5 md:p-6">
-                {tabConfig.map((tab) => (
-                  <TabsContent
-                    key={tab.value}
-                    value={tab.value}
-                    className="m-0"
-                  >
-                    <FeeTabContent
-                      prefix={tab.value}
-                      hasRetention={tab.hasRetention}
-                      isWithdrawal={tab.isWithdrawal}
-                      fees={fees}
-                      setFees={setFees}
-                    />
-                  </TabsContent>
-                ))}
+              <div>
+                <h2 className="text-base font-semibold text-foreground">
+                  {currentTab.label}
+                </h2>
+                <p className="text-sm text-muted-foreground">
+                  Configure taxas e regras para este método de pagamento.
+                </p>
               </div>
-            </Tabs>
+            </div>
+
+            <FeeTabContent
+              prefix={currentTab.value}
+              hasRetention={currentTab.hasRetention}
+              isWithdrawal={currentTab.isWithdrawal}
+              fees={fees}
+              setFees={setFees}
+            />
+
+            <div className="mt-8 flex justify-end border-t border-border/40 pt-5">
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={saving}
+                className="inline-flex h-10 items-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90 disabled:opacity-50"
+              >
+                {saving ? (
+                  <Loader2 size={15} className="animate-spin" />
+                ) : (
+                  <Save size={15} />
+                )}
+                Salvar alterações
+              </button>
+            </div>
           </div>
         )}
       </div>
