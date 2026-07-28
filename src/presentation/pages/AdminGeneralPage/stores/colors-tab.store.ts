@@ -2,33 +2,33 @@ import { IGatewayThemeColors } from "@/infra/http/services/api/modules/types/gat
 import { create } from "zustand";
 
 const DEFAULT_LIGHT: Partial<IGatewayThemeColors> = {
-  primaryColor: "152 60% 42%",
+  primaryColor: "269 58% 38%",
   primaryForeground: "0 0% 100%",
-  backgroundColor: "0 0% 99%",
-  foregroundColor: "150 15% 10%",
+  backgroundColor: "0 0% 98%",
+  foregroundColor: "0 0% 4%",
   cardColor: "0 0% 100%",
-  cardForeground: "150 15% 10%",
-  borderColor: "150 10% 92%",
-  mutedColor: "150 10% 96%",
-  mutedForeground: "150 8% 32%",
-  accentColor: "150 20% 96%",
-  accentForeground: "150 15% 10%",
+  cardForeground: "0 0% 4%",
+  borderColor: "270 10% 90%",
+  mutedColor: "270 15% 96%",
+  mutedForeground: "0 0% 40%",
+  accentColor: "269 40% 96%",
+  accentForeground: "269 58% 28%",
   destructiveColor: "0 72% 55%",
-  successColor: "152 60% 42%",
+  successColor: "152 60% 40%",
   warningColor: "38 90% 50%",
 };
 
 const DEFAULT_DARK: Partial<IGatewayThemeColors> = {
-  darkPrimaryColor: "152 60% 45%",
-  darkBackgroundColor: "160 15% 5%",
-  darkForegroundColor: "150 10% 95%",
-  darkCardColor: "160 12% 8%",
-  darkCardForeground: "150 10% 95%",
-  darkBorderColor: "155 10% 15%",
-  darkMutedColor: "155 10% 12%",
-  darkMutedForeground: "150 8% 68%",
-  darkAccentColor: "155 12% 13%",
-  darkAccentForeground: "150 10% 93%",
+  darkPrimaryColor: "269 58% 45%",
+  darkBackgroundColor: "268 58% 6%",
+  darkForegroundColor: "0 0% 98%",
+  darkCardColor: "268 30% 10%",
+  darkCardForeground: "0 0% 98%",
+  darkBorderColor: "270 15% 18%",
+  darkMutedColor: "268 25% 12%",
+  darkMutedForeground: "0 0% 58%",
+  darkAccentColor: "269 55% 18%",
+  darkAccentForeground: "0 0% 98%",
 };
 
 export interface IColorsTabStore {

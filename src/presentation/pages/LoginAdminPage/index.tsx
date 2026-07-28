@@ -101,16 +101,12 @@ export default function LoginAdmin() {
     <div className="auth-skin relative flex min-h-screen overflow-hidden bg-[#0F0617] text-foreground">
       <AuthAmbientBackground />
 
-      <div className="relative z-10 flex min-h-screen w-full">
+      <div className="relative z-10 flex min-h-screen w-full animate-fade-in">
         <aside className="relative hidden lg:flex lg:w-[48%] xl:w-[46%] flex-col justify-between">
           <div className="relative z-10 flex h-full flex-col justify-between px-10 py-10 xl:px-14 xl:py-12">
-            <AuthBrandMark
-              size="lg"
-              variant="white"
-              className="animate-auth-reveal-left"
-            />
+            <AuthBrandMark size="lg" variant="white" />
 
-            <div className="max-w-md animate-auth-reveal-up [animation-delay:60ms]">
+            <div className="max-w-md">
               <p className="mb-4 text-xs font-semibold uppercase tracking-[0.22em] text-white/45">
                 Painel administrativo
               </p>
@@ -125,10 +121,10 @@ export default function LoginAdmin() {
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white/40 animate-auth-reveal-up [animation-delay:120ms]">
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white/40">
               {["Controle total", "Monitoramento", "Seguro"].map((t) => (
                 <span key={t} className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#5F2998]" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#5F2998]" />
                   {t}
                 </span>
               ))}
@@ -138,14 +134,13 @@ export default function LoginAdmin() {
 
         <div className="relative flex flex-1 items-center justify-center px-6 py-10">
           <div className="relative w-full max-w-[460px]">
-            <div className="mb-10 animate-auth-reveal-up lg:hidden">
+            <div className="mb-10 lg:hidden">
               <AuthBrandMark size="lg" variant="white" />
             </div>
 
-            <div className="relative animate-liquid-glass">
+            <div className="relative">
               <div className="auth-glass-glow" aria-hidden />
-              <div className="liquid-glass auth-glass-sheen relative z-10 rounded-[20px] p-7 sm:rounded-3xl sm:p-9">
-              <span className="auth-glass-sheen-beam" aria-hidden />
+              <div className="liquid-glass relative z-10 rounded-[20px] p-7 sm:rounded-3xl sm:p-9">
               <header className="mb-7">
                 <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/15 ring-1 ring-primary/25">
                   <Shield className="text-primary" size={20} />

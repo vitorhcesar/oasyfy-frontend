@@ -3,73 +3,74 @@
 @tailwind utilities;
 
 @layer base {
+  /* Defaults alinhados ao seed (GatewayTheme) — brand #5F2998 / #0F0617 */
   :root {
-    --background: 0 0% 99%;
-    --foreground: 150 15% 10%;
+    --background: 0 0% 98%;
+    --foreground: 0 0% 4%;
     --card: 0 0% 100%;
-    --card-foreground: 150 15% 10%;
+    --card-foreground: 0 0% 4%;
     --popover: 0 0% 100%;
-    --popover-foreground: 150 15% 10%;
-    --primary: 152 60% 42%;
+    --popover-foreground: 0 0% 4%;
+    --primary: 269 58% 38%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 150 20% 96%;
-    --secondary-foreground: 150 15% 10%;
-    --muted: 150 10% 96%;
-    --muted-foreground: 150 8% 32%;
-    --accent: 150 20% 96%;
-    --accent-foreground: 150 15% 10%;
+    --secondary: 269 40% 96%;
+    --secondary-foreground: 269 58% 28%;
+    --muted: 270 15% 96%;
+    --muted-foreground: 0 0% 40%;
+    --accent: 269 40% 96%;
+    --accent-foreground: 269 58% 28%;
     --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 100%;
-    --success: 152 60% 42%;
+    --success: 152 60% 40%;
     --success-foreground: 0 0% 100%;
     --warning: 38 90% 50%;
     --warning-foreground: 0 0% 100%;
-    --border: 150 10% 92%;
-    --input: 150 10% 92%;
-    --ring: 152 60% 42%;
+    --border: 270 10% 90%;
+    --input: 270 10% 90%;
+    --ring: 269 58% 38%;
     --radius: 0.75rem;
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 150 8% 28%;
-    --sidebar-primary: 152 60% 42%;
+    --sidebar-foreground: 0 0% 28%;
+    --sidebar-primary: 269 58% 38%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 150 25% 96%;
-    --sidebar-accent-foreground: 150 10% 15%;
-    --sidebar-border: 150 10% 94%;
-    --sidebar-ring: 152 60% 42%;
+    --sidebar-accent: 269 40% 96%;
+    --sidebar-accent-foreground: 269 58% 28%;
+    --sidebar-border: 270 10% 92%;
+    --sidebar-ring: 269 58% 38%;
   }
 
   .dark {
-    --background: 160 15% 5%;
-    --foreground: 150 10% 95%;
-    --card: 160 12% 8%;
-    --card-foreground: 150 10% 95%;
-    --popover: 160 12% 8%;
-    --popover-foreground: 150 10% 95%;
-    --primary: 152 60% 45%;
+    --background: 268 58% 6%;
+    --foreground: 0 0% 98%;
+    --card: 268 30% 10%;
+    --card-foreground: 0 0% 98%;
+    --popover: 268 30% 10%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 269 58% 45%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 155 12% 12%;
-    --secondary-foreground: 150 10% 92%;
-    --muted: 155 10% 12%;
-    --muted-foreground: 150 8% 68%;
-    --accent: 155 12% 13%;
-    --accent-foreground: 150 10% 93%;
+    --secondary: 269 55% 18%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 268 25% 12%;
+    --muted-foreground: 0 0% 58%;
+    --accent: 269 55% 18%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 100%;
-    --success: 152 60% 45%;
+    --success: 152 60% 40%;
     --success-foreground: 0 0% 100%;
-    --warning: 38 90% 55%;
+    --warning: 38 90% 50%;
     --warning-foreground: 0 0% 100%;
-    --border: 155 10% 15%;
-    --input: 155 10% 15%;
-    --ring: 152 60% 45%;
-    --sidebar-background: 160 14% 6%;
-    --sidebar-foreground: 150 8% 65%;
-    --sidebar-primary: 152 60% 45%;
+    --border: 270 15% 18%;
+    --input: 270 15% 18%;
+    --ring: 269 58% 45%;
+    --sidebar-background: 268 58% 6%;
+    --sidebar-foreground: 0 0% 65%;
+    --sidebar-primary: 269 58% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 155 12% 12%;
-    --sidebar-accent-foreground: 150 10% 90%;
-    --sidebar-border: 155 10% 13%;
-    --sidebar-ring: 152 60% 45%;
+    --sidebar-accent: 269 55% 18%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 270 15% 18%;
+    --sidebar-ring: 269 58% 45%;
   }
 }
 
@@ -233,98 +234,6 @@
     inset 0 -1px 0 rgba(0, 0, 0, 0.2);
 }
 
-/**
- * Entrada do painel auth — só translate.
- * Nunca animar opacity em .liquid-glass ou ancestral com backdrop-filter:
- * no Chrome o vidro fica “travado”/sólido até opacity = 1.
- */
-@keyframes liquid-glass-materialize {
-  from {
-    transform: translate3d(0, 14px, 0);
-  }
-  to {
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-.animate-liquid-glass {
-  animation: liquid-glass-materialize 0.4s ease-out both;
-}
-
-@keyframes auth-reveal-up {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 10px, 0);
-  }
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-@keyframes auth-reveal-left {
-  from {
-    opacity: 0;
-    transform: translate3d(-16px, 0, 0);
-  }
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-@keyframes auth-form-swap {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 8px, 0);
-  }
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-@keyframes auth-glow-pulse {
-  0%,
-  100% {
-    opacity: 0.45;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.7;
-    transform: scale(1.06);
-  }
-}
-
-@keyframes auth-sheen {
-  0% {
-    transform: translateX(-120%) skewX(-18deg);
-    opacity: 0;
-  }
-  20% {
-    opacity: 0.45;
-  }
-  55% {
-    opacity: 0.15;
-  }
-  100% {
-    transform: translateX(220%) skewX(-18deg);
-    opacity: 0;
-  }
-}
-
-.animate-auth-reveal-up {
-  animation: auth-reveal-up 0.4s ease-out both;
-}
-
-.animate-auth-reveal-left {
-  animation: auth-reveal-left 0.4s ease-out both;
-}
-
-.animate-auth-form-swap {
-  animation: auth-form-swap 0.3s ease-out both;
-}
-
 .auth-glass-glow {
   position: absolute;
   inset: -18% -12%;
@@ -342,26 +251,16 @@
   animation: auth-glow-pulse 5.5s ease-in-out infinite;
 }
 
-.liquid-glass.auth-glass-sheen {
-  position: relative;
-  overflow: hidden;
-}
-
-.auth-glass-sheen-beam {
-  position: absolute;
-  top: -20%;
-  left: 0;
-  width: 42%;
-  height: 140%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.14),
-    transparent
-  );
-  animation: auth-sheen 7s ease-in-out 0.6s infinite;
-  pointer-events: none;
-  z-index: 1;
+@keyframes auth-glow-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.06);
+  }
 }
 
 @media (prefers-reduced-transparency: reduce) {
@@ -377,25 +276,15 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-liquid-glass,
-  .animate-auth-reveal-up,
-  .animate-auth-reveal-left,
-  .animate-auth-form-swap {
-    animation: none !important;
-    opacity: 1 !important;
-    transform: none !important;
-  }
-
-  .auth-glass-glow {
-    animation: none !important;
-    opacity: 0.5;
-  }
-
+  .auth-glass-glow,
   .auth-ambient-blob,
-  .auth-glass-sheen-beam,
   .auth-ambient-veil,
   .auth-ambient-grid {
     animation: none !important;
+  }
+
+  .auth-glass-glow {
+    opacity: 0.5;
   }
 }
 

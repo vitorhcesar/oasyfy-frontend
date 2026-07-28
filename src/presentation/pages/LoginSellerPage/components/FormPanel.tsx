@@ -2,7 +2,7 @@ import { TwoFactorLoginStep } from "@/presentation/components/auth/TwoFactorLogi
 import { useAuthContext } from "@/presentation/context/AuthContext";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import { tryOrToastError } from "@/presentation/utils/try-or-toast-error";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { completeSellerPortalLogin } from "../seller-login-completion";
 import {
@@ -28,7 +28,6 @@ export default function LoginSellerFormPanel() {
   const { signOut } = useAuthContext();
 
   const [formView, setFormView] = useState<TFormView>("login");
-  const skipFormSwapRef = useRef(true);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -47,10 +46,6 @@ export default function LoginSellerFormPanel() {
       setEmail(pending.email);
       setFormView("code");
     }
-  }, []);
-
-  useEffect(() => {
-    skipFormSwapRef.current = false;
   }, []);
 
   const sendSignUpVerificationCodeAndOpenCodeFormView = async () => {
@@ -85,90 +80,82 @@ export default function LoginSellerFormPanel() {
       <div className="relative w-full max-w-[460px]">
         <LoginSellerMobileLogo />
 
-        <div className="relative animate-liquid-glass">
+        <div className="relative">
           <div className="auth-glass-glow" aria-hidden />
-          <div className="liquid-glass auth-glass-sheen relative z-10 rounded-[20px] p-7 sm:rounded-3xl sm:p-9">
-            <span className="auth-glass-sheen-beam" aria-hidden />
-            <div
-              key={formView}
-              className={
-                skipFormSwapRef.current ? undefined : "animate-auth-form-swap"
-              }
-            >
-              {formView === "code" && (
-                <OtpCodeForm
-                  email={email}
-                  password={password}
-                  setView={setFormView}
-                  resendSignUpVerificationCode={
-                    sendSignUpVerificationCodeAndOpenCodeFormView
-                  }
-                  onVerificationDone={clearPendingVerification}
+          <div className="liquid-glass relative z-10 rounded-[20px] p-7 sm:rounded-3xl sm:p-9">
+            {formView === "code" && (
+              <OtpCodeForm
+                email={email}
+                password={password}
+                setView={setFormView}
+                resendSignUpVerificationCode={
+                  sendSignUpVerificationCodeAndOpenCodeFormView
+                }
+                onVerificationDone={clearPendingVerification}
+              />
+            )}
+
+            {formView === "twoFactor" && (
+              <>
+                <header className="mb-7">
+                  <h1 className="text-3xl font-bold tracking-tight text-foreground">
+                    Entrar
+                  </h1>
+                  <p className="mt-2 text-base text-muted-foreground">
+                    Confirme o código do autenticador para continuar
+                  </p>
+                </header>
+
+                {twoFactorError && (
+                  <div className="mb-4 rounded-xl border border-destructive/20 bg-destructive/10 px-3.5 py-3 text-sm text-destructive">
+                    {twoFactorError}
+                  </div>
+                )}
+
+                <TwoFactorLoginStep
+                  onVerified={handleTwoFactorVerified}
+                  onCancel={() => {
+                    clearPendingTwoFactor();
+                    setTwoFactorError("");
+                    setFormView("login");
+                    void signOut();
+                  }}
                 />
-              )}
+              </>
+            )}
 
-              {formView === "twoFactor" && (
-                <>
-                  <header className="mb-7">
-                    <h1 className="text-3xl font-bold tracking-tight text-foreground">
-                      Entrar
-                    </h1>
-                    <p className="mt-2 text-base text-muted-foreground">
-                      Confirme o código do autenticador para continuar
-                    </p>
-                  </header>
+            {formView === "login" && (
+              <LoginForm
+                email={email}
+                setEmail={setEmail}
+                password={password}
+                setView={setFormView}
+                setPassword={setPassword}
+                openSignupVerification={
+                  sendSignUpVerificationCodeAndOpenCodeFormView
+                }
+                openTwoFactorStep={() => setFormView("twoFactor")}
+              />
+            )}
 
-                  {twoFactorError && (
-                    <div className="mb-4 rounded-xl border border-destructive/20 bg-destructive/10 px-3.5 py-3 text-sm text-destructive">
-                      {twoFactorError}
-                    </div>
-                  )}
+            {formView === "signup" && (
+              <SignUpForm
+                email={email}
+                setEmail={setEmail}
+                password={password}
+                setView={setFormView}
+                setPassword={setPassword}
+                onSuccess={sendSignUpVerificationCodeAndOpenCodeFormView}
+              />
+            )}
 
-                  <TwoFactorLoginStep
-                    onVerified={handleTwoFactorVerified}
-                    onCancel={() => {
-                      clearPendingTwoFactor();
-                      setTwoFactorError("");
-                      setFormView("login");
-                      void signOut();
-                    }}
-                  />
-                </>
-              )}
-
-              {formView === "login" && (
-                <LoginForm
-                  email={email}
-                  setEmail={setEmail}
-                  password={password}
-                  setView={setFormView}
-                  setPassword={setPassword}
-                  openSignupVerification={
-                    sendSignUpVerificationCodeAndOpenCodeFormView
-                  }
-                  openTwoFactorStep={() => setFormView("twoFactor")}
-                />
-              )}
-
-              {formView === "signup" && (
-                <SignUpForm
-                  email={email}
-                  setEmail={setEmail}
-                  password={password}
-                  setView={setFormView}
-                  setPassword={setPassword}
-                  onSuccess={sendSignUpVerificationCodeAndOpenCodeFormView}
-                />
-              )}
-
-              {formView === "forgotPassword" && (
-                <ForgotPasswordForm
-                  email={email}
-                  setEmail={setEmail}
-                  setFormView={setFormView}
-                />
-              )}
-            </div>
+            {formView === "forgotPassword" && (
+              <ForgotPasswordForm
+                email={email}
+                setEmail={setEmail}
+                setFormView={setFormView}
+              />
+            )}
           </div>
         </div>
 

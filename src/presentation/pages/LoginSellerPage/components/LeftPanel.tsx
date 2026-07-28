@@ -4,13 +4,9 @@ export default function LoginSellerLeftPanel() {
   return (
     <aside className="relative hidden lg:flex lg:w-[48%] xl:w-[46%] flex-col justify-between">
       <div className="relative z-10 flex h-full flex-col justify-between px-10 py-10 xl:px-14 xl:py-12">
-        <AuthBrandMark
-          size="lg"
-          variant="white"
-          className="animate-auth-reveal-left"
-        />
+        <AuthBrandMark size="lg" variant="white" />
 
-        <div className="max-w-md animate-auth-reveal-up [animation-delay:60ms]">
+        <div className="max-w-md">
           <p className="mb-4 text-xs font-semibold uppercase tracking-[0.22em] text-white/45">
             Plataforma de pagamentos
           </p>
@@ -25,8 +21,8 @@ export default function LoginSellerLeftPanel() {
           </p>
         </div>
 
-        <div className="animate-auth-reveal-up flex items-center gap-3 text-sm text-white/40 [animation-delay:120ms]">
-          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#5F2998]" />
+        <div className="flex items-center gap-3 text-sm text-white/40">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#5F2998]" />
           Infraestrutura pronta para escalar
         </div>
       </div>
