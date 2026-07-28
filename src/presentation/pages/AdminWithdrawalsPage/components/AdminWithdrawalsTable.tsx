@@ -6,6 +6,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Eye,
+  Loader2,
 } from "lucide-react";
 import { formatCurrency } from "../utils/format-currency";
 import { statusBadge } from "../utils/status-config";
@@ -37,22 +38,17 @@ export default function AdminWithdrawalsTable({
 
   if (loading) {
     return (
-      <div className="flex justify-center py-24">
-        <div className="relative w-10 h-10">
-          <div className="absolute inset-0 rounded-full border-2 border-muted" />
-          <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary animate-spin" />
-        </div>
+      <div className="flex items-center justify-center py-24">
+        <Loader2 size={24} className="animate-spin text-muted-foreground" />
       </div>
     );
   }
 
   if (withdrawals.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-border/50 bg-muted/10 p-16 text-center">
-        <div className="w-14 h-14 rounded-2xl bg-muted/50 flex items-center justify-center mx-auto mb-5">
-          <ArrowLeftRight className="text-muted-foreground/40" size={24} />
-        </div>
-        <p className="text-foreground font-semibold mb-1">
+      <div className="admin-surface px-6 py-16 text-center">
+        <ArrowLeftRight className="mx-auto mb-3 text-muted-foreground" size={24} />
+        <p className="mb-1 text-base font-semibold text-foreground">
           Nenhum saque encontrado
         </p>
         <p className="text-sm text-muted-foreground">
@@ -63,57 +59,53 @@ export default function AdminWithdrawalsTable({
   }
 
   return (
-    <div
-      className="rounded-xl border border-border/50 bg-card overflow-hidden animate-fade-in overflow-x-auto"
-      style={{ animationDelay: "150ms" }}
-    >
-      <table className="w-full text-sm min-w-[700px]">
+    <div className="admin-surface overflow-hidden overflow-x-auto">
+      <table className="w-full min-w-[720px]">
         <thead>
-          <tr className="border-b border-border/40">
-            <th className="text-left px-5 py-3.5 font-medium text-muted-foreground/60 text-xs md:text-sm uppercase tracking-wider">
+          <tr className="border-b border-border/50">
+            <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Produtor
             </th>
-            <th className="text-left px-5 py-3.5 font-medium text-muted-foreground/60 text-xs md:text-sm uppercase tracking-wider">
+            <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Valor do Saque
             </th>
-            <th className="text-left px-5 py-3.5 font-medium text-muted-foreground/60 text-xs md:text-sm uppercase tracking-wider">
+            <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Chave PIX
             </th>
-            <th className="text-left px-5 py-3.5 font-medium text-muted-foreground/60 text-xs md:text-sm uppercase tracking-wider">
+            <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Status
             </th>
-            <th className="text-right px-5 py-3.5 font-medium text-muted-foreground/60 text-xs md:text-sm uppercase tracking-wider">
+            <th className="px-5 py-3.5 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Ações
             </th>
           </tr>
         </thead>
         <tbody>
-          {paginatedData.map((w, i) => (
+          {paginatedData.map((w) => (
             <tr
               key={w.id}
-              className="border-b border-border/20 last:border-0 hover:bg-muted/20 transition-colors animate-fade-in"
-              style={{ animationDelay: `${i * 20}ms` }}
+              className="border-b border-border/40 last:border-0 transition-colors hover:bg-muted/25"
             >
               <td className="px-5 py-3.5">
-                <p className="font-medium text-foreground text-sm">
+                <p className="text-sm font-semibold text-foreground">
                   {w.seller_name || "Seller"}
                 </p>
                 {w.seller_email && (
-                  <p className="text-xs text-muted-foreground/60 mt-0.5">
+                  <p className="mt-0.5 text-sm text-muted-foreground">
                     {w.seller_email}
                   </p>
                 )}
               </td>
-              <td className="px-5 py-3.5 font-bold text-foreground text-sm">
+              <td className="px-5 py-3.5 text-sm font-bold tabular-nums text-foreground">
                 {formatCurrency(w.amount)}
               </td>
               <td className="px-5 py-3.5">
                 {w.pix_key ? (
-                  <span className="text-xs font-mono text-foreground bg-muted/30 px-2 py-1 rounded">
+                  <span className="rounded-lg border border-border bg-muted/60 px-2.5 py-1 font-mono text-xs text-foreground">
                     {w.pix_key}
                   </span>
                 ) : (
-                  <span className="text-xs text-muted-foreground/40">—</span>
+                  <span className="text-sm text-muted-foreground">—</span>
                 )}
               </td>
               <td className="px-5 py-3.5">{statusBadge(w.status)}</td>
@@ -121,18 +113,18 @@ export default function AdminWithdrawalsTable({
                 <div className="flex items-center justify-end gap-1.5">
                   <button
                     onClick={() => onOpenApprovalModal(w)}
-                    className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors"
+                    className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                     title="Ver detalhes"
                   >
-                    <Eye size={14} />
+                    <Eye size={16} />
                   </button>
                   {w.status === "transferring" && (
                     <button
                       onClick={() => onOpenApprovalModal(w)}
                       disabled={actionLoading === w.id}
-                      className="px-2.5 py-1 rounded-md bg-primary/10 text-primary border border-primary/20 text-xs font-medium hover:bg-primary/20 transition-colors disabled:opacity-50"
+                      className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-transparent bg-white px-3 text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90 disabled:opacity-50"
                     >
-                      <CheckCircle size={10} className="inline mr-1" />
+                      <CheckCircle size={14} />
                       Aprovar
                     </button>
                   )}
@@ -144,8 +136,8 @@ export default function AdminWithdrawalsTable({
       </table>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between px-5 py-3 border-t border-border/30">
-          <p className="text-xs md:text-sm text-muted-foreground/60">
+        <div className="flex items-center justify-between border-t border-border/50 px-5 py-3">
+          <p className="text-sm text-muted-foreground">
             {(currentPage - 1) * perPage + 1}–
             {Math.min(currentPage * perPage, withdrawals.length)} de{" "}
             {withdrawals.length}
@@ -154,9 +146,9 @@ export default function AdminWithdrawalsTable({
             <button
               onClick={() => onPageChange(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors disabled:opacity-30"
+              className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-30"
             >
-              <ChevronLeft size={14} />
+              <ChevronLeft size={16} />
             </button>
             {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
               let page: number;
@@ -169,10 +161,10 @@ export default function AdminWithdrawalsTable({
                   key={page}
                   onClick={() => onPageChange(page)}
                   className={cn(
-                    "w-7 h-7 rounded-lg text-xs md:text-sm font-medium transition-all",
+                    "flex h-8 w-8 items-center justify-center rounded-lg text-sm font-semibold transition-all",
                     currentPage === page
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted/30",
+                      ? "bg-white text-[#0F0617] shadow-sm"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   )}
                 >
                   {page}
@@ -184,9 +176,9 @@ export default function AdminWithdrawalsTable({
                 onPageChange(Math.min(totalPages, currentPage + 1))
               }
               disabled={currentPage === totalPages}
-              className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors disabled:opacity-30"
+              className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-30"
             >
-              <ChevronRight size={14} />
+              <ChevronRight size={16} />
             </button>
           </div>
         </div>

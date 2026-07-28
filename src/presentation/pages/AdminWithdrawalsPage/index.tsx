@@ -1,7 +1,8 @@
 import useAdminWithdrawalsQuery from "@/presentation/hooks/use-admin-withdrawals-query";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import { AdminLayout } from "@/presentation/layouts/AdminLayout";
-import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { type DateRange } from "react-day-picker";
 import AdminWithdrawalApprovalDialog from "./components/AdminWithdrawalApprovalDialog";
 import AdminWithdrawalsFilters from "./components/AdminWithdrawalsFilters";
@@ -29,23 +30,35 @@ export default function AdminWithdrawalsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [approvalModal, setApprovalModal] = useState<ApprovalModalData>(null);
   const [modalLoading, setModalLoading] = useState(false);
-  const [activeStatFilter, setActiveStatFilter] = useState<string | null>(
-    null,
-  );
 
-  const { filtered, displayFiltered } = useFilterWithdrawals({
+  const filteredWithoutStatus = useFilterWithdrawals({
     withdrawals,
     filterSeller,
-    filterStatus,
+    filterStatus: "",
     dateRange,
-    activeStatFilter,
   });
 
-  const stats = useWithdrawalStats(filtered);
+  const stats = useWithdrawalStats(filteredWithoutStatus);
+
+  const displayFiltered = useMemo(() => {
+    if (!filterStatus) return filteredWithoutStatus;
+
+    if (filterStatus === "cancelled") {
+      return filteredWithoutStatus.filter(
+        (w) => w.status === "cancelled" || w.status === "failed",
+      );
+    }
+
+    return filteredWithoutStatus.filter((w) => w.status === filterStatus);
+  }, [filteredWithoutStatus, filterStatus]);
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [filtered, activeStatFilter]);
+  }, [filteredWithoutStatus, filterStatus]);
+
+  const handleStatFilterChange = (statusKey: string | null) => {
+    setFilterStatus(statusKey ?? "");
+  };
 
   const openApprovalModal = async (w: TAdminWithdrawalView) => {
     if (!w.seller_id) return;
@@ -84,46 +97,56 @@ export default function AdminWithdrawalsPage() {
     setFilterSeller("");
     setFilterStatus("");
     setDateRange(undefined);
-    setActiveStatFilter(null);
   };
 
   return (
     <AdminLayout>
-      <div className="px-4 md:px-8 py-6 md:py-8 max-w-6xl mx-auto w-full">
-        <div className="mb-6 animate-fade-in">
-          <h1 className="text-2xl font-bold text-foreground tracking-tight">
+      <div className="mx-auto w-full max-w-6xl px-5 py-6 md:px-8 md:py-9">
+        <header className="mb-7 animate-fade-in">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+            Financeiro
+          </p>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-[2.15rem]">
             Saques
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Gerencie as solicitações de saque dos produtores
+          <p className="mt-1.5 text-sm text-muted-foreground">
+            Gerencie as solicitações de saque dos produtores.
           </p>
-        </div>
+        </header>
 
-        <AdminWithdrawalsFilters
-          filterSeller={filterSeller}
-          filterStatus={filterStatus}
-          dateRange={dateRange}
-          onFilterSellerChange={setFilterSeller}
-          onFilterStatusChange={setFilterStatus}
-          onDateRangeChange={setDateRange}
-          onClearFilters={handleClearFilters}
-        />
+        {isLoading ? (
+          <div className="flex items-center justify-center py-24">
+            <Loader2 size={24} className="animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <>
+            <AdminWithdrawalsStats
+              stats={stats}
+              activeStatFilter={filterStatus || null}
+              onStatFilterChange={handleStatFilterChange}
+            />
 
-        <AdminWithdrawalsStats
-          stats={stats}
-          activeStatFilter={activeStatFilter}
-          onStatFilterChange={setActiveStatFilter}
-        />
+            <AdminWithdrawalsFilters
+              filterSeller={filterSeller}
+              filterStatus={filterStatus}
+              dateRange={dateRange}
+              onFilterSellerChange={setFilterSeller}
+              onFilterStatusChange={setFilterStatus}
+              onDateRangeChange={setDateRange}
+              onClearFilters={handleClearFilters}
+            />
 
-        <AdminWithdrawalsTable
-          withdrawals={displayFiltered}
-          loading={isLoading}
-          currentPage={currentPage}
-          perPage={PER_PAGE}
-          actionLoading={actionLoading}
-          onPageChange={setCurrentPage}
-          onOpenApprovalModal={openApprovalModal}
-        />
+            <AdminWithdrawalsTable
+              withdrawals={displayFiltered}
+              loading={false}
+              currentPage={currentPage}
+              perPage={PER_PAGE}
+              actionLoading={actionLoading}
+              onPageChange={setCurrentPage}
+              onOpenApprovalModal={openApprovalModal}
+            />
+          </>
+        )}
       </div>
 
       <AdminWithdrawalApprovalDialog

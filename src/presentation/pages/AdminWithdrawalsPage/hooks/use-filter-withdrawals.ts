@@ -7,7 +7,6 @@ interface UseFilterWithdrawalsParams {
   filterSeller: string;
   filterStatus: string;
   dateRange: DateRange | undefined;
-  activeStatFilter: string | null;
 }
 
 export default function useFilterWithdrawals({
@@ -15,9 +14,8 @@ export default function useFilterWithdrawals({
   filterSeller,
   filterStatus,
   dateRange,
-  activeStatFilter,
 }: UseFilterWithdrawalsParams) {
-  const filtered = useMemo(() => {
+  return useMemo(() => {
     return withdrawals.filter((w) => {
       if (filterSeller) {
         const q = filterSeller.toLowerCase().trim();
@@ -26,7 +24,13 @@ export default function useFilterWithdrawals({
         const matchId = w.id.toLowerCase().includes(q);
         if (!matchName && !matchEmail && !matchId) return false;
       }
-      if (filterStatus && w.status !== filterStatus) return false;
+      if (filterStatus) {
+        if (filterStatus === "cancelled") {
+          if (w.status !== "cancelled" && w.status !== "failed") return false;
+        } else if (w.status !== filterStatus) {
+          return false;
+        }
+      }
       if (dateRange?.from) {
         const d = new Date(w.created_at);
         if (d < dateRange.from) return false;
@@ -39,15 +43,4 @@ export default function useFilterWithdrawals({
       return true;
     });
   }, [withdrawals, filterSeller, filterStatus, dateRange]);
-
-  const displayFiltered = useMemo(() => {
-    if (!activeStatFilter) return filtered;
-    if (activeStatFilter === "cancelled")
-      return filtered.filter(
-        (w) => w.status === "cancelled" || w.status === "failed",
-      );
-    return filtered.filter((w) => w.status === activeStatFilter);
-  }, [filtered, activeStatFilter]);
-
-  return { filtered, displayFiltered };
 }

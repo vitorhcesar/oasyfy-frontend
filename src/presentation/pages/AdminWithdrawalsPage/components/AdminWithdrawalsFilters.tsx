@@ -12,9 +12,9 @@ import { type DateRange } from "react-day-picker";
 import { STATUS_FILTER_OPTIONS } from "../constants/status-filter-options";
 
 const INPUT_CLASS =
-  "w-full px-3.5 py-2.5 rounded-lg bg-background border border-border/50 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all";
+  "w-full rounded-xl border border-border/60 bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all";
 const SELECT_CLASS =
-  "w-full px-3.5 py-2.5 rounded-lg bg-background border border-border/50 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all appearance-none cursor-pointer";
+  "w-full appearance-none rounded-xl border border-border/60 bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer";
 
 interface AdminWithdrawalsFiltersProps {
   filterSeller: string;
@@ -36,55 +36,55 @@ export default function AdminWithdrawalsFilters({
   onClearFilters,
 }: AdminWithdrawalsFiltersProps) {
   return (
-    <div
-      className="rounded-xl bg-card border border-border/40 p-5 mb-6 animate-fade-in"
-      style={{ animationDelay: "50ms" }}
-    >
-      <div className="flex items-center justify-between mb-4">
+    <div className="admin-surface mb-6 p-4 md:p-5">
+      <div className="mb-4 flex items-center justify-between gap-3">
         <h3 className="text-sm font-semibold text-foreground">Filtros</h3>
         <Popover>
           <PopoverTrigger asChild>
             <button
               className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all border",
-                dateRange?.from
-                  ? "bg-primary/10 text-primary border-primary/20"
-                  : "bg-background border-border/50 text-muted-foreground hover:text-foreground hover:border-border",
+                "liquid-glass-control flex h-9 items-center gap-2 rounded-xl px-3 text-sm font-medium transition-colors hover:bg-white/10",
+                dateRange?.from && "border-primary/50 text-primary",
               )}
             >
-              <CalendarIcon size={12} />
+              <CalendarIcon size={14} />
               {dateRange?.from && dateRange?.to
                 ? `${format(dateRange.from, "dd/MM/yy", {
                     locale: ptBR,
                   })} - ${format(dateRange.to, "dd/MM/yy", {
                     locale: ptBR,
                   })}`
-                : "Calendário"}
+                : "Período"}
             </button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="end" sideOffset={8}>
-            <div className="p-3 space-y-2">
-              <Calendar
-                mode="range"
-                selected={dateRange}
-                onSelect={onDateRangeChange}
-                numberOfMonths={2}
-                className="rounded-lg border border-border/40"
-                locale={ptBR}
-              />
-              {dateRange && (
-                <button
-                  onClick={() => onDateRangeChange(undefined)}
-                  className="text-xs text-primary hover:underline"
-                >
-                  Limpar filtro de data
-                </button>
-              )}
-            </div>
+          <PopoverContent
+            className="liquid-glass-control w-auto border-white/15 p-3"
+            align="end"
+            sideOffset={8}
+          >
+            <p className="mb-2 text-sm font-medium text-foreground">
+              Selecione o período
+            </p>
+            <Calendar
+              mode="range"
+              selected={dateRange}
+              onSelect={onDateRangeChange}
+              numberOfMonths={2}
+              locale={ptBR}
+            />
+            {dateRange && (
+              <button
+                onClick={() => onDateRangeChange(undefined)}
+                className="mt-2 text-sm font-medium text-primary hover:underline"
+              >
+                Limpar filtro de data
+              </button>
+            )}
           </PopoverContent>
         </Popover>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+
+      <div className="grid grid-cols-1 items-end gap-3 sm:grid-cols-3">
         <input
           type="text"
           value={filterSeller}
@@ -105,13 +105,13 @@ export default function AdminWithdrawalsFilters({
             ))}
           </select>
           <ChevronDown
-            size={12}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 pointer-events-none"
+            size={14}
+            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
           />
         </div>
         <button
           onClick={onClearFilters}
-          className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-border/50 text-sm text-muted-foreground hover:text-foreground hover:border-border transition-all"
+          className="flex h-[42px] items-center justify-center gap-2 rounded-xl border border-border/60 text-sm font-semibold text-muted-foreground transition-colors hover:border-border hover:text-foreground"
         >
           Limpar filtros
         </button>

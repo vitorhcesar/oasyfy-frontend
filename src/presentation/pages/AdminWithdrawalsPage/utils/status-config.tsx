@@ -4,27 +4,27 @@ const STATUS_CONFIG: Record<
 > = {
   pending: {
     label: "Pendente",
-    cls: "bg-yellow-500/10 text-yellow-600 border-yellow-200",
-    dot: "bg-yellow-500",
+    cls: "border-warning/25 bg-warning/10 text-warning",
+    dot: "bg-warning",
   },
   completed: {
     label: "Aprovado",
-    cls: "bg-primary/10 text-primary border-primary/20",
-    dot: "bg-primary",
+    cls: "border-success/25 bg-success/10 text-success",
+    dot: "bg-success",
   },
   transferring: {
     label: "Transferindo",
-    cls: "bg-blue-500/10 text-blue-500 border-blue-200",
-    dot: "bg-blue-500",
+    cls: "border-primary/25 bg-primary/10 text-primary",
+    dot: "bg-primary",
   },
   cancelled: {
     label: "Cancelado",
-    cls: "bg-destructive/10 text-destructive border-destructive/20",
+    cls: "border-destructive/25 bg-destructive/10 text-destructive",
     dot: "bg-destructive",
   },
   failed: {
     label: "Cancelado",
-    cls: "bg-destructive/10 text-destructive border-destructive/20",
+    cls: "border-destructive/25 bg-destructive/10 text-destructive",
     dot: "bg-destructive",
   },
 };
@@ -32,14 +32,14 @@ const STATUS_CONFIG: Record<
 export function statusBadge(status: string) {
   const s = STATUS_CONFIG[status] || {
     label: status,
-    cls: "bg-muted text-muted-foreground",
-    dot: "bg-muted-foreground/40",
+    cls: "border-border bg-muted text-muted-foreground",
+    dot: "bg-muted-foreground",
   };
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs md:text-sm font-medium border ${s.cls}`}
+      className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold ${s.cls}`}
     >
-      <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+      <span className={`h-1.5 w-1.5 rounded-full ${s.dot}`} />
       {s.label}
     </span>
   );

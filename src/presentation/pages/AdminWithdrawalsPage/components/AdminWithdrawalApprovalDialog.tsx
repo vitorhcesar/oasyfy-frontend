@@ -117,19 +117,19 @@ export default function AdminWithdrawalApprovalDialog({
         if (!open) handleClose();
       }}
     >
-      <DialogContent className="max-w-xl max-h-[92vh] overflow-y-auto p-0 gap-0">
-        <DialogHeader className="px-6 pt-6 pb-4 border-b border-border/40">
+      <DialogContent className="max-h-[92vh] max-w-xl gap-0 overflow-y-auto border-border/60 bg-background p-0">
+        <DialogHeader className="border-b border-border/50 px-6 pb-4 pt-6">
           <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10">
                 <ArrowUpRight size={18} className="text-primary" />
               </div>
               <div className="min-w-0">
-                <DialogTitle className="text-base font-semibold text-foreground">
+                <DialogTitle className="text-xl font-bold tracking-tight text-foreground">
                   Aprovar Saque
                 </DialogTitle>
                 {approvalModal && (
-                  <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                  <p className="mt-0.5 truncate text-sm text-muted-foreground">
                     {formatCurrency(approvalModal.withdrawal.amount)} ·{" "}
                     {approvalModal.withdrawal.seller_name || "—"}
                   </p>
@@ -146,57 +146,51 @@ export default function AdminWithdrawalApprovalDialog({
 
         {approvalModal && (
           <div className="px-6 pb-6">
-            <div className="flex gap-1 border-b border-border/40 -mx-6 px-6 mb-5">
+            <div className="liquid-glass-control mb-5 mt-4 flex gap-0.5 rounded-2xl p-1">
               <button
                 onClick={() => setModalTab("info")}
                 className={cn(
-                  "px-3 py-2.5 text-xs font-medium transition-colors relative",
+                  "flex-1 rounded-xl px-3.5 py-2 text-sm font-semibold transition-all",
                   modalTab === "info"
-                    ? "text-foreground"
-                    : "text-muted-foreground hover:text-foreground",
+                    ? "bg-white text-[#0F0617] shadow-sm"
+                    : "text-muted-foreground hover:bg-white/10 hover:text-foreground",
                 )}
               >
                 Informações
-                {modalTab === "info" && (
-                  <span className="absolute bottom-0 left-0 right-0 h-px bg-primary" />
-                )}
               </button>
               <button
                 onClick={() => setModalTab("history")}
                 className={cn(
-                  "px-3 py-2.5 text-xs font-medium transition-colors relative",
+                  "flex-1 rounded-xl px-3.5 py-2 text-sm font-semibold transition-all",
                   modalTab === "history"
-                    ? "text-foreground"
-                    : "text-muted-foreground hover:text-foreground",
+                    ? "bg-white text-[#0F0617] shadow-sm"
+                    : "text-muted-foreground hover:bg-white/10 hover:text-foreground",
                 )}
               >
                 Logs
-                {modalTab === "history" && (
-                  <span className="absolute bottom-0 left-0 right-0 h-px bg-primary" />
-                )}
               </button>
             </div>
 
             {modalTab === "info" ? (
               <div className="space-y-3">
-                <div className="rounded-xl border border-border/50 bg-muted/20 p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <User size={13} className="text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
+                <div className="rounded-2xl border border-border/60 bg-card p-4">
+                  <div className="mb-3 flex items-center gap-2">
+                    <User size={14} className="text-primary" />
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
                       Produtor
                     </p>
                   </div>
-                  <p className="text-sm font-semibold text-foreground">
+                  <p className="text-base font-semibold text-foreground">
                     {approvalModal.withdrawal.seller_name || "—"}
                   </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
+                  <p className="mt-0.5 text-sm text-muted-foreground">
                     {approvalModal.withdrawal.seller_email}
                   </p>
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm text-muted-foreground">
+                  <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
                     {approvalModal.accountId && (
                       <span>
                         ID:{" "}
-                        <span className="font-mono text-foreground/80">
+                        <span className="font-mono text-foreground">
                           {approvalModal.accountId}
                         </span>
                       </span>
@@ -204,7 +198,7 @@ export default function AdminWithdrawalApprovalDialog({
                     {approvalModal.cpf && (
                       <span>
                         CPF:{" "}
-                        <span className="font-mono text-foreground/80">
+                        <span className="font-mono text-foreground">
                           {approvalModal.cpf}
                         </span>
                       </span>
@@ -212,7 +206,7 @@ export default function AdminWithdrawalApprovalDialog({
                     {approvalModal.cnpj && (
                       <span>
                         CNPJ:{" "}
-                        <span className="font-mono text-foreground/80">
+                        <span className="font-mono text-foreground">
                           {approvalModal.cnpj}
                         </span>
                       </span>
@@ -220,10 +214,10 @@ export default function AdminWithdrawalApprovalDialog({
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-border/50 bg-muted/20 p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <Landmark size={13} className="text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
+                <div className="rounded-2xl border border-border/60 bg-card p-4">
+                  <div className="mb-3 flex items-center gap-2">
+                    <Landmark size={14} className="text-primary" />
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
                       Dados Bancários
                     </p>
                   </div>
@@ -300,17 +294,17 @@ export default function AdminWithdrawalApprovalDialog({
                       );
                     })()
                   ) : (
-                    <p className="text-xs text-muted-foreground/60">
+                    <p className="text-sm text-muted-foreground">
                       Nenhum dado bancário cadastrado
                     </p>
                   )}
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="rounded-xl border border-border/50 bg-muted/20 p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Globe size={13} className="text-muted-foreground" />
-                      <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
+                  <div className="rounded-2xl border border-border/60 bg-card p-4">
+                    <div className="mb-3 flex items-center gap-2">
+                      <Globe size={14} className="text-primary" />
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
                         IPs Autorizados
                       </p>
                     </div>
@@ -319,60 +313,60 @@ export default function AdminWithdrawalApprovalDialog({
                         {approvalModal.sellerIps.map((ip, i) => (
                           <p
                             key={i}
-                            className="text-xs font-mono text-foreground"
+                            className="font-mono text-sm text-foreground"
                           >
                             {ip}
                           </p>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-xs text-muted-foreground/50">
+                      <p className="text-sm text-muted-foreground">
                         Nenhum IP
                       </p>
                     )}
                   </div>
 
-                  <div className="rounded-xl border border-border/50 bg-muted/20 p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <Wallet size={13} className="text-muted-foreground" />
-                      <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
+                  <div className="rounded-2xl border border-border/60 bg-card p-4">
+                    <div className="mb-3 flex items-center gap-2">
+                      <Wallet size={14} className="text-primary" />
+                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
                         Saldo
                       </p>
                     </div>
-                    <div className="space-y-1.5 text-xs">
+                    <div className="space-y-1.5 text-sm">
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">Atual</span>
-                        <span className="font-semibold text-foreground">
+                        <span className="font-semibold tabular-nums text-foreground">
                           {formatCurrency(approvalModal.balance)}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">Saque</span>
-                        <span className="font-semibold text-destructive">
+                        <span className="font-semibold tabular-nums text-destructive">
                           -{formatCurrency(approvalModal.withdrawal.amount)}
                         </span>
                       </div>
                       {approvalModal.withdrawalFee > 0 && (
                         <div className="flex items-center justify-between">
                           <span className="text-muted-foreground">Taxa</span>
-                          <span className="font-semibold text-destructive">
+                          <span className="font-semibold tabular-nums text-destructive">
                             -{formatCurrency(approvalModal.withdrawalFee)}
                           </span>
                         </div>
                       )}
-                      <div className="h-px bg-border/50 my-1" />
+                      <div className="my-1 h-px bg-border/50" />
                       <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground font-medium">
+                        <span className="font-medium text-muted-foreground">
                           Após
                         </span>
                         <span
                           className={cn(
-                            "font-bold",
+                            "font-bold tabular-nums",
                             approvalModal.balance +
                               approvalModal.withdrawal.amount -
                               approvalModal.withdrawalFee >=
                               0
-                              ? "text-primary"
+                              ? "text-success"
                               : "text-destructive",
                           )}
                         >
@@ -387,22 +381,22 @@ export default function AdminWithdrawalApprovalDialog({
                   </div>
                 </div>
 
-                <div className="rounded-xl border border-border/50 bg-muted/20 p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <FileText size={13} className="text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
+                <div className="rounded-2xl border border-border/60 bg-card p-4">
+                  <div className="mb-3 flex items-center gap-2">
+                    <FileText size={14} className="text-primary" />
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
                       Detalhes do Saque
                     </p>
                   </div>
-                  <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div className="grid grid-cols-2 gap-3 text-sm">
                     <div>
-                      <p className="text-muted-foreground mb-0.5">Valor</p>
-                      <p className="font-semibold text-foreground">
+                      <p className="mb-0.5 text-muted-foreground">Valor</p>
+                      <p className="font-semibold tabular-nums text-foreground">
                         {formatCurrency(approvalModal.withdrawal.amount)}
                       </p>
                     </div>
                     <div>
-                      <p className="text-muted-foreground mb-0.5">Data</p>
+                      <p className="mb-0.5 text-muted-foreground">Data</p>
                       <p className="font-medium text-foreground">
                         {format(
                           new Date(approvalModal.withdrawal.created_at),
@@ -413,7 +407,7 @@ export default function AdminWithdrawalApprovalDialog({
                     </div>
                     {approvalModal.withdrawal.description && (
                       <div className="col-span-2">
-                        <p className="text-muted-foreground mb-0.5">
+                        <p className="mb-0.5 text-muted-foreground">
                           Descrição
                         </p>
                         <p className="text-foreground">
@@ -424,38 +418,38 @@ export default function AdminWithdrawalApprovalDialog({
                   </div>
                 </div>
 
-                <div className="h-px bg-border/30" />
+                <div className="h-px bg-border/50" />
 
                 {(approvalModal.withdrawal.status === "pending" ||
                   approvalModal.withdrawal.status === "transferring") && (
-                  <div className="space-y-2">
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
+                  <div className="space-y-3">
+                    <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
                       Ação
                     </p>
                     <div className="grid grid-cols-2 gap-3">
                       <button
                         onClick={() => handleApprove("manual")}
                         disabled={!!actionLoading}
-                        className="flex flex-col items-center gap-2 p-4 rounded-xl border border-primary/20 bg-primary/5 hover:bg-primary/10 transition-all disabled:opacity-50"
+                        className="flex flex-col items-center gap-2 rounded-2xl border border-transparent bg-white p-4 text-[#0F0617] transition-opacity hover:opacity-90 disabled:opacity-50"
                       >
-                        <CheckCircle size={20} className="text-primary" />
-                        <span className="text-xs font-semibold text-primary">
+                        <CheckCircle size={20} />
+                        <span className="text-sm font-semibold">
                           Aprovar Manual
                         </span>
-                        <span className="text-xs text-muted-foreground text-center">
+                        <span className="text-center text-xs text-[#0F0617]/70">
                           Marca como aprovado sem enviar via API
                         </span>
                       </button>
                       <button
                         onClick={() => handleApprove("api")}
                         disabled={!!actionLoading}
-                        className="flex flex-col items-center gap-2 p-4 rounded-xl border border-blue-500/20 bg-blue-500/5 hover:bg-blue-500/10 transition-all disabled:opacity-50"
+                        className="flex flex-col items-center gap-2 rounded-2xl border border-primary/30 bg-primary/10 p-4 transition-colors hover:bg-primary/20 disabled:opacity-50"
                       >
-                        <Zap size={20} className="text-blue-500" />
-                        <span className="text-xs font-semibold text-blue-500">
+                        <Zap size={20} className="text-primary" />
+                        <span className="text-sm font-semibold text-primary">
                           Aprovar via API
                         </span>
-                        <span className="text-xs text-muted-foreground text-center">
+                        <span className="text-center text-xs text-muted-foreground">
                           Envia para processamento automático
                         </span>
                       </button>
@@ -464,10 +458,9 @@ export default function AdminWithdrawalApprovalDialog({
                       <button
                         onClick={() => setShowDenyInput(true)}
                         disabled={!!actionLoading}
-                        className="w-full px-4 py-2.5 rounded-lg bg-destructive/10 text-destructive text-xs font-medium hover:bg-destructive/20 transition-colors border border-destructive/20 disabled:opacity-50"
+                        className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 text-sm font-semibold text-destructive transition-colors hover:bg-destructive hover:text-destructive-foreground disabled:opacity-50"
                       >
-                        <XCircle size={12} className="inline mr-1" /> Negar
-                        Saque
+                        <XCircle size={14} /> Negar Saque
                       </button>
                     ) : (
                       <div className="space-y-2">
@@ -475,7 +468,7 @@ export default function AdminWithdrawalApprovalDialog({
                           value={denyReason}
                           onChange={(e) => setDenyReason(e.target.value)}
                           placeholder="Informe o motivo da negação..."
-                          className="w-full px-3 py-2 rounded-lg border border-destructive/20 bg-destructive/5 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-destructive/30 resize-none"
+                          className="w-full resize-none rounded-xl border border-destructive/30 bg-destructive/5 px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-destructive/20"
                           rows={2}
                         />
                         <div className="flex gap-2">
@@ -484,14 +477,14 @@ export default function AdminWithdrawalApprovalDialog({
                               setShowDenyInput(false);
                               setDenyReason("");
                             }}
-                            className="flex-1 px-3 py-2 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground border border-border/40 transition-colors"
+                            className="h-10 flex-1 rounded-xl border border-border/60 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
                           >
                             Voltar
                           </button>
                           <button
                             onClick={handleDeny}
                             disabled={!!actionLoading || !denyReason.trim()}
-                            className="flex-1 px-3 py-2 rounded-lg bg-destructive text-destructive-foreground text-xs font-medium hover:bg-destructive/90 transition-colors disabled:opacity-50"
+                            className="h-10 flex-1 rounded-xl bg-destructive text-sm font-semibold text-destructive-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
                           >
                             Confirmar Negação
                           </button>
