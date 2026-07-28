@@ -23,12 +23,12 @@ function CopyBlock({ label, value }: { label?: string; value: string }) {
   return (
     <div className="space-y-1">
       {label ? (
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+        <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
           {label}
         </p>
       ) : null}
       <div className="flex items-start gap-2 rounded-lg border border-border/50 bg-muted/30 px-3 py-2">
-        <code className="text-sm font-mono text-foreground break-all flex-1">
+        <code className="text-base font-mono text-foreground break-all flex-1">
           {value}
         </code>
         <button
@@ -39,7 +39,7 @@ function CopyBlock({ label, value }: { label?: string; value: string }) {
             toast.success("Copiado!");
           }}
         >
-          <Copy size={13} />
+          <Copy size={15} />
         </button>
       </div>
     </div>
@@ -57,12 +57,12 @@ function GuideStep({
 }) {
   return (
     <div className="flex gap-3">
-      <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-sm font-bold">
+      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary text-base font-bold">
         {number}
       </div>
       <div className="space-y-2 min-w-0 flex-1 pb-6 border-b border-border/30 last:border-0 last:pb-0">
-        <h4 className="text-sm font-semibold text-foreground">{title}</h4>
-        <div className="text-xs text-muted-foreground space-y-2 leading-relaxed">
+        <h4 className="text-base font-semibold text-foreground">{title}</h4>
+        <div className="text-sm text-muted-foreground space-y-2 leading-relaxed">
           {children}
         </div>
       </div>
@@ -76,10 +76,10 @@ function ExternalDocLink({ href, label }: { href: string; label: string }) {
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center gap-1 text-primary hover:underline text-xs"
+      className="inline-flex items-center gap-1 text-primary hover:underline text-sm"
     >
       {label}
-      <ExternalLink size={11} />
+      <ExternalLink size={13} />
     </a>
   );
 }
@@ -92,12 +92,12 @@ export function AcquirerGuideTab() {
   return (
     <div className="space-y-6">
       <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 flex gap-3">
-        <BookOpen size={20} className="text-primary shrink-0 mt-0.5" />
+        <BookOpen size={22} className="text-primary shrink-0 mt-0.5" />
         <div className="space-y-1">
-          <p className="text-sm font-semibold text-foreground">
+          <p className="text-base font-semibold text-foreground">
             Guia completo de integração
           </p>
-          <p className="text-xs text-muted-foreground leading-relaxed">
+          <p className="text-sm text-muted-foreground leading-relaxed">
             Siga na ordem: carregue as adquirentes na aba{" "}
             <strong>Conexões</strong>, configure credenciais e webhooks no
             provedor, depois defina o roteamento PIX na aba{" "}
@@ -110,12 +110,12 @@ export function AcquirerGuideTab() {
       {/* Checklist geral */}
       <Card className="border-border/40">
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm">Checklist geral (OmegaPay)</CardTitle>
-          <CardDescription className="text-xs">
+          <CardTitle className="text-base">Checklist geral (OmegaPay)</CardTitle>
+          <CardDescription className="text-sm">
             Antes de ir para produção, confira todos os itens.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-2 text-xs text-muted-foreground">
+        <CardContent className="space-y-2 text-sm text-muted-foreground">
           {[
             "Aba Conexões → Carregar adquirentes padrão (Woovi + Cartwave)",
             "Configurar credenciais de cada provedor → status Conectada",
@@ -127,7 +127,7 @@ export function AcquirerGuideTab() {
           ].map((item) => (
             <div key={item} className="flex items-start gap-2">
               <CheckCircle2
-                size={14}
+                size={16}
                 className="text-primary shrink-0 mt-0.5"
               />
               <span>{item}</span>
@@ -140,12 +140,12 @@ export function AcquirerGuideTab() {
       <Card className="border-border/40">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
-            <CardTitle className="text-sm">Woovi / OpenPix</CardTitle>
-            <Badge variant="outline" className="text-xs">
+            <CardTitle className="text-base">Woovi / OpenPix</CardTitle>
+            <Badge variant="outline" className="text-sm">
               PIX entrada + PIX saída
             </Badge>
           </div>
-          <CardDescription className="text-xs">
+          <CardDescription className="text-sm">
             Receber cobranças PIX e enviar saques (PIX Out). Documentação:{" "}
             <ExternalDocLink
               href="https://developers.woovi.com/docs/apis/api-getting-started"
@@ -155,7 +155,7 @@ export function AcquirerGuideTab() {
         </CardHeader>
         <CardContent className="space-y-8">
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-4">
+            <h3 className="text-sm font-bold uppercase tracking-wide text-muted-foreground mb-4">
               Parte A — No painel Woovi
             </h3>
             <div className="space-y-0">
@@ -249,7 +249,7 @@ export function AcquirerGuideTab() {
           </div>
 
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-4">
+            <h3 className="text-sm font-bold uppercase tracking-wide text-muted-foreground mb-4">
               Parte B — No OmegaPay (aba Conexões)
             </h3>
             <div className="space-y-0">
@@ -342,12 +342,12 @@ export function AcquirerGuideTab() {
       <Card className="border-border/40">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-2">
-            <CardTitle className="text-sm">Cartwave Hub</CardTitle>
-            <Badge variant="outline" className="text-xs">
+            <CardTitle className="text-base">Cartwave Hub</CardTitle>
+            <Badge variant="outline" className="text-sm">
               PIX entrada (cobrança)
             </Badge>
           </div>
-          <CardDescription className="text-xs">
+          <CardDescription className="text-sm">
             API base padrão:{" "}
             <code className="text-foreground">https://api.cartwavehub.com.br</code>
             . Integração focada em QR Code PIX cópia e cola.
@@ -355,7 +355,7 @@ export function AcquirerGuideTab() {
         </CardHeader>
         <CardContent className="space-y-8">
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-4">
+            <h3 className="text-sm font-bold uppercase tracking-wide text-muted-foreground mb-4">
               Parte A — No painel Cartwave
             </h3>
             <div className="space-y-0">
@@ -418,7 +418,7 @@ export function AcquirerGuideTab() {
           </div>
 
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-wide text-muted-foreground mb-4">
+            <h3 className="text-sm font-bold uppercase tracking-wide text-muted-foreground mb-4">
               Parte B — No OmegaPay (aba Conexões)
             </h3>
             <div className="space-y-0">
@@ -476,10 +476,10 @@ Content-Type: application/json`} />
 
           <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 flex gap-2">
             <AlertTriangle
-              size={16}
+              size={18}
               className="text-amber-600 shrink-0 mt-0.5"
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               <strong className="text-foreground">Saques:</strong> Cartwave nesta
               integração é usada para <strong>receber PIX</strong>. Saques
               automáticos via API usam <strong>Woovi PIX Out</strong>. A aba
@@ -493,11 +493,11 @@ Content-Type: application/json`} />
       {/* Failover + mapeamento */}
       <Card className="border-border/40">
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm">
+          <CardTitle className="text-base">
             Roteamento, failover e mapeamento de campos
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4 text-xs text-muted-foreground">
+        <CardContent className="space-y-4 text-sm text-muted-foreground">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -546,9 +546,9 @@ Content-Type: application/json`} />
       {/* Troubleshooting */}
       <Card className="border-border/40">
         <CardHeader className="pb-3">
-          <CardTitle className="text-sm">Problemas comuns</CardTitle>
+          <CardTitle className="text-base">Problemas comuns</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-3 text-xs">
+        <CardContent className="space-y-3 text-sm">
           {[
             {
               q: "Lista de conexões vazia, sem botão Configurar",
@@ -581,8 +581,8 @@ Content-Type: application/json`} />
                 "rounded-lg border border-border/40 p-3 space-y-1",
               )}
             >
-              <p className="font-medium text-foreground text-xs">{item.q}</p>
-              <p className="text-muted-foreground text-xs leading-relaxed">
+              <p className="font-medium text-foreground text-sm">{item.q}</p>
+              <p className="text-muted-foreground text-sm leading-relaxed">
                 {item.a}
               </p>
             </div>
@@ -594,13 +594,13 @@ Content-Type: application/json`} />
         <Button
           variant="outline"
           size="sm"
-          className="text-xs gap-2"
+          className="text-sm gap-2"
           onClick={() => {
             window.open("https://developers.woovi.com", "_blank");
           }}
         >
           Documentação Woovi
-          <ExternalLink size={12} />
+          <ExternalLink size={14} />
         </Button>
       </div>
     </div>

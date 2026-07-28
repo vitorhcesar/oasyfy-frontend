@@ -188,40 +188,38 @@ export default function AdminAcquirer() {
 
   const renderConnections = () => (
     <div className="space-y-4">
-      <div className="flex items-center justify-between mb-2">
-        <div>
-          <h2 className="text-sm font-semibold text-foreground">
-            Adquirentes conectadas
-          </h2>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Gerencie as conexões com provedores de pagamento.
-          </p>
-        </div>
+      <div className="mb-2">
+        <h2 className="text-base font-semibold text-foreground">
+          Adquirentes conectadas
+        </h2>
+        <p className="mt-0.5 text-sm text-muted-foreground">
+          Gerencie as conexões com provedores de pagamento.
+        </p>
       </div>
 
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="animate-spin text-muted-foreground" size={20} />
+          <Loader2 className="animate-spin text-muted-foreground" size={24} />
         </div>
       ) : connections.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-border/60 bg-muted/20 p-10 text-center space-y-4">
-          <div className="w-12 h-12 rounded-xl bg-muted/50 flex items-center justify-center mx-auto">
-            <Link2 size={22} className="text-muted-foreground/50" />
+        <div className="admin-surface space-y-4 px-6 py-12 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+            <Link2 size={22} className="text-primary" />
           </div>
           <div className="space-y-1">
-            <p className="text-sm font-medium text-foreground">
+            <p className="text-base font-semibold text-foreground">
               Nenhuma adquirente cadastrada
             </p>
-            <p className="text-xs text-muted-foreground max-w-md mx-auto">
+            <p className="mx-auto max-w-md text-sm text-muted-foreground">
               Carregue Woovi e Cartwave para habilitar o botão{" "}
               <strong>Configurar</strong> e definir credenciais + roteamento PIX.
             </p>
           </div>
-          <Button
-            size="sm"
-            className="gap-2"
+          <button
+            type="button"
             onClick={ensureDefaultConnections}
             disabled={bootstrapping}
+            className="inline-flex h-10 items-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90 disabled:opacity-50"
           >
             {bootstrapping ? (
               <Loader2 size={14} className="animate-spin" />
@@ -229,34 +227,34 @@ export default function AdminAcquirer() {
               <Plus size={14} />
             )}
             Carregar adquirentes padrão
-          </Button>
+          </button>
         </div>
       ) : (
         <div className="grid gap-3">
           {connections.map((conn) => (
             <div
               key={conn.id}
-              className="rounded-xl border border-border/40 bg-card p-4 flex items-center gap-4 hover:border-border/80 transition-colors"
+              className="admin-surface flex items-center gap-4 p-4"
             >
-              <div className="w-12 h-12 rounded-lg bg-background border border-border/30 flex items-center justify-center overflow-hidden shrink-0">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border/50 bg-background">
                 <AcquirerBrandLogo connection={conn} />
               </div>
 
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2">
                   <span className="text-sm font-semibold text-foreground">
                     {conn.name}
                   </span>
-                  <Badge
-                    variant={
-                      conn.status === "connected" ? "default" : "secondary"
-                    }
+                  <span
                     className={cn(
-                      "text-xs px-1.5 py-0",
+                      "inline-flex items-center rounded-lg border px-2.5 py-1 text-xs font-semibold",
                       conn.status === "connected" &&
-                        "bg-primary/10 text-primary border-primary/20",
+                        "border-success/25 bg-success/10 text-success",
                       conn.status === "error" &&
-                        "bg-destructive/10 text-destructive border-destructive/20",
+                        "border-destructive/25 bg-destructive/10 text-destructive",
+                      conn.status !== "connected" &&
+                        conn.status !== "error" &&
+                        "border-border bg-muted text-muted-foreground",
                     )}
                   >
                     {conn.status === "connected"
@@ -264,16 +262,16 @@ export default function AdminAcquirer() {
                       : conn.status === "error"
                         ? "Erro"
                         : "Desconectada"}
-                  </Badge>
+                  </span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                <p className="mt-0.5 truncate text-sm text-muted-foreground">
                   {conn.description}
                 </p>
-                <div className="flex items-center gap-1.5 mt-1.5">
+                <div className="mt-2 flex flex-wrap items-center gap-1.5">
                   {conn.methods.map((m) => (
                     <span
                       key={m}
-                      className="text-xs px-1.5 py-0.5 rounded bg-muted/50 text-muted-foreground font-medium"
+                      className="rounded-lg border border-border bg-muted/60 px-2 py-0.5 text-xs font-semibold uppercase text-foreground"
                     >
                       {m}
                     </span>
@@ -281,21 +279,20 @@ export default function AdminAcquirer() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex shrink-0 items-center gap-2">
                 <Switch
                   checked={conn.is_active}
                   onCheckedChange={() => toggleActive(conn)}
                   className="scale-90"
                 />
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="h-8 text-xs gap-1.5"
+                <button
+                  type="button"
                   onClick={() => openConfig(conn)}
+                  className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-border/60 px-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
                 >
-                  <Settings2 size={13} />
+                  <Settings2 size={14} />
                   Configurar
-                </Button>
+                </button>
               </div>
             </div>
           ))}
@@ -396,21 +393,21 @@ export default function AdminAcquirer() {
     if (loadingRouting || loading) {
       return (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="animate-spin text-muted-foreground" size={20} />
+          <Loader2 className="animate-spin text-muted-foreground" size={24} />
         </div>
       );
     }
 
     if (activeConnections.length === 0) {
       return (
-        <div className="rounded-xl border border-border/40 bg-card p-8 text-center">
-          <div className="w-10 h-10 rounded-lg bg-muted/50 flex items-center justify-center mx-auto mb-3">
-            <Link2 size={18} className="text-muted-foreground/40" />
+        <div className="admin-surface px-6 py-12 text-center">
+          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+            <Link2 size={18} className="text-primary" />
           </div>
-          <p className="text-sm font-medium text-foreground mb-1">
+          <p className="mb-1 text-base font-semibold text-foreground">
             Nenhuma adquirente conectada
           </p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             Conecte e ative uma adquirente na aba "Conexões" para configurar o
             roteamento.
           </p>
@@ -420,18 +417,18 @@ export default function AdminAcquirer() {
 
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-sm font-semibold text-foreground">
+            <h2 className="text-base font-semibold text-foreground">
               Regras de roteamento por método
             </h2>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="mt-0.5 text-sm text-muted-foreground">
               Configure a prioridade das adquirentes. Se a primeira falhar, o
               sistema tenta automaticamente a próxima.
             </p>
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/30 rounded-md px-2.5 py-1.5">
-            <RotateCcw size={11} />
+          <div className="liquid-glass-control inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm text-muted-foreground">
+            <RotateCcw size={13} />
             Failover automático
           </div>
         </div>
@@ -446,19 +443,16 @@ export default function AdminAcquirer() {
           );
 
           return (
-            <div
-              key={method}
-              className="rounded-xl border border-border/40 bg-card overflow-hidden"
-            >
-              <div className="flex items-center justify-between px-4 py-3 border-b border-border/30 bg-muted/20">
+            <div key={method} className="admin-surface overflow-hidden">
+              <div className="flex items-center justify-between border-b border-border/50 px-4 py-3.5">
                 <div className="flex items-center gap-2">
                   <Badge
                     variant="outline"
-                    className="text-xs font-semibold uppercase tracking-wider px-2"
+                    className="px-2 text-xs font-semibold uppercase tracking-wider"
                   >
                     {method}
                   </Badge>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-sm text-muted-foreground">
                     {rules.length === 0
                       ? "Sem adquirente"
                       : `${rules.length} adquirente${
@@ -503,25 +497,25 @@ export default function AdminAcquirer() {
 
               {rules.length === 0 ? (
                 <div className="px-4 py-6 text-center">
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-sm text-muted-foreground">
                     Nenhuma adquirente configurada para {method.toUpperCase()}.
                   </p>
                 </div>
               ) : (
-                <div className="divide-y divide-border/20">
+                <div className="divide-y divide-border/50">
                   {rules.map((rule, idx) => {
                     const logo = getAcquirerLogo(rule.acquirer_id);
                     return (
                       <div
                         key={rule.id}
-                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-muted/10 transition-colors"
+                        className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/25"
                       >
                         <GripVertical
                           size={14}
-                          className="text-muted-foreground/30 shrink-0"
+                          className="shrink-0 text-muted-foreground"
                         />
 
-                        <div className="flex items-center justify-center w-6 h-6 rounded bg-muted/40 text-xs font-bold text-muted-foreground shrink-0">
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-muted text-xs font-bold text-foreground">
                           {idx + 1}
                         </div>
 
@@ -529,17 +523,17 @@ export default function AdminAcquirer() {
                           <img
                             src={logo}
                             alt=""
-                            className="w-5 h-5 object-contain shrink-0"
+                            className="h-5 w-5 shrink-0 object-contain"
                           />
                         )}
 
-                        <div className="flex-1 min-w-0">
-                          <span className="text-xs font-medium text-foreground">
+                        <div className="min-w-0 flex-1">
+                          <span className="text-sm font-medium text-foreground">
                             {getAcquirerName(rule.acquirer_id)}
                           </span>
                           {idx === 0 && (
                             <Badge
-                              className="ml-2 text-xs px-1 py-0 bg-primary/10 text-primary border-primary/20"
+                              className="ml-2 border-primary/25 bg-primary/10 px-1.5 py-0 text-xs text-primary"
                               variant="outline"
                             >
                               Principal
@@ -547,7 +541,7 @@ export default function AdminAcquirer() {
                           )}
                           {idx > 0 && (
                             <Badge
-                              className="ml-2 text-xs px-1 py-0 bg-accent text-accent-foreground"
+                              className="ml-2 px-1.5 py-0 text-xs"
                               variant="outline"
                             >
                               Fallback {idx}
@@ -618,21 +612,21 @@ export default function AdminAcquirer() {
     if (loadingRouting || loading) {
       return (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="animate-spin text-muted-foreground" size={20} />
+          <Loader2 className="animate-spin text-muted-foreground" size={24} />
         </div>
       );
     }
 
     if (activeConnections.length === 0) {
       return (
-        <div className="rounded-xl border border-border/40 bg-card p-8 text-center">
-          <div className="w-10 h-10 rounded-lg bg-muted/50 flex items-center justify-center mx-auto mb-3">
-            <Link2 size={18} className="text-muted-foreground/40" />
+        <div className="admin-surface px-6 py-12 text-center">
+          <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+            <Link2 size={18} className="text-primary" />
           </div>
-          <p className="text-sm font-medium text-foreground mb-1">
+          <p className="mb-1 text-base font-semibold text-foreground">
             Nenhuma adquirente conectada
           </p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             Conecte e ative uma adquirente na aba "Conexões" para configurar o
             roteamento de saque.
           </p>
@@ -642,19 +636,19 @@ export default function AdminAcquirer() {
 
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 className="text-sm font-semibold text-foreground">
+            <h2 className="text-base font-semibold text-foreground">
               Regras de roteamento de saque
             </h2>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="mt-0.5 text-sm text-muted-foreground">
               Configure a prioridade das adquirentes para saques. Saques PIX via
               Woovi usam o roteamento de depósito PIX (aba Depósito, method
               pix).
             </p>
           </div>
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-muted/30 rounded-md px-2.5 py-1.5">
-            <RotateCcw size={11} />
+          <div className="liquid-glass-control inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-sm text-muted-foreground">
+            <RotateCcw size={13} />
             Failover automático
           </div>
         </div>
@@ -675,19 +669,16 @@ export default function AdminAcquirer() {
           };
 
           return (
-            <div
-              key={method}
-              className="rounded-xl border border-border/40 bg-card overflow-hidden"
-            >
-              <div className="flex items-center justify-between px-4 py-3 border-b border-border/30 bg-muted/20">
+            <div key={method} className="admin-surface overflow-hidden">
+              <div className="flex items-center justify-between border-b border-border/50 px-4 py-3.5">
                 <div className="flex items-center gap-2">
                   <Badge
                     variant="outline"
-                    className="text-xs font-semibold uppercase tracking-wider px-2"
+                    className="px-2 text-xs font-semibold uppercase tracking-wider"
                   >
                     {methodLabels[method] || method}
                   </Badge>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-sm text-muted-foreground">
                     {rules.length === 0
                       ? "Sem adquirente"
                       : `${rules.length} adquirente${
@@ -716,41 +707,41 @@ export default function AdminAcquirer() {
 
               {rules.length === 0 ? (
                 <div className="px-4 py-6 text-center">
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-sm text-muted-foreground">
                     Nenhuma adquirente configurada para saque via{" "}
                     {methodLabels[method] || method.toUpperCase()}.
                   </p>
                 </div>
               ) : (
-                <div className="divide-y divide-border/20">
+                <div className="divide-y divide-border/50">
                   {rules.map((rule, idx) => {
                     const logo = getAcquirerLogo(rule.acquirer_id);
                     return (
                       <div
                         key={rule.id}
-                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-muted/10 transition-colors"
+                        className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/25"
                       >
                         <GripVertical
                           size={14}
-                          className="text-muted-foreground/30 shrink-0"
+                          className="shrink-0 text-muted-foreground"
                         />
-                        <div className="flex items-center justify-center w-6 h-6 rounded bg-muted/40 text-xs font-bold text-muted-foreground shrink-0">
+                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-muted text-xs font-bold text-foreground">
                           {idx + 1}
                         </div>
                         {logo && (
                           <img
                             src={logo}
                             alt=""
-                            className="w-5 h-5 object-contain shrink-0"
+                            className="h-5 w-5 shrink-0 object-contain"
                           />
                         )}
-                        <div className="flex-1 min-w-0">
-                          <span className="text-xs font-medium text-foreground">
+                        <div className="min-w-0 flex-1">
+                          <span className="text-sm font-medium text-foreground">
                             {getAcquirerName(rule.acquirer_id)}
                           </span>
                           {idx === 0 && (
                             <Badge
-                              className="ml-2 text-xs px-1 py-0 bg-primary/10 text-primary border-primary/20"
+                              className="ml-2 border-primary/25 bg-primary/10 px-1.5 py-0 text-xs text-primary"
                               variant="outline"
                             >
                               Principal
@@ -758,7 +749,7 @@ export default function AdminAcquirer() {
                           )}
                           {idx > 0 && (
                             <Badge
-                              className="ml-2 text-xs px-1 py-0 bg-accent text-accent-foreground"
+                              className="ml-2 px-1.5 py-0 text-xs"
                               variant="outline"
                             >
                               Fallback {idx}
@@ -917,7 +908,7 @@ export default function AdminAcquirer() {
     if (loadingCosts)
       return (
         <div className="flex justify-center py-16">
-          <Loader2 size={18} className="animate-spin text-muted-foreground" />
+          <Loader2 size={24} className="animate-spin text-muted-foreground" />
         </div>
       );
 
@@ -925,8 +916,8 @@ export default function AdminAcquirer() {
 
     if (connectedAcquirers.length === 0) {
       return (
-        <div className="rounded-xl border border-border/40 bg-card p-8 text-center">
-          <p className="text-sm text-muted-foreground">
+        <div className="admin-surface px-6 py-12 text-center">
+          <p className="text-base text-muted-foreground">
             Nenhuma adquirente ativa. Configure uma conexão primeiro.
           </p>
         </div>
@@ -935,7 +926,7 @@ export default function AdminAcquirer() {
 
     return (
       <div className="space-y-3">
-        <p className="text-xs text-muted-foreground mb-4">
+        <p className="mb-4 text-sm text-muted-foreground">
           Configure os custos que você paga para cada adquirente por tipo de
           operação e método. Isso será usado para calcular o lucro líquido nas
           métricas.
@@ -946,23 +937,20 @@ export default function AdminAcquirer() {
           const logo = getAcquirerLogoSrc(conn);
 
           return (
-            <div
-              key={conn.id}
-              className="rounded-xl border border-border/40 bg-card overflow-hidden"
-            >
-              {/* Acquirer header */}
+            <div key={conn.id} className="admin-surface overflow-hidden">
               <button
+                type="button"
                 onClick={() =>
                   setExpandedCostAcquirer(isExpanded ? null : conn.id)
                 }
-                className="w-full flex items-center gap-3 px-5 py-4 hover:bg-muted/20 transition-colors text-left"
+                className="flex w-full items-center gap-3 px-5 py-4 text-left transition-colors hover:bg-muted/25"
               >
-                <div className="w-9 h-9 rounded-lg bg-muted/50 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-muted">
                   {logo ? (
                     <img
                       src={logo}
                       alt={conn.name}
-                      className="w-6 h-6 object-contain"
+                      className="h-6 w-6 object-contain"
                     />
                   ) : (
                     <AcquirerBrandLogo
@@ -971,11 +959,11 @@ export default function AdminAcquirer() {
                     />
                   )}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-semibold text-foreground">
                     {conn.name}
                   </p>
-                  <p className="text-xs text-muted-foreground/60">
+                  <p className="text-sm text-muted-foreground">
                     {
                       costs.filter(
                         (c) =>
@@ -994,10 +982,9 @@ export default function AdminAcquirer() {
               </button>
 
               {isExpanded && (
-                <div className="border-t border-border/30 px-5 py-5 space-y-6 animate-fade-in">
-                  {/* Deposit costs */}
+                <div className="animate-fade-in space-y-6 border-t border-border/50 px-5 py-5">
                   <div>
-                    <p className="text-xs font-semibold text-foreground uppercase tracking-wider mb-3">
+                    <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
                       Custos de Depósito (Venda)
                     </p>
                     <div className="space-y-2">
@@ -1006,13 +993,13 @@ export default function AdminAcquirer() {
                         return (
                           <div
                             key={method}
-                            className="grid grid-cols-4 gap-3 items-center"
+                            className="grid grid-cols-4 items-center gap-3"
                           >
-                            <span className="text-xs font-medium text-muted-foreground">
+                            <span className="text-sm font-medium text-muted-foreground">
                               {methodLabel[method]}
                             </span>
                             <div>
-                              <label className="text-xs text-muted-foreground/60 mb-0.5 block">
+                              <label className="mb-0.5 block text-xs text-muted-foreground">
                                 Fixo (R$)
                               </label>
                               <Input
@@ -1029,11 +1016,11 @@ export default function AdminAcquirer() {
                                     parseFloat(e.target.value) || 0,
                                   )
                                 }
-                                className="h-8 text-xs"
+                                className="h-9 text-sm"
                               />
                             </div>
                             <div>
-                              <label className="text-xs text-muted-foreground/60 mb-0.5 block">
+                              <label className="mb-0.5 block text-xs text-muted-foreground">
                                 Variável (%)
                               </label>
                               <Input
@@ -1051,11 +1038,11 @@ export default function AdminAcquirer() {
                                     parseFloat(e.target.value) || 0,
                                   )
                                 }
-                                className="h-8 text-xs"
+                                className="h-9 text-sm"
                               />
                             </div>
                             <div>
-                              <label className="text-xs text-muted-foreground/60 mb-0.5 block">
+                              <label className="mb-0.5 block text-xs text-muted-foreground">
                                 Mínimo (R$)
                               </label>
                               <Input
@@ -1072,7 +1059,7 @@ export default function AdminAcquirer() {
                                     parseFloat(e.target.value) || 0,
                                   )
                                 }
-                                className="h-8 text-xs"
+                                className="h-9 text-sm"
                               />
                             </div>
                           </div>
@@ -1081,9 +1068,8 @@ export default function AdminAcquirer() {
                     </div>
                   </div>
 
-                  {/* Withdrawal costs */}
                   <div>
-                    <p className="text-xs font-semibold text-foreground uppercase tracking-wider mb-3">
+                    <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
                       Custos de Saque
                     </p>
                     <div className="space-y-2">
@@ -1092,13 +1078,13 @@ export default function AdminAcquirer() {
                         return (
                           <div
                             key={method}
-                            className="grid grid-cols-4 gap-3 items-center"
+                            className="grid grid-cols-4 items-center gap-3"
                           >
-                            <span className="text-xs font-medium text-muted-foreground">
+                            <span className="text-sm font-medium text-muted-foreground">
                               {methodLabel[method]}
                             </span>
                             <div>
-                              <label className="text-xs text-muted-foreground/60 mb-0.5 block">
+                              <label className="mb-0.5 block text-xs text-muted-foreground">
                                 Fixo (R$)
                               </label>
                               <Input
@@ -1115,11 +1101,11 @@ export default function AdminAcquirer() {
                                     parseFloat(e.target.value) || 0,
                                   )
                                 }
-                                className="h-8 text-xs"
+                                className="h-9 text-sm"
                               />
                             </div>
                             <div>
-                              <label className="text-xs text-muted-foreground/60 mb-0.5 block">
+                              <label className="mb-0.5 block text-xs text-muted-foreground">
                                 Variável (%)
                               </label>
                               <Input
@@ -1137,11 +1123,11 @@ export default function AdminAcquirer() {
                                     parseFloat(e.target.value) || 0,
                                   )
                                 }
-                                className="h-8 text-xs"
+                                className="h-9 text-sm"
                               />
                             </div>
                             <div>
-                              <label className="text-xs text-muted-foreground/60 mb-0.5 block">
+                              <label className="mb-0.5 block text-xs text-muted-foreground">
                                 Mínimo (R$)
                               </label>
                               <Input
@@ -1158,7 +1144,7 @@ export default function AdminAcquirer() {
                                     parseFloat(e.target.value) || 0,
                                   )
                                 }
-                                className="h-8 text-xs"
+                                className="h-9 text-sm"
                               />
                             </div>
                           </div>
@@ -1167,13 +1153,12 @@ export default function AdminAcquirer() {
                     </div>
                   </div>
 
-                  {/* Save button */}
                   <div className="flex justify-end pt-2">
-                    <Button
-                      size="sm"
+                    <button
+                      type="button"
                       onClick={() => saveCostsForAcquirer(conn.id)}
                       disabled={savingCosts}
-                      className="gap-2 text-xs"
+                      className="inline-flex h-10 items-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90 disabled:opacity-50"
                     >
                       {savingCosts ? (
                         <Loader2 size={14} className="animate-spin" />
@@ -1181,7 +1166,7 @@ export default function AdminAcquirer() {
                         <Save size={14} />
                       )}
                       Salvar custos
-                    </Button>
+                    </button>
                   </div>
                 </div>
               )}
@@ -1211,35 +1196,37 @@ export default function AdminAcquirer() {
 
   return (
     <AdminLayout>
-      <div className="w-full max-w-5xl mx-auto px-4 md:px-6 py-6">
-        <div className="mb-6">
-          <h1 className="text-lg font-semibold text-foreground">Adquirentes</h1>
-          <p className="text-xs text-muted-foreground mt-1">
+      <div className="mx-auto w-full max-w-5xl px-5 py-6 md:px-8 md:py-9">
+        <header className="mb-7 animate-fade-in">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+            Sistema
+          </p>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-[2.15rem]">
+            Adquirentes
+          </h1>
+          <p className="mt-1.5 text-sm text-muted-foreground">
             Configure o roteamento inteligente de pagamentos e adicione novas
             conexões de adquirentes.
           </p>
-        </div>
+        </header>
 
-        <div className="border-b border-border/40 mb-8 overflow-x-auto scrollbar-none">
-          <div className="flex items-center gap-0 min-w-max">
-            {tabs.map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={cn(
-                  "px-4 py-2.5 text-xs font-medium transition-all relative whitespace-nowrap",
-                  activeTab === tab.key
-                    ? "text-primary"
-                    : "text-muted-foreground/60 hover:text-muted-foreground",
-                )}
-              >
-                {tab.label}
-                {activeTab === tab.key && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />
-                )}
-              </button>
-            ))}
-          </div>
+        <div className="liquid-glass-control mb-8 flex flex-wrap items-center gap-0.5 rounded-2xl p-1">
+          {tabs.map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
+              className={cn(
+                "inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-semibold transition-all whitespace-nowrap",
+                activeTab === tab.key
+                  ? "bg-white text-[#0F0617] shadow-sm"
+                  : "text-muted-foreground hover:bg-white/10 hover:text-foreground",
+              )}
+            >
+              <tab.icon size={15} />
+              {tab.label}
+            </button>
+          ))}
         </div>
 
         <div className="animate-fade-in" key={activeTab}>
