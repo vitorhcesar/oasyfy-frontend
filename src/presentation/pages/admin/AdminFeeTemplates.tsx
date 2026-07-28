@@ -5,21 +5,24 @@ import type {
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import useSellerFeeTemplatesQuery from "@/presentation/hooks/use-seller-fee-templates-query";
 import { AdminLayout } from "@/presentation/layouts/AdminLayout";
+import { cn } from "@/presentation/utils/cn";
 import { tryOrToastError } from "@/presentation/utils/try-or-toast-error";
 import {
+  Bitcoin,
+  CreditCard,
+  FileText,
   Layers,
   Loader2,
   Pencil,
   Plus,
+  QrCode,
+  Target,
   Trash2,
+  Wallet,
   X,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
 
 type TFeeFormState = Omit<ICreateSellerFeeRequestDto, never>;
 
@@ -54,10 +57,6 @@ const EMPTY_FEE_FORM: TFeeFormState = {
   withdrawalDailyMax: 0,
 };
 
-// ---------------------------------------------------------------------------
-// FeeFormField
-// ---------------------------------------------------------------------------
-
 interface IFeeFormFieldProps {
   label: string;
   field: keyof TFeeFormState;
@@ -76,8 +75,8 @@ function FeeFormField({
   isString,
 }: IFeeFormFieldProps) {
   return (
-    <div>
-      <label className="text-xs text-muted-foreground/60 uppercase tracking-wider block mb-1">
+    <div className="space-y-2">
+      <label className="block text-sm font-medium text-muted-foreground">
         {label}
       </label>
       {isString ? (
@@ -85,7 +84,7 @@ function FeeFormField({
           type="text"
           value={String(form[field])}
           onChange={(e) => onChange(field, e.target.value)}
-          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+          className="h-10 w-full rounded-xl border border-border/50 bg-background px-3 text-sm text-foreground transition-all focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/30"
         />
       ) : (
         <input
@@ -94,31 +93,37 @@ function FeeFormField({
           min={0}
           value={form[field] as number}
           onChange={(e) => onChange(field, Number(e.target.value) || 0)}
-          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+          className="h-10 w-full rounded-xl border border-border/50 bg-background px-3 text-sm text-foreground transition-all focus:border-primary/50 focus:outline-none focus:ring-2 focus:ring-primary/30"
         />
       )}
     </div>
   );
 }
 
-// ---------------------------------------------------------------------------
-// FeeFormSection
-// ---------------------------------------------------------------------------
-
 interface IFeeFormSectionProps {
   title: string;
+  icon: React.ElementType;
   fields: { label: string; field: keyof TFeeFormState; step?: number }[];
   form: TFeeFormState;
   onChange: (f: keyof TFeeFormState, v: number | string) => void;
 }
 
-function FeeFormSection({ title, fields, form, onChange }: IFeeFormSectionProps) {
+function FeeFormSection({
+  title,
+  icon: Icon,
+  fields,
+  form,
+  onChange,
+}: IFeeFormSectionProps) {
   return (
-    <div>
-      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-        {title}
-      </p>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+    <div className="admin-surface space-y-4 p-4 md:p-5">
+      <div className="flex items-center gap-2.5 border-b border-border/50 pb-3">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
+          <Icon size={16} className="text-primary" />
+        </div>
+        <h3 className="text-sm font-semibold text-foreground">{title}</h3>
+      </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {fields.map((f) => (
           <FeeFormField
             key={f.field}
@@ -133,10 +138,6 @@ function FeeFormSection({ title, fields, form, onChange }: IFeeFormSectionProps)
     </div>
   );
 }
-
-// ---------------------------------------------------------------------------
-// FeeFormModal
-// ---------------------------------------------------------------------------
 
 interface IFeeFormModalProps {
   editing: IGetFullSellerFeeResponseDto | null;
@@ -216,46 +217,54 @@ function FeeFormModal({ editing, onClose, onSaved }: IFeeFormModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl bg-card border border-border rounded-2xl shadow-xl overflow-hidden max-h-[90vh] flex flex-col">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border/50">
-          <div className="flex items-center gap-2">
-            <Layers size={16} className="text-primary" />
-            <h2 className="text-sm font-semibold text-foreground">
-              {editing ? "Editar plano" : "Novo plano de taxa"}
-            </h2>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="liquid-glass-control flex max-h-[90vh] w-full max-w-3xl animate-fade-in flex-col overflow-hidden rounded-[22px] shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between border-b border-border/40 px-5 py-4 md:px-6">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10">
+              <Layers size={16} className="text-primary" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold tracking-tight text-foreground">
+                {editing ? "Editar plano" : "Novo plano de taxa"}
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Defina taxas por método de pagamento e limites de saque.
+              </p>
+            </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted/40 transition-colors"
+            className="rounded-xl p-2 text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
           >
-            <X size={16} />
+            <X size={18} />
           </button>
         </div>
 
-        {/* Form */}
         <form
           onSubmit={handleSubmit}
-          className="flex-1 overflow-y-auto px-6 py-4 space-y-5"
+          className="flex-1 space-y-4 overflow-y-auto px-5 py-4 md:px-6"
         >
-          {/* Nome */}
-          <div>
-            <label className="text-xs text-muted-foreground/60 uppercase tracking-wider block mb-1">
-              Nome do plano *
-            </label>
-            <input
-              type="text"
-              value={form.name}
-              onChange={(e) => onChange("name", e.target.value)}
-              placeholder="Ex: Padrão, Premium, Especial..."
-              required
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+          <div className="admin-surface p-4 md:p-5">
+            <FeeFormField
+              label="Nome do plano *"
+              field="name"
+              form={form}
+              onChange={onChange}
+              isString
             />
           </div>
 
           <FeeFormSection
             title="Pix"
+            icon={QrCode}
             form={form}
             onChange={onChange}
             fields={[
@@ -268,7 +277,8 @@ function FeeFormModal({ editing, onClose, onSaved }: IFeeFormModalProps) {
           />
 
           <FeeFormSection
-            title="Cartão de Crédito"
+            title="Cartão de crédito"
+            icon={CreditCard}
             form={form}
             onChange={onChange}
             fields={[
@@ -282,6 +292,7 @@ function FeeFormModal({ editing, onClose, onSaved }: IFeeFormModalProps) {
 
           <FeeFormSection
             title="Boleto"
+            icon={FileText}
             form={form}
             onChange={onChange}
             fields={[
@@ -295,6 +306,7 @@ function FeeFormModal({ editing, onClose, onSaved }: IFeeFormModalProps) {
 
           <FeeFormSection
             title="Cripto"
+            icon={Bitcoin}
             form={form}
             onChange={onChange}
             fields={[
@@ -308,43 +320,61 @@ function FeeFormModal({ editing, onClose, onSaved }: IFeeFormModalProps) {
 
           <FeeFormSection
             title="Saque"
+            icon={Wallet}
             form={form}
             onChange={onChange}
             fields={[
               { label: "Taxa fixa (R$)", field: "withdrawalFixedFee" },
               { label: "Taxa variável (%)", field: "withdrawalVariableFee" },
               { label: "Taxa mínima (R$)", field: "withdrawalMinFee" },
-              { label: "Mín. por saque (R$)", field: "withdrawalMinAmount", step: 1 },
-              { label: "Máx. por saque (R$)", field: "withdrawalMaxAmount", step: 1 },
-              { label: "Limite diário (R$)", field: "withdrawalDailyMax", step: 1 },
+              {
+                label: "Mín. por saque (R$)",
+                field: "withdrawalMinAmount",
+                step: 1,
+              },
+              {
+                label: "Máx. por saque (R$)",
+                field: "withdrawalMaxAmount",
+                step: 1,
+              },
+              {
+                label: "Limite diário (R$)",
+                field: "withdrawalDailyMax",
+                step: 1,
+              },
             ]}
           />
 
           <FeeFormSection
             title="Metas"
+            icon={Target}
             form={form}
             onChange={onChange}
             fields={[
-              { label: "Meta de faturamento (R$)", field: "billingGoal", step: 1 },
+              {
+                label: "Meta de faturamento (R$)",
+                field: "billingGoal",
+                step: 1,
+              },
             ]}
           />
         </form>
 
-        {/* Footer */}
-        <div className="px-6 py-4 border-t border-border/50 flex justify-end gap-2">
+        <div className="flex justify-end gap-2 border-t border-border/40 px-5 py-4 md:px-6">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-lg text-sm text-muted-foreground hover:bg-muted/40 transition-colors"
+            className="h-10 rounded-xl bg-muted px-4 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
           >
             Cancelar
           </button>
           <button
+            type="button"
             onClick={handleSubmit}
             disabled={saving}
-            className="px-5 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center gap-1.5"
+            className="inline-flex h-10 items-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90 disabled:opacity-50"
           >
-            {saving && <Loader2 size={13} className="animate-spin" />}
+            {saving && <Loader2 size={15} className="animate-spin" />}
             {editing ? "Salvar alterações" : "Criar plano"}
           </button>
         </div>
@@ -353,17 +383,17 @@ function FeeFormModal({ editing, onClose, onSaved }: IFeeFormModalProps) {
   );
 }
 
-// ---------------------------------------------------------------------------
-// DeleteConfirmModal
-// ---------------------------------------------------------------------------
-
 interface IDeleteConfirmModalProps {
   template: IGetFullSellerFeeResponseDto;
   onClose: () => void;
   onDeleted: () => void;
 }
 
-function DeleteConfirmModal({ template, onClose, onDeleted }: IDeleteConfirmModalProps) {
+function DeleteConfirmModal({
+  template,
+  onClose,
+  onDeleted,
+}: IDeleteConfirmModalProps) {
   const apiService = useApiService();
   const [deleting, setDeleting] = useState(false);
 
@@ -384,31 +414,40 @@ function DeleteConfirmModal({ template, onClose, onDeleted }: IDeleteConfirmModa
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="w-full max-w-sm bg-card border border-border rounded-2xl shadow-xl p-6 space-y-4">
-        <div className="w-10 h-10 rounded-full bg-destructive/10 flex items-center justify-center">
-          <Trash2 size={18} className="text-destructive" />
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      onClick={onClose}
+    >
+      <div
+        className="liquid-glass-control w-full max-w-md animate-fade-in rounded-[22px] p-6 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-destructive/10">
+          <Trash2 size={20} className="text-destructive" />
         </div>
-        <div>
-          <h3 className="text-sm font-semibold text-foreground">Excluir plano</h3>
-          <p className="text-sm text-muted-foreground mt-1">
-            Tem certeza que deseja excluir o plano{" "}
-            <strong className="text-foreground">"{template.name}"</strong>? Esta ação não pode ser desfeita.
-          </p>
-        </div>
-        <div className="flex gap-2 pt-1">
+        <h3 className="mb-1 text-lg font-bold tracking-tight text-foreground">
+          Excluir plano
+        </h3>
+        <p className="mb-5 text-sm text-muted-foreground">
+          Tem certeza que deseja excluir o plano{" "}
+          <strong className="text-foreground">"{template.name}"</strong>? Esta
+          ação não pode ser desfeita.
+        </p>
+        <div className="flex justify-end gap-2">
           <button
+            type="button"
             onClick={onClose}
-            className="flex-1 py-2 rounded-lg text-sm text-muted-foreground hover:bg-muted/40 transition-colors"
+            className="h-10 rounded-xl bg-muted px-4 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
           >
             Cancelar
           </button>
           <button
+            type="button"
             onClick={handleDelete}
             disabled={deleting}
-            className="flex-1 py-2 rounded-lg bg-destructive text-destructive-foreground text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-1.5"
+            className="inline-flex h-10 items-center gap-2 rounded-xl bg-destructive px-4 text-sm font-semibold text-destructive-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
           >
-            {deleting && <Loader2 size={13} className="animate-spin" />}
+            {deleting && <Loader2 size={15} className="animate-spin" />}
             Excluir
           </button>
         </div>
@@ -417,16 +456,25 @@ function DeleteConfirmModal({ template, onClose, onDeleted }: IDeleteConfirmModa
   );
 }
 
-// ---------------------------------------------------------------------------
-// Page
-// ---------------------------------------------------------------------------
+function formatBillingGoal(value: number) {
+  if (value <= 0) {
+    return "—";
+  }
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(value / 100);
+}
 
 export default function AdminFeeTemplates() {
-  const { data: templates, isLoading, invalidateQuery } = useSellerFeeTemplatesQuery();
+  const { data: templates, isLoading, invalidateQuery } =
+    useSellerFeeTemplatesQuery();
 
   const [showForm, setShowForm] = useState(false);
-  const [editingTemplate, setEditingTemplate] = useState<IGetFullSellerFeeResponseDto | null>(null);
-  const [deletingTemplate, setDeletingTemplate] = useState<IGetFullSellerFeeResponseDto | null>(null);
+  const [editingTemplate, setEditingTemplate] =
+    useState<IGetFullSellerFeeResponseDto | null>(null);
+  const [deletingTemplate, setDeletingTemplate] =
+    useState<IGetFullSellerFeeResponseDto | null>(null);
 
   const handleOpenCreate = () => {
     setEditingTemplate(null);
@@ -445,106 +493,112 @@ export default function AdminFeeTemplates() {
 
   return (
     <AdminLayout>
-      <div className="p-6 space-y-6 max-w-5xl mx-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <Layers size={18} className="text-primary" />
-              <h1 className="text-xl font-semibold text-foreground">Planos de taxa</h1>
+      <div className="mx-auto w-full max-w-5xl px-5 py-6 md:px-8 md:py-9">
+        <header className="mb-7 animate-fade-in">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+                Sistema
+              </p>
+              <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-[2.15rem]">
+                Planos de taxa
+              </h1>
+              <p className="mt-1.5 text-sm text-muted-foreground">
+                Gerencie os planos de taxa disponíveis para atribuir aos
+                sellers.
+              </p>
             </div>
-            <p className="text-sm text-muted-foreground">
-              Gerencie os planos de taxa disponíveis para atribuir aos sellers
-            </p>
+            <button
+              type="button"
+              onClick={handleOpenCreate}
+              className="inline-flex h-10 shrink-0 items-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90"
+            >
+              <Plus size={15} />
+              Novo plano
+            </button>
           </div>
-          <button
-            onClick={handleOpenCreate}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:opacity-90 transition-opacity"
-          >
-            <Plus size={15} />
-            Novo plano
-          </button>
-        </div>
+        </header>
 
-        {/* Table */}
-        <div className="rounded-2xl border border-border/40 overflow-hidden bg-card/30">
-          {isLoading ? (
-            <div className="py-16 flex justify-center">
-              <Loader2 className="animate-spin text-primary" size={24} />
+        {isLoading ? (
+          <div className="flex items-center justify-center py-24">
+            <Loader2 size={24} className="animate-spin text-muted-foreground" />
+          </div>
+        ) : templates.length === 0 ? (
+          <div className="admin-surface px-6 py-16 text-center">
+            <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+              <Layers size={18} className="text-primary" />
             </div>
-          ) : templates.length === 0 ? (
-            <div className="py-16 text-center">
-              <Layers size={32} className="text-muted-foreground/30 mx-auto mb-3" />
-              <p className="text-sm text-muted-foreground">Nenhum plano cadastrado</p>
-            </div>
-          ) : (
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border/40 text-left">
-                  <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Nome
-                  </th>
-                  <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Pix variável
-                  </th>
-                  <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Saque variável
-                  </th>
-                  <th className="px-5 py-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                    Meta fat.
-                  </th>
-                  <th className="px-5 py-3" />
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/30">
-                {templates.map((template) => (
-                  <tr
-                    key={template.id}
-                    className="hover:bg-muted/20 transition-colors"
-                  >
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center gap-2">
-                        <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                          <Layers size={13} className="text-primary" />
-                        </div>
-                        <span className="font-medium text-foreground">{template.name}</span>
+            <p className="mb-1 text-base font-semibold text-foreground">
+              Nenhum plano cadastrado
+            </p>
+            <p className="mb-4 text-sm text-muted-foreground">
+              Crie o primeiro plano para atribuir taxas personalizadas aos
+              sellers.
+            </p>
+            <button
+              type="button"
+              onClick={handleOpenCreate}
+              className="inline-flex h-10 items-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90"
+            >
+              <Plus size={15} />
+              Novo plano
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {templates.map((template) => (
+              <div key={template.id} className="admin-surface p-5">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex min-w-0 items-start gap-3">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                      <Layers size={18} className="text-primary" />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="text-base font-semibold text-foreground">
+                        {template.name}
+                      </h3>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <span className="rounded-lg border border-border bg-muted/60 px-2.5 py-1 text-xs font-semibold text-foreground">
+                          Pix {template.pixVariableFee}%
+                        </span>
+                        <span className="rounded-lg border border-border bg-muted/60 px-2.5 py-1 text-xs font-semibold text-foreground">
+                          Saque {template.withdrawalVariableFee}%
+                        </span>
+                        <span className="rounded-lg border border-border bg-muted/60 px-2.5 py-1 text-xs font-semibold text-foreground">
+                          Meta {formatBillingGoal(template.billingGoal)}
+                        </span>
                       </div>
-                    </td>
-                    <td className="px-5 py-3.5 text-muted-foreground tabular-nums">
-                      {template.pixVariableFee}%
-                    </td>
-                    <td className="px-5 py-3.5 text-muted-foreground tabular-nums">
-                      {template.withdrawalVariableFee}%
-                    </td>
-                    <td className="px-5 py-3.5 text-muted-foreground tabular-nums">
-                      {template.billingGoal > 0
-                        ? `R$ ${(template.billingGoal / 100).toLocaleString("pt-BR")}`
-                        : "—"}
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <button
-                          onClick={() => handleOpenEdit(template)}
-                          className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
-                          title="Editar"
-                        >
-                          <Pencil size={14} />
-                        </button>
-                        <button
-                          onClick={() => setDeletingTemplate(template)}
-                          className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
-                          title="Excluir"
-                        >
-                          <Trash2 size={14} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
+                    </div>
+                  </div>
+
+                  <div className="flex shrink-0 items-center gap-2 self-end sm:self-start">
+                    <button
+                      type="button"
+                      onClick={() => handleOpenEdit(template)}
+                      className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-border/60 px-3.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+                      title="Editar"
+                    >
+                      <Pencil size={14} />
+                      Editar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDeletingTemplate(template)}
+                      className={cn(
+                        "inline-flex h-10 items-center gap-1.5 rounded-xl border px-3.5 text-sm font-semibold transition-colors",
+                        "border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground",
+                      )}
+                      title="Excluir"
+                    >
+                      <Trash2 size={14} />
+                      Excluir
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {showForm && (
