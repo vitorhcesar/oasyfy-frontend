@@ -19,10 +19,11 @@ interface IFeesChartProps {
 
 export default function FeesChart({ chartData }: IFeesChartProps) {
   return (
-    <div className="rounded-xl border border-border/50 bg-card p-5">
-      <h3 className="mb-4 text-base font-semibold text-foreground">
+    <div className="admin-surface p-5 md:p-6">
+      <h3 className="mb-1 text-base font-semibold text-foreground">
         Taxas arrecadadas
       </h3>
+      <p className="mb-4 text-xs text-muted-foreground">Evolução no período</p>
       {chartData.length > 0 ? (
         <div className="h-36">
           <ResponsiveContainer width="100%" height="100%">
@@ -39,7 +40,7 @@ export default function FeesChart({ chartData }: IFeesChartProps) {
               <XAxis
                 dataKey="date"
                 tick={{
-                  fontSize: 8,
+                  fontSize: 11,
                   fill: "hsl(var(--muted-foreground))",
                 }}
                 axisLine={false}
@@ -47,7 +48,7 @@ export default function FeesChart({ chartData }: IFeesChartProps) {
               />
               <YAxis
                 tick={{
-                  fontSize: 8,
+                  fontSize: 11,
                   fill: "hsl(var(--muted-foreground))",
                 }}
                 axisLine={false}
@@ -56,10 +57,12 @@ export default function FeesChart({ chartData }: IFeesChartProps) {
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "hsl(var(--card))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: "8px",
-                  fontSize: "10px",
+                  backgroundColor: "rgba(15, 6, 23, 0.85)",
+                  backdropFilter: "blur(16px)",
+                  border: "1px solid rgba(255,255,255,0.14)",
+                  borderRadius: "14px",
+                  fontSize: "12px",
+                  color: "#fff",
                 }}
                 formatter={(value: number) => [
                   `R$ ${value.toFixed(2)}`,
@@ -69,7 +72,7 @@ export default function FeesChart({ chartData }: IFeesChartProps) {
               <Bar
                 dataKey="fees"
                 fill="hsl(var(--primary))"
-                radius={[3, 3, 0, 0]}
+                radius={[6, 6, 0, 0]}
               />
             </BarChart>
           </ResponsiveContainer>

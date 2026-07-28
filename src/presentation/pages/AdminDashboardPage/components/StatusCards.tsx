@@ -127,22 +127,22 @@ export default function StatusCards({ metrics }: IStatusCardsProps) {
   ];
 
   return (
-    <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4 md:grid-cols-8">
+    <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4 md:grid-cols-8">
       {statCards.map((card) => (
         <button
           key={card.label}
           onClick={() => navigate(card.link)}
-          className="group rounded-xl border border-border/50 bg-card p-3.5 text-left transition-all hover:border-border"
+          className="admin-surface admin-surface-interactive group p-3.5 text-left"
         >
           <div
             className={cn(
-              "mb-2.5 flex h-9 w-9 items-center justify-center rounded-lg",
+              "mb-3 flex h-9 w-9 items-center justify-center rounded-xl",
               card.accent,
             )}
           >
             <card.icon size={16} />
           </div>
-          <p className="text-xl font-bold leading-none text-foreground">
+          <p className="text-xl font-bold leading-none tracking-tight text-foreground tabular-nums">
             {card.value}
           </p>
           <p className="mt-1.5 text-xs leading-tight text-muted-foreground">

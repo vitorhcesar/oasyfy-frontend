@@ -27,10 +27,13 @@ export default function PeakHour({ completedTransactions }: IPeakHourProps) {
   }, [completedTransactions]);
 
   return (
-    <div className="rounded-xl border border-border/50 bg-card p-5">
-      <h3 className="mb-4 text-base font-semibold text-foreground">
+    <div className="admin-surface p-5 md:p-6">
+      <h3 className="mb-1 text-base font-semibold text-foreground">
         Horário de pico
       </h3>
+      <p className="mb-4 text-xs text-muted-foreground">
+        Transações aprovadas por hora
+      </p>
       {completedTransactions.length > 0 ? (
         <div className="h-36">
           <ResponsiveContainer width="100%" height="100%">
@@ -41,7 +44,7 @@ export default function PeakHour({ completedTransactions }: IPeakHourProps) {
               <XAxis
                 dataKey="hour"
                 tick={{
-                  fontSize: 7,
+                  fontSize: 10,
                   fill: "hsl(var(--muted-foreground))",
                 }}
                 axisLine={false}
@@ -50,7 +53,7 @@ export default function PeakHour({ completedTransactions }: IPeakHourProps) {
               />
               <YAxis
                 tick={{
-                  fontSize: 7,
+                  fontSize: 10,
                   fill: "hsl(var(--muted-foreground))",
                 }}
                 axisLine={false}
@@ -58,18 +61,20 @@ export default function PeakHour({ completedTransactions }: IPeakHourProps) {
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "hsl(var(--card))",
-                  border: "1px solid hsl(var(--border))",
-                  borderRadius: "8px",
-                  fontSize: "10px",
+                  backgroundColor: "rgba(15, 6, 23, 0.85)",
+                  backdropFilter: "blur(16px)",
+                  border: "1px solid rgba(255,255,255,0.14)",
+                  borderRadius: "14px",
+                  fontSize: "12px",
+                  color: "#fff",
                 }}
                 formatter={(value: number) => [value, "Transações"]}
               />
               <Bar
                 dataKey="count"
                 fill="hsl(var(--primary))"
-                radius={[2, 2, 0, 0]}
-                opacity={0.7}
+                radius={[4, 4, 0, 0]}
+                opacity={0.85}
               />
             </BarChart>
           </ResponsiveContainer>

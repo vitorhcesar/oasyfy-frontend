@@ -6,6 +6,7 @@ import {
   TrendingUp,
   Wallet,
 } from "lucide-react";
+import { cn } from "@/presentation/utils/cn";
 import useAdminFinanceMetricsQuery from "../hooks/use-admin-finance-metrics-query";
 import { formatCompact } from "../utils/format-compact";
 import ChangeIndicator from "./ChangeIndicator";
@@ -15,7 +16,7 @@ export default function FinancialCards() {
 
   if (isLoading) {
     return (
-      <div className="mb-5 flex items-center justify-center py-10">
+      <div className="mb-6 flex items-center justify-center py-10">
         <Loader2 size={20} className="animate-spin text-muted-foreground" />
       </div>
     );
@@ -40,6 +41,7 @@ export default function FinancialCards() {
       icon: DollarSign,
       iconClass: "text-primary",
       change: volumeChange,
+      featured: true,
     },
     {
       label: "Taxas Arrecadadas",
@@ -70,26 +72,43 @@ export default function FinancialCards() {
   ];
 
   return (
-    <div className="mb-5 grid grid-cols-2 gap-3 md:grid-cols-5">
+    <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-5">
       {cards.map((card) => (
         <div
           key={card.label}
-          className="rounded-xl border border-border/50 bg-card p-4"
+          className={cn(
+            "admin-surface p-4 md:p-5",
+            card.featured && "admin-surface-featured col-span-2 md:col-span-1",
+          )}
         >
-          <div className="mb-2 flex items-center gap-2">
-            <card.icon size={16} className={card.iconClass} />
+          <div className="mb-3 flex items-center gap-2">
+            <div
+              className={cn(
+                "flex h-8 w-8 items-center justify-center rounded-lg bg-muted/40",
+                card.featured && "bg-primary/15",
+              )}
+            >
+              <card.icon size={15} className={card.iconClass} />
+            </div>
             <span className="text-sm text-muted-foreground">{card.label}</span>
           </div>
-          <p className="text-xl font-bold tracking-tight text-foreground md:text-2xl">
+          <p
+            className={cn(
+              "font-bold tracking-tight text-foreground tabular-nums",
+              card.featured
+                ? "text-2xl md:text-3xl"
+                : "text-xl md:text-2xl",
+            )}
+          >
             {card.value}
           </p>
           {card.change != null && (
-            <div className="mt-1.5">
+            <div className="mt-2">
               <ChangeIndicator value={card.change} />
             </div>
           )}
           {card.meta && (
-            <span className="mt-1.5 block text-xs text-muted-foreground">
+            <span className="mt-2 block text-xs text-muted-foreground">
               {card.meta}
             </span>
           )}

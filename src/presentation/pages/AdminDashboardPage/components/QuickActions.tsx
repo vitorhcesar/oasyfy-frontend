@@ -51,7 +51,7 @@ export default function QuickActions() {
   ];
 
   return (
-    <div className="rounded-xl border border-border/50 bg-card p-5">
+    <div className="liquid-glass-control rounded-[22px] p-5">
       <h3 className="mb-4 flex items-center gap-2 text-base font-semibold text-foreground">
         <Activity size={16} className="text-primary" /> Ações rápidas
       </h3>
@@ -60,9 +60,9 @@ export default function QuickActions() {
           <button
             key={action.label}
             onClick={() => navigate(action.link)}
-            className="group flex items-center gap-3 rounded-xl p-3 text-left transition-all hover:bg-muted/30"
+            className="group flex items-center gap-3 rounded-2xl p-3 text-left transition-all hover:bg-white/10"
           >
-            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-muted/60 transition-colors group-hover:bg-primary/10">
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-white/10 transition-colors group-hover:bg-primary/20">
               <action.icon
                 size={18}
                 className="text-muted-foreground transition-colors group-hover:text-primary"

@@ -27,18 +27,21 @@ export default function AdminDashboardPageHeader() {
   } = useAdminDashboardPageStore();
 
   return (
-    <header className="mb-6 flex animate-fade-in flex-col justify-between gap-4 sm:flex-row sm:items-center">
+    <header className="mb-7 flex animate-fade-in flex-col justify-between gap-5 sm:flex-row sm:items-end">
       <div>
-        <p className="mb-1.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
           Painel administrativo
         </p>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">
+        <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-[2.15rem]">
           Olá, {name.split(" ")[0]}
         </h1>
+        <p className="mt-1.5 text-sm text-muted-foreground">
+          Visão geral da plataforma e operações do gateway.
+        </p>
       </div>
 
-      <div className="flex items-center gap-2.5">
-        <div className="flex items-center gap-1 rounded-xl bg-muted/50 p-1">
+      <div className="flex flex-wrap items-center gap-2.5">
+        <div className="liquid-glass-control flex items-center gap-0.5 rounded-2xl p-1">
           {(["7d", "30d", "90d"] as TAdminDashboardPeriod[]).map((p) => (
             <button
               key={p}
@@ -48,10 +51,10 @@ export default function AdminDashboardPageHeader() {
                 setCustomTo(undefined);
               }}
               className={cn(
-                "rounded-lg px-3.5 py-2 text-sm font-semibold uppercase transition-all",
+                "rounded-xl px-3.5 py-2 text-sm font-semibold uppercase tracking-wide transition-all",
                 period === p
-                  ? "bg-primary/15 text-primary shadow-sm"
-                  : "text-muted-foreground hover:text-foreground",
+                  ? "bg-white text-[#0F0617] shadow-sm"
+                  : "text-muted-foreground hover:bg-white/10 hover:text-foreground",
               )}
             >
               {p}
@@ -63,9 +66,11 @@ export default function AdminDashboardPageHeader() {
             <Button
               variant="outline"
               size="sm"
+              ripple={false}
               className={cn(
-                "h-10 gap-2 rounded-xl text-sm font-medium",
-                period === "custom" && "border-primary text-primary",
+                "liquid-glass-control h-10 min-h-10 shrink-0 gap-2 rounded-2xl border-white/15 bg-transparent text-sm font-medium hover:bg-white/10",
+                "focus-visible:ring-0 focus-visible:ring-offset-0",
+                period === "custom" && "border-primary/50 text-primary",
               )}
             >
               <CalendarIcon size={15} />
@@ -76,7 +81,10 @@ export default function AdminDashboardPageHeader() {
                 : "Período"}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-3" align="end">
+          <PopoverContent
+            className="liquid-glass-control w-auto border-white/15 p-3"
+            align="end"
+          >
             <p className="mb-2 text-sm font-medium text-foreground">
               Selecione o período
             </p>

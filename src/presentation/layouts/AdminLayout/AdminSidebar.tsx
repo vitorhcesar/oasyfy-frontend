@@ -131,8 +131,8 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
   const logoVariant = theme === "dark" ? "white" : "black";
 
   const linkClass =
-    "flex items-center gap-3 px-3.5 py-3 rounded-xl text-[15px] text-muted-foreground hover:bg-muted/40 hover:text-foreground transition-all duration-200";
-  const activeClass = "bg-primary/15 text-primary font-semibold";
+    "flex items-center gap-3 px-3.5 py-3 rounded-xl text-[15px] text-muted-foreground hover:bg-white/10 hover:text-foreground transition-all duration-200";
+  const activeClass = "bg-white/15 text-foreground font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]";
 
   const sidebarContent = (
     <>

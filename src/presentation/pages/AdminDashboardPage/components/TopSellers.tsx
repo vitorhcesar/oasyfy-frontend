@@ -45,10 +45,13 @@ export default function TopSellers({
   };
 
   return (
-    <div className="rounded-xl border border-border/50 bg-card p-5">
-      <h3 className="mb-4 text-base font-semibold text-foreground">
+    <div className="admin-surface p-5 md:p-6">
+      <h3 className="mb-1 text-base font-semibold text-foreground">
         Top Sellers
       </h3>
+      <p className="mb-4 text-xs text-muted-foreground">
+        Maior volume no período
+      </p>
 
       {topSellers.length > 0 ? (
         <div className="space-y-3">

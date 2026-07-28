@@ -34,7 +34,7 @@ export default function StatusAndMethod({
       {
         name: "Aprovadas",
         value: completedTransactions.length,
-        color: "hsl(var(--primary))",
+        color: "hsl(var(--success))",
       },
       {
         name: "Pendentes",
@@ -75,14 +75,17 @@ export default function StatusAndMethod({
   }, [completedTransactions]);
 
   return (
-    <div className="flex flex-col gap-5 rounded-xl border border-border/50 bg-card p-5">
+    <div className="admin-surface flex flex-col gap-6 p-5 md:p-6">
       {statusBreakdown.length > 0 && (
         <div>
-          <h3 className="mb-3 text-base font-semibold text-foreground">
+          <h3 className="mb-1 text-base font-semibold text-foreground">
             Status das transações
           </h3>
+          <p className="mb-4 text-xs text-muted-foreground">
+            Distribuição por resultado
+          </p>
           <div className="flex items-center gap-4">
-            <div className="h-28 w-28">
+            <div className="h-32 w-32">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -90,8 +93,9 @@ export default function StatusAndMethod({
                     dataKey="value"
                     cx="50%"
                     cy="50%"
-                    innerRadius={28}
-                    outerRadius={48}
+                    innerRadius={34}
+                    outerRadius={54}
+                    paddingAngle={2}
                     strokeWidth={0}
                   >
                     {statusBreakdown.map((entry, i) => (
@@ -101,15 +105,15 @@ export default function StatusAndMethod({
                 </PieChart>
               </ResponsiveContainer>
             </div>
-            <div className="space-y-2">
+            <div className="space-y-2.5">
               {statusBreakdown.map((s) => (
-                <div key={s.name} className="flex items-center gap-2">
+                <div key={s.name} className="flex items-center gap-2.5">
                   <div
                     className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
                     style={{ backgroundColor: s.color }}
                   />
                   <span className="text-sm text-muted-foreground">{s.name}</span>
-                  <span className="text-sm font-semibold text-foreground">
+                  <span className="text-sm font-semibold tabular-nums text-foreground">
                     {s.value}
                   </span>
                 </div>
@@ -120,11 +124,14 @@ export default function StatusAndMethod({
       )}
 
       <div>
-        <h3 className="mb-3 text-base font-semibold text-foreground">
+        <h3 className="mb-1 text-base font-semibold text-foreground">
           Por método
         </h3>
+        <p className="mb-4 text-xs text-muted-foreground">
+          Volume aprovado por meio de pagamento
+        </p>
         {methodBreakdown.length > 0 ? (
-          <div className="space-y-3">
+          <div className="space-y-3.5">
             {methodBreakdown.map((m) => {
               const pct =
                 completedTransactions.length > 0
@@ -132,15 +139,15 @@ export default function StatusAndMethod({
                   : 0;
               return (
                 <div key={m.method}>
-                  <div className="mb-1 flex items-center justify-between">
+                  <div className="mb-1.5 flex items-center justify-between">
                     <span className="text-sm font-medium text-foreground">
                       {methodLabels[m.method] || m.method}
                     </span>
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-sm tabular-nums text-muted-foreground">
                       {formatCompact(m.volume)} ({pct}%)
                     </span>
                   </div>
-                  <div className="h-1.5 overflow-hidden rounded-full bg-muted/50">
+                  <div className="h-2 overflow-hidden rounded-full bg-muted/40">
                     <div
                       className="h-full rounded-full transition-all"
                       style={{
