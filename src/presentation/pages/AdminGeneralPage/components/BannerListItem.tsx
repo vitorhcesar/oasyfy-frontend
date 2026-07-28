@@ -40,20 +40,20 @@ export default function BannerListItem({
   return (
     <div
       className={cn(
-        "rounded-xl bg-card border border-border/40 overflow-hidden",
+        "admin-surface overflow-hidden",
         toggling && "animate-pulse",
       )}
     >
-      <div className="flex items-center gap-3 p-3">
-        <div className="w-32 h-16 rounded-lg overflow-hidden bg-muted/30 shrink-0">
+      <div className="flex items-center gap-4 p-4">
+        <div className="h-16 w-32 shrink-0 overflow-hidden rounded-xl bg-muted">
           <img
             src={banner.imageUrl}
             alt={banner.title || "Banner"}
-            className="w-full h-full object-cover"
+            className="h-full w-full object-cover"
           />
         </div>
-        <div className="flex-1 min-w-0">
-          <p className="text-xs font-medium text-foreground truncate">
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-semibold text-foreground">
             {banner.title || "Sem título"}
           </p>
           {banner.linkUrl && (
@@ -61,38 +61,50 @@ export default function BannerListItem({
               href={banner.linkUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-primary flex items-center gap-1 mt-0.5 hover:underline"
+              className="mt-0.5 flex items-center gap-1 text-sm text-primary hover:underline"
             >
-              <ExternalLink size={9} /> {banner.linkUrl}
+              <ExternalLink size={12} /> {banner.linkUrl}
             </a>
           )}
-          <p className="text-sm md:text-xs text-muted-foreground mt-1">
+          <p className="mt-1 text-sm text-muted-foreground">
             Ordem: {banner.displayOrder} ·{" "}
             {new Date(banner.createdAt).toLocaleDateString("pt-BR")}
           </p>
+          <span
+            className={cn(
+              "mt-2 inline-flex items-center rounded-lg border px-2.5 py-1 text-xs font-semibold",
+              banner.isActive
+                ? "border-success/25 bg-success/10 text-success"
+                : "border-border bg-muted text-muted-foreground",
+            )}
+          >
+            {banner.isActive ? "Ativo" : "Inativo"}
+          </span>
         </div>
-        <div className="flex items-center gap-1.5 shrink-0">
+        <div className="flex shrink-0 items-center gap-1.5">
           <button
+            type="button"
             onClick={() => toggleActive(banner)}
             className={cn(
-              "p-1.5 rounded-lg transition-colors",
+              "rounded-lg p-2 transition-colors",
               banner.isActive
-                ? "text-primary hover:bg-primary/10"
-                : "text-muted-foreground hover:bg-muted/30",
+                ? "text-success hover:bg-success/10"
+                : "text-muted-foreground hover:bg-muted",
             )}
             title={banner.isActive ? "Desativar" : "Ativar"}
           >
             {banner.isActive ? (
-              <ToggleRight size={18} />
+              <ToggleRight size={20} />
             ) : (
-              <ToggleLeft size={18} />
+              <ToggleLeft size={20} />
             )}
           </button>
           <button
+            type="button"
             onClick={() => openDeleteModal(banner.id)}
-            className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
           >
-            <Trash2 size={14} />
+            <Trash2 size={16} />
           </button>
         </div>
       </div>

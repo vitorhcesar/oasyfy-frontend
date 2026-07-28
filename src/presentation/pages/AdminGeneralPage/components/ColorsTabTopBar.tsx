@@ -73,49 +73,53 @@ export default function ColorsTabTopBar({
   };
 
   return (
-    <div className="flex items-center justify-between flex-wrap gap-3">
-      <div className="flex items-center gap-1 rounded-xl bg-muted/40 p-1 border border-border/30">
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="liquid-glass-control flex items-center gap-0.5 rounded-2xl p-1">
         <button
+          type="button"
           onClick={() => setMode("light")}
           className={cn(
-            "flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium transition-all duration-200",
+            "inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-semibold transition-all",
             mode === "light"
-              ? "bg-card text-foreground shadow-sm border border-border/40"
-              : "text-muted-foreground hover:text-foreground",
+              ? "bg-white text-[#0F0617] shadow-sm"
+              : "text-muted-foreground hover:bg-white/10 hover:text-foreground",
           )}
         >
-          <Sun size={13} /> Claro
+          <Sun size={14} /> Claro
         </button>
         <button
+          type="button"
           onClick={() => setMode("dark")}
           className={cn(
-            "flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-medium transition-all duration-200",
+            "inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-semibold transition-all",
             mode === "dark"
-              ? "bg-card text-foreground shadow-sm border border-border/40"
-              : "text-muted-foreground hover:text-foreground",
+              ? "bg-white text-[#0F0617] shadow-sm"
+              : "text-muted-foreground hover:bg-white/10 hover:text-foreground",
           )}
         >
-          <Moon size={13} /> Escuro
+          <Moon size={14} /> Escuro
         </button>
       </div>
 
       <div className="flex items-center gap-2">
         <button
+          type="button"
           onClick={handleReset}
-          className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium border border-border/40 text-muted-foreground hover:text-foreground hover:border-border transition-all"
+          className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-border/60 px-3.5 text-sm font-semibold text-muted-foreground transition-colors hover:border-border hover:text-foreground"
         >
-          <RotateCcw size={12} /> Restaurar
+          <RotateCcw size={14} /> Restaurar
         </button>
 
         <button
+          type="button"
           onClick={handleSave}
           disabled={saving}
-          className="flex items-center gap-1.5 px-5 py-2 rounded-xl text-xs font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50 shadow-sm"
+          className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-white px-5 text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90 disabled:opacity-50"
         >
           {saving ? (
-            <Loader2 size={12} className="animate-spin" />
+            <Loader2 size={14} className="animate-spin" />
           ) : (
-            <Save size={12} />
+            <Save size={14} />
           )}
           Salvar
         </button>

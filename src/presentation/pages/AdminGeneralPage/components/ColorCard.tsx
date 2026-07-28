@@ -17,28 +17,28 @@ export function ColorCard({ field, hex, onChange }: IColorCardProps) {
   }, [hex]);
 
   return (
-    <div className="group relative flex items-center gap-3 rounded-xl border border-border/30 bg-background/60 hover:bg-background hover:border-border/60 p-3 transition-all duration-200">
-      <label className="relative cursor-pointer shrink-0">
+    <div className="group relative flex items-center gap-3 rounded-xl border border-border/50 bg-background/80 p-3 transition-all duration-200 hover:border-border hover:bg-background">
+      <label className="relative shrink-0 cursor-pointer">
         <input
           type="color"
           value={hex}
           onChange={(e) => onChange(e.target.value)}
-          className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+          className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
         />
         <div
-          className="w-10 h-10 rounded-xl shadow-sm ring-1 ring-black/5 group-hover:ring-black/10 group-hover:scale-105 transition-all duration-200 relative overflow-hidden"
+          className="relative h-10 w-10 overflow-hidden rounded-xl shadow-sm ring-1 ring-white/10 transition-all duration-200 group-hover:scale-105"
           style={{ backgroundColor: hex }}
         >
-          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/15 backdrop-blur-[1px]">
+          <div className="absolute inset-0 flex items-center justify-center bg-black/15 opacity-0 backdrop-blur-[1px] transition-opacity group-hover:opacity-100">
             <Pipette size={12} className="text-white drop-shadow" />
           </div>
         </div>
       </label>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-foreground leading-tight">
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-semibold leading-tight text-foreground">
           {field.label}
         </p>
-        <p className="text-xs text-muted-foreground leading-tight mt-0.5">
+        <p className="mt-0.5 text-sm leading-tight text-muted-foreground">
           {field.description}
         </p>
       </div>
@@ -65,12 +65,13 @@ export function ColorCard({ field, hex, onChange }: IColorCardProps) {
               }
             }}
             onChange={(e) => setInputValue(e.target.value)}
-            className="w-20 text-sm font-mono bg-background border border-primary/40 rounded-lg px-2 py-1.5 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 text-center"
+            className="w-24 rounded-xl border border-primary/40 bg-background px-2.5 py-1.5 text-center font-mono text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
           />
         ) : (
           <button
+            type="button"
             onClick={() => setEditing(true)}
-            className="text-sm font-mono text-muted-foreground hover:text-foreground bg-muted/40 hover:bg-muted/70 rounded-lg px-2.5 py-1.5 transition-all"
+            className="rounded-xl bg-muted/60 px-2.5 py-1.5 font-mono text-sm text-muted-foreground transition-all hover:bg-muted hover:text-foreground"
           >
             {hex.toUpperCase()}
           </button>

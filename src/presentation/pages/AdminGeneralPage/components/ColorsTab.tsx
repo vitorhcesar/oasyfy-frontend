@@ -253,15 +253,15 @@ export function ColorsTab() {
   if (isLoadingGatewayTheme) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="animate-spin text-muted-foreground" size={20} />
+        <Loader2 className="animate-spin text-muted-foreground" size={24} />
       </div>
     );
   }
 
   if (!theme) {
     return (
-      <div className="rounded-xl border border-border/40 bg-card p-8 text-center">
-        <p className="text-sm text-muted-foreground">Tema não encontrado.</p>
+      <div className="admin-surface px-6 py-12 text-center">
+        <p className="text-base text-muted-foreground">Tema não encontrado.</p>
       </div>
     );
   }
@@ -274,18 +274,13 @@ export function ColorsTab() {
         invalidateGatewayThemeQuery={invalidateGatewayThemeQuery}
       />
 
-      {/* Main content: editor + preview side by side */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
-        {/* Color editor — 3 cols */}
-        <div className="lg:col-span-3 space-y-4">
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-5">
+        <div className="space-y-4 lg:col-span-3">
           {groups.map((group) => (
-            <div
-              key={group.title}
-              className="rounded-2xl border border-border/40 bg-card overflow-hidden"
-            >
-              <div className="px-4 py-3 border-b border-border/20 flex items-center gap-2.5">
-                <div className="w-7 h-7 rounded-lg bg-primary/8 flex items-center justify-center">
-                  <group.icon size={13} className="text-primary" />
+            <div key={group.title} className="admin-surface overflow-hidden">
+              <div className="flex items-center gap-2.5 border-b border-border/50 px-4 py-3.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10">
+                  <group.icon size={15} className="text-primary" />
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold text-foreground">
@@ -297,7 +292,7 @@ export function ColorsTab() {
                   </p>
                 </div>
               </div>
-              <div className="p-3 space-y-1.5">
+              <div className="space-y-2 p-3">
                 {group.fields.map((field) => {
                   const hslValue = theme[field.key] || "";
                   const hexValue = hslToHex(hslValue);
@@ -315,16 +310,15 @@ export function ColorsTab() {
           ))}
         </div>
 
-        {/* Live preview — 2 cols, sticky */}
         <div className="lg:col-span-2">
-          <div className="lg:sticky lg:top-6 space-y-3">
-            <div className="rounded-2xl border border-border/40 bg-card overflow-hidden">
-              <div className="px-4 py-3 border-b border-border/20 flex items-center gap-2">
-                <Eye size={13} className="text-muted-foreground" />
+          <div className="space-y-3 lg:sticky lg:top-6">
+            <div className="admin-surface overflow-hidden">
+              <div className="flex items-center gap-2 border-b border-border/50 px-4 py-3.5">
+                <Eye size={15} className="text-primary" />
                 <h3 className="text-sm font-semibold text-foreground">
                   Preview
                 </h3>
-                <span className="text-xs text-muted-foreground ml-auto">
+                <span className="ml-auto text-xs font-medium text-muted-foreground">
                   {mode === "light" ? "Modo claro" : "Modo escuro"}
                 </span>
               </div>

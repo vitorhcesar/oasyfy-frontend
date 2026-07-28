@@ -5,6 +5,21 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/presentation/components/ui/collapsible";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@/presentation/components/ui/hover-card";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/presentation/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/presentation/components/ui/tooltip";
 import { useAuthContext } from "@/presentation/context/AuthContext";
 import { useUserContext } from "@/presentation/context/UserContext";
 import { useThemeContext } from "@/presentation/hooks/use-theme";
@@ -33,7 +48,7 @@ import {
   UserCog,
   X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ComponentType } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const menuItems = [
@@ -132,7 +147,93 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
 
   const linkClass =
     "flex items-center gap-3 px-3.5 py-3 rounded-xl text-[15px] text-muted-foreground hover:bg-white/10 hover:text-foreground transition-all duration-200";
-  const activeClass = "bg-white/15 text-foreground font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]";
+  const activeClass =
+    "bg-white/15 text-foreground font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]";
+  const flyoutClass =
+    "z-50 rounded-xl border border-white/10 bg-popover/95 p-0 text-popover-foreground shadow-lg backdrop-blur-md";
+  const flyoutItemClass =
+    "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground";
+
+  const renderAvatarBadge = () => (
+    <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-primary/15 ring-1 ring-primary/25">
+      <span className="text-sm font-bold text-primary">{initials}</span>
+    </div>
+  );
+
+  const renderCollapsedNavTooltip = (
+    item: (typeof menuItems)[number],
+  ) => (
+    <Tooltip key={item.url} delayDuration={150}>
+      <TooltipTrigger asChild>
+        <NavLink
+          to={item.url}
+          end={item.url === "/admin"}
+          className={cn(linkClass, "justify-center")}
+          activeClassName={activeClass}
+        >
+          <item.icon size={19} className="flex-shrink-0" />
+        </NavLink>
+      </TooltipTrigger>
+      <TooltipContent side="right" sideOffset={12} className="rounded-lg px-3 py-1.5">
+        {item.title}
+      </TooltipContent>
+    </Tooltip>
+  );
+
+  const renderCollapsedGroupHover = (
+    label: string,
+    items: Array<{
+      title: string;
+      url: string;
+      icon: ComponentType<{ size?: number; className?: string }>;
+    }>,
+    icon: ComponentType<{ size?: number; className?: string }>,
+    isActive: boolean,
+    className?: string,
+  ) => {
+    const Icon = icon;
+    return (
+      <HoverCard openDelay={120} closeDelay={120}>
+        <HoverCardTrigger asChild>
+          <button
+            type="button"
+            className={cn(
+              linkClass,
+              "w-full justify-center",
+              className,
+              isActive && activeClass,
+            )}
+          >
+            <Icon size={19} className="flex-shrink-0" />
+          </button>
+        </HoverCardTrigger>
+        <HoverCardContent
+          side="right"
+          align="start"
+          sideOffset={12}
+          className={cn(flyoutClass, "w-56 p-2")}
+        >
+          <p className="mb-1 px-2.5 py-1.5 text-[0.65rem] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">
+            {label}
+          </p>
+          <div className="space-y-0.5">
+            {items.map((item) => (
+              <NavLink
+                key={item.url}
+                to={item.url}
+                end
+                className={flyoutItemClass}
+                activeClassName={activeClass}
+              >
+                <item.icon size={16} className="flex-shrink-0" />
+                <span>{item.title}</span>
+              </NavLink>
+            ))}
+          </div>
+        </HoverCardContent>
+      </HoverCard>
+    );
+  };
 
   const sidebarContent = (
     <>
@@ -163,18 +264,20 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
             Principal
           </p>
         )}
-        {menuItems.map((item) => (
-          <NavLink
-            key={item.url}
-            to={item.url}
-            end={item.url === "/admin"}
-            className={cn(linkClass, collapsed && "justify-center")}
-            activeClassName={activeClass}
-          >
-            <item.icon size={19} className="flex-shrink-0" />
-            {!collapsed && <span>{item.title}</span>}
-          </NavLink>
-        ))}
+        {collapsed
+          ? menuItems.map((item) => renderCollapsedNavTooltip(item))
+          : menuItems.map((item) => (
+              <NavLink
+                key={item.url}
+                to={item.url}
+                end={item.url === "/admin"}
+                className={linkClass}
+                activeClassName={activeClass}
+              >
+                <item.icon size={19} className="flex-shrink-0" />
+                <span>{item.title}</span>
+              </NavLink>
+            ))}
 
         {!collapsed && (
           <div className="mt-5">
@@ -218,15 +321,14 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
             </Collapsible>
           </div>
         )}
-        {collapsed && (
-          <NavLink
-            to="/admin/transactions"
-            className={cn(linkClass, "mt-2 justify-center")}
-            activeClassName={activeClass}
-          >
-            <CreditCard size={19} className="flex-shrink-0" />
-          </NavLink>
-        )}
+        {collapsed &&
+          renderCollapsedGroupHover(
+            "Financeiro",
+            financialSubItems,
+            CreditCard,
+            isOnFinancial,
+            "mt-2",
+          )}
 
         {!collapsed && (
           <div className="mt-5">
@@ -270,15 +372,14 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
             </Collapsible>
           </div>
         )}
-        {collapsed && (
-          <NavLink
-            to="/admin/general"
-            className={cn(linkClass, "mt-4 justify-center")}
-            activeClassName={activeClass}
-          >
-            <Settings size={19} className="flex-shrink-0" />
-          </NavLink>
-        )}
+        {collapsed &&
+          renderCollapsedGroupHover(
+            "Configurações",
+            settingsSubItems,
+            Settings,
+            isOnSettings,
+            "mt-4",
+          )}
       </nav>
 
       <div className="hidden space-y-1 px-3 pb-1 md:block">
@@ -305,16 +406,51 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
       </div>
 
       <div className="border-t border-white/10 p-3.5">
-        <div
-          className={cn(
-            "flex items-center",
-            collapsed ? "justify-center" : "gap-3",
-          )}
-        >
-          <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-primary/15 ring-1 ring-primary/25">
-            <span className="text-sm font-bold text-primary">{initials}</span>
-          </div>
-          {!collapsed && (
+        {collapsed ? (
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                className="mx-auto flex rounded-full transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                aria-label="Menu do perfil"
+              >
+                {renderAvatarBadge()}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent
+              side="right"
+              align="end"
+              sideOffset={12}
+              className={cn(flyoutClass, "w-64 overflow-hidden")}
+            >
+              <div className="flex items-center gap-3 border-b border-white/10 bg-muted/20 px-4 py-3.5">
+                {renderAvatarBadge()}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-foreground">
+                    {name}
+                  </p>
+                  {user?.email && (
+                    <p className="truncate text-xs text-muted-foreground">
+                      {user.email}
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="p-1.5">
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  className="flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm text-destructive transition-colors hover:bg-destructive/10"
+                >
+                  <LogOut size={16} />
+                  Sair
+                </button>
+              </div>
+            </PopoverContent>
+          </Popover>
+        ) : (
+          <div className="flex items-center gap-3">
+            {renderAvatarBadge()}
             <div className="min-w-0 flex-1">
               <p className="truncate text-[15px] font-medium text-foreground">
                 {name}
@@ -323,8 +459,6 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
                 {user?.email}
               </p>
             </div>
-          )}
-          {!collapsed && (
             <button
               onClick={handleSignOut}
               className="flex-shrink-0 rounded-lg p-2 text-muted-foreground transition-all duration-200 hover:bg-destructive/10 hover:text-destructive"
@@ -332,8 +466,8 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
             >
               <LogOut size={18} />
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </>
   );
