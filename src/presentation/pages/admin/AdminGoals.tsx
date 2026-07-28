@@ -1,14 +1,14 @@
-import useAdminGoalsQuery, {
-  type TAdminGoalView,
-} from "@/presentation/hooks/use-admin-goals-query";
-import useAdminSellersQuery from "@/presentation/hooks/use-admin-sellers-query";
-import { useApiService } from "@/presentation/hooks/use-api-service";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/presentation/components/ui/dialog";
+import useAdminGoalsQuery, {
+  type TAdminGoalView,
+} from "@/presentation/hooks/use-admin-goals-query";
+import useAdminSellersQuery from "@/presentation/hooks/use-admin-sellers-query";
+import { useApiService } from "@/presentation/hooks/use-api-service";
 import { AdminLayout } from "@/presentation/layouts/AdminLayout";
 import { cn } from "@/presentation/utils/cn";
 import { format } from "date-fns";
@@ -17,6 +17,7 @@ import {
   Award,
   DollarSign,
   Gift,
+  Loader2,
   Pencil,
   Percent,
   Plus,
@@ -29,10 +30,11 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 type Goal = TAdminGoalView;
+type TGoalFilter = "active" | "global" | "individual" | null;
 
 const goalTypeConfig = {
   revenue: {
@@ -44,32 +46,36 @@ const goalTypeConfig = {
   transaction_count: {
     label: "Qtd. de Vendas",
     icon: ShoppingCart,
-    color: "text-emerald-600",
-    bg: "bg-emerald-500/10",
+    color: "text-success",
+    bg: "bg-success/10",
   },
   avg_ticket: {
     label: "Ticket Médio",
     icon: TrendingUp,
-    color: "text-blue-600",
-    bg: "bg-blue-500/10",
+    color: "text-primary",
+    bg: "bg-primary/10",
   },
   new_customers: {
     label: "Novos Clientes",
     icon: Users,
-    color: "text-purple-600",
-    bg: "bg-purple-500/10",
+    color: "text-warning",
+    bg: "bg-warning/10",
   },
 };
 
 const rewardTypeConfig = {
-  balance_bonus: { label: "Bônus em Saldo", icon: Gift, color: "text-primary" },
+  balance_bonus: {
+    label: "Bônus em Saldo",
+    icon: Gift,
+    color: "text-primary",
+  },
   fee_discount: {
     label: "Desconto na Taxa",
     icon: Percent,
-    color: "text-emerald-600",
+    color: "text-success",
   },
-  badge: { label: "Badge/Selo", icon: Award, color: "text-amber-600" },
-  custom: { label: "Personalizado", icon: Star, color: "text-purple-600" },
+  badge: { label: "Badge/Selo", icon: Award, color: "text-warning" },
+  custom: { label: "Personalizado", icon: Star, color: "text-primary" },
 };
 
 const emptyForm = {
@@ -86,6 +92,18 @@ const emptyForm = {
   is_active: true,
 };
 
+const INPUT_CLASS =
+  "w-full rounded-xl border border-border/60 bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all";
+const SELECT_CLASS =
+  "w-full appearance-none rounded-xl border border-border/60 bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer";
+
+function activeSurface(filter: TGoalFilter) {
+  if (filter === "active") return "border-primary/45 !bg-primary/20";
+  if (filter === "global") return "border-warning/45 !bg-warning/20";
+  if (filter === "individual") return "border-success/45 !bg-success/20";
+  return "";
+}
+
 export default function AdminGoals() {
   const apiService = useApiService();
   const { data: goals, isLoading, invalidateQuery } = useAdminGoalsQuery();
@@ -99,6 +117,7 @@ export default function AdminGoals() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<TGoalFilter>(null);
 
   const openCreate = () => {
     setForm(emptyForm);
@@ -217,299 +236,349 @@ export default function AdminGoals() {
     return goal.reward_value ? String(goal.reward_value) : "—";
   };
 
-  const inputClass =
-    "w-full px-3.5 py-2.5 rounded-lg bg-background border border-border/50 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all";
-  const selectClass =
-    "w-full px-3.5 py-2.5 rounded-lg bg-background border border-border/50 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all appearance-none cursor-pointer";
+  const activeGoals = useMemo(
+    () => goals.filter((g) => g.is_active),
+    [goals],
+  );
+  const inactiveGoals = useMemo(
+    () => goals.filter((g) => !g.is_active),
+    [goals],
+  );
+  const globalActiveCount = activeGoals.filter((g) => !g.seller_id).length;
+  const individualActiveCount = activeGoals.filter((g) => g.seller_id).length;
 
-  const activeGoals = goals.filter((g) => g.is_active);
-  const inactiveGoals = goals.filter((g) => !g.is_active);
+  const displayedActive = useMemo(() => {
+    if (!activeFilter) return activeGoals;
+    if (activeFilter === "active") return activeGoals;
+    if (activeFilter === "global")
+      return activeGoals.filter((g) => !g.seller_id);
+    return activeGoals.filter((g) => !!g.seller_id);
+  }, [activeGoals, activeFilter]);
+
+  const showInactive = !activeFilter;
+
+  const stats = [
+    {
+      key: "active" as const,
+      label: "Metas Ativas",
+      value: activeGoals.length,
+      icon: Target,
+      color: "text-primary",
+      bg: "bg-primary/10",
+    },
+    {
+      key: "global" as const,
+      label: "Globais",
+      value: globalActiveCount,
+      icon: Trophy,
+      color: "text-warning",
+      bg: "bg-warning/10",
+    },
+    {
+      key: "individual" as const,
+      label: "Individuais",
+      value: individualActiveCount,
+      icon: Users,
+      color: "text-success",
+      bg: "bg-success/10",
+    },
+  ];
+
+  const handleStatFilterChange = (key: TGoalFilter) => {
+    setActiveFilter((prev) => (prev === key ? null : key));
+  };
 
   return (
     <AdminLayout>
-      <div className="px-4 md:px-8 py-6 md:py-8 max-w-6xl mx-auto w-full">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6 animate-fade-in">
+      <div className="mx-auto w-full max-w-6xl px-5 py-6 md:px-8 md:py-9">
+        <header className="mb-7 flex animate-fade-in flex-col justify-between gap-5 sm:flex-row sm:items-end">
           <div>
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">
-              Metas & Premiações
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+              Comercial
+            </p>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-[2.15rem]">
+              Metas
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Crie metas para os sellers e configure premiações ao atingi-las
+            <p className="mt-1.5 text-sm text-muted-foreground">
+              Crie metas para os sellers e configure premiações ao atingi-las.
             </p>
           </div>
           <button
             onClick={openCreate}
-            className="flex items-center gap-2 px-4 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+            className="inline-flex h-10 items-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90"
           >
             <Plus size={16} />
             Nova Meta
           </button>
+        </header>
+
+        <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+          {stats.map((stat) => {
+            const isActive = activeFilter === stat.key;
+            return (
+              <button
+                key={stat.key}
+                type="button"
+                aria-pressed={isActive}
+                onClick={() => handleStatFilterChange(stat.key)}
+                className={cn(
+                  "admin-surface admin-surface-interactive p-3.5 text-left",
+                  isActive && activeSurface(stat.key),
+                )}
+              >
+                <div
+                  className={cn(
+                    "mb-3 flex h-9 w-9 items-center justify-center rounded-xl",
+                    isActive ? "bg-black/20" : stat.bg,
+                    stat.color,
+                  )}
+                >
+                  <stat.icon size={16} />
+                </div>
+                <p className="text-xl font-bold leading-none tracking-tight text-foreground tabular-nums">
+                  {stat.value}
+                </p>
+                <p
+                  className={cn(
+                    "mt-1.5 text-xs leading-tight",
+                    isActive
+                      ? cn("font-semibold", stat.color)
+                      : "text-muted-foreground",
+                  )}
+                >
+                  {stat.label}
+                </p>
+              </button>
+            );
+          })}
         </div>
 
-        {/* Stats */}
-        <div
-          className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6 animate-fade-in"
-          style={{ animationDelay: "50ms" }}
-        >
-          <div className="p-4 rounded-xl bg-card border border-border/40">
-            <div className="flex items-center gap-2 mb-2">
-              <Target size={14} className="text-primary" />
-              <span className="text-xs md:text-sm font-medium text-muted-foreground">
-                Metas Ativas
-              </span>
-            </div>
-            <p className="text-2xl font-bold text-foreground">
-              {activeGoals.length}
-            </p>
-          </div>
-          <div className="p-4 rounded-xl bg-card border border-border/40">
-            <div className="flex items-center gap-2 mb-2">
-              <Trophy size={14} className="text-amber-500" />
-              <span className="text-xs md:text-sm font-medium text-muted-foreground">
-                Globais
-              </span>
-            </div>
-            <p className="text-2xl font-bold text-foreground">
-              {activeGoals.filter((g) => !g.seller_id).length}
-            </p>
-          </div>
-          <div className="p-4 rounded-xl bg-card border border-border/40">
-            <div className="flex items-center gap-2 mb-2">
-              <Users size={14} className="text-purple-500" />
-              <span className="text-xs md:text-sm font-medium text-muted-foreground">
-                Individuais
-              </span>
-            </div>
-            <p className="text-2xl font-bold text-foreground">
-              {activeGoals.filter((g) => g.seller_id).length}
-            </p>
-          </div>
-        </div>
-
-        {/* Goals List */}
         {isLoading ? (
-          <div className="flex justify-center py-24">
-            <div className="relative w-10 h-10">
-              <div className="absolute inset-0 rounded-full border-2 border-muted" />
-              <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary animate-spin" />
-            </div>
+          <div className="flex items-center justify-center py-24">
+            <Loader2 size={24} className="animate-spin text-muted-foreground" />
           </div>
         ) : goals.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border/50 bg-muted/10 p-16 text-center animate-fade-in">
-            <div className="w-14 h-14 rounded-2xl bg-muted/50 flex items-center justify-center mx-auto mb-5">
-              <Target className="text-muted-foreground/40" size={24} />
-            </div>
-            <p className="text-foreground font-semibold mb-1">
+          <div className="admin-surface px-6 py-16 text-center">
+            <Target className="mx-auto mb-3 text-muted-foreground" size={24} />
+            <p className="mb-1 text-base font-semibold text-foreground">
               Nenhuma meta criada
             </p>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="mb-4 text-sm text-muted-foreground">
               Crie a primeira meta para seus sellers.
             </p>
             <button
               onClick={openCreate}
-              className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors"
+              className="inline-flex h-10 items-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90"
             >
-              <Plus size={14} className="inline mr-1" /> Criar Meta
+              <Plus size={15} /> Criar Meta
             </button>
           </div>
         ) : (
-          <div
-            className="space-y-3 animate-fade-in"
-            style={{ animationDelay: "100ms" }}
-          >
-            {activeGoals.length > 0 && (
+          <div className="space-y-4">
+            {displayedActive.length > 0 && (
               <>
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-                  Metas Ativas ({activeGoals.length})
-                </h3>
-                {activeGoals.map((goal, i) => {
-                  const gtc = goalTypeConfig[goal.goal_type];
-                  const rtc = rewardTypeConfig[goal.reward_type];
-                  const seller = sellers.find(
-                    (s) => s.user_id === goal.seller_id,
-                  );
-                  return (
-                    <div
-                      key={goal.id}
-                      className="rounded-xl bg-card border border-border/40 p-5 hover:shadow-sm transition-all animate-fade-in"
-                      style={{ animationDelay: `${i * 30}ms` }}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-start gap-3">
-                          <div
-                            className={cn(
-                              "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0",
-                              gtc.bg,
-                            )}
-                          >
-                            <gtc.icon size={18} className={gtc.color} />
-                          </div>
-                          <div>
-                            <h4 className="text-sm font-semibold text-foreground">
-                              {goal.title}
-                            </h4>
-                            {goal.description && (
-                              <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
-                                {goal.description}
-                              </p>
-                            )}
-                            <div className="flex items-center gap-3 mt-2 flex-wrap">
-                              <span className="text-xs text-muted-foreground/60">
-                                <span className="font-medium text-foreground">
-                                  {gtc.label}
-                                </span>{" "}
-                                · Alvo:{" "}
-                                <span className="font-bold text-foreground">
-                                  {formatTargetValue(goal)}
-                                </span>
-                              </span>
-                              <span className="text-xs text-muted-foreground/60 flex items-center gap-1">
-                                <rtc.icon size={10} className={rtc.color} />
-                                {rtc.label}:{" "}
-                                <span className="font-bold text-foreground">
-                                  {formatRewardValue(goal)}
-                                </span>
-                              </span>
-                              {goal.reward_description && (
-                                <span className="text-xs text-muted-foreground/60">
-                                  "{goal.reward_description}"
-                                </span>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+                  Metas Ativas ({displayedActive.length})
+                </p>
+                <div className="space-y-3">
+                  {displayedActive.map((goal) => {
+                    const gtc = goalTypeConfig[goal.goal_type];
+                    const rtc = rewardTypeConfig[goal.reward_type];
+                    const seller = sellers.find(
+                      (s) => s.user_id === goal.seller_id,
+                    );
+                    return (
+                      <div key={goal.id} className="admin-surface p-5">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex min-w-0 items-start gap-3">
+                            <div
+                              className={cn(
+                                "flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl",
+                                gtc.bg,
                               )}
+                            >
+                              <gtc.icon size={18} className={gtc.color} />
                             </div>
-                            <div className="flex items-center gap-2 mt-1.5">
-                              <span
-                                className={cn(
-                                  "inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border",
-                                  goal.seller_id
-                                    ? "bg-purple-500/10 text-purple-600 border-purple-500/20"
-                                    : "bg-primary/10 text-primary border-primary/20",
+                            <div className="min-w-0">
+                              <h4 className="text-base font-semibold text-foreground">
+                                {goal.title}
+                              </h4>
+                              {goal.description && (
+                                <p className="mt-0.5 text-sm text-muted-foreground">
+                                  {goal.description}
+                                </p>
+                              )}
+                              <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+                                <span className="text-sm text-muted-foreground">
+                                  <span className="font-medium text-foreground">
+                                    {gtc.label}
+                                  </span>{" "}
+                                  · Alvo:{" "}
+                                  <span className="font-bold text-foreground">
+                                    {formatTargetValue(goal)}
+                                  </span>
+                                </span>
+                                <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                                  <rtc.icon size={12} className={rtc.color} />
+                                  {rtc.label}:{" "}
+                                  <span className="font-bold text-foreground">
+                                    {formatRewardValue(goal)}
+                                  </span>
+                                </span>
+                                {goal.reward_description && (
+                                  <span className="text-sm text-muted-foreground">
+                                    "{goal.reward_description}"
+                                  </span>
                                 )}
-                              >
-                                {goal.seller_id
-                                  ? seller?.full_name ||
-                                    seller?.account_id ||
-                                    "Seller"
-                                  : "Global"}
-                              </span>
-                              <span className="text-xs text-muted-foreground/40">
-                                {format(
-                                  new Date(goal.start_date),
-                                  "dd/MM/yyyy",
-                                  { locale: ptBR },
-                                )}
-                                {goal.end_date &&
-                                  ` → ${format(
-                                    new Date(goal.end_date),
+                              </div>
+                              <div className="mt-2 flex flex-wrap items-center gap-2">
+                                <span
+                                  className={cn(
+                                    "inline-flex items-center rounded-lg border px-2.5 py-1 text-xs font-semibold",
+                                    goal.seller_id
+                                      ? "border-success/25 bg-success/10 text-success"
+                                      : "border-primary/25 bg-primary/10 text-primary",
+                                  )}
+                                >
+                                  {goal.seller_id
+                                    ? seller?.full_name ||
+                                      seller?.account_id ||
+                                      "Seller"
+                                    : "Global"}
+                                </span>
+                                <span className="text-sm text-muted-foreground">
+                                  {format(
+                                    new Date(goal.start_date),
                                     "dd/MM/yyyy",
                                     { locale: ptBR },
-                                  )}`}
-                              </span>
+                                  )}
+                                  {goal.end_date &&
+                                    ` → ${format(
+                                      new Date(goal.end_date),
+                                      "dd/MM/yyyy",
+                                      { locale: ptBR },
+                                    )}`}
+                                </span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => openEdit(goal)}
-                            className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors"
-                          >
-                            <Pencil size={14} />
-                          </button>
-                          <button
-                            onClick={() => toggleActive(goal)}
-                            className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors"
-                          >
-                            <X size={14} />
-                          </button>
-                          <button
-                            onClick={() => handleDelete(goal.id)}
-                            className="p-2 rounded-lg text-destructive/60 hover:text-destructive hover:bg-destructive/10 transition-colors"
-                          >
-                            <Trash2 size={14} />
-                          </button>
+                          <div className="flex flex-shrink-0 items-center gap-1">
+                            <button
+                              onClick={() => openEdit(goal)}
+                              className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                              title="Editar"
+                            >
+                              <Pencil size={15} />
+                            </button>
+                            <button
+                              onClick={() => toggleActive(goal)}
+                              className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                              title="Desativar"
+                            >
+                              <X size={15} />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(goal.id)}
+                              className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                              title="Excluir"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </>
             )}
 
-            {inactiveGoals.length > 0 && (
+            {displayedActive.length === 0 && activeFilter && (
+              <div className="admin-surface px-6 py-12 text-center">
+                <p className="text-base text-muted-foreground">
+                  Nenhuma meta encontrada para este filtro.
+                </p>
+              </div>
+            )}
+
+            {showInactive && inactiveGoals.length > 0 && (
               <>
-                <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mt-6 mb-2">
+                <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
                   Inativas ({inactiveGoals.length})
-                </h3>
-                {inactiveGoals.map((goal) => {
-                  const gtc = goalTypeConfig[goal.goal_type];
-                  return (
-                    <div
-                      key={goal.id}
-                      className="rounded-xl bg-card/50 border border-border/20 p-4 opacity-60 hover:opacity-80 transition-all"
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={cn(
-                              "w-8 h-8 rounded-lg flex items-center justify-center",
-                              gtc.bg,
-                            )}
-                          >
-                            <gtc.icon size={14} className={gtc.color} />
+                </p>
+                <div className="space-y-3">
+                  {inactiveGoals.map((goal) => {
+                    const gtc = goalTypeConfig[goal.goal_type];
+                    return (
+                      <div
+                        key={goal.id}
+                        className="admin-surface p-4 opacity-70 transition-opacity hover:opacity-100"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={cn(
+                                "flex h-9 w-9 items-center justify-center rounded-xl",
+                                gtc.bg,
+                              )}
+                            >
+                              <gtc.icon size={15} className={gtc.color} />
+                            </div>
+                            <div>
+                              <h4 className="text-sm font-semibold text-foreground">
+                                {goal.title}
+                              </h4>
+                              <p className="text-sm text-muted-foreground">
+                                {gtc.label} · {formatTargetValue(goal)}
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <h4 className="text-sm font-medium text-foreground">
-                              {goal.title}
-                            </h4>
-                            <p className="text-xs text-muted-foreground">
-                              {gtc.label} · {formatTargetValue(goal)}
-                            </p>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              onClick={() => toggleActive(goal)}
+                              className="inline-flex h-9 items-center rounded-xl border border-transparent bg-white px-3 text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90"
+                            >
+                              Reativar
+                            </button>
+                            <button
+                              onClick={() => handleDelete(goal.id)}
+                              className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                            >
+                              <Trash2 size={15} />
+                            </button>
                           </div>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <button
-                            onClick={() => toggleActive(goal)}
-                            className="px-2.5 py-1 rounded-lg bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors"
-                          >
-                            Reativar
-                          </button>
-                          <button
-                            onClick={() => handleDelete(goal.id)}
-                            className="p-2 rounded-lg text-destructive/60 hover:text-destructive hover:bg-destructive/10 transition-colors"
-                          >
-                            <Trash2 size={14} />
-                          </button>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </>
             )}
           </div>
         )}
       </div>
 
-      {/* Create/Edit Modal */}
       <Dialog open={showForm} onOpenChange={setShowForm}>
-        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto border-border/60 bg-background">
           <DialogHeader>
-            <DialogTitle>{editingId ? "Editar Meta" : "Nova Meta"}</DialogTitle>
+            <DialogTitle className="text-xl font-bold tracking-tight">
+              {editingId ? "Editar Meta" : "Nova Meta"}
+            </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 mt-2">
+          <div className="mt-2 space-y-4">
             <div>
-              <label className="text-xs md:text-sm font-medium text-muted-foreground mb-1 block">
+              <label className="mb-1.5 block text-sm font-medium text-muted-foreground">
                 Título *
               </label>
               <input
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
                 placeholder="Ex: Faturar R$ 50.000 no mês"
-                className={inputClass}
+                className={INPUT_CLASS}
               />
             </div>
             <div>
-              <label className="text-xs md:text-sm font-medium text-muted-foreground mb-1 block">
+              <label className="mb-1.5 block text-sm font-medium text-muted-foreground">
                 Descrição
               </label>
               <textarea
@@ -518,13 +587,13 @@ export default function AdminGoals() {
                   setForm({ ...form, description: e.target.value })
                 }
                 placeholder="Detalhes da meta..."
-                className={cn(inputClass, "h-16 resize-none")}
+                className={cn(INPUT_CLASS, "h-20 resize-none")}
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs md:text-sm font-medium text-muted-foreground mb-1 block">
+                <label className="mb-1.5 block text-sm font-medium text-muted-foreground">
                   Tipo de Meta
                 </label>
                 <select
@@ -535,7 +604,7 @@ export default function AdminGoals() {
                       goal_type: e.target.value as Goal["goal_type"],
                     })
                   }
-                  className={selectClass}
+                  className={SELECT_CLASS}
                 >
                   <option value="revenue">Faturamento</option>
                   <option value="transaction_count">Qtd. de Vendas</option>
@@ -544,7 +613,7 @@ export default function AdminGoals() {
                 </select>
               </div>
               <div>
-                <label className="text-xs md:text-sm font-medium text-muted-foreground mb-1 block">
+                <label className="mb-1.5 block text-sm font-medium text-muted-foreground">
                   Valor Alvo *{" "}
                   {(form.goal_type === "revenue" ||
                     form.goal_type === "avg_ticket") &&
@@ -557,16 +626,16 @@ export default function AdminGoals() {
                     setForm({ ...form, target_value: e.target.value })
                   }
                   placeholder={form.goal_type === "revenue" ? "50000" : "100"}
-                  className={inputClass}
+                  className={INPUT_CLASS}
                 />
               </div>
             </div>
 
-            <div className="h-px bg-border/30" />
+            <div className="h-px bg-border/50" />
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs md:text-sm font-medium text-muted-foreground mb-1 block">
+                <label className="mb-1.5 block text-sm font-medium text-muted-foreground">
                   Tipo de Premiação
                 </label>
                 <select
@@ -577,7 +646,7 @@ export default function AdminGoals() {
                       reward_type: e.target.value as Goal["reward_type"],
                     })
                   }
-                  className={selectClass}
+                  className={SELECT_CLASS}
                 >
                   <option value="balance_bonus">Bônus em Saldo</option>
                   <option value="fee_discount">Desconto na Taxa</option>
@@ -586,7 +655,7 @@ export default function AdminGoals() {
                 </select>
               </div>
               <div>
-                <label className="text-xs md:text-sm font-medium text-muted-foreground mb-1 block">
+                <label className="mb-1.5 block text-sm font-medium text-muted-foreground">
                   Valor da Premiação{" "}
                   {form.reward_type === "balance_bonus" && "(R$)"}{" "}
                   {form.reward_type === "fee_discount" && "(%)"}
@@ -600,13 +669,13 @@ export default function AdminGoals() {
                   placeholder={
                     form.reward_type === "balance_bonus" ? "500" : "10"
                   }
-                  className={inputClass}
+                  className={INPUT_CLASS}
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-xs md:text-sm font-medium text-muted-foreground mb-1 block">
+              <label className="mb-1.5 block text-sm font-medium text-muted-foreground">
                 Descrição da Premiação
               </label>
               <input
@@ -615,14 +684,14 @@ export default function AdminGoals() {
                   setForm({ ...form, reward_description: e.target.value })
                 }
                 placeholder="Ex: Bônus de R$ 500 no saldo"
-                className={inputClass}
+                className={INPUT_CLASS}
               />
             </div>
 
-            <div className="h-px bg-border/30" />
+            <div className="h-px bg-border/50" />
 
             <div>
-              <label className="text-xs md:text-sm font-medium text-muted-foreground mb-1 block">
+              <label className="mb-1.5 block text-sm font-medium text-muted-foreground">
                 Seller (deixe vazio para meta global)
               </label>
               <select
@@ -630,7 +699,7 @@ export default function AdminGoals() {
                 onChange={(e) =>
                   setForm({ ...form, seller_id: e.target.value })
                 }
-                className={selectClass}
+                className={SELECT_CLASS}
               >
                 <option value="">Global (todos os sellers)</option>
                 {sellers.map((s) => (
@@ -643,7 +712,7 @@ export default function AdminGoals() {
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="text-xs md:text-sm font-medium text-muted-foreground mb-1 block">
+                <label className="mb-1.5 block text-sm font-medium text-muted-foreground">
                   Data de Início
                 </label>
                 <input
@@ -652,11 +721,11 @@ export default function AdminGoals() {
                   onChange={(e) =>
                     setForm({ ...form, start_date: e.target.value })
                   }
-                  className={inputClass}
+                  className={INPUT_CLASS}
                 />
               </div>
               <div>
-                <label className="text-xs md:text-sm font-medium text-muted-foreground mb-1 block">
+                <label className="mb-1.5 block text-sm font-medium text-muted-foreground">
                   Data Final (opcional)
                 </label>
                 <input
@@ -665,7 +734,7 @@ export default function AdminGoals() {
                   onChange={(e) =>
                     setForm({ ...form, end_date: e.target.value })
                   }
-                  className={inputClass}
+                  className={INPUT_CLASS}
                 />
               </div>
             </div>
@@ -682,7 +751,7 @@ export default function AdminGoals() {
               />
               <label
                 htmlFor="is_active"
-                className="text-sm text-foreground cursor-pointer"
+                className="cursor-pointer text-sm text-foreground"
               >
                 Meta ativa
               </label>
@@ -692,7 +761,7 @@ export default function AdminGoals() {
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="flex-1 px-4 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-50"
+                className="h-10 flex-1 rounded-xl bg-white text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90 disabled:opacity-50"
               >
                 {saving
                   ? "Salvando..."
@@ -702,7 +771,7 @@ export default function AdminGoals() {
               </button>
               <button
                 onClick={() => setShowForm(false)}
-                className="px-4 py-2.5 rounded-lg bg-muted text-foreground text-sm font-medium hover:bg-muted/80 transition-colors"
+                className="h-10 rounded-xl bg-muted px-4 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
               >
                 Cancelar
               </button>
