@@ -1,6 +1,6 @@
 import { cn } from "@/presentation/utils/cn";
-import { formatCurrency } from "../utils/format-currency";
 import type { TransactionStat } from "../hooks/use-transaction-stats";
+import { formatCurrency } from "../utils/format-currency";
 
 interface IAdminTransactionsStatsProps {
   stats: TransactionStat[];
@@ -16,39 +16,61 @@ function statLabelToStatusKey(label: string): string {
   return "refunded";
 }
 
+function activeSurface(statusKey: string) {
+  if (statusKey === "completed") {
+    return "border-success/45 !bg-success/20";
+  }
+  if (statusKey === "pending" || statusKey === "refunded") {
+    return "border-warning/45 !bg-warning/20";
+  }
+  return "border-destructive/45 !bg-destructive/20";
+}
+
 export default function AdminTransactionsStats({
   stats,
   activeStatFilter,
   onStatFilterChange,
 }: IAdminTransactionsStatsProps) {
   return (
-    <div className="grid grid-cols-5 gap-2 mb-3">
+    <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
       {stats.map((stat) => {
         const statusKey = statLabelToStatusKey(stat.label);
         const isActive = activeStatFilter === statusKey;
+
         return (
           <button
             key={stat.label}
-            onClick={() =>
-              onStatFilterChange(isActive ? null : statusKey)
-            }
+            type="button"
+            aria-pressed={isActive}
+            onClick={() => onStatFilterChange(isActive ? null : statusKey)}
             className={cn(
-              "p-2.5 rounded-lg bg-card border text-left transition-all",
-              isActive
-                ? `${stat.border} ring-1 ring-offset-0`
-                : "border-border/40 hover:border-border/60",
+              "admin-surface admin-surface-interactive group p-3.5 text-left",
+              isActive && activeSurface(statusKey),
             )}
           >
-            <div className="flex items-center gap-1.5 mb-1">
-              <stat.icon size={12} className={stat.color} />
-              <span className="text-xs font-medium text-muted-foreground">
-                {stat.label}
-              </span>
+            <div
+              className={cn(
+                "mb-3 flex h-9 w-9 items-center justify-center rounded-xl",
+                isActive ? "bg-black/20" : stat.bg,
+                stat.color,
+              )}
+            >
+              <stat.icon size={16} />
             </div>
-            <p className="text-sm font-bold text-foreground leading-none">
+            <p className="text-xl font-bold leading-none tracking-tight text-foreground tabular-nums">
               {formatCurrency(stat.value)}
             </p>
-            <p className="text-xs text-muted-foreground/50 mt-0.5">
+            <p
+              className={cn(
+                "mt-1.5 text-xs leading-tight",
+                isActive
+                  ? cn("font-semibold", stat.color)
+                  : "text-muted-foreground",
+              )}
+            >
+              {stat.label}
+            </p>
+            <p className="mt-1 text-xs font-medium text-muted-foreground">
               {stat.count}/{stat.total}
             </p>
           </button>

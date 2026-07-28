@@ -11,7 +11,7 @@ import { AdminLayout } from "@/presentation/layouts/AdminLayout";
 import { cn } from "@/presentation/utils/cn";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { type DateRange } from "react-day-picker";
 import { toast } from "sonner";
@@ -24,6 +24,7 @@ import useTransactionStats from "./hooks/use-transaction-stats";
 import type { Transaction } from "./types/admin-transaction.type";
 
 const PER_PAGE = 20;
+type TTimeRange = "7d" | "30d" | "90d" | "custom";
 
 export default function AdminTransactionsPage() {
   const apiService = useApiService();
@@ -47,14 +48,12 @@ export default function AdminTransactionsPage() {
   const [filterMethod, setFilterMethod] = useState("");
   const [filterAcquirer, setFilterAcquirer] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
-  const [filterTimeRange, setFilterTimeRange] = useState("7d");
+  const [filterTimeRange, setFilterTimeRange] = useState<TTimeRange>("7d");
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [pixSearchResults, setPixSearchResults] = useState<
     Transaction[] | null
   >(null);
   const [pixSearchLoading, setPixSearchLoading] = useState(false);
-
-  const [activeStatFilter, setActiveStatFilter] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
 
   const sellerId = selectedTx?.seller_id
@@ -95,26 +94,34 @@ export default function AdminTransactionsPage() {
     setPixSearchLoading(false);
   };
 
-  const filtered = useFilterTransactions({
+  const filteredWithoutStatus = useFilterTransactions({
     transactions,
     filterId,
     filterCustomer,
     filterMethod,
     filterAcquirer,
-    filterStatus,
+    filterStatus: "",
     filterTimeRange,
     dateRange,
   });
 
-  const stats = useTransactionStats(filtered);
+  const stats = useTransactionStats(filteredWithoutStatus);
 
-  const baseFiltered = useMemo(() => {
-    if (pixSearchResults !== null) return pixSearchResults;
-    if (!activeStatFilter) return filtered;
-    return filtered.filter((t) => t.status === activeStatFilter);
-  }, [filtered, activeStatFilter, pixSearchResults]);
+  const displayFiltered = useMemo(() => {
+    const source =
+      pixSearchResults !== null ? pixSearchResults : filteredWithoutStatus;
 
-  const displayFiltered = baseFiltered;
+    if (!filterStatus) return source;
+
+    if (filterStatus === "completed") {
+      return source.filter(
+        (t) => t.status === "completed" && t.method !== "withdrawal",
+      );
+    }
+
+    return source.filter((t) => t.status === filterStatus);
+  }, [filteredWithoutStatus, filterStatus, pixSearchResults]);
+
   const totalPages = Math.max(1, Math.ceil(displayFiltered.length / PER_PAGE));
   const paginatedData = displayFiltered.slice(
     (currentPage - 1) * PER_PAGE,
@@ -123,7 +130,12 @@ export default function AdminTransactionsPage() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [filtered, activeStatFilter]);
+  }, [filteredWithoutStatus, filterStatus, pixSearchResults]);
+
+  const handleStatFilterChange = (statusKey: string | null) => {
+    setFilterStatus(statusKey ?? "");
+    setPixSearchResults(null);
+  };
 
   const resetDetailForms = () => {
     setShowRefundForm(false);
@@ -189,26 +201,50 @@ export default function AdminTransactionsPage() {
 
   return (
     <AdminLayout>
-      <div className="px-4 md:px-6 py-4 max-w-6xl mx-auto w-full">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+      <div className="mx-auto w-full max-w-6xl px-5 py-6 md:px-8 md:py-9">
+        <header className="mb-7 flex animate-fade-in flex-col justify-between gap-5 sm:flex-row sm:items-end">
           <div>
-            <h1 className="text-lg font-semibold text-foreground">Vendas</h1>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Gerencie todas as transações do gateway
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+              Comercial
+            </p>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-[2.15rem]">
+              Vendas
+            </h1>
+            <p className="mt-1.5 text-sm text-muted-foreground">
+              Gerencie todas as transações do gateway.
             </p>
           </div>
-          <div className="flex items-center gap-2">
+
+          <div className="flex flex-wrap items-center gap-2.5">
+            <div className="liquid-glass-control flex items-center gap-0.5 rounded-2xl p-1">
+              {(["7d", "30d", "90d"] as const).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => {
+                    setFilterTimeRange(p);
+                    setDateRange(undefined);
+                  }}
+                  className={cn(
+                    "rounded-xl px-3.5 py-2 text-sm font-semibold uppercase tracking-wide transition-all",
+                    filterTimeRange === p
+                      ? "bg-white text-[#0F0617] shadow-sm"
+                      : "text-muted-foreground hover:bg-white/10 hover:text-foreground",
+                  )}
+                >
+                  {p}
+                </button>
+              ))}
+            </div>
+
             <Popover>
               <PopoverTrigger asChild>
                 <button
                   className={cn(
-                    "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all border",
-                    dateRange?.from
-                      ? "bg-primary/10 text-primary border-primary/20"
-                      : "bg-card border-border/50 text-muted-foreground hover:text-foreground",
+                    "liquid-glass-control flex h-10 items-center gap-2 rounded-2xl px-3.5 text-sm font-medium transition-colors hover:bg-white/10",
+                    filterTimeRange === "custom" && "border-primary/50 text-primary",
                   )}
                 >
-                  <CalendarIcon size={11} />
+                  <CalendarIcon size={15} />
                   {dateRange?.from && dateRange?.to
                     ? `${format(dateRange.from, "dd/MM", {
                         locale: ptBR,
@@ -216,7 +252,13 @@ export default function AdminTransactionsPage() {
                     : "Período"}
                 </button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-3" align="end">
+              <PopoverContent
+                className="liquid-glass-control w-auto border-white/15 p-3"
+                align="end"
+              >
+                <p className="mb-2 text-sm font-medium text-foreground">
+                  Selecione o período
+                </p>
                 <Calendar
                   mode="range"
                   selected={dateRange}
@@ -235,7 +277,7 @@ export default function AdminTransactionsPage() {
                       setDateRange(undefined);
                       setFilterTimeRange("7d");
                     }}
-                    className="text-xs text-primary hover:underline mt-2"
+                    className="mt-2 text-sm font-medium text-primary hover:underline"
                   >
                     Limpar
                   </button>
@@ -243,42 +285,52 @@ export default function AdminTransactionsPage() {
               </PopoverContent>
             </Popover>
           </div>
-        </div>
+        </header>
 
-        <AdminTransactionsStats
-          stats={stats}
-          activeStatFilter={activeStatFilter}
-          onStatFilterChange={setActiveStatFilter}
-        />
+        {loading ? (
+          <div className="flex items-center justify-center py-24">
+            <Loader2 size={24} className="animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <>
+            <AdminTransactionsStats
+              stats={stats}
+              activeStatFilter={filterStatus || null}
+              onStatFilterChange={handleStatFilterChange}
+            />
 
-        <AdminTransactionsFilters
-          filterId={filterId}
-          filterPixCode={filterPixCode}
-          filterCustomer={filterCustomer}
-          filterMethod={filterMethod}
-          filterAcquirer={filterAcquirer}
-          filterStatus={filterStatus}
-          pixSearchLoading={pixSearchLoading}
-          onFilterIdChange={setFilterId}
-          onFilterPixCodeChange={setFilterPixCode}
-          onFilterCustomerChange={setFilterCustomer}
-          onFilterMethodChange={setFilterMethod}
-          onFilterAcquirerChange={setFilterAcquirer}
-          onFilterStatusChange={setFilterStatus}
-          onPixSearch={() => searchByPixCode(filterPixCode)}
-          onClearPixSearch={() => setPixSearchResults(null)}
-        />
+            <AdminTransactionsFilters
+              filterId={filterId}
+              filterPixCode={filterPixCode}
+              filterCustomer={filterCustomer}
+              filterMethod={filterMethod}
+              filterAcquirer={filterAcquirer}
+              filterStatus={filterStatus}
+              pixSearchLoading={pixSearchLoading}
+              onFilterIdChange={setFilterId}
+              onFilterPixCodeChange={setFilterPixCode}
+              onFilterCustomerChange={setFilterCustomer}
+              onFilterMethodChange={setFilterMethod}
+              onFilterAcquirerChange={setFilterAcquirer}
+              onFilterStatusChange={(value) => {
+                setFilterStatus(value);
+              }}
+              onPixSearch={() => searchByPixCode(filterPixCode)}
+              onClearPixSearch={() => setPixSearchResults(null)}
+            />
 
-        <AdminTransactionsTable
-          loading={loading}
-          displayFiltered={displayFiltered}
-          paginatedData={paginatedData}
-          currentPage={currentPage}
-          totalPages={totalPages}
-          perPage={PER_PAGE}
-          onPageChange={setCurrentPage}
-          onOpenDetail={openDetail}
-        />
+            <AdminTransactionsTable
+              loading={false}
+              displayFiltered={displayFiltered}
+              paginatedData={paginatedData}
+              currentPage={currentPage}
+              totalPages={totalPages}
+              perPage={PER_PAGE}
+              onPageChange={setCurrentPage}
+              onOpenDetail={openDetail}
+            />
+          </>
+        )}
       </div>
 
       <AdminTransactionDetailDialog

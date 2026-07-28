@@ -97,18 +97,18 @@ function BalanceEditor({
   };
 
   return (
-    <div className="rounded-xl border border-primary/20 bg-primary/5 p-5">
-      <div className="flex items-center justify-between mb-1">
-        <p className="text-xs uppercase tracking-wider text-muted-foreground">
+    <div className="admin-surface admin-surface-featured p-5 md:p-6">
+      <div className="mb-1 flex items-center justify-between">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Disponível para saque
         </p>
         {!editing && (
           <button
             onClick={handleEdit}
-            className="p-1 rounded-md hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
+            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
             title="Editar saldo"
           >
-            <Pencil size={13} />
+            <Pencil size={14} />
           </button>
         )}
       </div>
@@ -164,16 +164,16 @@ interface IRetainedBalanceCardProps {
 
 function RetainedBalanceCard({ retained }: IRetainedBalanceCardProps) {
   return (
-    <div className="rounded-xl border border-border/40 p-4">
-      <div className="flex items-center gap-2 mb-2">
-        <div className="w-7 h-7 rounded-lg bg-amber-500/10 flex items-center justify-center">
-          <Lock size={13} className="text-amber-500" />
+    <div className="admin-surface p-4">
+      <div className="mb-2 flex items-center gap-2">
+        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-warning/10">
+          <Lock size={14} className="text-warning" />
         </div>
-        <p className="text-xs uppercase tracking-wider text-muted-foreground">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Saldo retido
         </p>
       </div>
-      <p className="text-lg font-semibold text-foreground tabular-nums">
+      <p className="text-xl font-bold tabular-nums tracking-tight text-foreground">
         {formatCurrencyAdmin(retained)}
       </p>
     </div>
@@ -188,16 +188,16 @@ function WithdrawnAmountBalanceCard({
   withdrawn,
 }: IWithdrawnAmountBalanceCardProps) {
   return (
-    <div className="rounded-xl border border-border/40 p-4">
-      <div className="flex items-center gap-2 mb-2">
-        <div className="w-7 h-7 rounded-lg bg-muted/50 flex items-center justify-center">
-          <ArrowUpRight size={13} className="text-muted-foreground" />
+    <div className="admin-surface p-4">
+      <div className="mb-2 flex items-center gap-2">
+        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-muted">
+          <ArrowUpRight size={14} className="text-muted-foreground" />
         </div>
-        <p className="text-xs uppercase tracking-wider text-muted-foreground">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Total sacado (aprovado)
         </p>
       </div>
-      <p className="text-lg font-semibold text-foreground tabular-nums">
+      <p className="text-xl font-bold tabular-nums tracking-tight text-foreground">
         {formatCurrencyAdmin(withdrawn)}
       </p>
     </div>
@@ -214,19 +214,19 @@ function TotalSalesCard({
   totalSalesAmount,
 }: ITotalSalesCardProps) {
   return (
-    <div className="rounded-xl border border-border/40 p-4">
-      <div className="flex items-center gap-2 mb-2">
-        <div className="w-7 h-7 rounded-lg bg-primary/10 flex items-center justify-center">
-          <ArrowDownLeft size={13} className="text-primary" />
+    <div className="admin-surface p-4">
+      <div className="mb-2 flex items-center gap-2">
+        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary/10">
+          <ArrowDownLeft size={14} className="text-primary" />
         </div>
-        <p className="text-xs uppercase tracking-wider text-muted-foreground">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Vendas realizadas
         </p>
       </div>
-      <p className="text-lg font-semibold text-foreground tabular-nums">
+      <p className="text-xl font-bold tabular-nums tracking-tight text-foreground">
         {totalSalesCount}
       </p>
-      <p className="text-xs text-muted-foreground mt-0.5">
+      <p className="mt-1 text-sm text-muted-foreground">
         Líquido movimentado: {formatCurrencyAdmin(totalSalesAmount)}
       </p>
     </div>
@@ -241,19 +241,19 @@ function GrossSalesAmountCard({
   grossSalesAmount,
 }: IGrossSalesAmountCardProps) {
   return (
-    <div className="rounded-xl border border-border/40 p-4">
-      <div className="flex items-center gap-2 mb-2">
-        <div className="w-7 h-7 rounded-lg bg-secondary flex items-center justify-center">
-          <DollarSign size={13} className="text-foreground" />
+    <div className="admin-surface p-4">
+      <div className="mb-2 flex items-center gap-2">
+        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-secondary">
+          <DollarSign size={14} className="text-foreground" />
         </div>
-        <p className="text-xs uppercase tracking-wider text-muted-foreground">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Volume bruto vendido
         </p>
       </div>
-      <p className="text-lg font-semibold text-foreground tabular-nums">
+      <p className="text-xl font-bold tabular-nums tracking-tight text-foreground">
         {formatCurrencyAdmin(grossSalesAmount)}
       </p>
-      <p className="text-xs text-muted-foreground mt-0.5">
+      <p className="mt-1 text-sm text-muted-foreground">
         Valor total em R$ das vendas aprovadas
       </p>
     </div>
@@ -268,19 +268,19 @@ function EarnedFeesAmountCard({
   earnedFeesAmount,
 }: IEarnedFeesAmountCardProps) {
   return (
-    <div className="rounded-xl border border-border/40 p-4">
-      <div className="flex items-center gap-2 mb-2">
-        <div className="w-7 h-7 rounded-lg bg-warning/10 flex items-center justify-center">
-          <DollarSign size={13} className="text-warning" />
+    <div className="admin-surface p-4">
+      <div className="mb-2 flex items-center gap-2">
+        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-warning/10">
+          <DollarSign size={14} className="text-warning" />
         </div>
-        <p className="text-xs uppercase tracking-wider text-muted-foreground">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Taxas geradas
         </p>
       </div>
-      <p className="text-lg font-semibold text-foreground tabular-nums">
+      <p className="text-xl font-bold tabular-nums tracking-tight text-foreground">
         {formatCurrencyAdmin(earnedFeesAmount)}
       </p>
-      <p className="text-xs text-muted-foreground mt-0.5">
+      <p className="mt-1 text-sm text-muted-foreground">
         Lucro obtido nas taxas desse seller
       </p>
     </div>
@@ -297,19 +297,19 @@ function RefundsAmountCard({
   refundAmount,
 }: IRefundsAmountCardProps) {
   return (
-    <div className="rounded-xl border border-border/40 p-4">
-      <div className="flex items-center gap-2 mb-2">
-        <div className="w-7 h-7 rounded-lg bg-destructive/10 flex items-center justify-center">
-          <RotateCcw size={13} className="text-destructive" />
+    <div className="admin-surface p-4">
+      <div className="mb-2 flex items-center gap-2">
+        <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-destructive/10">
+          <RotateCcw size={14} className="text-destructive" />
         </div>
-        <p className="text-xs uppercase tracking-wider text-muted-foreground">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Reembolsos
         </p>
       </div>
-      <p className="text-lg font-semibold text-foreground tabular-nums">
+      <p className="text-xl font-bold tabular-nums tracking-tight text-foreground">
         {refundCount}
       </p>
-      <p className="text-xs text-muted-foreground mt-0.5">
+      <p className="mt-1 text-sm text-muted-foreground">
         {formatCurrencyAdmin(refundAmount)}
       </p>
     </div>

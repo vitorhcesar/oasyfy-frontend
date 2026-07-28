@@ -15,41 +15,39 @@ export default function RegisteredList({
   const { setSelectedSeller } = useAdminKycPageStore();
 
   return (
-    <div className="border border-border/50 rounded-lg overflow-hidden divide-y divide-border/40">
+    <div className="admin-surface overflow-hidden divide-y divide-border/50">
       {filteredRegistered.map((seller) => (
         <button
           key={seller.user_id}
           onClick={() =>
             setSelectedSeller(mapRegisteredSellerToKycView(seller))
           }
-          className="w-full flex items-center gap-4 px-5 py-4 bg-card hover:bg-muted/30 transition-colors text-left"
+          className="group flex w-full items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-muted/25"
         >
-          <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-muted text-muted-foreground">
-            <User size={15} />
+          <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-muted text-muted-foreground">
+            <User size={17} />
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground truncate">
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-base font-semibold text-foreground">
               {seller.full_name || "Sem nome"}
             </p>
-            <p className="text-xs text-muted-foreground/60 mt-0.5 truncate">
+            <p className="mt-0.5 truncate text-sm text-muted-foreground">
               {seller.email || "—"}
             </p>
-            <p className="text-xs md:text-sm text-muted-foreground/40 truncate font-mono">
+            <p className="truncate font-mono text-sm text-muted-foreground">
               {seller.account_id || `#${seller.user_id}`}
             </p>
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
-            <span className="w-2 h-2 rounded-full bg-muted-foreground/30" />
-            <span className="text-xs font-medium text-muted-foreground">
-              Sem documentos
-            </span>
-          </div>
-          <span className="text-xs text-muted-foreground/40 flex-shrink-0 w-12 text-right">
+          <span className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg border border-border bg-muted/60 px-2.5 py-1 text-xs font-semibold text-muted-foreground">
+            <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground" />
+            Sem documentos
+          </span>
+          <span className="w-12 flex-shrink-0 text-right text-sm text-muted-foreground">
             {timeAgo(seller.created_at)}
           </span>
           <ChevronRight
-            size={14}
-            className="text-muted-foreground/30 flex-shrink-0"
+            size={16}
+            className="flex-shrink-0 text-muted-foreground transition-colors group-hover:text-foreground"
           />
         </button>
       ))}

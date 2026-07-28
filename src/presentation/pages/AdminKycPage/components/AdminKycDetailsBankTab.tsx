@@ -25,13 +25,13 @@ export default function AdminKycDetailsBankTab({
   return (
     <div className="animate-fade-in">
       {bankData ? (
-        <div className="space-y-6">
+        <div className="admin-surface space-y-5 p-5 md:p-6">
           <div className="flex items-center gap-2">
             <SectionLabel text="Conta bancária" />
             <StatusPill status={submission.bank_status} />
           </div>
 
-          <div className="divide-y divide-border/20">
+          <div className="divide-y divide-border/50">
             <Row label="Banco" value={bankData.bankName} />
             <Row
               label="Agência"
@@ -59,7 +59,7 @@ export default function AdminKycDetailsBankTab({
           </div>
 
           {submission.bank_status !== "approved" && (
-            <div className="flex items-center gap-2 pt-4 border-t border-border/30">
+            <div className="flex flex-wrap items-center gap-2 border-t border-border/50 pt-5">
               <ActionButton
                 onClick={() => {
                   setLoading(true);
@@ -105,8 +105,8 @@ export default function AdminKycDetailsBankTab({
           )}
         </div>
       ) : (
-        <div className="py-16 text-center">
-          <p className="text-sm text-muted-foreground">
+        <div className="admin-surface px-6 py-16 text-center">
+          <p className="text-base text-muted-foreground">
             Nenhuma conta bancária cadastrada.
           </p>
         </div>

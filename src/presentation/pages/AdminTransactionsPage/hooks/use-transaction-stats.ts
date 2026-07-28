@@ -37,9 +37,9 @@ export default function useTransactionStats(filtered: Transaction[]) {
         count: paid.length,
         total,
         icon: DollarSign,
-        color: "text-primary",
-        bg: "bg-primary/10",
-        border: "border-primary/30",
+        color: "text-success",
+        bg: "bg-success/10",
+        border: "border-success/30",
       },
       {
         label: "Pendente",
@@ -47,9 +47,9 @@ export default function useTransactionStats(filtered: Transaction[]) {
         count: pending.length,
         total,
         icon: Clock,
-        color: "text-yellow-600",
-        bg: "bg-yellow-500/10",
-        border: "border-yellow-200",
+        color: "text-warning",
+        bg: "bg-warning/10",
+        border: "border-warning/30",
       },
       {
         label: "Falhou",
@@ -59,7 +59,7 @@ export default function useTransactionStats(filtered: Transaction[]) {
         icon: XCircle,
         color: "text-destructive",
         bg: "bg-destructive/10",
-        border: "border-destructive/20",
+        border: "border-destructive/30",
       },
       {
         label: "Chargeback",
@@ -69,7 +69,7 @@ export default function useTransactionStats(filtered: Transaction[]) {
         icon: XCircle,
         color: "text-destructive",
         bg: "bg-destructive/10",
-        border: "border-destructive/20",
+        border: "border-destructive/30",
       },
       {
         label: "Reembolsado",
@@ -77,9 +77,9 @@ export default function useTransactionStats(filtered: Transaction[]) {
         count: refunded.length,
         total,
         icon: RotateCcw,
-        color: "text-destructive",
-        bg: "bg-destructive/10",
-        border: "border-destructive/20",
+        color: "text-warning",
+        bg: "bg-warning/10",
+        border: "border-warning/30",
       },
     ] satisfies TransactionStat[];
   }, [filtered]);

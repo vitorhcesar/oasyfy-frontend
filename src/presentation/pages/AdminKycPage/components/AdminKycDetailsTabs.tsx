@@ -1,3 +1,4 @@
+import { cn } from "@/presentation/utils/cn";
 import { useAdminKycDetailsStore } from "../stores/admin-kyc-details.store";
 import { TAdminKycDetailsTab } from "../types/admin-kyc-details-tab.type";
 import { IKycSubmissionView } from "../types/kyc-submission-view.type";
@@ -37,25 +38,30 @@ export default function AdminKycDetailsTabs({
   ];
 
   return (
-    <div className="flex items-center gap-0 border-b border-border/40 mb-8">
+    <div className="liquid-glass-control mb-6 flex flex-wrap items-center gap-0.5 rounded-2xl p-1">
       {tabs.map((t) => (
         <button
           key={t.key}
           onClick={() => setTab(t.key)}
-          className={`px-4 py-2.5 text-xs font-medium transition-colors relative ${
+          className={cn(
+            "relative rounded-xl px-3.5 py-2 text-sm font-semibold transition-all",
             tab === t.key
-              ? "text-foreground"
-              : "text-muted-foreground/60 hover:text-muted-foreground"
-          }`}
+              ? "bg-white text-[#0F0617] shadow-sm"
+              : "text-muted-foreground hover:bg-white/10 hover:text-foreground",
+          )}
         >
           {t.label}
           {t.pending > 0 && (
-            <span className="ml-1.5 inline-flex items-center justify-center w-4 h-4 rounded-full bg-amber-100 text-amber-700 text-sm md:text-xs font-bold leading-none">
+            <span
+              className={cn(
+                "ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-md px-1 text-xs font-bold leading-none",
+                tab === t.key
+                  ? "bg-[#0F0617]/12 text-[#0F0617]"
+                  : "bg-warning/15 text-warning",
+              )}
+            >
               {t.pending}
             </span>
-          )}
-          {tab === t.key && (
-            <div className="absolute bottom-0 left-0 right-0 h-px bg-foreground" />
           )}
         </button>
       ))}

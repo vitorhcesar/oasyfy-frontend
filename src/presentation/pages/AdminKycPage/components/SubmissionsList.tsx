@@ -8,6 +8,28 @@ interface ISubmissionsListProps {
   effectiveStatus: (submission: IKycSubmissionView) => string;
 }
 
+function statusBadge(status: string) {
+  if (status === "approved") {
+    return {
+      label: "Aprovado",
+      cls: "border-success/25 bg-success/10 text-success",
+      dot: "bg-success",
+    };
+  }
+  if (status === "rejected") {
+    return {
+      label: "Recusado",
+      cls: "border-destructive/25 bg-destructive/10 text-destructive",
+      dot: "bg-destructive",
+    };
+  }
+  return {
+    label: "Pendente",
+    cls: "border-warning/25 bg-warning/10 text-warning",
+    dot: "bg-warning",
+  };
+}
+
 export default function SubmissionsList({
   filteredSubmissions,
   timeAgo,
@@ -16,67 +38,49 @@ export default function SubmissionsList({
   const { setSelectedSeller } = useAdminKycPageStore();
 
   return (
-    <div className="border border-border/50 rounded-lg overflow-hidden divide-y divide-border/40">
+    <div className="admin-surface overflow-hidden divide-y divide-border/50">
       {filteredSubmissions.map((submission) => {
         const status = effectiveStatus(submission);
+        const badge = statusBadge(status);
+
         return (
           <button
             key={submission.id}
             onClick={() => setSelectedSeller(submission)}
-            className="w-full flex items-center gap-4 px-5 py-4 bg-card hover:bg-muted/30 transition-colors text-left"
+            className="group flex w-full items-center gap-4 px-5 py-4 text-left transition-colors hover:bg-muted/25"
           >
-            <div className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0 bg-muted text-muted-foreground">
+            <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
               {submission.person_type === "pj" ? (
-                <Building2 size={15} />
+                <Building2 size={17} />
               ) : (
-                <User size={15} />
+                <User size={17} />
               )}
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-foreground truncate">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-base font-semibold text-foreground">
                 {submission.full_name}
               </p>
-              <p className="text-xs text-muted-foreground/60 mt-0.5 truncate">
+              <p className="mt-0.5 truncate text-sm text-muted-foreground">
                 {submission.email || "—"}
               </p>
-              <p className="text-xs md:text-sm text-muted-foreground/40 truncate font-mono">
+              <p className="truncate font-mono text-sm text-muted-foreground">
                 {submission.person_type === "pf"
                   ? submission.cpf
                   : submission.cnpj || "—"}
               </p>
             </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <span
-                className={`w-2 h-2 rounded-full ${
-                  status === "approved"
-                    ? "bg-primary"
-                    : status === "rejected"
-                      ? "bg-destructive"
-                      : "bg-amber-500"
-                }`}
-              />
-              <span
-                className={`text-xs font-medium ${
-                  status === "approved"
-                    ? "text-primary"
-                    : status === "rejected"
-                      ? "text-destructive"
-                      : "text-amber-600"
-                }`}
-              >
-                {status === "approved"
-                  ? "Aprovado"
-                  : status === "rejected"
-                    ? "Recusado"
-                    : "Pendente"}
-              </span>
-            </div>
-            <span className="text-xs text-muted-foreground/40 flex-shrink-0 w-12 text-right">
+            <span
+              className={`inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold ${badge.cls}`}
+            >
+              <span className={`h-1.5 w-1.5 rounded-full ${badge.dot}`} />
+              {badge.label}
+            </span>
+            <span className="w-12 flex-shrink-0 text-right text-sm text-muted-foreground">
               {timeAgo(submission.created_at)}
             </span>
             <ChevronRight
-              size={14}
-              className="text-muted-foreground/30 flex-shrink-0"
+              size={16}
+              className="flex-shrink-0 text-muted-foreground transition-colors group-hover:text-foreground"
             />
           </button>
         );

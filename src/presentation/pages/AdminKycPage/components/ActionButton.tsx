@@ -17,16 +17,16 @@ export function ActionButton({
 }: IActionBtnProps) {
   const base =
     variant === "approve"
-      ? "text-primary border-primary/20 hover:bg-primary hover:text-primary-foreground"
-      : "text-destructive border-destructive/20 hover:bg-destructive hover:text-destructive-foreground";
+      ? "border-transparent bg-white text-[#0F0617] hover:bg-white/90"
+      : "border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground";
 
   return (
     <button
       onClick={onClick}
       disabled={loading || disabled}
-      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all disabled:opacity-40 ${base}`}
+      className={`inline-flex h-10 items-center gap-2 rounded-xl border px-4 text-sm font-semibold transition-all disabled:opacity-40 ${base}`}
     >
-      {loading ? <Loader2 size={12} className="animate-spin" /> : null}
+      {loading ? <Loader2 size={14} className="animate-spin" /> : null}
       {label}
     </button>
   );

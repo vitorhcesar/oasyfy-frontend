@@ -8,12 +8,17 @@ export default function AdminKycPageHeader({
   pendingCount,
 }: AdminKycPageHeaderProps) {
   return (
-    <header className="mb-8 animate-fade-in">
-      <h1 className="text-xl font-semibold text-foreground">Produtores</h1>
-      <p className="text-sm text-muted-foreground mt-1">
+    <header className="mb-7 animate-fade-in">
+      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+        Produtores
+      </p>
+      <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-[2.15rem]">
+        KYC
+      </h1>
+      <p className="mt-1.5 text-sm text-muted-foreground">
         {totalCount} cadastro{totalCount !== 1 ? "s" : ""}
         {pendingCount > 0 && (
-          <span className="text-amber-600">
+          <span className="text-warning">
             {" "}
             · {pendingCount} pendente{pendingCount !== 1 ? "s" : ""}
           </span>

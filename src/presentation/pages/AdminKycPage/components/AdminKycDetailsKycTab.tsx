@@ -109,11 +109,12 @@ export default function AdminKycDetailsKycTab({
   };
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      {/* Personal info */}
-      <div>
-        <SectionLabel text="Dados pessoais" />
-        <div className="space-y-0 divide-y divide-border/20">
+    <div className="animate-fade-in space-y-4">
+      <div className="admin-surface p-5 md:p-6">
+        <div className="mb-4">
+          <SectionLabel text="Dados pessoais" />
+        </div>
+        <div className="divide-y divide-border/50">
           <Row
             label="Documento"
             value={
@@ -130,13 +131,12 @@ export default function AdminKycDetailsKycTab({
         </div>
       </div>
 
-      {/* Address */}
-      <div>
-        <div className="flex items-center gap-2 mb-4">
+      <div className="admin-surface p-5 md:p-6">
+        <div className="mb-4 flex items-center gap-2">
           <SectionLabel text="Endereço" />
           <StatusPill status={submission.address_status} />
         </div>
-        <div className="space-y-0 divide-y divide-border/20">
+        <div className="divide-y divide-border/50">
           <Row
             label="Rua"
             value={`${submission.street}, ${submission.number}`}
@@ -152,11 +152,10 @@ export default function AdminKycDetailsKycTab({
           <Row label="CEP" value={submission.zip_code} mono />
         </div>
 
-        {/* Address actions */}
         {submission.address_status !== "approved" && (
-          <div className="mt-4">
+          <div className="mt-5">
             {!showAddressReject ? (
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <ActionButton
                   onClick={handleAddressApprove}
                   loading={addressLoading}
@@ -172,13 +171,13 @@ export default function AdminKycDetailsKycTab({
                 )}
               </div>
             ) : (
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                 <input
                   type="text"
                   value={addressRejectReason}
                   onChange={(e) => setAddressRejectReason(e.target.value)}
                   placeholder="Motivo da recusa..."
-                  className="flex-1 px-3 py-2 rounded-lg border border-border/50 bg-background text-sm focus:outline-none focus:ring-1 focus:ring-primary/20 placeholder:text-muted-foreground/40"
+                  className="flex-1 rounded-xl border border-border/60 bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
                 />
                 <ActionButton
                   onClick={handleAddressReject}
@@ -192,7 +191,7 @@ export default function AdminKycDetailsKycTab({
                     setShowAddressReject(false);
                     setAddressRejectReason("");
                   }}
-                  className="text-xs text-muted-foreground hover:text-foreground transition-colors px-2"
+                  className="px-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
                 >
                   Cancelar
                 </button>
@@ -202,7 +201,7 @@ export default function AdminKycDetailsKycTab({
         )}
 
         {submission.address_status === "approved" && (
-          <div className="mt-4">
+          <div className="mt-5">
             <ActionButton
               onClick={async () => {
                 setAddressLoading(true);
@@ -228,30 +227,27 @@ export default function AdminKycDetailsKycTab({
         )}
       </div>
 
-      {/* Overall KYC actions */}
       {(submission.status === "pending" ||
         submission.status === "under_review") && (
-        <div className="pt-6 border-t border-border/30">
-          <div className="flex items-center gap-2">
-            <ActionButton
-              onClick={handleReject}
-              loading={actionLoading}
-              variant="reject"
-              label="Rejeitar"
-            />
-            <ActionButton
-              onClick={handleApprove}
-              loading={actionLoading}
-              variant="approve"
-              label="Aprovar tudo"
-            />
-          </div>
+        <div className="admin-surface flex flex-wrap items-center gap-2 p-5 md:p-6">
+          <ActionButton
+            onClick={handleReject}
+            loading={actionLoading}
+            variant="reject"
+            label="Rejeitar"
+          />
+          <ActionButton
+            onClick={handleApprove}
+            loading={actionLoading}
+            variant="approve"
+            label="Aprovar tudo"
+          />
         </div>
       )}
 
       {submission.status === "rejected" && submission.rejection_reason && (
-        <div className="text-sm text-muted-foreground">
-          <span className="font-medium text-destructive">Motivo:</span>{" "}
+        <div className="admin-surface p-5 text-sm text-muted-foreground md:p-6">
+          <span className="font-semibold text-destructive">Motivo:</span>{" "}
           {submission.rejection_reason}
         </div>
       )}

@@ -23,8 +23,8 @@ interface IReadonlyFeeSectionProps {
 function FeeValue({ label, value, suffix = "" }: { label: string; value: number; suffix?: string }) {
   return (
     <div>
-      <p className="text-xs text-muted-foreground/60 uppercase tracking-wider mb-0.5">{label}</p>
-      <p className="text-sm font-medium text-foreground tabular-nums">
+      <p className="mb-0.5 text-xs uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className="text-base font-semibold tabular-nums text-foreground">
         {value.toFixed(2)}{suffix}
       </p>
     </div>
@@ -36,14 +36,14 @@ function ReadonlyFeeSection({ title, prefix, fees }: IReadonlyFeeSectionProps) {
   const isWithdrawal = prefix === "withdrawal";
 
   return (
-    <div className="rounded-xl border border-border/40 overflow-hidden">
+    <div className="admin-surface overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-muted/20 transition-colors"
+        className="flex w-full items-center justify-between px-4 py-3.5 transition-colors hover:bg-muted/25"
       >
-        <span className="text-xs font-semibold text-foreground">{title}</span>
+        <span className="text-sm font-semibold text-foreground">{title}</span>
         <ChevronDown
-          size={14}
+          size={15}
           className={cn(
             "text-muted-foreground transition-transform duration-200",
             open && "rotate-180",
@@ -52,8 +52,8 @@ function ReadonlyFeeSection({ title, prefix, fees }: IReadonlyFeeSectionProps) {
       </button>
 
       {open && (
-        <div className="px-4 pb-4 pt-1 border-t border-border/30">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="border-t border-border/50 px-4 pb-4 pt-3">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             <FeeValue label="Taxa fixa (R$)" value={fees[`${prefix}FixedFee`] ?? 0} />
             <FeeValue label="Taxa variável (%)" value={fees[`${prefix}VariableFee`] ?? 0} suffix="%" />
             <FeeValue label="Taxa mínima (R$)" value={fees[`${prefix}MinFee`] ?? 0} />
@@ -120,12 +120,11 @@ export function AdminKycDetailsFeesTab({ sellerId }: IAdminKycDetailsFeesTabProp
   }
 
   return (
-    <div className="animate-fade-in space-y-5">
-      {/* Seletor de template */}
-      <div className="rounded-xl border border-border/40 p-4 space-y-3 bg-card/40">
-        <div className="flex items-center gap-2 mb-1">
-          <Layers size={15} className="text-primary" />
-          <p className="text-xs font-semibold text-foreground uppercase tracking-wider">
+    <div className="animate-fade-in space-y-4">
+      <div className="admin-surface space-y-4 p-5 md:p-6">
+        <div className="mb-1 flex items-center gap-2">
+          <Layers size={16} className="text-primary" />
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
             Plano de taxa
           </p>
         </div>
@@ -138,7 +137,7 @@ export function AdminKycDetailsFeesTab({ sellerId }: IAdminKycDetailsFeesTabProp
         )}
 
         <div className="space-y-2">
-          <label className="text-xs text-muted-foreground/70 uppercase tracking-wider">
+          <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
             Selecionar novo plano
           </label>
           <select
@@ -147,7 +146,7 @@ export function AdminKycDetailsFeesTab({ sellerId }: IAdminKycDetailsFeesTabProp
               const val = Number(e.target.value);
               setSelectedFeeId(val === currentFee?.id ? null : val);
             }}
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+            className="w-full rounded-xl border border-border/60 bg-background px-3.5 py-2.5 text-sm text-foreground outline-none transition-all focus:border-primary/40 focus:ring-2 focus:ring-primary/20"
           >
             {templates.map((t) => (
               <option key={t.id} value={t.id}>
@@ -161,18 +160,17 @@ export function AdminKycDetailsFeesTab({ sellerId }: IAdminKycDetailsFeesTabProp
           <button
             onClick={handleAssign}
             disabled={saving}
-            className="w-full py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-1.5"
+            className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-white text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90 disabled:opacity-50"
           >
-            {saving && <Loader2 size={12} className="animate-spin" />}
+            {saving && <Loader2 size={14} className="animate-spin" />}
             Atribuir plano
           </button>
         )}
       </div>
 
-      {/* Visualização read-only do plano atual */}
       {currentFee && (
         <div className="space-y-2">
-          <p className="text-xs text-muted-foreground/60 uppercase tracking-wider px-1">
+          <p className="px-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
             Valores do plano atual
           </p>
           {(

@@ -6,9 +6,9 @@ import {
 } from "../constants/filter-options";
 
 const inputClass =
-  "w-full px-3 py-2 rounded-lg bg-background border border-border/50 text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all";
+  "w-full rounded-xl border border-border/60 bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all";
 const selectClass =
-  "w-full px-3 py-2 rounded-lg bg-background border border-border/50 text-xs text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all appearance-none cursor-pointer";
+  "w-full appearance-none rounded-xl border border-border/60 bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer";
 
 interface IAdminTransactionsFiltersProps {
   filterId: string;
@@ -46,8 +46,12 @@ export default function AdminTransactionsFilters({
   onClearPixSearch,
 }: IAdminTransactionsFiltersProps) {
   return (
-    <div className="rounded-lg bg-card border border-border/40 p-3 mb-3">
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2 items-end">
+    <div className="admin-surface mb-6 p-4 md:p-5">
+      <div className="mb-4 flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-foreground">Filtros</h3>
+      </div>
+
+      <div className="grid grid-cols-1 items-end gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7">
         <div>
           <input
             type="text"
@@ -75,7 +79,7 @@ export default function AdminTransactionsFilters({
             <button
               onClick={onPixSearch}
               disabled={pixSearchLoading}
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 px-2 py-0.5 rounded bg-primary/10 text-primary text-xs font-medium"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-lg bg-primary/15 px-2.5 py-1 text-xs font-semibold text-primary"
             >
               {pixSearchLoading ? "..." : "⏎"}
             </button>
@@ -94,8 +98,8 @@ export default function AdminTransactionsFilters({
             ))}
           </select>
           <ChevronDown
-            size={10}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 pointer-events-none"
+            size={14}
+            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
           />
         </div>
         <div className="relative">
@@ -111,8 +115,8 @@ export default function AdminTransactionsFilters({
             ))}
           </select>
           <ChevronDown
-            size={10}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 pointer-events-none"
+            size={14}
+            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
           />
         </div>
         <div className="relative">
@@ -128,8 +132,8 @@ export default function AdminTransactionsFilters({
             ))}
           </select>
           <ChevronDown
-            size={10}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/40 pointer-events-none"
+            size={14}
+            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
           />
         </div>
         <div>
@@ -141,8 +145,11 @@ export default function AdminTransactionsFilters({
             className={inputClass}
           />
         </div>
-        <button className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-all">
-          <Search size={12} />
+        <button
+          onClick={onPixSearch}
+          className="flex h-[42px] items-center justify-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90"
+        >
+          <Search size={15} />
           Buscar
         </button>
       </div>

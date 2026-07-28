@@ -96,7 +96,7 @@ export default function AdminKycPage() {
   if (selectedSeller) {
     return (
       <AdminLayout>
-        <div className="px-8 py-8">
+        <div className="mx-auto w-full max-w-5xl px-5 py-6 md:px-8 md:py-9">
           <AdminKycDetails
             submission={selectedSeller}
             onBack={async () => {
@@ -112,7 +112,7 @@ export default function AdminKycPage() {
 
   return (
     <AdminLayout>
-      <div className="px-4 md:px-8 py-6 md:py-8 max-w-5xl mx-auto w-full">
+      <div className="mx-auto w-full max-w-5xl px-5 py-6 md:px-8 md:py-9">
         <AdminKycPageHeader
           totalCount={totalCount}
           pendingCount={pendingCount}
@@ -122,7 +122,7 @@ export default function AdminKycPage() {
 
         {isLoading ? (
           <div className="flex items-center justify-center py-24">
-            <Loader2 size={20} className="animate-spin text-muted-foreground" />
+            <Loader2 size={24} className="animate-spin text-muted-foreground" />
           </div>
         ) : (
           <AdminKycPageContent

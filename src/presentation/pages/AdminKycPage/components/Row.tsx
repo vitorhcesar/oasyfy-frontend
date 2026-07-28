@@ -6,9 +6,11 @@ interface IRowProps {
 
 export function Row({ label, value, mono }: IRowProps) {
   return (
-    <div className="flex items-baseline justify-between py-3">
-      <span className="text-xs text-muted-foreground/50">{label}</span>
-      <span className={`text-sm text-foreground ${mono ? "font-mono" : ""}`}>
+    <div className="flex items-baseline justify-between gap-4 py-3.5">
+      <span className="text-sm text-muted-foreground">{label}</span>
+      <span
+        className={`text-right text-sm font-medium text-foreground ${mono ? "font-mono" : ""}`}
+      >
         {value || "—"}
       </span>
     </div>

@@ -4,32 +4,32 @@ export const statusConfig: Record<
 > = {
   pending: {
     label: "Pendente",
-    cls: "bg-yellow-500/10 text-yellow-600 border-yellow-200",
-    dot: "bg-yellow-500",
+    cls: "border-warning/25 bg-warning/10 text-warning",
+    dot: "bg-warning",
   },
   completed: {
     label: "Completa",
-    cls: "bg-primary/10 text-primary border-primary/20",
-    dot: "bg-primary",
+    cls: "border-success/25 bg-success/10 text-success",
+    dot: "bg-success",
   },
   failed: {
     label: "Falhou",
-    cls: "bg-destructive/10 text-destructive border-destructive/20",
+    cls: "border-destructive/25 bg-destructive/10 text-destructive",
     dot: "bg-destructive",
   },
   cancelled: {
     label: "Cancelada",
-    cls: "bg-muted text-muted-foreground border-border",
-    dot: "bg-muted-foreground/40",
+    cls: "border-border bg-muted text-muted-foreground",
+    dot: "bg-muted-foreground",
   },
   refunded: {
     label: "Reembolsado",
-    cls: "bg-orange-500/10 text-orange-600 border-orange-200",
-    dot: "bg-orange-500",
+    cls: "border-warning/25 bg-warning/10 text-warning",
+    dot: "bg-warning",
   },
   chargeback: {
     label: "Chargeback",
-    cls: "bg-destructive/10 text-destructive border-destructive/20",
+    cls: "border-destructive/25 bg-destructive/10 text-destructive",
     dot: "bg-destructive",
   },
 };
@@ -37,14 +37,14 @@ export const statusConfig: Record<
 export function statusBadge(status: string) {
   const s = statusConfig[status] || {
     label: status,
-    cls: "bg-muted text-muted-foreground",
-    dot: "bg-muted-foreground/40",
+    cls: "border-border bg-muted text-muted-foreground",
+    dot: "bg-muted-foreground",
   };
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs md:text-sm font-medium border ${s.cls}`}
+      className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold ${s.cls}`}
     >
-      <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />
+      <span className={`h-1.5 w-1.5 rounded-full ${s.dot}`} />
       {s.label}
     </span>
   );

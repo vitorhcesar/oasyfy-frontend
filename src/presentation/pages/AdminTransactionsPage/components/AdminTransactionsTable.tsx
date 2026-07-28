@@ -8,9 +8,9 @@ import {
   Eye,
   Lock,
 } from "lucide-react";
+import type { Transaction } from "../types/admin-transaction.type";
 import { formatCurrency } from "../utils/format-currency";
 import { statusConfig } from "../utils/status-config";
-import type { Transaction } from "../types/admin-transaction.type";
 
 interface IAdminTransactionsTableProps {
   loading: boolean;
@@ -34,27 +34,17 @@ export default function AdminTransactionsTable({
   onOpenDetail,
 }: IAdminTransactionsTableProps) {
   if (loading) {
-    return (
-      <div className="flex justify-center py-16">
-        <div className="relative w-8 h-8">
-          <div className="absolute inset-0 rounded-full border-2 border-muted" />
-          <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary animate-spin" />
-        </div>
-      </div>
-    );
+    return null;
   }
 
   if (displayFiltered.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-border/50 bg-muted/10 p-12 text-center">
-        <CreditCard
-          className="text-muted-foreground/30 mx-auto mb-3"
-          size={20}
-        />
-        <p className="text-sm font-medium text-foreground mb-0.5">
+      <div className="admin-surface px-6 py-16 text-center">
+        <CreditCard className="mx-auto mb-3 text-muted-foreground" size={24} />
+        <p className="mb-1 text-base font-semibold text-foreground">
           Nenhuma transação
         </p>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           As transações aparecerão aqui.
         </p>
       </div>
@@ -62,114 +52,112 @@ export default function AdminTransactionsTable({
   }
 
   return (
-    <div className="rounded-xl border border-border/40 bg-card overflow-hidden overflow-x-auto">
-      <table className="w-full min-w-[700px]">
+    <div className="admin-surface overflow-hidden overflow-x-auto">
+      <table className="w-full min-w-[720px]">
         <thead>
-          <tr className="border-b border-border/30 bg-muted/20">
-            <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs uppercase tracking-wider">
+          <tr className="border-b border-border/50">
+            <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Cliente
             </th>
-            <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs uppercase tracking-wider">
+            <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Valor
             </th>
-            <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs uppercase tracking-wider">
+            <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Método
             </th>
-            <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs uppercase tracking-wider">
+            <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Status
             </th>
-            <th className="text-left px-3 py-2 font-medium text-muted-foreground text-xs uppercase tracking-wider">
+            <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Data
             </th>
-            <th className="text-center px-3 py-2 font-medium text-muted-foreground text-xs uppercase tracking-wider w-16"></th>
+            <th className="w-20 px-5 py-3.5 text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground" />
           </tr>
         </thead>
         <tbody>
-          {paginatedData.map((tx) => (
-            <tr
-              key={tx.id}
-              className="border-b border-border/10 last:border-0 hover:bg-muted/10 transition-colors cursor-pointer"
-              onClick={() => onOpenDetail(tx)}
-            >
-              <td className="px-3 py-2">
-                <p className="font-medium text-foreground text-xs">
-                  {tx.customer_name || "Cliente padrão"}
-                </p>
-                {tx.customer_email && (
-                  <p className="text-xs text-muted-foreground/50 truncate max-w-[160px]">
-                    {tx.customer_email}
+          {paginatedData.map((tx) => {
+            const s = statusConfig[tx.status] || {
+              label: tx.status,
+              cls: "border-border bg-muted text-muted-foreground",
+              dot: "bg-muted-foreground",
+            };
+
+            return (
+              <tr
+                key={tx.id}
+                className="cursor-pointer border-b border-border/40 last:border-0 transition-colors hover:bg-muted/25"
+                onClick={() => onOpenDetail(tx)}
+              >
+                <td className="px-5 py-3.5">
+                  <p className="text-sm font-semibold text-foreground">
+                    {tx.customer_name || "Cliente padrão"}
                   </p>
-                )}
-              </td>
-              <td className="px-3 py-2 font-semibold text-foreground text-xs">
-                {formatCurrency(tx.amount)}
-              </td>
-              <td className="px-3 py-2">
-                <span className="text-xs uppercase font-medium text-muted-foreground bg-muted/40 px-1.5 py-0.5 rounded">
-                  {tx.method}
-                </span>
-              </td>
-              <td className="px-3 py-2">
-                <div className="flex items-center gap-1">
-                  {(() => {
-                    const s = statusConfig[tx.status] || {
-                      label: tx.status,
-                      dot: "bg-muted-foreground/40",
-                    };
-                    return (
-                      <span className="flex items-center gap-1">
-                        <span
-                          className={`w-1.5 h-1.5 rounded-full ${s.dot}`}
-                        />
-                        <span className="text-sm font-medium text-foreground">
-                          {s.label}
-                        </span>
-                      </span>
-                    );
-                  })()}
-                  {tx.is_locked && (
-                    <Lock size={10} className="text-destructive" />
+                  {tx.customer_email && (
+                    <p className="mt-0.5 max-w-[180px] truncate text-sm text-muted-foreground">
+                      {tx.customer_email}
+                    </p>
                   )}
-                  {tx.is_fake_refund && (
-                    <Eye size={10} className="text-orange-500" />
-                  )}
-                </div>
-              </td>
-              <td className="px-3 py-2 text-muted-foreground text-sm">
-                {format(new Date(tx.created_at), "dd/MM/yy HH:mm", {
-                  locale: ptBR,
-                })}
-              </td>
-              <td className="px-3 py-2 text-center">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onOpenDetail(tx);
-                  }}
-                  className="text-xs font-medium text-primary hover:underline"
-                >
-                  Ver
-                </button>
-              </td>
-            </tr>
-          ))}
+                </td>
+                <td className="px-5 py-3.5 text-sm font-bold tabular-nums text-foreground">
+                  {formatCurrency(tx.amount)}
+                </td>
+                <td className="px-5 py-3.5">
+                  <span className="rounded-lg border border-border bg-muted/60 px-2.5 py-1 text-xs font-semibold uppercase text-foreground">
+                    {tx.method}
+                  </span>
+                </td>
+                <td className="px-5 py-3.5">
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold ${s.cls}`}
+                    >
+                      <span className={`h-1.5 w-1.5 rounded-full ${s.dot}`} />
+                      {s.label}
+                    </span>
+                    {tx.is_locked && (
+                      <Lock size={14} className="text-destructive" />
+                    )}
+                    {tx.is_fake_refund && (
+                      <Eye size={14} className="text-warning" />
+                    )}
+                  </div>
+                </td>
+                <td className="px-5 py-3.5 text-sm text-muted-foreground">
+                  {format(new Date(tx.created_at), "dd/MM/yy HH:mm", {
+                    locale: ptBR,
+                  })}
+                </td>
+                <td className="px-5 py-3.5 text-center">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onOpenDetail(tx);
+                    }}
+                    className="text-sm font-semibold text-primary hover:underline"
+                  >
+                    Ver
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between px-3 py-2 border-t border-border/20 bg-muted/10">
-          <p className="text-xs text-muted-foreground">
+        <div className="flex items-center justify-between border-t border-border/50 px-5 py-3">
+          <p className="text-sm text-muted-foreground">
             {(currentPage - 1) * perPage + 1}–
             {Math.min(currentPage * perPage, displayFiltered.length)} de{" "}
             {displayFiltered.length}
           </p>
-          <div className="flex items-center gap-0.5">
+          <div className="flex items-center gap-1">
             <button
               onClick={() => onPageChange(Math.max(1, currentPage - 1))}
               disabled={currentPage === 1}
-              className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors disabled:opacity-30"
+              className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-30"
             >
-              <ChevronLeft size={12} />
+              <ChevronLeft size={16} />
             </button>
             {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
               let page: number;
@@ -183,10 +171,10 @@ export default function AdminTransactionsTable({
                   key={page}
                   onClick={() => onPageChange(page)}
                   className={cn(
-                    "w-6 h-6 rounded text-xs font-medium transition-all",
+                    "flex h-8 w-8 items-center justify-center rounded-lg text-sm font-semibold transition-all",
                     currentPage === page
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-muted/30",
+                      ? "bg-white text-[#0F0617] shadow-sm"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   )}
                 >
                   {page}
@@ -198,9 +186,9 @@ export default function AdminTransactionsTable({
                 onPageChange(Math.min(totalPages, currentPage + 1))
               }
               disabled={currentPage === totalPages}
-              className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-muted/30 transition-colors disabled:opacity-30"
+              className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-30"
             >
-              <ChevronRight size={12} />
+              <ChevronRight size={16} />
             </button>
           </div>
         </div>

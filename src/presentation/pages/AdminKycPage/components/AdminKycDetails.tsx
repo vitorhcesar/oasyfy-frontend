@@ -112,51 +112,49 @@ export function AdminKycDetails({
     <div className="animate-fade-in">
       <button
         onClick={onBack}
-        className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-8"
+        className="mb-6 flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
       >
-        <ArrowLeft size={14} />
+        <ArrowLeft size={15} />
         Voltar
       </button>
 
       <AdminKycDetailsHeader submission={submission} onUpdate={onUpdate} />
       <AdminKycDetailsTabs submission={submission} />
 
-      {/* KYC Tab */}
       {tab === "kyc" && (
         <AdminKycDetailsKycTab submission={submission} onUpdate={onUpdate} />
       )}
 
-      {/* Documents Tab */}
       {tab === "documents" && (
-        <div className="space-y-1 animate-fade-in">
-          <div className="flex items-center gap-2 mb-6">
+        <div className="admin-surface animate-fade-in p-5 md:p-6">
+          <div className="mb-5 flex items-center gap-2">
             <SectionLabel text="Documentos" />
             <StatusPill status={submission.documents_status} />
           </div>
 
-          <div className="divide-y divide-border/20">
+          <div className="divide-y divide-border/50">
             {kycDocuments.map((doc) => {
               const docReview = documentsReview[doc.key];
               const docStatus = docReview?.status ?? "pending";
 
               return (
-                <div key={doc.key} className="py-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm text-foreground">
+                <div key={doc.key} className="py-4 first:pt-0 last:pb-0">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex min-w-0 flex-wrap items-center gap-3">
+                      <span className="text-sm font-medium text-foreground">
                         {doc.label}
                       </span>
                       <span
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium border ${
+                        className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold ${
                           docStatus === "approved"
-                            ? "border-primary/20 bg-primary/5 text-primary"
+                            ? "border-success/25 bg-success/10 text-success"
                             : docStatus === "rejected"
-                              ? "border-destructive/20 bg-destructive/5 text-destructive"
-                              : "border-amber-200 bg-amber-50 text-amber-700"
+                              ? "border-destructive/25 bg-destructive/10 text-destructive"
+                              : "border-warning/25 bg-warning/10 text-warning"
                         }`}
                       >
                         <span
-                          className={`w-1 h-1 rounded-full ${statusDot(
+                          className={`h-1.5 w-1.5 rounded-full ${statusDot(
                             docStatus,
                           )}`}
                         />
@@ -164,15 +162,16 @@ export function AdminKycDetails({
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-1">
+                    <div className="flex flex-shrink-0 items-center gap-1">
                       {doc.url && (
                         <a
                           href={doc.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="p-1.5 rounded text-muted-foreground/40 hover:text-foreground transition-colors"
+                          className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                          title="Abrir documento"
                         >
-                          <ExternalLink size={13} />
+                          <ExternalLink size={16} />
                         </a>
                       )}
                       {doc.url && docStatus === "pending" && (
@@ -184,15 +183,17 @@ export function AdminKycDetails({
                               );
                               setDocRejectReason("");
                             }}
-                            className="p-1.5 rounded text-muted-foreground/40 hover:text-destructive transition-colors"
+                            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                            title="Recusar"
                           >
-                            <XCircle size={13} />
+                            <XCircle size={16} />
                           </button>
                           <button
                             onClick={() => handleApproveDocument(doc.key)}
-                            className="p-1.5 rounded text-muted-foreground/40 hover:text-primary transition-colors"
+                            className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-success/10 hover:text-success"
+                            title="Aprovar"
                           >
-                            <CheckCircle size={13} />
+                            <CheckCircle size={16} />
                           </button>
                         </>
                       )}
@@ -204,45 +205,45 @@ export function AdminKycDetails({
                             );
                             setDocRejectReason("");
                           }}
-                          className="p-1.5 rounded text-muted-foreground/40 hover:text-destructive transition-colors"
+                          className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                          title="Recusar"
                         >
-                          <XCircle size={13} />
+                          <XCircle size={16} />
                         </button>
                       )}
                       {doc.url && docStatus === "rejected" && (
                         <button
                           onClick={() => handleApproveDocument(doc.key)}
-                          className="p-1.5 rounded text-muted-foreground/40 hover:text-primary transition-colors"
+                          className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-success/10 hover:text-success"
+                          title="Aprovar"
                         >
-                          <CheckCircle size={13} />
+                          <CheckCircle size={16} />
                         </button>
                       )}
                       {!doc.url && (
-                        <span className="text-xs text-muted-foreground/40 italic">
+                        <span className="text-sm italic text-muted-foreground">
                           não enviado
                         </span>
                       )}
                     </div>
                   </div>
 
-                  {/* Rejection reason display */}
                   {docStatus === "rejected" &&
                     docReview?.reason &&
                     docRejectingKey !== doc.key && (
-                      <p className="text-xs md:text-sm text-destructive/70 mt-2 ml-[18px]">
+                      <p className="mt-2 text-sm text-destructive">
                         {docReview.reason}
                       </p>
                     )}
 
-                  {/* Rejection input */}
                   {docRejectingKey === doc.key && (
-                    <div className="flex items-center gap-2 mt-3 ml-[18px]">
+                    <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
                       <input
                         type="text"
                         value={docRejectReason}
                         onChange={(e) => setDocRejectReason(e.target.value)}
                         placeholder="Motivo da recusa..."
-                        className="flex-1 px-3 py-1.5 rounded-lg border border-border/50 bg-background text-xs focus:outline-none focus:ring-1 focus:ring-destructive/20 placeholder:text-muted-foreground/40"
+                        className="flex-1 rounded-xl border border-border/60 bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-destructive/40 focus:outline-none focus:ring-2 focus:ring-destructive/20"
                         maxLength={500}
                       />
                       <button
@@ -254,7 +255,7 @@ export function AdminKycDetails({
                           );
                         }}
                         disabled={!docRejectReason.trim()}
-                        className="text-xs font-medium text-destructive hover:text-destructive/80 disabled:opacity-40 transition-colors"
+                        className="text-sm font-semibold text-destructive transition-colors hover:text-destructive/80 disabled:opacity-40"
                       >
                         Confirmar
                       </button>
@@ -263,7 +264,7 @@ export function AdminKycDetails({
                           setDocRejectingKey(null);
                           setDocRejectReason("");
                         }}
-                        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                        className="text-sm text-muted-foreground transition-colors hover:text-foreground"
                       >
                         Cancelar
                       </button>

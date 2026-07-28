@@ -23,6 +23,16 @@ interface IAdminKycDetailsHeaderProps {
   onUpdate: () => void;
 }
 
+function statusBadgeClasses(status: string) {
+  if (status === "approved") {
+    return "border-success/25 bg-success/10 text-success";
+  }
+  if (status === "rejected") {
+    return "border-destructive/25 bg-destructive/10 text-destructive";
+  }
+  return "border-warning/25 bg-warning/10 text-warning";
+}
+
 export function AdminKycDetailsHeader({
   submission,
   onUpdate,
@@ -136,32 +146,31 @@ export function AdminKycDetailsHeader({
   };
 
   return (
-    <header className="mb-8">
-      <div className="flex items-center gap-3 mb-1">
-        <h1 className="text-lg font-semibold text-foreground">
+    <header className="admin-surface mb-6 p-5 md:p-6">
+      <div className="mb-1 flex flex-wrap items-center gap-3">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-[1.75rem]">
           {submission.full_name}
         </h1>
-        <span className="text-xs font-medium text-muted-foreground border border-border rounded px-1.5 py-0.5 uppercase">
+        <span className="rounded-lg border border-border bg-muted/50 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-foreground">
           {submission.person_type === "pj" ? "PJ" : "PF"}
         </span>
-        <div className="flex items-center gap-1.5 ml-1">
-          <div
-            className={`w-1.5 h-1.5 rounded-full ${statusDot(effectiveStatus)}`}
+        <span
+          className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold ${statusBadgeClasses(effectiveStatus)}`}
+        >
+          <span
+            className={`h-1.5 w-1.5 rounded-full ${statusDot(effectiveStatus)}`}
           />
-          <span className="text-xs text-muted-foreground">
-            {statusText(effectiveStatus)}
-          </span>
-        </div>
+          {statusText(effectiveStatus)}
+        </span>
 
-        {/* Ações dropdown */}
         <div className="relative ml-auto">
           <button
             onClick={() => setActionsOpen(!actionsOpen)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md border border-border bg-card text-foreground hover:bg-muted transition-colors"
+            className="liquid-glass-control flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-white/10"
           >
             Ações
             <ChevronDown
-              size={12}
+              size={14}
               className={`transition-transform ${
                 actionsOpen ? "rotate-180" : ""
               }`}
@@ -174,28 +183,28 @@ export function AdminKycDetailsHeader({
                 className="fixed inset-0 z-40"
                 onClick={() => setActionsOpen(false)}
               />
-              <div className="absolute right-0 mt-1 w-48 rounded-lg border border-border bg-card shadow-lg z-50 py-1">
+              <div className="liquid-glass-control absolute right-0 z-50 mt-1.5 w-52 rounded-2xl py-1.5 shadow-lg">
                 <button
                   onClick={handleToggleBan}
                   disabled={banLoading}
-                  className="flex items-center gap-2 w-full px-3 py-2 text-xs text-destructive hover:bg-destructive/10 transition-colors disabled:opacity-50"
+                  className="flex w-full items-center gap-2 px-3.5 py-2.5 text-sm text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50"
                 >
                   {banLoading ? (
-                    <Loader2 size={14} className="animate-spin" />
+                    <Loader2 size={15} className="animate-spin" />
                   ) : (
-                    <Ban size={14} />
+                    <Ban size={15} />
                   )}
                   {submission.is_banned ? "Desbanir seller" : "Banir seller"}
                 </button>
                 <button
                   onClick={handleToggleWithdrawalsBlock}
                   disabled={withdrawalsLoading}
-                  className="flex items-center gap-2 w-full px-3 py-2 text-xs text-foreground hover:bg-muted transition-colors disabled:opacity-50"
+                  className="flex w-full items-center gap-2 px-3.5 py-2.5 text-sm text-foreground transition-colors hover:bg-white/10 disabled:opacity-50"
                 >
                   {withdrawalsLoading ? (
-                    <Loader2 size={14} className="animate-spin" />
+                    <Loader2 size={15} className="animate-spin" />
                   ) : (
-                    <Lock size={14} />
+                    <Lock size={15} />
                   )}
                   {submission.withdrawals_blocked
                     ? "Liberar saque"
@@ -208,15 +217,15 @@ export function AdminKycDetailsHeader({
                     !submission.email ||
                     !!submission.email_manually_approved
                   }
-                  className="flex items-center gap-2 w-full px-3 py-2 text-xs text-foreground hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex w-full items-center gap-2 px-3.5 py-2.5 text-sm text-foreground transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {manualEmailApprovalLoading ? (
-                    <Loader2 size={14} className="animate-spin" />
+                    <Loader2 size={15} className="animate-spin" />
                   ) : (
                     <CheckCircle
-                      size={14}
+                      size={15}
                       className={
-                        submission.email_manually_approved ? "text-primary" : ""
+                        submission.email_manually_approved ? "text-success" : ""
                       }
                     />
                   )}
@@ -230,32 +239,31 @@ export function AdminKycDetailsHeader({
         </div>
       </div>
 
-      {/* Contact row */}
-      <div className="flex items-center gap-5 mt-3">
+      <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2">
         {submission.phone && (
           <button
             onClick={() => copyToClipboard(submission.phone, "Telefone")}
-            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
-            <Phone size={12} />
+            <Phone size={14} />
             {submission.phone}
           </button>
         )}
         {submission.email && (
           <button
             onClick={() => copyToClipboard(submission.email, "E-mail")}
-            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
-            <Mail size={12} />
+            <Mail size={14} />
             {submission.email}
             {submission.email_manually_approved ? (
-              <ShieldCheck size={12} className="text-primary" />
+              <ShieldCheck size={14} className="text-success" />
             ) : (
-              <Shield size={12} className="text-muted-foreground/50" />
+              <Shield size={14} className="text-muted-foreground" />
             )}
           </button>
         )}
-        <span className="text-xs text-muted-foreground/50">
+        <span className="text-sm text-muted-foreground">
           {new Date(submission.created_at).toLocaleDateString("pt-BR")}
         </span>
       </div>

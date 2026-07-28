@@ -21,15 +21,16 @@ import {
   RotateCcw,
   Unlock,
 } from "lucide-react";
+import type { ReactNode } from "react";
 import { toast } from "sonner";
-import { formatCurrency } from "../utils/format-currency";
-import { methodLabel } from "../utils/method-label";
-import { statusBadge } from "../utils/status-config";
 import type {
   SellerInfo,
   SellerKyc,
   Transaction,
 } from "../types/admin-transaction.type";
+import { formatCurrency } from "../utils/format-currency";
+import { methodLabel } from "../utils/method-label";
+import { statusBadge } from "../utils/status-config";
 
 interface IAdminTransactionDetailDialogProps {
   selectedTx: Transaction | null;
@@ -52,6 +53,38 @@ interface IAdminTransactionDetailDialogProps {
   onHideLockForm: () => void;
   onRefund: (fake: boolean) => void;
   onLockToggle: () => void;
+}
+
+function SectionCard({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="rounded-2xl border border-border/60 bg-card p-4 md:p-5">
+      <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+        {title}
+      </p>
+      {children}
+    </div>
+  );
+}
+
+function MetaItem({
+  label,
+  value,
+}: {
+  label: string;
+  value: ReactNode;
+}) {
+  return (
+    <div>
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <p className="mt-0.5 text-sm font-medium text-foreground">{value}</p>
+    </div>
+  );
 }
 
 export default function AdminTransactionDetailDialog({
@@ -83,19 +116,19 @@ export default function AdminTransactionDetailDialog({
         if (!open) onClose();
       }}
     >
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto border-border/60 bg-background">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex flex-wrap items-center gap-2 text-xl font-bold tracking-tight">
             Detalhes da Transação
             {selectedTx?.is_locked && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-destructive/10 text-destructive text-xs font-medium">
-                <Lock size={10} />
+              <span className="inline-flex items-center gap-1.5 rounded-lg border border-destructive/25 bg-destructive/10 px-2.5 py-1 text-xs font-semibold text-destructive">
+                <Lock size={12} />
                 Travada
               </span>
             )}
             {selectedTx?.is_fake_refund && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-600 text-xs font-medium">
-                <Eye size={10} />
+              <span className="inline-flex items-center gap-1.5 rounded-lg border border-warning/25 bg-warning/10 px-2.5 py-1 text-xs font-semibold text-warning">
+                <Eye size={12} />
                 Fake Refund
               </span>
             )}
@@ -104,23 +137,29 @@ export default function AdminTransactionDetailDialog({
 
         {selectedTx && (
           <Tabs defaultValue="venda" className="mt-2">
-            <TabsList className="w-full">
-              <TabsTrigger value="venda" className="flex-1 text-xs">
+            <TabsList className="liquid-glass-control h-auto w-full gap-0.5 rounded-2xl p-1">
+              <TabsTrigger
+                value="venda"
+                className="flex-1 rounded-xl px-3.5 py-2 text-sm font-semibold data-[state=active]:bg-white data-[state=active]:text-[#0F0617] data-[state=active]:shadow-sm"
+              >
                 Venda
               </TabsTrigger>
-              <TabsTrigger value="mais" className="flex-1 text-xs">
+              <TabsTrigger
+                value="mais"
+                className="flex-1 rounded-xl px-3.5 py-2 text-sm font-semibold data-[state=active]:bg-white data-[state=active]:text-[#0F0617] data-[state=active]:shadow-sm"
+              >
                 Mais Detalhes
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="venda" className="space-y-5 mt-4">
-              <div className="flex items-center justify-between">
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider">
+            <TabsContent value="venda" className="mt-5 space-y-4">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
                     ID da Transação
                   </p>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <p className="text-xs font-mono text-foreground break-all">
+                  <div className="mt-1 flex items-center gap-1.5">
+                    <p className="break-all font-mono text-sm text-foreground">
                       {selectedTx.id}
                     </p>
                     <button
@@ -128,145 +167,124 @@ export default function AdminTransactionDetailDialog({
                         navigator.clipboard.writeText(selectedTx.id);
                         toast.success("ID copiado!");
                       }}
-                      className="flex-shrink-0 p-1 rounded-md hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors"
+                      className="flex-shrink-0 rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
                       title="Copiar ID"
                     >
-                      <Copy size={12} />
+                      <Copy size={14} />
                     </button>
                   </div>
                 </div>
                 {statusBadge(selectedTx.status)}
               </div>
 
-              <div className="h-px bg-border/40" />
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="rounded-lg border border-border/40 p-4">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2 font-medium">
-                    Seller / Produtor
-                  </p>
-                  <p className="text-sm font-semibold text-foreground">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <SectionCard title="Seller / Produtor">
+                  <p className="text-base font-semibold text-foreground">
                     {sellerInfo?.full_name || "—"}
                   </p>
-                  <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
+                  <p className="mt-1 text-sm text-muted-foreground">
                     {sellerInfo?.account_id}
                   </p>
-                  <p className="text-xs md:text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground">
                     {sellerInfo?.email || sellerKyc?.email || "—"}
                   </p>
                   {sellerKyc?.cpf && (
-                    <p className="text-xs md:text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground">
                       CPF: {sellerKyc.cpf}
                     </p>
                   )}
                   {sellerKyc?.cnpj && (
-                    <p className="text-xs md:text-sm text-muted-foreground">
+                    <p className="text-sm text-muted-foreground">
                       CNPJ: {sellerKyc.cnpj}
                     </p>
                   )}
-                </div>
-                <div className="rounded-lg border border-border/40 p-4">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider mb-2 font-medium">
-                    Cliente
-                  </p>
-                  <p className="text-sm font-semibold text-foreground">
+                </SectionCard>
+
+                <SectionCard title="Cliente">
+                  <p className="text-base font-semibold text-foreground">
                     {selectedTx.customer_name}
                   </p>
                   {selectedTx.customer_email && (
-                    <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
+                    <p className="mt-1 text-sm text-muted-foreground">
                       {selectedTx.customer_email}
                     </p>
                   )}
-                </div>
+                </SectionCard>
               </div>
 
-              <div className="rounded-lg border border-border/40 p-4">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3 font-medium">
-                  Pagamento
-                </p>
-                <div className="grid grid-cols-2 gap-y-3 gap-x-6">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Método</p>
-                    <p className="text-sm font-medium text-foreground">
-                      {methodLabel[selectedTx.method] || selectedTx.method}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Adquirente</p>
-                    <p className="text-sm font-medium text-foreground">
-                      {selectedTx.acquirer || "Gateway interno"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Data / Hora</p>
-                    <p className="text-sm font-medium text-foreground">
-                      {format(
-                        new Date(selectedTx.created_at),
-                        "dd/MM/yyyy 'às' HH:mm:ss",
-                        { locale: ptBR },
-                      )}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">
-                      Última atualização
-                    </p>
-                    <p className="text-sm font-medium text-foreground">
-                      {format(
-                        new Date(selectedTx.updated_at),
-                        "dd/MM/yyyy 'às' HH:mm:ss",
-                        { locale: ptBR },
-                      )}
-                    </p>
-                  </div>
+              <SectionCard title="Pagamento">
+                <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+                  <MetaItem
+                    label="Método"
+                    value={
+                      methodLabel[selectedTx.method] || selectedTx.method
+                    }
+                  />
+                  <MetaItem
+                    label="Adquirente"
+                    value={selectedTx.acquirer || "Gateway interno"}
+                  />
+                  <MetaItem
+                    label="Data / Hora"
+                    value={format(
+                      new Date(selectedTx.created_at),
+                      "dd/MM/yyyy 'às' HH:mm:ss",
+                      { locale: ptBR },
+                    )}
+                  />
+                  <MetaItem
+                    label="Última atualização"
+                    value={format(
+                      new Date(selectedTx.updated_at),
+                      "dd/MM/yyyy 'às' HH:mm:ss",
+                      { locale: ptBR },
+                    )}
+                  />
                   {selectedTx.pix_code && (
-                    <div className="col-span-2">
-                      <p className="text-xs text-muted-foreground">
+                    <div className="col-span-full">
+                      <p className="text-sm text-muted-foreground">
                         PIX Copia e Cola
                       </p>
-                      <p className="text-xs font-mono text-foreground break-all mt-0.5">
+                      <p className="mt-0.5 break-all font-mono text-sm text-foreground">
                         {selectedTx.pix_code}
                       </p>
                     </div>
                   )}
                   {selectedTx.description && (
-                    <div className="col-span-2">
-                      <p className="text-xs text-muted-foreground">Descrição</p>
-                      <p className="text-sm text-foreground">
+                    <div className="col-span-full">
+                      <p className="text-sm text-muted-foreground">Descrição</p>
+                      <p className="mt-0.5 text-sm font-medium text-foreground">
                         {selectedTx.description}
                       </p>
                     </div>
                   )}
                 </div>
-              </div>
+              </SectionCard>
 
-              <div className="rounded-lg border border-border/40 p-4">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3 font-medium">
-                  Valores e Taxas
-                </p>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
+              <SectionCard title="Valores e Taxas">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">
                       Valor bruto
                     </span>
-                    <span className="text-sm font-bold text-foreground">
+                    <span className="text-base font-bold tabular-nums text-foreground">
                       {formatCurrency(selectedTx.amount)}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center">
+                  <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">
                       Taxa cobrada
                     </span>
-                    <span className="text-sm font-medium text-destructive">
+                    <span className="text-sm font-semibold tabular-nums text-destructive">
                       -{formatCurrency(selectedTx.fee_amount)}
                     </span>
                   </div>
-                  <div className="h-px bg-border/30" />
-                  <div className="flex justify-between items-center">
+                  <div className="h-px bg-border/50" />
+                  <div className="flex items-center justify-between">
                     <span className="text-sm font-semibold text-foreground">
                       Valor líquido
                     </span>
-                    <span className="text-sm font-bold text-primary">
+                    <span className="text-base font-bold tabular-nums text-success">
                       {formatCurrency(
                         selectedTx.net_amount ||
                           selectedTx.amount - selectedTx.fee_amount,
@@ -274,13 +292,13 @@ export default function AdminTransactionDetailDialog({
                     </span>
                   </div>
                 </div>
-              </div>
+              </SectionCard>
             </TabsContent>
 
-            <TabsContent value="mais" className="space-y-5 mt-4">
+            <TabsContent value="mais" className="mt-5 space-y-4">
               {selectedTx.lock_reason && (
-                <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-3">
-                  <p className="text-xs text-destructive uppercase tracking-wider font-medium mb-1">
+                <div className="rounded-2xl border border-destructive/25 bg-destructive/10 p-4">
+                  <p className="mb-1 text-xs font-semibold uppercase tracking-[0.18em] text-destructive">
                     Motivo do bloqueio
                   </p>
                   <p className="text-sm text-foreground">
@@ -289,8 +307,8 @@ export default function AdminTransactionDetailDialog({
                 </div>
               )}
               {selectedTx.refund_reason && (
-                <div className="rounded-lg border border-orange-500/20 bg-orange-500/5 p-3">
-                  <p className="text-xs text-orange-600 uppercase tracking-wider font-medium mb-1">
+                <div className="rounded-2xl border border-warning/25 bg-warning/10 p-4">
+                  <p className="mb-1 text-xs font-semibold uppercase tracking-[0.18em] text-warning">
                     Motivo do reembolso {selectedTx.is_fake_refund && "(FAKE)"}
                   </p>
                   <p className="text-sm text-foreground">
@@ -299,65 +317,51 @@ export default function AdminTransactionDetailDialog({
                 </div>
               )}
 
-              <div className="rounded-lg border border-border/40 p-4">
-                <p className="text-xs text-muted-foreground uppercase tracking-wider mb-3 font-medium">
-                  Metadados
-                </p>
-                <div className="grid grid-cols-2 gap-y-3 gap-x-6">
-                  <div>
-                    <p className="text-xs text-muted-foreground">Moeda</p>
-                    <p className="text-sm font-medium text-foreground">
-                      {selectedTx.currency?.toUpperCase() || "BRL"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Status</p>
-                    <p className="text-sm font-medium text-foreground">
-                      {selectedTx.status}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Travada</p>
-                    <p className="text-sm font-medium text-foreground">
-                      {selectedTx.is_locked ? "Sim" : "Não"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground">Fake Refund</p>
-                    <p className="text-sm font-medium text-foreground">
-                      {selectedTx.is_fake_refund ? "Sim" : "Não"}
-                    </p>
-                  </div>
+              <SectionCard title="Metadados">
+                <div className="grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+                  <MetaItem
+                    label="Moeda"
+                    value={selectedTx.currency?.toUpperCase() || "BRL"}
+                  />
+                  <MetaItem label="Status" value={selectedTx.status} />
+                  <MetaItem
+                    label="Travada"
+                    value={selectedTx.is_locked ? "Sim" : "Não"}
+                  />
+                  <MetaItem
+                    label="Fake Refund"
+                    value={selectedTx.is_fake_refund ? "Sim" : "Não"}
+                  />
                 </div>
                 {selectedTx.metadata && (
                   <div className="mt-4">
-                    <p className="text-xs text-muted-foreground mb-1">Payload</p>
-                    <pre className="text-xs font-mono bg-muted/50 rounded-lg p-3 overflow-x-auto text-foreground">
+                    <p className="mb-1.5 text-sm text-muted-foreground">
+                      Payload
+                    </p>
+                    <pre className="overflow-x-auto rounded-xl border border-border/50 bg-muted/40 p-3 font-mono text-xs text-foreground">
                       {JSON.stringify(selectedTx.metadata, null, 2)}
                     </pre>
                   </div>
                 )}
-              </div>
-
-              <div className="h-px bg-border/40" />
+              </SectionCard>
 
               {selectedTx.status !== "refunded" && (
                 <div className="space-y-3">
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
                     Ações
                   </p>
                   <div className="flex flex-wrap gap-2">
                     <button
                       onClick={onShowRefundForm}
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-orange-500/10 text-orange-600 text-xs font-medium hover:bg-orange-500/20 transition-colors border border-orange-500/20"
+                      className="inline-flex h-10 items-center gap-2 rounded-xl border border-warning/30 bg-warning/10 px-4 text-sm font-semibold text-warning transition-colors hover:bg-warning hover:text-warning-foreground"
                     >
-                      <RotateCcw size={12} /> Reembolsar
+                      <RotateCcw size={14} /> Reembolsar
                     </button>
                     <button
                       onClick={onShowFakeRefundForm}
-                      className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-purple-500/10 text-purple-600 text-xs font-medium hover:bg-purple-500/20 transition-colors border border-purple-500/20"
+                      className="inline-flex h-10 items-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-4 text-sm font-semibold text-primary transition-colors hover:bg-primary hover:text-primary-foreground"
                     >
-                      <AlertTriangle size={12} /> Reembolso Fake
+                      <AlertTriangle size={14} /> Reembolso Fake
                     </button>
                     <button
                       onClick={() => {
@@ -368,19 +372,19 @@ export default function AdminTransactionDetailDialog({
                         }
                       }}
                       className={cn(
-                        "flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors border",
+                        "inline-flex h-10 items-center gap-2 rounded-xl border px-4 text-sm font-semibold transition-colors",
                         selectedTx.is_locked
-                          ? "bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"
-                          : "bg-destructive/10 text-destructive border-destructive/20 hover:bg-destructive/20",
+                          ? "border-transparent bg-white text-[#0F0617] hover:bg-white/90"
+                          : "border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground",
                       )}
                     >
                       {selectedTx.is_locked ? (
                         <>
-                          <Unlock size={12} /> Destravar
+                          <Unlock size={14} /> Destravar
                         </>
                       ) : (
                         <>
-                          <Lock size={12} /> Travar Venda
+                          <Lock size={14} /> Travar Venda
                         </>
                       )}
                     </button>
@@ -389,24 +393,24 @@ export default function AdminTransactionDetailDialog({
               )}
 
               {showRefundForm && (
-                <div className="rounded-lg border border-orange-500/20 bg-orange-500/5 p-4 space-y-3 animate-fade-in">
-                  <p className="text-sm font-semibold text-orange-600">
+                <div className="animate-fade-in space-y-3 rounded-2xl border border-warning/25 bg-warning/10 p-4">
+                  <p className="text-base font-semibold text-warning">
                     Reembolsar Venda
                   </p>
-                  <p className="text-xs md:text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground">
                     O saldo será devolvido ao cliente e descontado do seller.
                   </p>
                   <textarea
                     value={refundReason}
                     onChange={(e) => onRefundReasonChange(e.target.value)}
                     placeholder="Motivo do reembolso..."
-                    className="w-full px-3 py-2 rounded-lg bg-background border border-border/50 text-sm resize-none h-20 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                    className="h-20 w-full resize-none rounded-xl border border-border/60 bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-warning/40 focus:outline-none focus:ring-2 focus:ring-warning/20"
                   />
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <button
                       onClick={() => onRefund(false)}
                       disabled={actionLoading || !refundReason.trim()}
-                      className="px-4 py-2 rounded-lg bg-orange-500 text-white text-xs font-medium hover:bg-orange-600 transition-colors disabled:opacity-50"
+                      className="h-10 rounded-xl bg-warning px-4 text-sm font-semibold text-warning-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
                     >
                       {actionLoading
                         ? "Processando..."
@@ -414,7 +418,7 @@ export default function AdminTransactionDetailDialog({
                     </button>
                     <button
                       onClick={onHideRefundForm}
-                      className="px-4 py-2 rounded-lg bg-muted text-foreground text-xs font-medium hover:bg-muted/80 transition-colors"
+                      className="h-10 rounded-xl bg-muted px-4 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
                     >
                       Cancelar
                     </button>
@@ -423,11 +427,11 @@ export default function AdminTransactionDetailDialog({
               )}
 
               {showFakeRefundForm && (
-                <div className="rounded-lg border border-purple-500/20 bg-purple-500/5 p-4 space-y-3 animate-fade-in">
-                  <p className="text-sm font-semibold text-purple-600">
+                <div className="animate-fade-in space-y-3 rounded-2xl border border-primary/25 bg-primary/10 p-4">
+                  <p className="text-base font-semibold text-primary">
                     Reembolso Fake
                   </p>
-                  <p className="text-xs md:text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground">
                     A venda será marcada como reembolsada para o seller, mas o
                     saldo <b>NÃO</b> será devolvido.
                   </p>
@@ -435,13 +439,13 @@ export default function AdminTransactionDetailDialog({
                     value={refundReason}
                     onChange={(e) => onRefundReasonChange(e.target.value)}
                     placeholder="Motivo do reembolso fake..."
-                    className="w-full px-3 py-2 rounded-lg bg-background border border-border/50 text-sm resize-none h-20 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+                    className="h-20 w-full resize-none rounded-xl border border-border/60 bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <button
                       onClick={() => onRefund(true)}
                       disabled={actionLoading || !refundReason.trim()}
-                      className="px-4 py-2 rounded-lg bg-purple-500 text-white text-xs font-medium hover:bg-purple-600 transition-colors disabled:opacity-50"
+                      className="h-10 rounded-xl bg-white px-4 text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90 disabled:opacity-50"
                     >
                       {actionLoading
                         ? "Processando..."
@@ -449,7 +453,7 @@ export default function AdminTransactionDetailDialog({
                     </button>
                     <button
                       onClick={onHideFakeRefundForm}
-                      className="px-4 py-2 rounded-lg bg-muted text-foreground text-xs font-medium hover:bg-muted/80 transition-colors"
+                      className="h-10 rounded-xl bg-muted px-4 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
                     >
                       Cancelar
                     </button>
@@ -458,31 +462,31 @@ export default function AdminTransactionDetailDialog({
               )}
 
               {showLockForm && (
-                <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 space-y-3 animate-fade-in">
-                  <p className="text-sm font-semibold text-destructive">
+                <div className="animate-fade-in space-y-3 rounded-2xl border border-destructive/25 bg-destructive/10 p-4">
+                  <p className="text-base font-semibold text-destructive">
                     Travar Venda
                   </p>
-                  <p className="text-xs md:text-sm text-muted-foreground">
-                    A venda será bloqueada e o seller não poderá sacar este valor
-                    até ser destravada.
+                  <p className="text-sm text-muted-foreground">
+                    A venda será bloqueada e o seller não poderá sacar este
+                    valor até ser destravada.
                   </p>
                   <textarea
                     value={lockReason}
                     onChange={(e) => onLockReasonChange(e.target.value)}
                     placeholder="Motivo do bloqueio..."
-                    className="w-full px-3 py-2 rounded-lg bg-background border border-border/50 text-sm resize-none h-20 focus:outline-none focus:ring-2 focus:ring-destructive/20"
+                    className="h-20 w-full resize-none rounded-xl border border-border/60 bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-destructive/40 focus:outline-none focus:ring-2 focus:ring-destructive/20"
                   />
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     <button
                       onClick={onLockToggle}
                       disabled={actionLoading || !lockReason.trim()}
-                      className="px-4 py-2 rounded-lg bg-destructive text-white text-xs font-medium hover:bg-destructive/90 transition-colors disabled:opacity-50"
+                      className="h-10 rounded-xl bg-destructive px-4 text-sm font-semibold text-destructive-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
                     >
                       {actionLoading ? "Processando..." : "Confirmar Bloqueio"}
                     </button>
                     <button
                       onClick={onHideLockForm}
-                      className="px-4 py-2 rounded-lg bg-muted text-foreground text-xs font-medium hover:bg-muted/80 transition-colors"
+                      className="h-10 rounded-xl bg-muted px-4 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
                     >
                       Cancelar
                     </button>
