@@ -95,10 +95,28 @@ interface AdminSidebarProps {
   onClose?: () => void;
 }
 
+const ADMIN_SIDEBAR_COLLAPSED_KEY = "admin-sidebar-collapsed";
+
+function readCollapsedPreference(): boolean {
+  try {
+    return localStorage.getItem(ADMIN_SIDEBAR_COLLAPSED_KEY) === "true";
+  } catch {
+    return false;
+  }
+}
+
+function writeCollapsedPreference(collapsed: boolean) {
+  try {
+    localStorage.setItem(ADMIN_SIDEBAR_COLLAPSED_KEY, String(collapsed));
+  } catch {
+    // ignore quota / private mode errors
+  }
+}
+
 export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
   const user = useUserContext();
   const { signOut } = useAuthContext();
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(readCollapsedPreference);
   const navigate = useNavigate();
   const location = useLocation();
   const { theme, toggleTheme } = useThemeContext();
@@ -124,6 +142,14 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
   );
   const [settingsOpen, setSettingsOpen] = useState(isOnSettings);
   const [financialOpen, setFinancialOpen] = useState(isOnFinancial);
+
+  const toggleCollapsed = () => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      writeCollapsedPreference(next);
+      return next;
+    });
+  };
 
   useEffect(() => {
     if (mobileOpen && onClose) onClose();
@@ -391,7 +417,7 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
           {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
         </button>
         <button
-          onClick={() => setCollapsed(!collapsed)}
+          onClick={toggleCollapsed}
           className="flex w-full items-center justify-center rounded-xl p-3 text-muted-foreground transition-all duration-200 hover:bg-muted/40 hover:text-foreground"
         >
           {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
