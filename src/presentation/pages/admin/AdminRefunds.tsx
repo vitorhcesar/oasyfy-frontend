@@ -2,9 +2,44 @@ import useAdminRefundsQuery from "@/presentation/hooks/use-admin-refunds-query";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import { AdminLayout } from "@/presentation/layouts/AdminLayout";
 import { cn } from "@/presentation/utils/cn";
-import { Check, Clock, RotateCcw, X } from "lucide-react";
-import { useState } from "react";
+import { Check, Clock, Loader2, RotateCcw, X } from "lucide-react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
+
+type TRefundStatus = "pending" | "approved" | "rejected";
+
+const STATUS_CONFIG: Record<
+  TRefundStatus,
+  { label: string; cls: string; icon: typeof Clock; color: string; bg: string }
+> = {
+  pending: {
+    label: "Pendente",
+    cls: "border-warning/25 bg-warning/10 text-warning",
+    icon: Clock,
+    color: "text-warning",
+    bg: "bg-warning/10",
+  },
+  approved: {
+    label: "Aprovado",
+    cls: "border-success/25 bg-success/10 text-success",
+    icon: Check,
+    color: "text-success",
+    bg: "bg-success/10",
+  },
+  rejected: {
+    label: "Rejeitado",
+    cls: "border-destructive/25 bg-destructive/10 text-destructive",
+    icon: X,
+    color: "text-destructive",
+    bg: "bg-destructive/10",
+  },
+};
+
+function activeSurface(status: string) {
+  if (status === "pending") return "border-warning/45 !bg-warning/20";
+  if (status === "approved") return "border-success/45 !bg-success/20";
+  return "border-destructive/45 !bg-destructive/20";
+}
 
 export default function AdminRefunds() {
   const apiService = useApiService();
@@ -43,9 +78,13 @@ export default function AdminRefunds() {
     setAdminNote("");
   };
 
-  const filtered = filterStatus
-    ? refunds.filter((r) => r.status === filterStatus)
-    : refunds;
+  const filtered = useMemo(
+    () =>
+      filterStatus
+        ? refunds.filter((r) => r.status === filterStatus)
+        : refunds,
+    [refunds, filterStatus],
+  );
 
   const formatCurrency = (amount: number) =>
     new Intl.NumberFormat("pt-BR", {
@@ -57,149 +96,122 @@ export default function AdminRefunds() {
   const approvedCount = refunds.filter((r) => r.status === "approved").length;
   const rejectedCount = refunds.filter((r) => r.status === "rejected").length;
 
-  const statusConfig: Record<
-    string,
-    { label: string; cls: string; icon: typeof Clock }
-  > = {
-    pending: {
-      label: "Pendente",
-      cls: "text-yellow-600 bg-yellow-500/10 border-yellow-200",
-      icon: Clock,
+  const stats = [
+    {
+      label: "Pendentes",
+      count: pendingCount,
+      filterVal: "pending" as const,
+      ...STATUS_CONFIG.pending,
     },
-    approved: {
-      label: "Aprovado",
-      cls: "text-primary bg-primary/10 border-primary/20",
-      icon: Check,
+    {
+      label: "Aprovados",
+      count: approvedCount,
+      filterVal: "approved" as const,
+      ...STATUS_CONFIG.approved,
     },
-    rejected: {
-      label: "Rejeitado",
-      cls: "text-destructive bg-destructive/10 border-destructive/20",
-      icon: X,
+    {
+      label: "Rejeitados",
+      count: rejectedCount,
+      filterVal: "rejected" as const,
+      ...STATUS_CONFIG.rejected,
     },
-  };
+  ];
 
   return (
     <AdminLayout>
-      <div className="px-4 md:px-8 py-6 md:py-8 max-w-6xl mx-auto w-full">
-        {/* Header */}
-        <div className="mb-6 animate-fade-in">
-          <h1 className="text-2xl font-bold text-foreground tracking-tight">
+      <div className="mx-auto w-full max-w-6xl px-5 py-6 md:px-8 md:py-9">
+        <header className="mb-7 animate-fade-in">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+            Financeiro
+          </p>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-[2.15rem]">
             Reembolsos
           </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Gerencie as solicitações de reembolso dos produtores
+          <p className="mt-1.5 text-sm text-muted-foreground">
+            Gerencie as solicitações de reembolso dos produtores.
           </p>
-        </div>
+        </header>
 
-        {/* Stats */}
-        <div
-          className="grid grid-cols-3 gap-3 mb-6 animate-fade-in"
-          style={{ animationDelay: "50ms" }}
-        >
-          {[
-            {
-              label: "Pendentes",
-              count: pendingCount,
-              color: "text-yellow-600",
-              bg: "bg-yellow-500/10",
-              icon: Clock,
-              filterVal: "pending",
-            },
-            {
-              label: "Aprovados",
-              count: approvedCount,
-              color: "text-primary",
-              bg: "bg-primary/10",
-              icon: Check,
-              filterVal: "approved",
-            },
-            {
-              label: "Rejeitados",
-              count: rejectedCount,
-              color: "text-destructive",
-              bg: "bg-destructive/10",
-              icon: X,
-              filterVal: "rejected",
-            },
-          ].map((s) => (
-            <button
-              key={s.label}
-              onClick={() =>
-                setFilterStatus((prev) =>
-                  prev === s.filterVal ? "" : s.filterVal,
-                )
-              }
-              className={cn(
-                "p-4 rounded-xl bg-card border text-left transition-all hover:shadow-sm",
-                filterStatus === s.filterVal
-                  ? "border-border ring-1 ring-primary/20"
-                  : "border-border/40",
-              )}
-            >
-              <div className="flex items-center gap-2 mb-1">
+        <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+          {stats.map((s) => {
+            const isActive = filterStatus === s.filterVal;
+            return (
+              <button
+                key={s.label}
+                type="button"
+                aria-pressed={isActive}
+                onClick={() =>
+                  setFilterStatus((prev) =>
+                    prev === s.filterVal ? "" : s.filterVal,
+                  )
+                }
+                className={cn(
+                  "admin-surface admin-surface-interactive p-3.5 text-left",
+                  isActive && activeSurface(s.filterVal),
+                )}
+              >
                 <div
                   className={cn(
-                    "w-7 h-7 rounded-lg flex items-center justify-center",
-                    s.bg,
+                    "mb-3 flex h-9 w-9 items-center justify-center rounded-xl",
+                    isActive ? "bg-black/20" : s.bg,
+                    s.color,
                   )}
                 >
-                  <s.icon size={14} className={s.color} />
+                  <s.icon size={16} />
                 </div>
-                <span className="text-xs md:text-sm font-medium text-muted-foreground">
+                <p className="text-xl font-bold leading-none tracking-tight text-foreground tabular-nums">
+                  {s.count}
+                </p>
+                <p
+                  className={cn(
+                    "mt-1.5 text-xs leading-tight",
+                    isActive
+                      ? cn("font-semibold", s.color)
+                      : "text-muted-foreground",
+                  )}
+                >
                   {s.label}
-                </span>
-              </div>
-              <p className="text-2xl font-bold text-foreground">{s.count}</p>
-            </button>
-          ))}
+                </p>
+              </button>
+            );
+          })}
         </div>
 
-        {/* List */}
         {isLoading ? (
-          <div className="flex justify-center py-24">
-            <div className="relative w-10 h-10">
-              <div className="absolute inset-0 rounded-full border-2 border-muted" />
-              <div className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary animate-spin" />
-            </div>
+          <div className="flex items-center justify-center py-24">
+            <Loader2 size={24} className="animate-spin text-muted-foreground" />
           </div>
         ) : filtered.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-border/50 bg-muted/10 p-16 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-muted/50 flex items-center justify-center mx-auto mb-5">
-              <RotateCcw className="text-muted-foreground/40" size={24} />
-            </div>
-            <p className="text-foreground font-semibold mb-1">
+          <div className="admin-surface px-6 py-16 text-center">
+            <RotateCcw className="mx-auto mb-3 text-muted-foreground" size={24} />
+            <p className="mb-1 text-base font-semibold text-foreground">
               Nenhum reembolso
             </p>
             <p className="text-sm text-muted-foreground">
-              As solicitações de reembolso aparecerão aqui.
+              {filterStatus
+                ? "Nenhuma solicitação encontrada para este filtro."
+                : "As solicitações de reembolso aparecerão aqui."}
             </p>
           </div>
         ) : (
-          <div
-            className="space-y-3 animate-fade-in"
-            style={{ animationDelay: "100ms" }}
-          >
-            {filtered.map((refund, i) => {
-              const sc = statusConfig[refund.status];
+          <div className="space-y-3">
+            {filtered.map((refund) => {
+              const sc = STATUS_CONFIG[refund.status];
               return (
-                <div
-                  key={refund.id}
-                  className="rounded-xl bg-card border border-border/40 p-5 hover:border-border/70 transition-all animate-fade-in"
-                  style={{ animationDelay: `${i * 30}ms` }}
-                >
+                <div key={refund.id} className="admin-surface p-5">
                   <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-2">
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-3 flex flex-wrap items-center gap-2">
                         <span
                           className={cn(
-                            "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs md:text-sm font-medium border",
+                            "inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold",
                             sc.cls,
                           )}
                         >
-                          <sc.icon size={10} />
+                          <sc.icon size={12} />
                           {sc.label}
                         </span>
-                        <span className="text-xs text-muted-foreground/50">
+                        <span className="text-sm text-muted-foreground">
                           {new Date(refund.created_at).toLocaleDateString(
                             "pt-BR",
                           )}{" "}
@@ -211,44 +223,44 @@ export default function AdminRefunds() {
                         </span>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+                      <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
                         <div>
-                          <p className="text-xs text-muted-foreground/50 mb-0.5">
+                          <p className="mb-0.5 text-sm text-muted-foreground">
                             Cliente
                           </p>
-                          <p className="text-sm font-medium text-foreground">
+                          <p className="text-sm font-semibold text-foreground">
                             {refund.transaction?.customer_name || "—"}
                           </p>
                           {refund.transaction?.customer_email && (
-                            <p className="text-xs text-muted-foreground/60">
+                            <p className="text-sm text-muted-foreground">
                               {refund.transaction.customer_email}
                             </p>
                           )}
                         </div>
                         <div>
-                          <p className="text-xs text-muted-foreground/50 mb-0.5">
+                          <p className="mb-0.5 text-sm text-muted-foreground">
                             Produtor
                           </p>
-                          <p className="text-sm font-medium text-foreground">
+                          <p className="text-sm font-semibold text-foreground">
                             {refund.seller_profile?.full_name ||
                               refund.seller_profile?.account_id ||
                               "—"}
                           </p>
                           {refund.seller_profile?.email && (
-                            <p className="text-xs text-muted-foreground/60">
+                            <p className="text-sm text-muted-foreground">
                               {refund.seller_profile.email}
                             </p>
                           )}
                         </div>
                         <div>
-                          <p className="text-xs text-muted-foreground/50 mb-0.5">
+                          <p className="mb-0.5 text-sm text-muted-foreground">
                             Valor do reembolso
                           </p>
-                          <p className="text-sm font-bold text-foreground">
+                          <p className="text-base font-bold tabular-nums text-foreground">
                             {formatCurrency(refund.amount)}
                           </p>
                           {refund.transaction && (
-                            <p className="text-xs text-muted-foreground/60">
+                            <p className="text-sm text-muted-foreground">
                               de {formatCurrency(refund.transaction.amount)} (
                               {refund.transaction.method.toUpperCase()})
                             </p>
@@ -256,21 +268,21 @@ export default function AdminRefunds() {
                         </div>
                       </div>
 
-                      <div className="bg-muted/20 rounded-lg p-3">
-                        <p className="text-xs text-muted-foreground/50 mb-1">
+                      <div className="rounded-xl border border-border/50 bg-muted/30 p-3.5">
+                        <p className="mb-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
                           Motivo
                         </p>
-                        <p className="text-sm text-foreground leading-relaxed">
+                        <p className="text-sm leading-relaxed text-foreground">
                           {refund.reason}
                         </p>
                       </div>
 
                       {refund.admin_note && (
-                        <div className="mt-2 bg-primary/5 rounded-lg p-3 border border-primary/10">
-                          <p className="text-xs text-primary/60 mb-1">
+                        <div className="mt-2 rounded-xl border border-primary/25 bg-primary/10 p-3.5">
+                          <p className="mb-1 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
                             Nota do admin
                           </p>
-                          <p className="text-sm text-foreground leading-relaxed">
+                          <p className="text-sm leading-relaxed text-foreground">
                             {refund.admin_note}
                           </p>
                         </div>
@@ -278,27 +290,33 @@ export default function AdminRefunds() {
                     </div>
 
                     {refund.status === "pending" && (
-                      <div className="flex items-center gap-2 shrink-0">
+                      <div className="flex shrink-0 flex-col gap-2 sm:flex-row">
                         <button
                           onClick={() => {
-                            setNoteModal({ id: refund.id, action: "approved" });
+                            setNoteModal({
+                              id: refund.id,
+                              action: "approved",
+                            });
                             setAdminNote("");
                           }}
                           disabled={actionLoading === refund.id}
-                          className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-primary text-primary-foreground text-xs md:text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50"
+                          className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-white px-4 text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90 disabled:opacity-50"
                         >
-                          <Check size={12} />
+                          <Check size={14} />
                           Aprovar
                         </button>
                         <button
                           onClick={() => {
-                            setNoteModal({ id: refund.id, action: "rejected" });
+                            setNoteModal({
+                              id: refund.id,
+                              action: "rejected",
+                            });
                             setAdminNote("");
                           }}
                           disabled={actionLoading === refund.id}
-                          className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-destructive/10 text-destructive border border-destructive/20 text-xs md:text-sm font-medium hover:bg-destructive/20 transition-colors disabled:opacity-50"
+                          className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-destructive/30 bg-destructive/10 px-4 text-sm font-semibold text-destructive transition-colors hover:bg-destructive hover:text-destructive-foreground disabled:opacity-50"
                         >
-                          <X size={12} />
+                          <X size={14} />
                           Rejeitar
                         </button>
                       </div>
@@ -310,29 +328,28 @@ export default function AdminRefunds() {
           </div>
         )}
 
-        {/* Note Modal */}
         {noteModal && (
           <div
-            className="fixed inset-0 bg-background/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
             onClick={() => setNoteModal(null)}
           >
             <div
-              className="bg-card rounded-2xl border border-border/50 shadow-2xl w-full max-w-md p-6 animate-fade-in"
+              className="liquid-glass-control w-full max-w-md animate-fade-in rounded-[22px] p-6 shadow-xl"
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className="text-lg font-bold text-foreground mb-1">
+              <h3 className="mb-1 text-lg font-bold tracking-tight text-foreground">
                 {noteModal.action === "approved"
                   ? "Aprovar reembolso"
                   : "Rejeitar reembolso"}
               </h3>
-              <p className="text-sm text-muted-foreground mb-4">
+              <p className="mb-4 text-sm text-muted-foreground">
                 {noteModal.action === "approved"
                   ? "O valor será devolvido ao cliente e a transação marcada como reembolsada."
                   : "A solicitação será rejeitada e o produtor será notificado."}
               </p>
 
               <div className="mb-4">
-                <label className="text-xs md:text-sm font-medium text-muted-foreground mb-1.5 block">
+                <label className="mb-1.5 block text-sm font-medium text-muted-foreground">
                   Nota (opcional)
                 </label>
                 <textarea
@@ -340,14 +357,14 @@ export default function AdminRefunds() {
                   onChange={(e) => setAdminNote(e.target.value)}
                   placeholder="Adicione uma observação..."
                   rows={3}
-                  className="w-full px-3.5 py-2.5 rounded-lg bg-background border border-border/50 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all resize-none"
+                  className="w-full resize-none rounded-xl border border-border/60 bg-card px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
                 />
               </div>
 
               <div className="flex justify-end gap-2">
                 <button
                   onClick={() => setNoteModal(null)}
-                  className="px-4 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground transition-colors"
+                  className="h-10 rounded-xl bg-muted px-4 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
                 >
                   Cancelar
                 </button>
@@ -355,14 +372,14 @@ export default function AdminRefunds() {
                   onClick={handleAction}
                   disabled={!!actionLoading}
                   className={cn(
-                    "flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-opacity disabled:opacity-50",
+                    "inline-flex h-10 items-center gap-1.5 rounded-xl px-4 text-sm font-semibold transition-opacity disabled:opacity-50",
                     noteModal.action === "approved"
-                      ? "bg-primary text-primary-foreground hover:opacity-90"
+                      ? "bg-white text-[#0F0617] hover:opacity-90"
                       : "bg-destructive text-destructive-foreground hover:opacity-90",
                   )}
                 >
                   {actionLoading ? (
-                    <div className="w-3.5 h-3.5 border-2 border-current/30 border-t-current rounded-full animate-spin" />
+                    <Loader2 size={14} className="animate-spin" />
                   ) : noteModal.action === "approved" ? (
                     <Check size={14} />
                   ) : (
