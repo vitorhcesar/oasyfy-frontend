@@ -19,6 +19,7 @@ import ResetPasswordPage from "./presentation/pages/ResetPasswordPage";
 import SellerDashboardPage from "./presentation/pages/SellerDashboardPage";
 import Admin2FA from "./presentation/pages/admin/Admin2FA";
 import AdminAcquirer from "./presentation/pages/admin/AdminAcquirer";
+import AdminAcquirerConnectionConfigPage from "./presentation/pages/admin/AdminAcquirerConnectionConfigPage";
 import AdminCrm from "./presentation/pages/admin/AdminCrm";
 import AdminEmail from "./presentation/pages/admin/AdminEmail";
 import AdminFeeTemplates from "./presentation/pages/admin/AdminFeeTemplates";
@@ -258,6 +259,14 @@ export default function App() {
                   element={
                     <ProtectedRoute requiredRole="admin">
                       <AdminGlobalFees />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/acquirer/:provider"
+                  element={
+                    <ProtectedRoute requiredRole="admin">
+                      <AdminAcquirerConnectionConfigPage />
                     </ProtectedRoute>
                   }
                 />

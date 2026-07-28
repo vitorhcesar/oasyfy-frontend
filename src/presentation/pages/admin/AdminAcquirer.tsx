@@ -1,7 +1,9 @@
 import { AcquirerGuideTab } from "@/presentation/components/admin/AcquirerGuideTab";
 import { AcquirerBrandLogo, getAcquirerLogoSrc } from "@/presentation/components/admin/AcquirerBrandLogo";
-import { AcquirerConfigDialog } from "@/presentation/components/admin/AcquirerConfigDialog";
-import type { IAcquirerCredentialsForm } from "@/presentation/utils/acquirer-connection-config.util";
+import {
+  getAcquirerConfigPath,
+  inferPixAcquirerProvider,
+} from "@/presentation/utils/pix-acquirer-provider";
 import useAdminAcquirerConnectionsQuery, {
   type TAcquirerConnectionView,
 } from "@/presentation/hooks/use-admin-acquirer-connections-query";
@@ -42,6 +44,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 const tabs = [
@@ -89,11 +92,14 @@ export default function AdminAcquirer() {
     isLoading: loadingCosts,
     invalidateQuery: invalidateCosts,
   } = useAdminAcquirerCostsQuery();
-  const [activeTab, setActiveTab] = useState<TTabKey>("conexoes");
-  const [configModal, setConfigModal] = useState<IAcquirerConnection | null>(
-    null,
-  );
-  const [saving, setSaving] = useState(false);
+  const [searchParams] = useSearchParams();
+  const tabFromUrl = searchParams.get("tab");
+  const [activeTab, setActiveTab] = useState<TTabKey>(() => {
+    if (tabFromUrl && tabs.some((tab) => tab.key === tabFromUrl)) {
+      return tabFromUrl as TTabKey;
+    }
+    return "conexoes";
+  });
   const [bootstrapping, setBootstrapping] = useState(false);
 
   const [costs, setCosts] = useState<IAcquirerCost[]>([]);
@@ -101,6 +107,12 @@ export default function AdminAcquirer() {
   const [expandedCostAcquirer, setExpandedCostAcquirer] = useState<
     string | null
   >(null);
+
+  useEffect(() => {
+    if (tabFromUrl && tabs.some((tab) => tab.key === tabFromUrl)) {
+      setActiveTab(tabFromUrl as TTabKey);
+    }
+  }, [tabFromUrl]);
 
   useEffect(() => {
     if (connectionsError) {
@@ -115,43 +127,6 @@ export default function AdminAcquirer() {
   const activeConnections = connections.filter(
     (c) => c.is_active && c.status === "connected",
   );
-
-  const openConfig = (conn: IAcquirerConnection) => {
-    setConfigModal(conn);
-  };
-
-  const saveConfig = async (
-    connectionId: number,
-    payload: IAcquirerCredentialsForm & {
-      status: string;
-      isActive: boolean;
-    },
-  ) => {
-    setSaving(true);
-
-    try {
-      await apiService.modules.adminConfig.updateAcquirerConnection(
-        connectionId,
-        {
-          apiUrl: payload.apiUrl,
-          clientId: payload.clientId,
-          accessToken: payload.accessToken,
-          hmacKey: payload.hmacKey,
-          branchId: payload.branchId,
-          accountNumber: payload.accountNumber,
-          status: payload.status,
-          isActive: payload.isActive,
-        },
-      );
-      toast.success("Credenciais salvas com sucesso!");
-      setConfigModal(null);
-      await invalidateConnections();
-    } catch (error) {
-      toast.error("Erro ao salvar credenciais");
-      console.error(error);
-    }
-    setSaving(false);
-  };
 
   const ensureDefaultConnections = async () => {
     setBootstrapping(true);
@@ -230,86 +205,83 @@ export default function AdminAcquirer() {
           </button>
         </div>
       ) : (
-        <div className="grid gap-3">
+        <div className="grid gap-4 sm:grid-cols-2">
           {connections.map((conn) => (
             <div
               key={conn.id}
-              className="admin-surface flex items-center gap-4 p-4"
+              className="admin-surface flex flex-col gap-4 p-5"
             >
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-border/50 bg-background">
-                <AcquirerBrandLogo connection={conn} />
-              </div>
-
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-sm font-semibold text-foreground">
-                    {conn.name}
-                  </span>
-                  <span
-                    className={cn(
-                      "inline-flex items-center rounded-lg border px-2.5 py-1 text-xs font-semibold",
-                      conn.status === "connected" &&
-                        "border-success/25 bg-success/10 text-success",
-                      conn.status === "error" &&
-                        "border-destructive/25 bg-destructive/10 text-destructive",
-                      conn.status !== "connected" &&
-                        conn.status !== "error" &&
-                        "border-border bg-muted text-muted-foreground",
-                    )}
-                  >
-                    {conn.status === "connected"
-                      ? "Conectada"
-                      : conn.status === "error"
-                        ? "Erro"
-                        : "Desconectada"}
-                  </span>
+              <div className="flex items-start gap-4">
+                <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border/50 bg-background shadow-sm">
+                  <AcquirerBrandLogo
+                    connection={conn}
+                    imageClassName="h-14 w-14 object-contain"
+                  />
                 </div>
-                <p className="mt-0.5 truncate text-sm text-muted-foreground">
-                  {conn.description}
-                </p>
-                <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                  {conn.methods.map((m) => (
-                    <span
-                      key={m}
-                      className="rounded-lg border border-border bg-muted/60 px-2 py-0.5 text-xs font-semibold uppercase text-foreground"
-                    >
-                      {m}
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-base font-semibold text-foreground">
+                      {conn.name}
                     </span>
-                  ))}
+                    <span
+                      className={cn(
+                        "inline-flex items-center rounded-lg border px-2.5 py-1 text-xs font-semibold",
+                        conn.status === "connected" &&
+                          "border-success/25 bg-success/10 text-success",
+                        conn.status === "error" &&
+                          "border-destructive/25 bg-destructive/10 text-destructive",
+                        conn.status !== "connected" &&
+                          conn.status !== "error" &&
+                          "border-border bg-muted text-muted-foreground",
+                      )}
+                    >
+                      {conn.status === "connected"
+                        ? "Conectada"
+                        : conn.status === "error"
+                          ? "Erro"
+                          : "Desconectada"}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                    {conn.description}
+                  </p>
                 </div>
               </div>
 
-              <div className="flex shrink-0 items-center gap-2">
-                <Switch
-                  checked={conn.is_active}
-                  onCheckedChange={() => toggleActive(conn)}
-                  className="scale-90"
-                />
-                <button
-                  type="button"
-                  onClick={() => openConfig(conn)}
-                  className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-border/60 px-3 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+              <div className="flex flex-wrap items-center gap-1.5">
+                {conn.methods.map((m) => (
+                  <span
+                    key={m}
+                    className="rounded-lg border border-border bg-muted/60 px-2 py-0.5 text-xs font-semibold uppercase text-foreground"
+                  >
+                    {m}
+                  </span>
+                ))}
+              </div>
+
+              <div className="flex items-center justify-between gap-3 border-t border-border/40 pt-4">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={conn.is_active}
+                    onCheckedChange={() => toggleActive(conn)}
+                  />
+                  <span className="text-sm font-medium text-muted-foreground">
+                    {conn.is_active ? "Ativa" : "Inativa"}
+                  </span>
+                </div>
+                <Link
+                  to={getAcquirerConfigPath(inferPixAcquirerProvider(conn))}
+                  className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-white px-4 text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90"
                 >
-                  <Settings2 size={14} />
+                  <Settings2 size={15} />
                   Configurar
-                </button>
+                </Link>
               </div>
             </div>
           ))}
         </div>
       )}
-
-      <AcquirerConfigDialog
-        connection={configModal}
-        open={!!configModal}
-        saving={saving}
-        onOpenChange={(open) => {
-          if (!open) {
-            setConfigModal(null);
-          }
-        }}
-        onSave={saveConfig}
-      />
     </div>
   );
 

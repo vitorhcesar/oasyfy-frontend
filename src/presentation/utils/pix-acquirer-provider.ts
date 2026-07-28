@@ -48,3 +48,13 @@ export function inferPixAcquirerProvider(
 export function getPixAcquirerProviderLabel(provider: TPixAcquirerProvider) {
   return provider === "woovi" ? "Woovi" : "Cartwave";
 }
+
+export function isPixAcquirerProviderSlug(
+  slug: string | undefined,
+): slug is TPixAcquirerProvider {
+  return slug === "woovi" || slug === "cartwave";
+}
+
+export function getAcquirerConfigPath(provider: TPixAcquirerProvider) {
+  return `/admin/acquirer/${provider}`;
+}
