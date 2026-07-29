@@ -51,27 +51,29 @@ export default function RevenueChart({
 
   const chartTotal = useMemo(
     () => chartData.reduce((s, d) => s + d.amount, 0),
-    [chartData]
+    [chartData],
   );
   const chartTxCount = useMemo(
     () => chartData.reduce((s, d) => s + d.count, 0),
-    [chartData]
+    [chartData],
   );
 
   return (
-    <div className="rounded-xl bg-card border border-border/40 p-4 md:p-5 mb-5">
-      <div className="flex items-start justify-between mb-4">
+    <div className="admin-surface mb-6 p-5 md:p-6">
+      <div className="mb-5 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h3 className="text-xs font-semibold text-foreground">Faturamento</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <h3 className="text-base font-semibold text-foreground">
+            Faturamento
+          </h3>
+          <p className="mt-0.5 text-xs text-muted-foreground">
             Histórico de transações aprovadas
           </p>
         </div>
-        <div className="text-right">
+        <div className="text-left sm:text-right">
           <p
             className={cn(
-              "text-sm md:text-base font-bold text-foreground transition-all",
-              hideBalance && "blur-md select-none"
+              "text-xl font-bold tracking-tight text-foreground tabular-nums transition-all md:text-2xl",
+              hideBalance && "blur-md select-none",
             )}
           >
             R${" "}
@@ -81,8 +83,8 @@ export default function RevenueChart({
           </p>
           <p
             className={cn(
-              "text-xs text-muted-foreground transition-all",
-              hideBalance && "blur-md select-none"
+              "mt-0.5 text-xs text-muted-foreground transition-all",
+              hideBalance && "blur-md select-none",
             )}
           >
             {chartTxCount} transaç{chartTxCount === 1 ? "ão" : "ões"}
@@ -92,26 +94,26 @@ export default function RevenueChart({
 
       <div
         className={cn(
-          "h-56 transition-all",
-          hideBalance && "blur-md select-none"
+          "h-60 transition-all",
+          hideBalance && "blur-md select-none",
         )}
       >
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={chartData}
-            margin={{ top: 8, right: 4, left: -15, bottom: 0 }}
+            margin={{ top: 8, right: 8, left: -8, bottom: 0 }}
           >
             <defs>
-              <linearGradient id="fillGreen" x1="0" y1="0" x2="0" y2="1">
+              <linearGradient id="sellerFill" x1="0" y1="0" x2="0" y2="1">
                 <stop
                   offset="0%"
                   stopColor="hsl(var(--primary))"
-                  stopOpacity={0.2}
+                  stopOpacity={0.35}
                 />
                 <stop
-                  offset="60%"
+                  offset="55%"
                   stopColor="hsl(var(--primary))"
-                  stopOpacity={0.05}
+                  stopOpacity={0.08}
                 />
                 <stop
                   offset="100%"
@@ -123,22 +125,21 @@ export default function RevenueChart({
             <CartesianGrid
               strokeDasharray="4 4"
               stroke="hsl(var(--border))"
-              opacity={0.25}
+              opacity={0.2}
               vertical={false}
             />
             <XAxis
               dataKey="date"
               tick={{
-                fontSize: 10,
+                fontSize: 12,
                 fill: "hsl(var(--muted-foreground))",
               }}
               axisLine={false}
               tickLine={false}
-              dy={8}
             />
             <YAxis
               tick={{
-                fontSize: 10,
+                fontSize: 12,
                 fill: "hsl(var(--muted-foreground))",
               }}
               axisLine={false}
@@ -146,21 +147,17 @@ export default function RevenueChart({
               tickFormatter={(v) =>
                 v >= 1000 ? `R$${(v / 1000).toFixed(0)}k` : `R$${v}`
               }
-              width={50}
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: "hsl(var(--card))",
-                border: "1px solid hsl(var(--border))",
-                borderRadius: "10px",
-                fontSize: "11px",
-                boxShadow: "0 8px 24px rgba(0,0,0,0.12)",
-                padding: "8px 12px",
-              }}
-              labelStyle={{
-                fontSize: "10px",
-                color: "hsl(var(--muted-foreground))",
-                marginBottom: "4px",
+                backgroundColor: "rgba(15, 6, 23, 0.85)",
+                backdropFilter: "blur(16px)",
+                border: "1px solid rgba(255,255,255,0.14)",
+                borderRadius: "14px",
+                fontSize: "13px",
+                boxShadow: "0 12px 40px rgba(0,0,0,0.35)",
+                padding: "10px 14px",
+                color: "#fff",
               }}
               formatter={(value: number, name: string) => {
                 if (name === "amount")
@@ -182,14 +179,14 @@ export default function RevenueChart({
               type="monotone"
               dataKey="amount"
               stroke="hsl(var(--primary))"
-              strokeWidth={2}
-              fill="url(#fillGreen)"
+              strokeWidth={2.5}
+              fill="url(#sellerFill)"
               dot={false}
               activeDot={{
                 r: 5,
                 fill: "hsl(var(--primary))",
                 stroke: "hsl(var(--background))",
-                strokeWidth: 2.5,
+                strokeWidth: 2,
               }}
             />
           </AreaChart>

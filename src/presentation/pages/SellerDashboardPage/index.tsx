@@ -190,8 +190,8 @@ export default function SellerDashboardPage() {
   if (kycLoading) {
     return (
       <SellerLayout>
-        <div className="flex-1 flex items-center justify-center">
-          <Loader2 size={20} className="animate-spin text-primary" />
+        <div className="flex flex-1 items-center justify-center py-20">
+          <Loader2 size={24} className="animate-spin text-muted-foreground" />
         </div>
       </SellerLayout>
     );
@@ -216,9 +216,8 @@ export default function SellerDashboardPage() {
 
       <div
         className={cn(
-          "w-full max-w-4xl",
-          "mx-auto px-4 md:px-8 lg:px-10 py-6",
-          dashboardBlocked && "blur-sm pointer-events-none select-none",
+          "mx-auto w-full max-w-7xl px-5 py-6 md:px-8 md:py-9",
+          dashboardBlocked && "pointer-events-none select-none blur-sm",
         )}
       >
         <Banners />

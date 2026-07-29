@@ -10,44 +10,51 @@ interface IConversionProps {
 export default function Conversion({ pixRate, boletoRate }: IConversionProps) {
   const { hideBalance } = useHideBalance();
 
+  const cards = [
+    {
+      label: "Conversão PIX",
+      value: pixRate,
+      icon: QrCode,
+      accent: "bg-primary/10 text-primary",
+    },
+    {
+      label: "Conversão Boleto",
+      value: boletoRate,
+      icon: FileText,
+      accent: "bg-warning/10 text-warning",
+    },
+  ];
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-5">
-      <div className="p-3 rounded-xl bg-card border border-border/40 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-primary/8 flex items-center justify-center text-primary">
-            <QrCode size={13} strokeWidth={1.8} />
+    <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
+      {cards.map((card) => (
+        <div
+          key={card.label}
+          className="admin-surface flex items-center justify-between p-4 md:p-5"
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className={cn(
+                "flex h-9 w-9 items-center justify-center rounded-xl",
+                card.accent,
+              )}
+            >
+              <card.icon size={16} />
+            </div>
+            <span className="text-sm font-medium text-foreground">
+              {card.label}
+            </span>
           </div>
-          <span className="text-xs md:text-sm font-medium text-foreground">
-            Conversão PIX
+          <span
+            className={cn(
+              "text-xl font-bold tabular-nums tracking-tight text-foreground transition-all",
+              hideBalance && "blur-md select-none",
+            )}
+          >
+            {card.value}%
           </span>
         </div>
-        <span
-          className={cn(
-            "text-xs md:text-sm font-bold text-muted-foreground bg-muted/40 px-2 py-0.5 rounded-md transition-all",
-            hideBalance && "blur-md select-none"
-          )}
-        >
-          {pixRate}%
-        </span>
-      </div>
-      <div className="p-3 rounded-xl bg-card border border-border/40 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-lg bg-primary/8 flex items-center justify-center text-primary">
-            <FileText size={13} strokeWidth={1.8} />
-          </div>
-          <span className="text-xs md:text-sm font-medium text-foreground">
-            Conversão Boleto
-          </span>
-        </div>
-        <span
-          className={cn(
-            "text-xs md:text-sm font-bold text-muted-foreground bg-muted/40 px-2 py-0.5 rounded-md transition-all",
-            hideBalance && "blur-md select-none"
-          )}
-        >
-          {boletoRate}%
-        </span>
-      </div>
+      ))}
     </div>
   );
 }

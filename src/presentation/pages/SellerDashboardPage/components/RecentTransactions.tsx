@@ -1,4 +1,5 @@
 import { Transaction } from "@/domain/entities/transaction.entity";
+import { Button } from "@/presentation/components/ui/button";
 import { useHideBalance } from "@/presentation/hooks/use-hide-balance";
 import { cn } from "@/presentation/utils/cn";
 import { ArrowDownLeft, Loader2 } from "lucide-react";
@@ -35,18 +36,18 @@ function getMethodLabel(method: string) {
   }
 }
 
-function getMethodColor(method: string) {
+function getMethodAccent(method: string) {
   switch (method) {
     case "pix":
-      return "text-primary";
+      return "bg-primary/10 text-primary";
     case "card":
-      return "text-blue-500";
+      return "bg-primary/10 text-primary";
     case "boleto":
-      return "text-amber-500";
+      return "bg-warning/10 text-warning";
     case "crypto":
-      return "text-purple-500";
+      return "bg-success/10 text-success";
     default:
-      return "text-primary";
+      return "bg-primary/10 text-primary";
   }
 }
 
@@ -64,52 +65,52 @@ export default function RecentTransactions({
 
   const recentTransactions = useMemo(
     () => transactions.filter((t) => t.amount > 0).slice(0, 5),
-    [transactions]
+    [transactions],
   );
 
   return (
-    <div className="rounded-xl bg-card border border-border/40 p-4">
-      <h3 className="text-xs font-semibold text-foreground mb-3">
+    <div className="admin-surface p-5 md:p-6">
+      <h3 className="mb-5 text-base font-semibold text-foreground">
         Últimas transações
       </h3>
 
       {loading ? (
-        <div className="flex justify-center py-4">
-          <Loader2 size={16} className="animate-spin text-muted-foreground" />
+        <div className="flex justify-center py-8">
+          <Loader2 size={20} className="animate-spin text-muted-foreground" />
         </div>
       ) : recentTransactions.length === 0 ? (
-        <p className="text-xs md:text-sm text-muted-foreground text-center py-4">
+        <p className="py-8 text-center text-sm text-muted-foreground">
           Nenhuma transação encontrada.
         </p>
       ) : (
-        <div className="divide-y divide-border/30">
+        <div className="divide-y divide-border/40">
           {recentTransactions.map((tx) => (
             <div
               key={tx.id}
-              className="flex items-center justify-between py-2.5"
+              className="flex items-center justify-between py-3.5"
             >
-              <div className="flex items-center gap-2.5">
+              <div className="flex items-center gap-3">
                 <div
                   className={cn(
-                    "w-7 h-7 rounded-lg bg-primary/8 flex items-center justify-center",
-                    getMethodColor(tx.method)
+                    "flex h-9 w-9 items-center justify-center rounded-xl",
+                    getMethodAccent(tx.method),
                   )}
                 >
-                  <ArrowDownLeft size={12} strokeWidth={2} />
+                  <ArrowDownLeft size={16} strokeWidth={2} />
                 </div>
                 <div>
-                  <p className="text-xs md:text-sm font-medium text-foreground">
+                  <p className="text-sm font-medium text-foreground">
                     {getMethodLabel(tx.method)}
                   </p>
-                  <p className="text-sm md:text-xs text-muted-foreground">
+                  <p className="mt-0.5 text-xs text-muted-foreground">
                     {formatDateTime(tx.createdAt.toISOString())}
                   </p>
                 </div>
               </div>
               <span
                 className={cn(
-                  "text-xs font-semibold text-foreground transition-all",
-                  hideBalance && "blur-md select-none"
+                  "text-sm font-semibold tabular-nums text-foreground transition-all",
+                  hideBalance && "blur-md select-none",
                 )}
               >
                 {formatCurrency(tx.amount)}
@@ -120,12 +121,14 @@ export default function RecentTransactions({
       )}
 
       {recentTransactions.length > 0 && (
-        <button
+        <Button
+          variant="outline"
+          ripple={false}
           onClick={() => navigate("/seller/transactions")}
-          className="w-full mt-3 py-2 rounded-lg bg-primary/10 text-primary text-xs md:text-sm font-medium hover:bg-primary/15 transition-colors"
+          className="mt-4 h-10 w-full rounded-2xl border-primary/20 bg-primary/10 text-sm font-medium text-primary hover:bg-primary/15 hover:text-primary"
         >
           Ver todas as transações
-        </button>
+        </Button>
       )}
     </div>
   );
