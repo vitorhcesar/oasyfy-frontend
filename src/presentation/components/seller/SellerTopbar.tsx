@@ -1,5 +1,7 @@
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import useSellerFeeQuery from "@/presentation/hooks/use-seller-fee-query";
+import { useSellerKycSubmissionQuery } from "@/presentation/hooks/use-seller-kyc-submission-query";
+import useSellerProfileQuery from "@/presentation/hooks/use-seller-profile-query";
 import { useThemeContext } from "@/presentation/hooks/use-theme";
 import { useAuthContext } from "@/presentation/context/AuthContext";
 import { useUserContext } from "@/presentation/context/UserContext";
@@ -9,11 +11,13 @@ import {
   ChevronDown,
   FileCheck,
   LayoutDashboard,
+  Lock,
   LogOut,
   Menu,
   Moon,
   Sun,
   User,
+  type LucideIcon,
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -34,6 +38,8 @@ interface ISellerTopbarProps {
 export function SellerTopbar({ onMenuToggle }: ISellerTopbarProps) {
   const apiService = useApiService();
   const { data: sellerFee } = useSellerFeeQuery();
+  const { data: profile } = useSellerProfileQuery();
+  const { canSell, isLoading: kycLoading } = useSellerKycSubmissionQuery();
   const navigate = useNavigate();
 
   const user = useUserContext();
@@ -41,9 +47,9 @@ export function SellerTopbar({ onMenuToggle }: ISellerTopbarProps) {
   const { theme, toggleTheme } = useThemeContext();
 
   const [open, setOpen] = useState(false);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [billingGoal, setBillingGoal] = useState(0);
+  const isKycLocked = kycLoading || !canSell;
 
   const ref = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -52,7 +58,12 @@ export function SellerTopbar({ onMenuToggle }: ISellerTopbarProps) {
     null
   );
 
-  const name = user?.name || user?.email?.split("@")[0] || "Seller";
+  const avatarUrl = profile?.avatarUrl ?? null;
+  const name =
+    profile?.displayName ||
+    user?.name ||
+    user?.email?.split("@")[0] ||
+    "Seller";
   const initials = name
     .split(" ")
     .map((n: string) => n[0])
@@ -63,11 +74,7 @@ export function SellerTopbar({ onMenuToggle }: ISellerTopbarProps) {
   useEffect(() => {
     if (!user) return;
 
-    Promise.all([
-      apiService.modules.sellerPortal.getProfile(),
-      apiService.modules.balance.get(),
-    ]).then(([profile, balance]) => {
-      if (profile.avatarUrl) setAvatarUrl(profile.avatarUrl);
+    apiService.modules.balance.get().then((balance) => {
       setTotalRevenue(balance.grossSalesAmount);
     });
   }, [user, apiService]);
@@ -122,12 +129,23 @@ export function SellerTopbar({ onMenuToggle }: ISellerTopbarProps) {
     return Math.min(100, (totalRevenue / billingGoal) * 100);
   }, [totalRevenue, billingGoal]);
 
-  const menuItems = [
-    { label: "Perfil", icon: User, action: () => navigate("/seller/settings") },
+  const menuItems: Array<{
+    label: string;
+    icon: LucideIcon;
+    action: () => void;
+    locked?: boolean;
+  }> = [
+    {
+      label: "Perfil",
+      icon: User,
+      action: () => navigate("/seller/settings"),
+      locked: isKycLocked,
+    },
     {
       label: "Dashboard",
       icon: LayoutDashboard,
       action: () => navigate("/seller"),
+      locked: isKycLocked,
     },
     {
       label: "Meus documentos",
@@ -142,25 +160,23 @@ export function SellerTopbar({ onMenuToggle }: ISellerTopbarProps) {
   ];
 
   return (
-    <div className="h-16 flex items-center justify-between px-4 md:px-6 border-b border-border/50 bg-card/30 backdrop-blur-sm">
+    <div className="flex h-16 items-center justify-between border-b border-white/10 px-4 md:px-6">
       <div className="flex items-center gap-3">
-        {/* Mobile hamburger */}
         <button
           onClick={onMenuToggle}
-          className="md:hidden p-1.5 rounded-lg text-muted-foreground hover:bg-muted/40 transition-colors"
+          className="rounded-xl p-2.5 text-muted-foreground transition-colors hover:bg-white/10 md:hidden"
         >
-          <Menu size={20} />
+          <Menu size={22} />
         </button>
 
-        {/* Billing goal bar */}
         {billingGoal > 0 && (
           <div className="flex items-center gap-2">
-            <span className="text-xs md:text-sm font-semibold text-foreground tabular-nums">
+            <span className="text-xs md:text-sm font-semibold tabular-nums text-foreground">
               {formatCompact(totalRevenue)}
-              <span className="text-muted-foreground font-normal"> / </span>
+              <span className="font-normal text-muted-foreground"> / </span>
               {formatCompact(billingGoal)}
             </span>
-            <div className="w-20 md:w-28 h-2 rounded-full bg-muted/50 overflow-hidden">
+            <div className="h-2 w-20 overflow-hidden rounded-full bg-white/10 md:w-28">
               <div
                 className="h-full rounded-full bg-primary transition-all duration-500"
                 style={{ width: `${progress}%` }}
@@ -170,23 +186,22 @@ export function SellerTopbar({ onMenuToggle }: ISellerTopbarProps) {
         )}
       </div>
 
-      {/* User menu */}
       <div ref={ref} className="relative">
         <button
           ref={triggerRef}
           onClick={() => setOpen(!open)}
-          className="flex items-center gap-2 px-2 md:px-3 py-1.5 rounded-lg text-sm text-foreground hover:bg-muted/50 transition-colors"
+          className="flex items-center gap-2 rounded-xl px-2 py-1.5 text-sm text-foreground transition-colors hover:bg-white/10 md:px-3"
         >
           {avatarUrl ? (
             <img
               src={avatarUrl}
               alt=""
-              className="w-6 h-6 rounded-full object-cover"
+              className="h-6 w-6 rounded-full object-cover ring-1 ring-primary/25"
             />
           ) : (
             <User size={16} className="text-muted-foreground" />
           )}
-          <span className="font-medium hidden sm:inline">
+          <span className="hidden font-medium sm:inline">
             {name.split(" ")[0]}
           </span>
           <ChevronDown
@@ -204,63 +219,75 @@ export function SellerTopbar({ onMenuToggle }: ISellerTopbarProps) {
             <div
               ref={menuRef}
               style={{ top: menuPos.top, right: menuPos.right }}
-              className="fixed w-56 rounded-xl border border-border bg-popover text-popover-foreground shadow-lg py-2 z-50"
+              className="fixed z-50 w-56 rounded-xl border border-white/10 bg-popover/95 py-2 text-popover-foreground shadow-lg backdrop-blur-md"
             >
-              <div className="px-4 py-3 flex items-center gap-3 border-b border-border/50 bg-muted/30">
+              <div className="flex items-center gap-3 border-b border-white/10 bg-muted/20 px-4 py-3">
                 {avatarUrl ? (
                   <img
                     src={avatarUrl}
                     alt=""
-                    className="w-9 h-9 rounded-full object-cover"
+                    className="h-9 w-9 rounded-full object-cover ring-1 ring-primary/25"
                   />
                 ) : (
-                  <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/15 ring-1 ring-primary/25">
                     <span className="text-xs font-semibold text-primary">
                       {initials}
                     </span>
                   </div>
                 )}
-                <span className="text-sm font-medium text-foreground truncate">
+                <span className="truncate text-sm font-medium text-foreground">
                   {name}
                 </span>
               </div>
 
               <div className="py-1">
-                {menuItems.map((item) => (
-                  <button
-                    key={item.label}
-                    onClick={() => {
-                      item.action();
-                      setOpen(false);
-                    }}
-                    className="w-full flex items-center gap-3 px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
-                  >
-                    <item.icon size={15} />
-                    {item.label}
-                  </button>
-                ))}
+                {menuItems.map((item) =>
+                  item.locked ? (
+                    <div
+                      key={item.label}
+                      className="flex w-full cursor-not-allowed select-none items-center gap-3 px-4 py-2 text-sm text-muted-foreground/25"
+                      title="Disponível após aprovação do KYC"
+                    >
+                      <item.icon size={15} className="shrink-0" />
+                      <span className="flex-1">{item.label}</span>
+                      <Lock size={11} className="shrink-0 opacity-40" />
+                    </div>
+                  ) : (
+                    <button
+                      key={item.label}
+                      onClick={() => {
+                        item.action();
+                        setOpen(false);
+                      }}
+                      className="flex w-full items-center gap-3 px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground"
+                    >
+                      <item.icon size={15} />
+                      {item.label}
+                    </button>
+                  ),
+                )}
               </div>
 
-              <div className="border-t border-border/50 py-1">
+              <div className="border-t border-white/10 py-1">
                 <button
                   onClick={() => {
                     toggleTheme();
                     setOpen(false);
                   }}
-                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                  className="flex w-full items-center gap-3 px-4 py-2 text-sm text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground"
                 >
                   {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
                   {theme === "dark" ? "Modo Claro" : "Modo Escuro"}
                 </button>
               </div>
 
-              <div className="border-t border-border/50 py-1">
+              <div className="border-t border-white/10 py-1">
                 <button
                   onClick={() => {
                     signOut();
                     setOpen(false);
                   }}
-                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors"
+                  className="flex w-full items-center gap-3 px-4 py-2 text-sm text-destructive transition-colors hover:bg-destructive/10"
                 >
                   <LogOut size={15} />
                   Desconectar

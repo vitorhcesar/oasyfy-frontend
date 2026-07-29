@@ -3,6 +3,7 @@ import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import useFullSellerFeeQuery from "@/presentation/hooks/use-full-seller-fee-query";
 import { useSellerKycSubmissionQuery } from "@/presentation/hooks/use-seller-kyc-submission-query";
+import useSellerProfileQuery from "@/presentation/hooks/use-seller-profile-query";
 import { useUserContext } from "@/presentation/context/UserContext";
 import { getErrorMessageOrDefault } from "@/presentation/utils/get-error-message-or-default";
 import { translateError } from "@/presentation/utils/translate-error";
@@ -433,7 +434,12 @@ export default function SellerSettings() {
   const apiService = useApiService();
   const { refetch: refetchSession } = authClient.useSession();
   const { submission } = useSellerKycSubmissionQuery();
-  const [loading, setLoading] = useState(true);
+  const {
+    data: profile,
+    isLoading: profileLoading,
+    setAvatarUrl: setCachedAvatarUrl,
+    setProfile: setCachedProfile,
+  } = useSellerProfileQuery();
   const [activeTab, setActiveTab] = useState<
     "perfil" | "antecipacao" | "seguranca" | "taxas"
   >("perfil");
@@ -446,24 +452,22 @@ export default function SellerSettings() {
   const [email, setEmail] = useState("");
   const [accountId, setAccountId] = useState("");
   const [phone, setPhone] = useState("");
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const avatarUrl = profile?.avatarUrl ?? null;
   const { data: sellerFee, isLoading: feesLoading } = useFullSellerFeeQuery();
+  const loading = profileLoading;
 
   useEffect(() => {
     if (!user) return;
     setEmail(user.email || "");
+  }, [user]);
 
-    apiService.modules.sellerPortal
-      .getProfile()
-      .then((profile) => {
-        setFullName(profile.fullName || user.name || "");
-        setDisplayName(profile.displayName || user.name || "");
-        setAvatarUrl(profile.avatarUrl);
-        setAccountId(profile.accountId || "");
-        if (profile.email) setEmail(profile.email);
-      })
-      .finally(() => setLoading(false));
-  }, [user, apiService]);
+  useEffect(() => {
+    if (!profile) return;
+    setFullName(profile.fullName || user.name || "");
+    setDisplayName(profile.displayName || user.name || "");
+    setAccountId(profile.accountId || "");
+    if (profile.email) setEmail(profile.email);
+  }, [profile, user.name]);
 
   useEffect(() => {
     if (!submission) return;
@@ -489,7 +493,7 @@ export default function SellerSettings() {
     try {
       const { avatarUrl: url } =
         await apiService.modules.sellerPortal.uploadAvatar(file);
-      setAvatarUrl(url);
+      setCachedAvatarUrl(url);
       toast.success("Foto atualizada!");
     } catch (err: any) {
       toast.error("Erro ao enviar foto: " + (err.message || ""));
@@ -511,10 +515,11 @@ export default function SellerSettings() {
 
     setSaving(true);
     try {
-      const profile = await apiService.modules.sellerPortal.updateProfile(
+      const updatedProfile = await apiService.modules.sellerPortal.updateProfile(
         displayName.trim(),
       );
-      setDisplayName(profile.displayName);
+      setDisplayName(updatedProfile.displayName);
+      setCachedProfile(updatedProfile);
       await refetchSession();
       toast.success("Perfil salvo com sucesso!");
     } catch (err: unknown) {

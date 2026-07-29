@@ -6,9 +6,7 @@ import { KycOnboardingTypes } from "./types";
 const STEP_LABELS: Record<KycOnboardingTypes.TStep, string> = {
   type: "Tipo",
   personal: "Dados",
-  address: "Endereço",
   documents: "Documentos",
-  bank: "Banco",
   review: "Revisão",
 };
 
@@ -41,7 +39,7 @@ export default function KycOnboardingHeader({
               Verificação de Identidade
             </h2>
             <p className="text-xs text-muted-foreground">
-              Preencha seus dados para ativar sua conta
+              Envie seus documentos para liberar as vendas
             </p>
           </div>
         </div>

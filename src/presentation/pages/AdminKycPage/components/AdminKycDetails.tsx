@@ -92,11 +92,6 @@ export function AdminKycDetails({
       label: "Selfie com documento",
       url: submission.selfie_url,
     },
-    {
-      key: "proof_of_address",
-      label: "Comprovante de endereço",
-      url: submission.proof_of_address_url,
-    },
     ...(submission.person_type === "pj"
       ? [
           {
@@ -128,9 +123,13 @@ export function AdminKycDetails({
       {tab === "documents" && (
         <div className="admin-surface animate-fade-in p-5 md:p-6">
           <div className="mb-5 flex items-center gap-2">
-            <SectionLabel text="Documentos" />
+            <SectionLabel text="Documentos (libera vendas)" />
             <StatusPill status={submission.documents_status} />
           </div>
+          <p className="mb-4 text-xs text-muted-foreground">
+            Ao aprovar todos os documentos, as vendas do seller são liberadas.
+            Endereço e banco liberam saques.
+          </p>
 
           <div className="divide-y divide-border/50">
             {kycDocuments.map((doc) => {

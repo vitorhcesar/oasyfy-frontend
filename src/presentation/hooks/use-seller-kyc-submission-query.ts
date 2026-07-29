@@ -11,12 +11,13 @@ export const SELLER_KYC_SUBMISSION_QUERY_KEY = ["seller-kyc-submission"] as cons
 
 export interface IUseSellerKycSubmissionResult {
   kycStatus: TSellerDashboardKycStatus;
-  /** Resumo quando existe envio em `kyc_submissions`; `null` se ainda não houver registro */
   submission: IKycSubmissionDto | null;
+  documentsApproved: boolean;
+  canSell: boolean;
+  canWithdraw: boolean;
   fullyApproved: boolean;
   documentsReview: TSellerKycDocumentsReview;
   isLoading: boolean;
-  /** Invalida cache em memória e refaz GET (ex.: após fluxo paralelo atualizar só no Supabase) */
   invalidateQuery: () => Promise<void>;
 }
 
@@ -34,6 +35,9 @@ export function useSellerKycSubmissionQuery(): IUseSellerKycSubmissionResult {
   });
 
   const submission = query.data?.submission ?? null;
+  const documentsApproved = query.data?.documentsApproved ?? false;
+  const canSell = query.data?.canSell ?? false;
+  const canWithdraw = query.data?.canWithdraw ?? false;
   const fullyApproved = query.data?.fullyApproved ?? false;
   const kycStatus: TSellerDashboardKycStatus = submission?.status ?? "none";
   const documentsReview: TSellerKycDocumentsReview =
@@ -48,6 +52,9 @@ export function useSellerKycSubmissionQuery(): IUseSellerKycSubmissionResult {
   return {
     kycStatus,
     submission,
+    documentsApproved,
+    canSell,
+    canWithdraw,
     fullyApproved,
     documentsReview,
     isLoading: query.isLoading,

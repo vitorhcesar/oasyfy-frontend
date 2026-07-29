@@ -6,25 +6,36 @@ export function SellerLayout({ children }: PropsWithChildren) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="h-screen flex w-full bg-background relative overflow-hidden">
-      <div className="pointer-events-none fixed inset-0 z-0">
-        <div className="absolute -top-20 -left-20 w-[600px] h-[600px] rounded-full bg-primary/20 blur-[150px]" />
-        <div className="absolute top-1/4 right-[-100px] w-[500px] h-[500px] rounded-full bg-primary/12 blur-[120px]" />
-        <div className="absolute bottom-[-80px] left-1/3 w-[550px] h-[550px] rounded-full bg-primary/15 blur-[140px]" />
+    <div className="relative flex h-screen w-full overflow-hidden bg-background">
+      <div aria-hidden className="pointer-events-none fixed inset-0 z-0">
+        <div className="absolute -left-28 -top-32 h-[560px] w-[560px] rounded-full bg-primary/40 blur-[150px]" />
+        <div className="absolute right-[-120px] top-[18%] h-[480px] w-[480px] rounded-full bg-[#2E0E4F]/50 blur-[130px]" />
+        <div className="absolute bottom-[-140px] left-[28%] h-[520px] w-[520px] rounded-full bg-primary/25 blur-[140px]" />
+        <div className="absolute left-[45%] top-[42%] h-[280px] w-[280px] rounded-full bg-primary/15 blur-[100px]" />
+        <div
+          className="absolute inset-0 opacity-[0.04]"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
+            backgroundSize: "28px 28px",
+          }}
+        />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,hsl(var(--primary)/0.18),transparent_55%)]" />
       </div>
 
-      <SellerSidebar
-        mobileOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-      />
-
-      <main
-        id="layout-main-scroll"
-        className="flex-1 min-w-0 h-full overflow-y-auto relative z-10 flex flex-col"
-      >
-        <SellerTopbar onMenuToggle={() => setSidebarOpen(!sidebarOpen)} />
-        <div className="flex-1">{children}</div>
-      </main>
+      <div className="relative z-10 flex h-full w-full gap-0 md:gap-3 md:p-3">
+        <SellerSidebar
+          mobileOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+        />
+        <main
+          id="layout-main-scroll"
+          className="relative z-10 flex h-full min-w-0 flex-1 flex-col overflow-y-auto md:rounded-[22px] md:border md:border-white/10 md:bg-background/55 md:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] md:backdrop-blur-2xl md:backdrop-saturate-150"
+        >
+          <SellerTopbar onMenuToggle={() => setSidebarOpen(!sidebarOpen)} />
+          <div className="flex-1">{children}</div>
+        </main>
+      </div>
     </div>
   );
 }

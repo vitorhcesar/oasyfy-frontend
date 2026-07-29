@@ -23,10 +23,6 @@ function validatePersonalStep(
   form: KycOnboardingTypes.IFormData,
   isPj: boolean,
 ) {
-  if (!form.fullName.trim()) {
-    throwError("Nome completo é obrigatório");
-  }
-
   if (isPj) {
     const schema = z.object({
       cnpj: z
@@ -47,32 +43,27 @@ function validatePersonalStep(
     if (!result.success) {
       throwError(getErrorMessage(result.error));
     }
-  } else {
-    const schema = z.object({
-      cpf: z
-        .string()
-        .transform((v) => v.replace(/\D/g, ""))
-        .refine((v) => v.length === 11, "CPF incompleto")
-        .refine((v) => isValidCpf(v), "CPF inválido — verifique os dígitos"),
-      dateOfBirth: z.string().min(1, "Data de nascimento é obrigatória"),
-    });
-
-    const result = schema.safeParse({
-      cpf: form.cpf,
-      dateOfBirth: form.dateOfBirth,
-    });
-
-    if (!result.success) {
-      throwError(getErrorMessage(result.error));
-    }
+    return;
   }
 
-  if (!form.phone || form.phone.replace(/\D/g, "").length < 10) {
-    throwError("Telefone inválido");
+  const schema = z.object({
+    cpf: z
+      .string()
+      .transform((v) => v.replace(/\D/g, ""))
+      .refine((v) => v.length === 11, "CPF incompleto")
+      .refine((v) => isValidCpf(v), "CPF inválido — verifique os dígitos"),
+  });
+
+  const result = schema.safeParse({
+    cpf: form.cpf,
+  });
+
+  if (!result.success) {
+    throwError(getErrorMessage(result.error));
   }
 }
 
-function validateAddressStep(form: KycOnboardingTypes.IFormData) {
+export function validateAddressStep(form: KycOnboardingTypes.IFormData) {
   const schema = z.object({
     zipCode: z
       .string()
@@ -111,7 +102,7 @@ function validateDocumentsStep(
         file.type === "image/jpeg" ||
         file.type === "image/jpg"
       ) {
-        return file.size <= 10 * 1024 * 1024; // 10MB
+        return file.size <= 10 * 1024 * 1024;
       }
 
       return false;
@@ -123,7 +114,6 @@ function validateDocumentsStep(
     document_front: uploadedFileSchema,
     document_back: uploadedFileSchema,
     selfie: uploadedFileSchema,
-    proof_of_address: uploadedFileSchema,
   });
 
   const result = schema.safeParse(files);
@@ -146,7 +136,7 @@ function validateDocumentsStep(
   }
 }
 
-function validateBankStep(form: KycOnboardingTypes.IFormData) {
+export function validateBankStep(form: KycOnboardingTypes.IFormData) {
   const pixKeyTypeSchema = z
     .string()
     .min(1, "Tipo de chave PIX é obrigatório")
@@ -170,7 +160,6 @@ function validateBankStep(form: KycOnboardingTypes.IFormData) {
     throwError(getErrorMessage(bankValidationResult.error));
   }
 
-  // Validate PIX key format
   if (form.bank.pixKeyType === "cpf") {
     if (!isValidCpf(form.bank.pixKey)) {
       throwError("CPF da chave PIX é inválido");
@@ -213,11 +202,28 @@ export function validateKycOnboardingStep({
     case "personal": {
       return validatePersonalStep(form, isPj);
     }
-    case "address": {
-      return validateAddressStep(form);
-    }
     case "documents": {
       return validateDocumentsStep(files, isPj);
+    }
+    default: {
+      throwError("Passo não encontrado");
+    }
+  }
+}
+
+export function validateKycWithdrawalStep({
+  form,
+  step,
+}: {
+  form: KycOnboardingTypes.IFormData;
+  step: KycOnboardingTypes.TWithdrawalStep;
+}) {
+  switch (step) {
+    case "review": {
+      break;
+    }
+    case "address": {
+      return validateAddressStep(form);
     }
     case "bank": {
       return validateBankStep(form);

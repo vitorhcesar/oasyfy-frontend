@@ -27,7 +27,7 @@ export default function AdminKycDetailsBankTab({
       {bankData ? (
         <div className="admin-surface space-y-5 p-5 md:p-6">
           <div className="flex items-center gap-2">
-            <SectionLabel text="Conta bancária" />
+            <SectionLabel text="Conta bancária (libera saques)" />
             <StatusPill status={submission.bank_status} />
           </div>
 
@@ -107,7 +107,7 @@ export default function AdminKycDetailsBankTab({
       ) : (
         <div className="admin-surface px-6 py-16 text-center">
           <p className="text-base text-muted-foreground">
-            Nenhuma conta bancária cadastrada.
+            Nenhuma conta bancária cadastrada (necessário apenas para saques).
           </p>
         </div>
       )}

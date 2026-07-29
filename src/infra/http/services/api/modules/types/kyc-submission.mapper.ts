@@ -96,7 +96,10 @@ export function mapSellerKycSubmissionResponse(
   raw: ISellerKycSubmissionResponseDto,
 ): ISellerKycSubmissionResponseDto {
   return {
-    fullyApproved: raw.fullyApproved,
+    documentsApproved: raw.documentsApproved ?? false,
+    canSell: raw.canSell ?? false,
+    canWithdraw: raw.canWithdraw ?? false,
+    fullyApproved: raw.fullyApproved ?? raw.canWithdraw ?? false,
     submission: mapSubmission(raw.submission),
   };
 }

@@ -8,6 +8,7 @@ import type {
   ISubmitSellerKycBody,
   ISubmitSellerKycFiles,
   ISubmitSellerKycParams,
+  ISubmitSellerKycWithdrawalDetailsBody,
   TSellerDashboardKycStatus,
   TSellerKycDocReviewEntry,
   TSellerKycDocumentsReview,
@@ -20,6 +21,7 @@ export type {
   ISubmitSellerKycBody,
   ISubmitSellerKycFiles,
   ISubmitSellerKycParams,
+  ISubmitSellerKycWithdrawalDetailsBody,
   TSellerDashboardKycStatus,
   TSellerKycDocReviewEntry,
   TSellerKycDocumentsReview,
@@ -29,6 +31,9 @@ export interface IKycSubmissionModule {
   getSellerSubmission: () => Promise<ISellerKycSubmissionResponseDto>;
   submitSellerSubmission: (
     params: ISubmitSellerKycParams,
+  ) => Promise<ISellerKycSubmissionResponseDto>;
+  submitWithdrawalDetails: (
+    body: ISubmitSellerKycWithdrawalDetailsBody,
   ) => Promise<ISellerKycSubmissionResponseDto>;
 }
 
@@ -52,28 +57,16 @@ export class KycSubmissionModule
     const { body, files } = params;
 
     formData.append("personType", body.personType);
-    formData.append("fullName", body.fullName);
     formData.append("cpf", body.cpf ?? "");
-    formData.append("dateOfBirth", body.dateOfBirth ?? "");
-    formData.append("phone", body.phone);
     formData.append("companyName", body.companyName ?? "");
     formData.append("companyType", body.companyType ?? "");
     formData.append("cnpj", body.cnpj ?? "");
     formData.append("tradingName", body.tradingName ?? "");
     formData.append("businessActivity", body.businessActivity ?? "");
     formData.append("monthlyRevenue", body.monthlyRevenue ?? "");
-    formData.append("zipCode", body.zipCode);
-    formData.append("street", body.street);
-    formData.append("number", body.number);
-    formData.append("complement", body.complement ?? "");
-    formData.append("neighborhood", body.neighborhood);
-    formData.append("city", body.city);
-    formData.append("state", body.state);
-    formData.append("bank", JSON.stringify(body.bank));
     formData.append("documentFront", files.documentFront);
     formData.append("documentBack", files.documentBack);
     formData.append("selfie", files.selfie);
-    formData.append("proofOfAddress", files.proofOfAddress);
 
     if (files.companyContract) {
       formData.append("companyContract", files.companyContract);
@@ -99,5 +92,14 @@ export class KycSubmissionModule
     });
 
     return mapSellerKycSubmissionResponse(response.data.data);
+  }
+
+  async submitWithdrawalDetails(
+    body: ISubmitSellerKycWithdrawalDetailsBody,
+  ): Promise<ISellerKycSubmissionResponseDto> {
+    const response = await this.getClient().post<
+      IApiEnvelope<ISellerKycSubmissionResponseDto>
+    >(`${this.baseUrl}/withdrawal-details`, body);
+    return mapSellerKycSubmissionResponse(response.data);
   }
 }

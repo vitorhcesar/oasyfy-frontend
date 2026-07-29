@@ -13,7 +13,6 @@ import { COMPANY_TYPE_OPTIONS } from "./constants/company-type-options";
 import { useKycOnboardingStore } from "./stores/kyc-onboarding.store";
 import { formatCnpj } from "./utils/format-cnpj";
 import { formatCpf } from "./utils/format-cpf";
-import { formatPhone } from "./utils/format-phone";
 import { isValidCnpj } from "./utils/is-valid-cnpj";
 import { isValidCpf } from "./utils/is-valid-cpf";
 import ValidationBadge from "./ValidationBadge";
@@ -56,54 +55,31 @@ export default function PersonalStep() {
 
   return (
     <div className="space-y-5 animate-step-slide">
-      <div>
-        <Label htmlFor="fullName">Nome completo</Label>
-        <Input
-          id="fullName"
-          value={form.fullName}
-          onChange={(e) => setFormDataValue("fullName", e.target.value)}
-          placeholder="Seu nome completo"
-        />
-      </div>
-
       {isPj() ? (
         <>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <Label
-                  htmlFor="cnpj"
-                  className="text-xs font-semibold text-foreground/70 uppercase tracking-wider"
-                >
-                  CNPJ
-                </Label>
-                <ValidationBadge valid={cnpjValid} />
-              </div>
-              <Input
-                id="cnpj"
-                className={cn(
-                  cnpjValid === false
-                    ? "border-destructive/50 focus:ring-destructive/30"
-                    : cnpjValid === true
-                      ? "border-primary/50 focus:ring-primary/30"
-                      : "",
-                )}
-                value={form.cnpj}
-                onChange={(e) => handleCnpjChange(e.target.value)}
-                placeholder="00.000.000/0000-00"
-              />
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <Label
+                htmlFor="cnpj"
+                className="text-xs font-semibold text-foreground/70 uppercase tracking-wider"
+              >
+                CNPJ
+              </Label>
+              <ValidationBadge valid={cnpjValid} />
             </div>
-            <div>
-              <Label htmlFor="phone">Telefone</Label>
-              <Input
-                id="phone"
-                value={form.phone}
-                onChange={(e) =>
-                  setFormDataValue("phone", formatPhone(e.target.value))
-                }
-                placeholder="(00) 00000-0000"
-              />
-            </div>
+            <Input
+              id="cnpj"
+              className={cn(
+                cnpjValid === false
+                  ? "border-destructive/50 focus:ring-destructive/30"
+                  : cnpjValid === true
+                    ? "border-primary/50 focus:ring-primary/30"
+                    : "",
+              )}
+              value={form.cnpj}
+              onChange={(e) => handleCnpjChange(e.target.value)}
+              placeholder="00.000.000/0000-00"
+            />
           </div>
           <div>
             <Label htmlFor="companyName">Razão Social</Label>
@@ -161,7 +137,7 @@ export default function PersonalStep() {
               }
             >
               <SelectTrigger id="monthlyRevenue">
-                <SelectValue placeholder="Selecione" />
+                <SelectValue placeholder="Selecione (opcional)" />
               </SelectTrigger>
               <SelectContent>
                 {REVENUE_OPTIONS.map((r) => (
@@ -174,54 +150,30 @@ export default function PersonalStep() {
           </div>
         </>
       ) : (
-        <>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <Label
-                  htmlFor="cpf"
-                  className="text-xs font-semibold text-foreground/70 uppercase tracking-wider"
-                >
-                  CPF
-                </Label>
-                <ValidationBadge valid={cpfValid} />
-              </div>
-              <Input
-                id="cpf"
-                className={cn(
-                  cpfValid === false
-                    ? "border-destructive/50 focus:ring-destructive/30"
-                    : cpfValid === true
-                      ? "border-primary/50 focus:ring-primary/30"
-                      : "",
-                )}
-                value={form.cpf}
-                onChange={(e) => handleCpfChange(e.target.value)}
-                placeholder="000.000.000-00"
-              />
-            </div>
-            <div>
-              <Label htmlFor="phone">Telefone</Label>
-              <Input
-                id="phone"
-                value={form.phone}
-                onChange={(e) =>
-                  setFormDataValue("phone", formatPhone(e.target.value))
-                }
-                placeholder="(00) 00000-0000"
-              />
-            </div>
+        <div>
+          <div className="flex items-center justify-between mb-1.5">
+            <Label
+              htmlFor="cpf"
+              className="text-xs font-semibold text-foreground/70 uppercase tracking-wider"
+            >
+              CPF
+            </Label>
+            <ValidationBadge valid={cpfValid} />
           </div>
-          <div>
-            <Label htmlFor="dateOfBirth">Data de Nascimento</Label>
-            <Input
-              id="dateOfBirth"
-              type="date"
-              value={form.dateOfBirth}
-              onChange={(e) => setFormDataValue("dateOfBirth", e.target.value)}
-            />
-          </div>
-        </>
+          <Input
+            id="cpf"
+            className={cn(
+              cpfValid === false
+                ? "border-destructive/50 focus:ring-destructive/30"
+                : cpfValid === true
+                  ? "border-primary/50 focus:ring-primary/30"
+                  : "",
+            )}
+            value={form.cpf}
+            onChange={(e) => handleCpfChange(e.target.value)}
+            placeholder="000.000.000-00"
+          />
+        </div>
       )}
     </div>
   );

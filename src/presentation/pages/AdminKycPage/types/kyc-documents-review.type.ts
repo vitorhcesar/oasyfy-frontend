@@ -4,7 +4,6 @@ export type TKycDocumentKey =
   | "document_front"
   | "document_back"
   | "selfie"
-  | "proof_of_address"
   | "company_contract";
 
 export interface IKycDocumentReviewEntry {

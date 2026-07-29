@@ -7,6 +7,7 @@ import {
   getKycDocumentUrl,
   type TKycSubmissionDocumentKey,
 } from "@/infra/http/services/api/modules/types/kyc-submission-document-keys";
+import KycWithdrawalDetails from "@/presentation/components/KycOnboarding/KycWithdrawalDetails";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import { useSellerKycSubmissionQuery } from "@/presentation/hooks/use-seller-kyc-submission-query";
 import {
@@ -47,13 +48,13 @@ const DOC_DEFINITIONS: { key: TKycSubmissionDocumentKey; label: string }[] = [
   { key: "documentFront", label: "Documento Frente" },
   { key: "documentBack", label: "Documento Verso" },
   { key: "selfie", label: "Selfie com documento" },
-  { key: "proofOfAddress", label: "Comprovante de endereço" },
   { key: "companyContract", label: "Contrato Social" },
 ];
 
 export default function SellerKyc() {
   const {
     submission: kyc,
+    canSell,
     isLoading,
     invalidateQuery,
   } = useSellerKycSubmissionQuery();
@@ -69,6 +70,10 @@ export default function SellerKyc() {
   const [bankForm, setBankForm] = useState<IKycSubmissionBankData>(emptyBankForm);
   const [savingBank, setSavingBank] = useState(false);
   const [bankExpanded, setBankExpanded] = useState(false);
+  const [withdrawalDetailsOpen, setWithdrawalDetailsOpen] = useState(false);
+
+  const needsWithdrawalDetails =
+    canSell && (!kyc?.zipCode || !kyc?.street || !kyc?.bankData);
 
   const documentsReview = useMemo(
     () => kyc?.documentsReview ?? {},
@@ -395,6 +400,22 @@ export default function SellerKyc() {
               expanded={expandedSections.address}
               onToggle={() => toggleSection("address")}
             >
+              {!kyc.zipCode ? (
+                <div className="space-y-3 py-2">
+                  <p className="text-sm text-muted-foreground">
+                    Endereço ainda não enviado. É necessário para liberar saques.
+                  </p>
+                  {needsWithdrawalDetails && (
+                    <button
+                      type="button"
+                      onClick={() => setWithdrawalDetailsOpen(true)}
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-medium text-primary-foreground"
+                    >
+                      Completar dados para saque
+                    </button>
+                  )}
+                </div>
+              ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-0">
                 <DataRow label="CEP" value={kyc.zipCode} mono />
                 <DataRow label="Estado" value={kyc.state} />
@@ -406,6 +427,7 @@ export default function SellerKyc() {
                   <DataRow label="Complemento" value={kyc.complement} />
                 )}
               </div>
+              )}
             </CollapsibleSection>
           </div>
         )}
@@ -654,6 +676,17 @@ export default function SellerKyc() {
           </div>
         )}
       </div>
+
+      {withdrawalDetailsOpen && (
+        <KycWithdrawalDetails
+          onComplete={() => {
+            setWithdrawalDetailsOpen(false);
+            void invalidateQuery();
+            toast.success("Dados enviados. Aguarde a aprovação para sacar.");
+          }}
+          onCancel={() => setWithdrawalDetailsOpen(false)}
+        />
+      )}
     </SellerLayout>
   );
 }

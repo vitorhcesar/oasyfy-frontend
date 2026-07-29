@@ -17,12 +17,12 @@ export interface IKycSubmissionView {
   email: string | null;
   status: string;
   created_at: string;
-  city: string;
-  state: string;
-  street: string;
-  number: string;
-  neighborhood: string;
-  zip_code: string;
+  city: string | null;
+  state: string | null;
+  street: string | null;
+  number: string | null;
+  neighborhood: string | null;
+  zip_code: string | null;
   complement: string | null;
   bank_data: IKycSubmissionBankData | null;
   address_status: string;

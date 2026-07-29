@@ -20,7 +20,6 @@ export default function AdminKycDetailsTabs({
     "document_front",
     "document_back",
     "selfie",
-    "proof_of_address",
     ...(submission.person_type === "pj" ? ["company_contract"] : []),
   ];
   const pendingDocs = docKeys.filter(
@@ -30,9 +29,9 @@ export default function AdminKycDetailsTabs({
   const pendingBank = submission.bank_status === "pending" ? 1 : 0;
 
   const tabs: { key: TAdminKycDetailsTab; label: string; pending: number }[] = [
-    { key: "kyc", label: "Cadastro", pending: pendingKyc },
-    { key: "documents", label: "Documentos", pending: pendingDocs },
-    { key: "bank", label: "Banco", pending: pendingBank },
+    { key: "kyc", label: "Endereço (saques)", pending: pendingKyc },
+    { key: "documents", label: "Documentos (vendas)", pending: pendingDocs },
+    { key: "bank", label: "Banco (saques)", pending: pendingBank },
     { key: "fees", label: "Taxas", pending: 0 },
     { key: "balance", label: "Saldo", pending: 0 },
   ];

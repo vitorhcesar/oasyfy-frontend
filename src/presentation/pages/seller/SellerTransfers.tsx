@@ -1,4 +1,5 @@
 import { Transaction } from "@/domain/entities/transaction.entity";
+import KycWithdrawalDetails from "@/presentation/components/KycOnboarding/KycWithdrawalDetails";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import { WithdrawalModal } from "@/presentation/components/seller/WithdrawalModal";
 import { Calendar } from "@/presentation/components/ui/calendar";
@@ -29,6 +30,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { toast } from "sonner";
 
 function isPaid(status: string) {
   return status === "paid" || status === "completed";
@@ -152,12 +154,19 @@ export default function SellerTransfers() {
     invalidateQuery: invalidateTransactions,
   } = useSellerTransactionsQuery();
   const { data: sellerFee, isLoading: feeLoading } = useSellerFeeQuery();
-  const { submission, isLoading: kycLoading } = useSellerKycSubmissionQuery();
+  const {
+    submission,
+    canSell,
+    canWithdraw,
+    isLoading: kycLoading,
+    invalidateQuery: invalidateKyc,
+  } = useSellerKycSubmissionQuery();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [dateFrom, setDateFrom] = useState<Date | undefined>();
   const [dateTo, setDateTo] = useState<Date | undefined>();
   const [withdrawalOpen, setWithdrawalOpen] = useState(false);
+  const [withdrawalDetailsOpen, setWithdrawalDetailsOpen] = useState(false);
   const [detailW, setDetailW] = useState<Withdrawal | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
@@ -199,6 +208,28 @@ export default function SellerTransfers() {
 
   const withdrawalBlocked = submission?.withdrawalsBlocked ?? false;
   const blockReason = submission?.withdrawalBlockReason ?? null;
+  const needsWithdrawalDetails =
+    canSell &&
+    (!submission?.zipCode ||
+      !submission?.street ||
+      !submission?.bankData);
+  const awaitingWithdrawalApproval =
+    canSell && !canWithdraw && !needsWithdrawalDetails && !withdrawalBlocked;
+
+  const handleRequestWithdrawal = () => {
+    if (withdrawalBlocked) return;
+    if (needsWithdrawalDetails) {
+      setWithdrawalDetailsOpen(true);
+      return;
+    }
+    if (!canWithdraw) {
+      toast.info(
+        "Aguarde a aprovação do endereço e dos dados bancários para sacar.",
+      );
+      return;
+    }
+    setWithdrawalOpen(true);
+  };
 
   const refetchData = () => {
     void invalidateTransactions();
@@ -390,8 +421,8 @@ export default function SellerTransfers() {
             </p>
           </div>
           <button
-            onClick={() => setWithdrawalOpen(true)}
-            disabled={withdrawalBlocked}
+            onClick={handleRequestWithdrawal}
+            disabled={withdrawalBlocked || !canSell}
             className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs md:text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {withdrawalBlocked ? (
@@ -399,7 +430,13 @@ export default function SellerTransfers() {
             ) : (
               <ArrowUpRight size={13} />
             )}
-            {withdrawalBlocked ? "Saque bloqueado" : "Solicitar saque"}
+            {withdrawalBlocked
+              ? "Saque bloqueado"
+              : needsWithdrawalDetails
+                ? "Completar dados para saque"
+                : awaitingWithdrawalApproval
+                  ? "Aguardando aprovação"
+                  : "Solicitar saque"}
           </button>
         </div>
 
@@ -415,6 +452,36 @@ export default function SellerTransfers() {
                   Motivo: {blockReason}
                 </p>
               )}
+            </div>
+          </div>
+        )}
+
+        {!withdrawalBlocked && needsWithdrawalDetails && (
+          <div className="mb-5 rounded-xl border border-primary/20 bg-primary/5 p-4 flex items-start gap-3">
+            <Lock size={16} className="text-primary mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                Complete endereço e dados bancários
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                As vendas já podem estar liberadas. Para sacar, envie endereço e
+                conta/PIX para análise.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {!withdrawalBlocked && awaitingWithdrawalApproval && (
+          <div className="mb-5 rounded-xl border border-border/60 bg-muted/20 p-4 flex items-start gap-3">
+            <Clock size={16} className="text-muted-foreground mt-0.5 flex-shrink-0" />
+            <div>
+              <p className="text-sm font-medium text-foreground">
+                Dados de saque em análise
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Endereço e banco foram enviados. Assim que forem aprovados, os
+                saques serão liberados.
+              </p>
             </div>
           </div>
         )}
@@ -668,6 +735,17 @@ export default function SellerTransfers() {
           cardBalance={cardBalance}
           pixBoletoBalance={pixBoletoBalance}
           onSuccess={refetchData}
+        />
+      )}
+
+      {withdrawalDetailsOpen && (
+        <KycWithdrawalDetails
+          onComplete={() => {
+            setWithdrawalDetailsOpen(false);
+            void invalidateKyc();
+            toast.success("Dados enviados. Aguarde a aprovação para sacar.");
+          }}
+          onCancel={() => setWithdrawalDetailsOpen(false)}
         />
       )}
 

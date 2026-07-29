@@ -44,13 +44,13 @@ export interface IKycSubmissionDto {
   tradingName: string | null;
   businessActivity: string | null;
   monthlyRevenue: string | null;
-  zipCode: string;
-  street: string;
-  number: string;
+  zipCode: string | null;
+  street: string | null;
+  number: string | null;
   complement: string | null;
-  neighborhood: string;
-  city: string;
-  state: string;
+  neighborhood: string | null;
+  city: string | null;
+  state: string | null;
   bankData: IKycSubmissionBankData | null;
   rejectionReason: string | null;
   documentsStatus: KycSubmissionSectionStatusEnum;
@@ -70,22 +70,37 @@ export interface IKycSubmissionDto {
 
 export interface ISellerKycSubmissionResponseDto {
   submission: IKycSubmissionDto | null;
+  documentsApproved: boolean;
+  canSell: boolean;
+  canWithdraw: boolean;
   fullyApproved: boolean;
 }
 
 /** Corpo do POST `/api/v1/seller/kyc-submission` (multipart/form-data). */
 export interface ISubmitSellerKycBody {
   personType: "pf" | "pj";
-  fullName: string;
   cpf: string | null;
-  dateOfBirth: string | null;
-  phone: string;
   companyName: string | null;
   companyType: string | null;
   cnpj: string | null;
   tradingName: string | null;
   businessActivity: string | null;
   monthlyRevenue: string | null;
+}
+
+export interface ISubmitSellerKycFiles {
+  documentFront: File;
+  documentBack: File;
+  selfie: File;
+  companyContract?: File;
+}
+
+export interface ISubmitSellerKycParams {
+  body: ISubmitSellerKycBody;
+  files: ISubmitSellerKycFiles;
+}
+
+export interface ISubmitSellerKycWithdrawalDetailsBody {
   zipCode: string;
   street: string;
   number: string;
@@ -103,17 +118,4 @@ export interface ISubmitSellerKycBody {
     pixKeyType: "cpf" | "cnpj" | "email" | "phone";
     pixKey: string;
   };
-}
-
-export interface ISubmitSellerKycFiles {
-  documentFront: File;
-  documentBack: File;
-  selfie: File;
-  proofOfAddress: File;
-  companyContract?: File;
-}
-
-export interface ISubmitSellerKycParams {
-  body: ISubmitSellerKycBody;
-  files: ISubmitSellerKycFiles;
 }

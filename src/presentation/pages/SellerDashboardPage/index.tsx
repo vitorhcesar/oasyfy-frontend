@@ -26,7 +26,7 @@ export default function SellerDashboardPage() {
   const {
     kycStatus,
     isLoading: kycLoading,
-    fullyApproved,
+    canSell,
     documentsReview,
     invalidateQuery: invalidateKycSubmissionQuery,
   } = useSellerKycSubmissionQuery();
@@ -78,9 +78,9 @@ export default function SellerDashboardPage() {
   const hasRejectedDocs = Object.values(documentsReview).some(
     (v) => v.status === "rejected",
   );
-  const showKycPending = !showKycForm && !fullyApproved && !hasRejectedDocs;
-  const showDocResubmit = !showKycForm && !fullyApproved && hasRejectedDocs;
-  const dashboardBlocked = !fullyApproved;
+  const showKycPending = !showKycForm && !canSell && !hasRejectedDocs;
+  const showDocResubmit = !showKycForm && !canSell && hasRejectedDocs;
+  const dashboardBlocked = !canSell;
 
   useEffect(() => {
     if (!kycLoading && (showKycPending || showDocResubmit)) {

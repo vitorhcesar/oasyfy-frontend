@@ -16,7 +16,6 @@ const DOCUMENT_KEYS: readonly TKycDocumentKey[] = [
   "document_front",
   "document_back",
   "selfie",
-  "proof_of_address",
   "company_contract",
 ];
 
@@ -83,7 +82,6 @@ export function getKycDocumentKeys(
     "document_front",
     "document_back",
     "selfie",
-    "proof_of_address",
   ];
 
   if (personType === "pj") {

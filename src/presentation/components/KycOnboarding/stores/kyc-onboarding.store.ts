@@ -3,13 +3,12 @@ import { create } from "zustand/react";
 import { KycOnboardingTypes } from "../types";
 
 export interface IKycOnboardingStore {
-  // state
   form: KycOnboardingTypes.IFormData;
   setFormData: (form: KycOnboardingTypes.IFormData) => void;
   setFormDataAddress: (address: IAddress) => void;
   setFormDataValue: (
     field: keyof KycOnboardingTypes.IFormData,
-    value: string
+    value: string,
   ) => void;
   setBank: (field: keyof KycOnboardingTypes.IBankData, value: string) => void;
 
@@ -23,6 +22,9 @@ export interface IKycOnboardingStore {
 
   step: KycOnboardingTypes.TStep;
   setStep: (step: KycOnboardingTypes.TStep) => void;
+
+  withdrawalStep: KycOnboardingTypes.TWithdrawalStep;
+  setWithdrawalStep: (step: KycOnboardingTypes.TWithdrawalStep) => void;
 }
 
 const initialBank: KycOnboardingTypes.IBankData = {
@@ -38,10 +40,7 @@ const initialBank: KycOnboardingTypes.IBankData = {
 
 const initialForm: KycOnboardingTypes.IFormData = {
   personType: null,
-  fullName: "",
   cpf: "",
-  dateOfBirth: "",
-  phone: "",
   companyName: "",
   companyType: "",
   cnpj: "",
@@ -91,5 +90,9 @@ export const useKycOnboardingStore = create<IKycOnboardingStore>(
 
     step: "type",
     setStep: (step) => set({ step, error: "" }),
-  })
+
+    withdrawalStep: "address",
+    setWithdrawalStep: (withdrawalStep) =>
+      set({ withdrawalStep, error: "" }),
+  }),
 );

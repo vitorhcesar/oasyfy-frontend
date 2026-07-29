@@ -1,12 +1,8 @@
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace KycOnboardingTypes {
-  export type TStep =
-    | "type"
-    | "personal"
-    | "address"
-    | "documents"
-    | "bank"
-    | "review";
+  export type TStep = "type" | "personal" | "documents" | "review";
+
+  export type TWithdrawalStep = "address" | "bank" | "review";
 
   export type TPersonType = "pf" | "pj";
 
@@ -23,10 +19,7 @@ export namespace KycOnboardingTypes {
 
   export interface IFormData {
     personType: TPersonType | null;
-    fullName: string;
     cpf: string;
-    dateOfBirth: string;
-    phone: string;
     companyName: string;
     companyType: string;
     cnpj: string;

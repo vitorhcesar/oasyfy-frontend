@@ -1,6 +1,4 @@
 import { AppError } from "@/domain/errors/app.error";
-import AddressStep from "./AddressStep";
-import BankStep from "./BankStep";
 import DocumentsStep from "./DocumentsStep";
 import PersonalStep from "./PersonalStep";
 import ReviewStep from "./ReviewStep";
@@ -15,12 +13,8 @@ export default function KycOnboardingSteps() {
       return <TypeStep />;
     case "personal":
       return <PersonalStep />;
-    case "address":
-      return <AddressStep />;
     case "documents":
       return <DocumentsStep />;
-    case "bank":
-      return <BankStep />;
     case "review":
       return <ReviewStep />;
     default:

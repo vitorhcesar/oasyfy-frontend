@@ -32,7 +32,7 @@ export default function AdminKycDetailsKycTab({
         await apiService.modules.adminKycSubmissions.approveAddress(
           Number(submission.id),
         );
-        toast.success("Endereço aprovado!");
+        toast.success("Endereço aprovado (necessário para saques)!");
         onUpdate();
       },
       {
@@ -77,6 +77,8 @@ export default function AdminKycDetailsKycTab({
           toast.error(
             "Não foi possível enviar o e-mail de aprovação para o seller",
           );
+        } else {
+          toast.success("KYC aprovado (vendas liberadas se documentos OK).");
         }
 
         onUpdate();
@@ -133,9 +135,14 @@ export default function AdminKycDetailsKycTab({
 
       <div className="admin-surface p-5 md:p-6">
         <div className="mb-4 flex items-center gap-2">
-          <SectionLabel text="Endereço" />
+          <SectionLabel text="Endereço (libera saques)" />
           <StatusPill status={submission.address_status} />
         </div>
+        {!submission.street ? (
+          <p className="text-sm text-muted-foreground">
+            Seller ainda não enviou endereço (necessário apenas para saques).
+          </p>
+        ) : (
         <div className="divide-y divide-border/50">
           <Row
             label="Rua"
@@ -151,8 +158,9 @@ export default function AdminKycDetailsKycTab({
           />
           <Row label="CEP" value={submission.zip_code} mono />
         </div>
+        )}
 
-        {submission.address_status !== "approved" && (
+        {submission.street && submission.address_status !== "approved" && (
           <div className="mt-5">
             {!showAddressReject ? (
               <div className="flex flex-wrap items-center gap-2">

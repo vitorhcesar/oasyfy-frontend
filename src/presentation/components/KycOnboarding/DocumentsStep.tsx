@@ -146,10 +146,6 @@ export default function DocumentsStep() {
         label="Selfie segurando o documento"
         accept="image/*"
       />
-      <FileUploadBox
-        id="proof_of_address"
-        label="Comprovante de Endereço (últimos 3 meses)"
-      />
 
       {isPj() && (
         <FileUploadBox
