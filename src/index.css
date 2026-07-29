@@ -213,6 +213,24 @@
     0 0 0 1px rgba(95, 41, 152, 0.06);
 }
 
+/* Auth é sempre dark — não herdar o glass claro do tema global */
+:root:not(.dark) .auth-skin .liquid-glass,
+:root:not(.dark) .auth-skin .liquid-glass-control {
+  --glass-bg: rgba(255, 255, 255, 0.07);
+  --glass-bg-tint: rgba(46, 14, 79, 0.42);
+  --glass-bg-strong: rgba(15, 6, 23, 0.82);
+  --glass-blur: 32px;
+  --glass-border: rgba(255, 255, 255, 0.18);
+  --glass-highlight: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(255, 255, 255, 0.04) 42%,
+    transparent 70%
+  );
+  --glass-shadow: 0 24px 80px -20px rgba(0, 0, 0, 0.55),
+    0 0 0 1px rgba(95, 41, 152, 0.12);
+}
+
 .liquid-glass::before {
   content: "";
   pointer-events: none;
