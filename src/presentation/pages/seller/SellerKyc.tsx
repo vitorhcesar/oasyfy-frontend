@@ -7,6 +7,7 @@ import {
   getKycDocumentUrl,
   type TKycSubmissionDocumentKey,
 } from "@/infra/http/services/api/modules/types/kyc-submission-document-keys";
+import KycDocumentPreviewModal from "@/presentation/components/KycDocumentPreviewModal";
 import KycWithdrawalDetails from "@/presentation/components/KycOnboarding/KycWithdrawalDetails";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import { useSellerKycSubmissionQuery } from "@/presentation/hooks/use-seller-kyc-submission-query";
@@ -71,6 +72,10 @@ export default function SellerKyc() {
   const [savingBank, setSavingBank] = useState(false);
   const [bankExpanded, setBankExpanded] = useState(false);
   const [withdrawalDetailsOpen, setWithdrawalDetailsOpen] = useState(false);
+  const [previewDoc, setPreviewDoc] = useState<{
+    label: string;
+    url: string;
+  } | null>(null);
 
   const needsWithdrawalDetails =
     canSell && (!kyc?.zipCode || !kyc?.street || !kyc?.bankData);
@@ -500,15 +505,16 @@ export default function SellerKyc() {
 
                     <div className="flex items-center gap-2">
                       {doc.url && (
-                        <a
-                          href={doc.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setPreviewDoc({ label: doc.label, url: doc.url! })
+                          }
                           className="p-2 rounded-lg text-muted-foreground/40 hover:text-foreground hover:bg-muted/30 transition-all"
                           title="Ver documento"
                         >
                           <Eye size={14} />
-                        </a>
+                        </button>
                       )}
                       {isApproved && (
                         <CheckCircle2 size={16} className="text-primary/60" />
@@ -687,6 +693,15 @@ export default function SellerKyc() {
           onCancel={() => setWithdrawalDetailsOpen(false)}
         />
       )}
+
+      <KycDocumentPreviewModal
+        open={!!previewDoc}
+        onOpenChange={(open) => {
+          if (!open) setPreviewDoc(null);
+        }}
+        title={previewDoc?.label ?? "Documento"}
+        url={previewDoc?.url ?? null}
+      />
     </SellerLayout>
   );
 }

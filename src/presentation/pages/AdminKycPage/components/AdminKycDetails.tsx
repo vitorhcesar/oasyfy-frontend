@@ -1,5 +1,6 @@
+import KycDocumentPreviewModal from "@/presentation/components/KycDocumentPreviewModal";
 import { useApiService } from "@/presentation/hooks/use-api-service";
-import { ArrowLeft, CheckCircle, ExternalLink, XCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle, Eye, XCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useAdminKycDetailsStore } from "../stores/admin-kyc-details.store";
@@ -34,6 +35,12 @@ export function AdminKycDetails({
 
   const [docRejectingKey, setDocRejectingKey] = useState<string | null>(null);
   const [docRejectReason, setDocRejectReason] = useState("");
+  const [previewDoc, setPreviewDoc] = useState<{
+    key: TKycDocumentKey;
+    label: string;
+    url: string;
+    status: string;
+  } | null>(null);
 
   const documentsReview = submission.documents_review ?? {};
 
@@ -163,15 +170,21 @@ export function AdminKycDetails({
 
                     <div className="flex flex-shrink-0 items-center gap-1">
                       {doc.url && (
-                        <a
-                          href={doc.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setPreviewDoc({
+                              key: doc.key,
+                              label: doc.label,
+                              url: doc.url!,
+                              status: docStatus,
+                            })
+                          }
                           className="rounded-lg p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                          title="Abrir documento"
+                          title="Ver documento"
                         >
-                          <ExternalLink size={16} />
-                        </a>
+                          <Eye size={16} />
+                        </button>
                       )}
                       {doc.url && docStatus === "pending" && (
                         <>
@@ -296,6 +309,27 @@ export function AdminKycDetails({
       {showBlockReasonModal && (
         <BlockReasonModal submissionId={submission.id} onUpdate={onUpdate} />
       )}
+
+      <KycDocumentPreviewModal
+        open={!!previewDoc}
+        onOpenChange={(open) => {
+          if (!open) setPreviewDoc(null);
+        }}
+        title={previewDoc?.label ?? "Documento"}
+        url={previewDoc?.url ?? null}
+        reviewMode
+        documentStatus={previewDoc?.status}
+        onApprove={async () => {
+          if (!previewDoc) return;
+          await handleApproveDocument(previewDoc.key);
+          toast.success("Documento aprovado");
+        }}
+        onReject={async (reason) => {
+          if (!previewDoc) return;
+          await handleRejectDocument(previewDoc.key, reason);
+          toast.success("Documento recusado");
+        }}
+      />
     </div>
   );
 }
