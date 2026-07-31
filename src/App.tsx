@@ -23,6 +23,7 @@ import AdminAcquirerConnectionConfigPage from "./presentation/pages/admin/AdminA
 import AdminCrm from "./presentation/pages/admin/AdminCrm";
 import AdminEmail from "./presentation/pages/admin/AdminEmail";
 import AdminFeeTemplates from "./presentation/pages/admin/AdminFeeTemplates";
+import AdminFeeTemplateFormPage from "./presentation/pages/admin/AdminFeeTemplateFormPage";
 import AdminGlobalFees from "./presentation/pages/admin/AdminGlobalFees";
 import AdminGoals from "./presentation/pages/admin/AdminGoals";
 import AdminManagers from "./presentation/pages/admin/AdminManagers";
@@ -243,6 +244,22 @@ export default function App() {
                   element={
                     <ProtectedRoute requiredRole="admin">
                       <AdminGeneralPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/fee-templates/create"
+                  element={
+                    <ProtectedRoute requiredRole="admin">
+                      <AdminFeeTemplateFormPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/fee-templates/:id"
+                  element={
+                    <ProtectedRoute requiredRole="admin">
+                      <AdminFeeTemplateFormPage />
                     </ProtectedRoute>
                   }
                 />
