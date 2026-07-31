@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { authClient } from "@/infra/auth/auth-client";
 import { parseSecretFromTotpUri } from "@/infra/auth/two-factor-utils";
+import PageHeader from "@/presentation/components/PageHeader";
 
 type TTwoFAStatus = "loading" | "disabled" | "verifying" | "enabled";
 
@@ -156,42 +157,38 @@ export function TwoFactorSettingsPanel({
 
   return (
     <>
-      <div className="mb-8">
-        <p className="text-xs font-medium text-muted-foreground/60 uppercase tracking-[0.2em] mb-2">
-          Segurança
-        </p>
-        <h1 className="text-lg font-semibold text-foreground tracking-tight">
-          Autenticação de dois fatores
-        </h1>
-        <p className="text-sm text-muted-foreground mt-1">{description}</p>
-      </div>
+      <PageHeader
+        eyebrow="Segurança"
+        title="Autenticação de dois fatores"
+        description={description}
+      />
 
       {status === "loading" && (
         <div className="flex justify-center py-24">
-          <Loader2 size={18} className="animate-spin text-muted-foreground" />
+          <Loader2 size={24} className="animate-spin text-muted-foreground" />
         </div>
       )}
 
       {status === "disabled" && (
         <div className="animate-fade-in space-y-5">
-          <div className="rounded-xl border border-border/40 bg-card p-5">
+          <div className="admin-surface p-5">
             <div className="flex items-center gap-3.5">
-              <div className="w-9 h-9 rounded-xl bg-amber-500/8 flex items-center justify-center shrink-0 border border-amber-500/10">
-                <AlertTriangle size={16} className="text-amber-500" />
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-warning/20 bg-warning/10">
+                <AlertTriangle size={16} className="text-warning" />
               </div>
               <div>
                 <h3 className="text-sm font-medium text-foreground">
                   2FA não ativado
                 </h3>
-                <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
+                <p className="mt-0.5 text-xs text-muted-foreground md:text-sm">
                   {disabledDescription}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="rounded-xl border border-border/30 p-5">
-            <p className="text-xs md:text-sm font-medium text-foreground mb-3.5">
+          <div className="admin-surface p-5">
+            <p className="mb-3.5 text-xs font-medium text-foreground md:text-sm">
               Como funciona?
             </p>
             <div className="space-y-3">
@@ -202,12 +199,10 @@ export function TwoFactorSettingsPanel({
                 "Pronto! Sua conta estará protegida",
               ].map((step, i) => (
                 <div key={i} className="flex items-center gap-3">
-                  <span className="w-5 h-5 rounded-md bg-primary/8 text-primary text-sm md:text-xs font-semibold flex items-center justify-center shrink-0 border border-primary/10">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-primary/10 bg-primary/8 text-xs font-semibold text-primary md:text-xs">
                     {i + 1}
                   </span>
-                  <span className="text-sm text-muted-foreground">
-                    {step}
-                  </span>
+                  <span className="text-sm text-muted-foreground">{step}</span>
                 </div>
               ))}
             </div>
@@ -216,7 +211,7 @@ export function TwoFactorSettingsPanel({
           <button
             onClick={() => openPasswordModal("enable")}
             disabled={loading}
-            className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:brightness-110 transition-all duration-300 disabled:opacity-40 flex items-center justify-center gap-2"
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-2.5 text-sm font-medium text-primary-foreground transition-all duration-300 hover:brightness-110 disabled:opacity-40"
           >
             {loading ? (
               <Loader2 size={14} className="animate-spin" />
@@ -230,16 +225,16 @@ export function TwoFactorSettingsPanel({
 
       {status === "verifying" && (
         <div className="animate-fade-in space-y-5">
-          <div className="rounded-xl border border-border/40 bg-card p-5">
+          <div className="admin-surface p-5">
             <div className="flex items-center gap-3.5">
-              <div className="w-9 h-9 rounded-xl bg-primary/8 flex items-center justify-center shrink-0 border border-primary/10">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-primary/10 bg-primary/8">
                 <Smartphone size={16} className="text-primary" />
               </div>
               <div>
                 <h3 className="text-sm font-medium text-foreground">
                   Configurar autenticador
                 </h3>
-                <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
+                <p className="mt-0.5 text-xs text-muted-foreground md:text-sm">
                   Escaneie o QR Code ou insira a chave manualmente.
                 </p>
               </div>
@@ -247,28 +242,27 @@ export function TwoFactorSettingsPanel({
           </div>
 
           <div className="flex justify-center">
-            <div className="relative p-3 bg-background rounded-xl border border-border/30 shadow-[0_0_20px_hsl(var(--primary)/0.15)] ring-1 ring-primary/10">
-              <div className="absolute -inset-[1px] rounded-xl bg-gradient-to-br from-primary/20 via-transparent to-primary/10 pointer-events-none" />
+            <div className="admin-surface relative p-3">
               <img
                 src={qrImageUrl}
                 alt="QR Code 2FA"
-                className="relative w-44 h-44 rounded-lg"
+                className="relative h-44 w-44 rounded-lg"
               />
             </div>
           </div>
 
           {secret && (
             <div>
-              <label className="text-xs font-medium text-muted-foreground/70 uppercase tracking-wider mb-1.5 block">
+              <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-muted-foreground/70">
                 Chave manual
               </label>
               <div className="flex items-center gap-2">
-                <code className="flex-1 px-3 py-2 rounded-lg bg-muted/30 border border-border/30 text-xs md:text-sm font-mono text-foreground select-all break-all leading-relaxed">
+                <code className="flex-1 select-all break-all rounded-lg border border-border/30 bg-muted/30 px-3 py-2 font-mono text-xs leading-relaxed text-foreground md:text-sm">
                   {secret}
                 </code>
                 <button
                   onClick={copySecret}
-                  className="p-2 rounded-lg border border-border/30 hover:bg-muted/30 transition-colors duration-200"
+                  className="rounded-lg border border-border/30 p-2 transition-colors duration-200 hover:bg-muted/30"
                 >
                   <Copy size={13} className="text-muted-foreground" />
                 </button>
@@ -277,7 +271,7 @@ export function TwoFactorSettingsPanel({
           )}
 
           <div>
-            <label className="text-xs font-medium text-muted-foreground/70 uppercase tracking-wider mb-1.5 block">
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-muted-foreground/70">
               Código de verificação
             </label>
             <input
@@ -288,7 +282,7 @@ export function TwoFactorSettingsPanel({
               }
               placeholder="000000"
               maxLength={6}
-              className="w-full px-4 py-2.5 rounded-xl bg-background border border-border/40 text-center text-lg font-mono tracking-[0.4em] text-foreground placeholder:text-muted-foreground/20 focus:outline-none focus:ring-2 focus:ring-primary/15 focus:border-primary/30 transition-all duration-300"
+              className="w-full rounded-xl border border-border/40 bg-background px-4 py-2.5 text-center font-mono text-lg tracking-[0.4em] text-foreground placeholder:text-muted-foreground/20 transition-all duration-300 focus:border-primary/30 focus:outline-none focus:ring-2 focus:ring-primary/15"
             />
           </div>
 
@@ -300,14 +294,14 @@ export function TwoFactorSettingsPanel({
                 setSecret("");
                 setVerifyCode("");
               }}
-              className="flex-1 py-2.5 rounded-xl border border-border/40 text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/20 transition-all duration-200"
+              className="flex-1 rounded-xl border border-border/40 py-2.5 text-sm font-medium text-muted-foreground transition-all duration-200 hover:bg-muted/20 hover:text-foreground"
             >
               Cancelar
             </button>
             <button
               onClick={handleVerify}
               disabled={loading || verifyCode.length !== 6}
-              className="flex-1 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-medium hover:brightness-110 transition-all duration-300 disabled:opacity-40 flex items-center justify-center gap-2"
+              className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-primary py-2.5 text-sm font-medium text-primary-foreground transition-all duration-300 hover:brightness-110 disabled:opacity-40"
             >
               {loading ? (
                 <Loader2 size={14} className="animate-spin" />
@@ -322,25 +316,25 @@ export function TwoFactorSettingsPanel({
 
       {status === "enabled" && (
         <div className="animate-fade-in space-y-5">
-          <div className="rounded-xl border border-border/40 bg-card p-5">
+          <div className="admin-surface p-5">
             <div className="flex items-center gap-3.5">
-              <div className="w-9 h-9 rounded-xl bg-primary/8 flex items-center justify-center shrink-0 border border-primary/10">
-                <CheckCircle2 size={16} className="text-primary" />
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-success/20 bg-success/10">
+                <CheckCircle2 size={16} className="text-success" />
               </div>
               <div>
                 <h3 className="text-sm font-medium text-foreground">
                   2FA ativado
                 </h3>
-                <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
+                <p className="mt-0.5 text-xs text-muted-foreground md:text-sm">
                   {enabledDescription}
                 </p>
               </div>
             </div>
           </div>
 
-          <div className="rounded-xl bg-primary/[0.03] border border-primary/10 p-4 flex items-start gap-3">
-            <ShieldCheck size={15} className="text-primary shrink-0 mt-0.5" />
-            <p className="text-sm text-muted-foreground leading-relaxed">
+          <div className="admin-surface flex items-start gap-3 border-primary/15 p-4">
+            <ShieldCheck size={15} className="mt-0.5 shrink-0 text-primary" />
+            <p className="text-sm leading-relaxed text-muted-foreground">
               A cada login, será solicitado o código do Google Authenticator para
               verificar sua identidade.
             </p>
@@ -349,7 +343,7 @@ export function TwoFactorSettingsPanel({
           <button
             onClick={() => openPasswordModal("disable")}
             disabled={disabling}
-            className="w-full py-2.5 rounded-xl border border-destructive/20 text-destructive text-sm font-medium hover:bg-destructive/5 transition-all duration-200 disabled:opacity-40 flex items-center justify-center gap-2"
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-destructive/20 py-2.5 text-sm font-medium text-destructive transition-all duration-200 hover:bg-destructive/5 disabled:opacity-40"
           >
             {disabling ? (
               <Loader2 size={14} className="animate-spin" />
@@ -367,10 +361,10 @@ export function TwoFactorSettingsPanel({
           onClick={() => setShowPasswordModal(false)}
         >
           <div
-            className="bg-card border border-border rounded-2xl w-full max-w-sm p-6"
+            className="admin-surface w-full max-w-sm p-6"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-base font-semibold text-foreground mb-4">
+            <h2 className="mb-4 text-base font-semibold text-foreground">
               {passwordAction === "enable" ? "Confirmar senha" : "Desativar 2FA"}
             </h2>
             <input
@@ -378,7 +372,7 @@ export function TwoFactorSettingsPanel({
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Sua senha"
-              className="w-full px-3 py-2.5 rounded-lg bg-muted/20 border border-border/40 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 transition-colors mb-4"
+              className="mb-4 w-full rounded-lg border border-border/40 bg-muted/20 px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:border-primary/40 focus:outline-none"
             />
             <div className="flex justify-end gap-2">
               <button
@@ -392,7 +386,7 @@ export function TwoFactorSettingsPanel({
                   passwordAction === "enable" ? handleEnable : handleDisable
                 }
                 disabled={loading || disabling || !password}
-                className="px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium disabled:opacity-40"
+                className="rounded-lg bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-40"
               >
                 {passwordAction === "enable" ? "Continuar" : "Desativar"}
               </button>

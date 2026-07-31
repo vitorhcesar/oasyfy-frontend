@@ -1,7 +1,9 @@
 import { getApiBaseUrl } from "@/infra/http/services/api/api-env";
+import PageHeader from "@/presentation/components/PageHeader";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import { useKycStatus } from "@/presentation/hooks/use-kyc-status";
+import { cn } from "@/presentation/utils/cn";
 import {
   AlertTriangle,
   Banknote,
@@ -75,17 +77,19 @@ export default function SellerApi() {
   if (kycApproved === false && !kycLoading) {
     return (
       <SellerLayout>
-        <div className="max-w-lg mx-auto py-20 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-destructive/10 flex items-center justify-center mx-auto mb-5">
-            <AlertTriangle size={24} className="text-destructive" />
+        <div className="mx-auto w-full max-w-5xl px-5 py-6 md:px-8 md:py-9">
+          <div className="mx-auto max-w-lg py-20 text-center">
+            <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/10">
+              <AlertTriangle size={24} className="text-destructive" />
+            </div>
+            <h2 className="mb-2 text-base font-semibold text-foreground">
+              KYC pendente
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Você precisa ter seu KYC aprovado para acessar a API. Complete ou
+              aguarde a aprovação dos seus documentos.
+            </p>
           </div>
-          <h2 className="text-lg font-bold text-foreground mb-2">
-            KYC pendente
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Você precisa ter seu KYC aprovado para acessar a API. Complete ou
-            aguarde a aprovação dos seus documentos.
-          </p>
         </div>
       </SellerLayout>
     );
@@ -93,22 +97,25 @@ export default function SellerApi() {
 
   return (
     <SellerLayout>
-      <div className="max-w-3xl mx-auto">
-        <h1 className="text-xl font-bold text-foreground mb-1">API</h1>
-        <p className="text-xs text-muted-foreground mb-6">
-          Gerencie suas chaves de acesso e restrições de IP
-        </p>
+      <div className="mx-auto w-full max-w-5xl px-5 py-6 md:px-8 md:py-9">
+        <PageHeader
+          eyebrow="Integração"
+          title="API"
+          description="Gerencie suas chaves de acesso e restrições de IP"
+        />
 
-        <div className="flex gap-1 border-b border-border/40 mb-6">
+        <div className="liquid-glass-control mb-6 flex flex-wrap items-center gap-0.5 rounded-2xl p-1">
           {tabs.map((tab) => (
             <button
               key={tab.id}
+              type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px ${
+              className={cn(
+                "inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-semibold transition-all",
                 activeTab === tab.id
-                  ? "border-primary text-primary"
-                  : "border-transparent text-muted-foreground hover:text-foreground"
-              }`}
+                  ? "bg-white text-[#0F0617] shadow-sm"
+                  : "text-muted-foreground hover:bg-white/10 hover:text-foreground",
+              )}
             >
               <tab.icon size={14} strokeWidth={1.8} />
               {tab.label}
@@ -194,9 +201,9 @@ function ApiKeysTab() {
   };
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6">
+    <div className="admin-surface p-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-sm font-semibold text-foreground">Suas chaves</h2>
+        <h2 className="text-base font-semibold text-foreground">Suas chaves</h2>
         <button
           onClick={() => setShowCreateModal(true)}
           className="flex items-center gap-1.5 text-xs text-primary font-medium hover:text-primary/80 transition-colors"
@@ -208,7 +215,7 @@ function ApiKeysTab() {
 
       {loading ? (
         <div className="flex justify-center py-8">
-          <Loader2 size={18} className="animate-spin text-muted-foreground" />
+          <Loader2 size={24} className="animate-spin text-muted-foreground" />
         </div>
       ) : keys.length === 0 ? (
         <p className="text-xs text-muted-foreground text-center py-8">
@@ -223,7 +230,7 @@ function ApiKeysTab() {
             >
               <div className="min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
-                  <span className="text-xs px-1.5 py-px rounded bg-emerald-500/15 text-emerald-500 font-medium uppercase tracking-wide">
+                  <span className="text-xs px-1.5 py-px rounded bg-success/15 text-success font-medium uppercase tracking-wide">
                     Live
                   </span>
                   <span className="text-xs font-medium text-foreground">
@@ -565,10 +572,10 @@ function AuthorizedIpsTab() {
   };
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6">
+    <div className="admin-surface p-6">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-sm font-semibold text-foreground">
+          <h2 className="text-base font-semibold text-foreground">
             IPs Autorizados
           </h2>
           <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
@@ -598,7 +605,7 @@ function AuthorizedIpsTab() {
 
       {loading ? (
         <div className="flex justify-center py-6">
-          <Loader2 size={18} className="animate-spin text-muted-foreground" />
+          <Loader2 size={24} className="animate-spin text-muted-foreground" />
         </div>
       ) : ips.length === 0 ? (
         <p className="text-xs text-muted-foreground text-center py-6">

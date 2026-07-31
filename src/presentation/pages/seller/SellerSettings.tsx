@@ -1,10 +1,12 @@
 import { authClient } from "@/infra/auth/auth-client";
+import PageHeader from "@/presentation/components/PageHeader";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import useFullSellerFeeQuery from "@/presentation/hooks/use-full-seller-fee-query";
 import { useSellerKycSubmissionQuery } from "@/presentation/hooks/use-seller-kyc-submission-query";
 import useSellerProfileQuery from "@/presentation/hooks/use-seller-profile-query";
 import { useUserContext } from "@/presentation/context/UserContext";
+import { cn } from "@/presentation/utils/cn";
 import { getErrorMessageOrDefault } from "@/presentation/utils/get-error-message-or-default";
 import { translateError } from "@/presentation/utils/translate-error";
 import {
@@ -141,10 +143,10 @@ function SecurityTab() {
   };
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 sm:p-8">
+    <div className="admin-surface p-6 sm:p-8">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-foreground">Segurança</h1>
+          <h2 className="text-base font-semibold text-foreground">Segurança</h2>
           <p className="text-xs text-muted-foreground mt-0.5">
             Gerencie o acesso à sua conta
           </p>
@@ -347,7 +349,7 @@ function SecurityTab() {
       {/* Dispositivos */}
       <div className="mt-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-sm font-medium text-foreground">
+          <h2 className="text-base font-semibold text-foreground">
             Sessões ativas
           </h2>
           <span className="text-xs md:text-sm text-muted-foreground">
@@ -357,7 +359,7 @@ function SecurityTab() {
 
         {loadingSessions ? (
           <div className="flex justify-center py-10">
-            <Loader2 size={18} className="animate-spin text-muted-foreground" />
+            <Loader2 size={24} className="animate-spin text-muted-foreground" />
           </div>
         ) : sessions.length === 0 ? (
           <p className="text-xs text-muted-foreground text-center py-10">
@@ -391,7 +393,7 @@ function SecurityTab() {
                           {parsed.device}
                         </p>
                         {active ? (
-                          <span className="text-sm md:text-xs px-1.5 py-px rounded bg-emerald-500/15 text-emerald-500 font-medium uppercase tracking-wide">
+                          <span className="text-sm md:text-xs px-1.5 py-px rounded bg-success/15 text-success font-medium uppercase tracking-wide">
                             Ativo
                           </span>
                         ) : (
@@ -543,57 +545,60 @@ export default function SellerSettings() {
   if (loading) {
     return (
       <SellerLayout>
-        <div className="flex-1 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <div className="flex flex-1 items-center justify-center">
+          <Loader2 size={24} className="animate-spin text-primary" />
         </div>
       </SellerLayout>
     );
   }
 
+  const settingsTabs = [
+    { key: "perfil" as const, label: "Perfil", icon: User },
+    {
+      key: "antecipacao" as const,
+      label: "Antecipação de valores",
+      icon: Wallet,
+    },
+    { key: "seguranca" as const, label: "Segurança", icon: Shield },
+    { key: "taxas" as const, label: "Minhas taxas", icon: Receipt },
+  ];
+
   return (
     <SellerLayout>
-      <div className="flex-1 px-4 sm:px-8 py-8 max-w-5xl mx-auto w-full">
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Left Sidebar Tabs */}
-          <nav className="lg:w-52 flex-shrink-0 space-y-0.5">
-            {[
-              { key: "perfil" as const, label: "Perfil", icon: User },
-              {
-                key: "antecipacao" as const,
-                label: "Antecipação de valores",
-                icon: Wallet,
-              },
-              { key: "seguranca" as const, label: "Segurança", icon: Shield },
-              { key: "taxas" as const, label: "Minhas taxas", icon: Receipt },
-            ].map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setActiveTab(tab.key)}
-                className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
-                  activeTab === tab.key
-                    ? "text-primary font-medium bg-primary/5"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <tab.icon
-                  size={16}
-                  className="flex-shrink-0"
-                  strokeWidth={activeTab === tab.key ? 2.2 : 1.8}
-                />
-                <span>{tab.label}</span>
-              </button>
-            ))}
-          </nav>
+      <div className="mx-auto w-full max-w-5xl px-5 py-6 md:px-8 md:py-9">
+        <PageHeader
+          eyebrow="Conta"
+          title="Detalhes da conta"
+          description="Gerencie perfil, segurança e taxas da sua conta"
+        />
 
-          {/* Content */}
-          <div className="flex-1">
+        <div className="liquid-glass-control mb-6 flex flex-wrap items-center gap-0.5 rounded-2xl p-1">
+          {settingsTabs.map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
+              className={cn(
+                "inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-semibold transition-all",
+                activeTab === tab.key
+                  ? "bg-white text-[#0F0617] shadow-sm"
+                  : "text-muted-foreground hover:bg-white/10 hover:text-foreground",
+              )}
+            >
+              <tab.icon size={15} strokeWidth={activeTab === tab.key ? 2.2 : 1.8} />
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        <div>
             {activeTab === "perfil" && (
-              <div className="rounded-2xl border border-border bg-card p-6 sm:p-8">
+              <div className="admin-surface p-6 sm:p-8">
                 {/* Header */}
                 <div className="mb-6">
-                  <h1 className="text-xl font-bold text-foreground">
-                    Detalhes da conta
-                  </h1>
+                  <h2 className="text-base font-semibold text-foreground">
+                    Perfil
+                  </h2>
                   <button
                     onClick={copyId}
                     className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
@@ -667,7 +672,7 @@ export default function SellerSettings() {
                       className="mt-1 relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer p-8 min-h-[220px]"
                     >
                       {uploading ? (
-                        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                        <Loader2 size={24} className="animate-spin text-primary" />
                       ) : avatarUrl ? (
                         <img
                           src={avatarUrl}
@@ -713,10 +718,10 @@ export default function SellerSettings() {
             )}
 
             {activeTab === "antecipacao" && (
-              <div className="rounded-2xl border border-border bg-card p-6 sm:p-8">
-                <h1 className="text-xl font-bold text-foreground mb-2">
+              <div className="admin-surface p-6 sm:p-8">
+                <h2 className="text-base font-semibold text-foreground mb-2">
                   Antecipação de valores
-                </h1>
+                </h2>
                 <p className="text-sm text-muted-foreground">
                   Configurações de antecipação em breve.
                 </p>
@@ -726,10 +731,10 @@ export default function SellerSettings() {
             {activeTab === "seguranca" && <SecurityTab />}
 
             {activeTab === "taxas" && (
-              <div className="rounded-2xl border border-border bg-card p-6 sm:p-8">
-                <h1 className="text-xl font-bold text-foreground mb-1">
+              <div className="admin-surface p-6 sm:p-8">
+                <h2 className="text-base font-semibold text-foreground mb-1">
                   Minhas taxas
-                </h1>
+                </h2>
                 <p className="text-xs text-muted-foreground mb-6">
                   Taxas aplicadas nas suas transações
                 </p>
@@ -737,7 +742,7 @@ export default function SellerSettings() {
                 {feesLoading ? (
                   <div className="flex justify-center py-8">
                     <Loader2
-                      size={18}
+                      size={24}
                       className="animate-spin text-muted-foreground"
                     />
                   </div>
@@ -844,7 +849,6 @@ export default function SellerSettings() {
                 </p>
               </div>
             )}
-          </div>
         </div>
       </div>
     </SellerLayout>

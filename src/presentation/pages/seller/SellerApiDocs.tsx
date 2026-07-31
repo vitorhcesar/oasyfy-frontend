@@ -1,8 +1,9 @@
 import { getApiBaseUrl } from "@/infra/http/services/api/api-env";
+import PageHeader from "@/presentation/components/PageHeader";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
+import { cn } from "@/presentation/utils/cn";
 import {
   ArrowRight,
-  BookOpen,
   ChevronDown,
   ChevronRight,
   Copy,
@@ -48,8 +49,8 @@ function CodeBlock({
   language?: string;
 }) {
   return (
-    <div className="relative group rounded-xl overflow-hidden border border-border/20">
-      <div className="flex items-center justify-between px-4 py-2 bg-muted/20 border-b border-border/10">
+    <div className="admin-surface relative group overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-border/10">
         <span className="text-xs font-mono uppercase tracking-widest text-muted-foreground/50">
           {language}
         </span>
@@ -72,10 +73,10 @@ function CodeBlock({
 
 function MethodBadge({ method }: { method: string }) {
   const styles: Record<string, string> = {
-    GET: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20",
-    POST: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20",
-    PUT: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
-    DELETE: "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20",
+    GET: "bg-success/10 text-success border-success/20",
+    POST: "bg-primary/10 text-primary border-primary/20",
+    PUT: "bg-warning/10 text-warning border-warning/20",
+    DELETE: "bg-destructive/10 text-destructive border-destructive/20",
   };
   return (
     <span
@@ -106,7 +107,7 @@ function ParamTable({
         <Hash size={11} className="text-muted-foreground/50" />
         {title}
       </h4>
-      <div className="rounded-xl border border-border/20 overflow-hidden">
+      <div className="admin-surface overflow-hidden">
         <table className="w-full text-xs">
           <thead>
             <tr className="bg-muted/15 border-b border-border/10">
@@ -740,13 +741,7 @@ function EndpointCard({
   const isInfo = endpoint.method === "INFO";
 
   return (
-    <div
-      className={`rounded-xl border transition-all duration-200 ${
-        expanded
-          ? "border-border/40 bg-card/50 shadow-sm"
-          : "border-border/20 hover:border-border/40"
-      }`}
-    >
+    <div className="admin-surface transition-all duration-200">
       <button
         onClick={() => setExpanded(!expanded)}
         className="w-full flex items-center gap-3 px-4 md:px-5 py-3.5 text-left group"
@@ -924,9 +919,9 @@ function EndpointCard({
                           className={`text-xs font-bold px-2 py-0.5 rounded-md ${
                             testResponse.status >= 200 &&
                             testResponse.status < 300
-                              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                              ? "bg-success/10 text-success"
                               : testResponse.status >= 400
-                              ? "bg-red-500/10 text-red-600 dark:text-red-400"
+                              ? "bg-destructive/10 text-destructive"
                               : "bg-muted/30 text-muted-foreground"
                           }`}
                         >
@@ -949,21 +944,21 @@ function EndpointCard({
 /* ── Status codes ── */
 
 const STATUS_CODES = [
-  { code: "200", desc: "Sucesso", color: "bg-emerald-500" },
-  { code: "201", desc: "Recurso criado com sucesso", color: "bg-emerald-500" },
+  { code: "200", desc: "Sucesso", color: "bg-success" },
+  { code: "201", desc: "Recurso criado com sucesso", color: "bg-success" },
   {
     code: "400",
     desc: "Requisição inválida (parâmetros faltando ou inválidos)",
-    color: "bg-amber-500",
+    color: "bg-warning",
   },
-  { code: "401", desc: "API key inválida ou ausente", color: "bg-red-500" },
+  { code: "401", desc: "API key inválida ou ausente", color: "bg-destructive" },
   {
     code: "403",
     desc: "Permissão negada ou IP não autorizado",
-    color: "bg-red-500",
+    color: "bg-destructive",
   },
   { code: "404", desc: "Recurso não encontrado", color: "bg-muted-foreground" },
-  { code: "500", desc: "Erro interno do servidor", color: "bg-red-500" },
+  { code: "500", desc: "Erro interno do servidor", color: "bg-destructive" },
 ];
 
 const SPLIT_RULES = [
@@ -984,34 +979,23 @@ export default function SellerApiDocs() {
 
   return (
     <SellerLayout>
-      <div className="max-w-5xl mx-auto px-4 md:px-8 py-6 md:py-8">
-        {/* Hero header */}
-        <div className="mb-8 md:mb-10">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-              <BookOpen size={18} className="text-primary" />
-            </div>
-            <div>
-              <h1 className="text-xl font-semibold text-foreground">
-                Documentação API
-              </h1>
-              <p className="text-xs text-muted-foreground">
-                Referência completa do gateway de pagamentos
-              </p>
-            </div>
-          </div>
+      <div className="mx-auto w-full max-w-5xl px-5 py-6 md:px-8 md:py-9">
+        <PageHeader
+          eyebrow="Integração"
+          title="Documentação API"
+          description="Referência completa do gateway de pagamentos"
+        />
 
-          {/* Base URL */}
-          <div className="mt-4 flex items-center gap-2 px-4 py-3 rounded-xl bg-muted/15 border border-border/20">
-            <Globe size={13} className="text-muted-foreground/50 shrink-0" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/50 shrink-0">
-              Base URL
-            </span>
-            <code className="text-xs font-mono text-foreground/80 flex-1 truncate">
-              {BASE_URL}
-            </code>
-            <CopyButton text={BASE_URL} />
-          </div>
+        {/* Base URL */}
+        <div className="admin-surface mb-8 flex items-center gap-2 px-4 py-3 md:mb-10">
+          <Globe size={13} className="text-muted-foreground/50 shrink-0" />
+          <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/50 shrink-0">
+            Base URL
+          </span>
+          <code className="text-xs font-mono text-foreground/80 flex-1 truncate">
+            {BASE_URL}
+          </code>
+          <CopyButton text={BASE_URL} />
         </div>
 
         <div className="flex gap-8">
@@ -1028,11 +1012,12 @@ export default function SellerApiDocs() {
                   <button
                     key={section.id}
                     onClick={() => setActiveSection(section.id)}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-medium transition-all text-left ${
+                    className={cn(
+                      "w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-medium transition-all text-left",
                       isActive
                         ? "bg-primary/8 text-primary border border-primary/10"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/20"
-                    }`}
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/20",
+                    )}
                   >
                     <Icon
                       size={14}
@@ -1057,18 +1042,19 @@ export default function SellerApiDocs() {
           {/* Content area */}
           <div className="flex-1 min-w-0">
             {/* Mobile nav */}
-            <div className="flex gap-1.5 overflow-x-auto md:hidden pb-4 mb-2 scrollbar-hide">
+            <div className="liquid-glass-control mb-4 flex gap-0.5 overflow-x-auto rounded-2xl p-1 md:hidden scrollbar-hide">
               {SECTIONS.map((section) => {
                 const Icon = section.icon;
                 return (
                   <button
                     key={section.id}
                     onClick={() => setActiveSection(section.id)}
-                    className={`shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium transition-all ${
+                    className={cn(
+                      "shrink-0 inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all",
                       activeSection === section.id
-                        ? "bg-primary/10 text-primary border border-primary/15"
-                        : "text-muted-foreground bg-muted/15 border border-border/10 hover:bg-muted/30"
-                    }`}
+                        ? "bg-white text-[#0F0617] shadow-sm"
+                        : "text-muted-foreground hover:bg-white/10 hover:text-foreground",
+                    )}
                   >
                     <Icon size={12} />
                     {section.title}
@@ -1121,9 +1107,9 @@ export default function SellerApiDocs() {
 
             {/* Status codes */}
             {activeSection === "auth" && (
-              <div className="mt-8 rounded-xl border border-border/20 overflow-hidden">
-                <div className="px-5 py-3.5 bg-muted/10 border-b border-border/10">
-                  <h3 className="text-xs font-semibold text-foreground">
+              <div className="admin-surface mt-8 overflow-hidden">
+                <div className="px-5 py-3.5 border-b border-border/10">
+                  <h3 className="text-base font-semibold text-foreground">
                     Códigos de Status HTTP
                   </h3>
                 </div>
@@ -1152,9 +1138,9 @@ export default function SellerApiDocs() {
 
             {/* Split rules */}
             {activeSection === "split" && (
-              <div className="mt-8 rounded-xl border border-border/20 overflow-hidden">
-                <div className="px-5 py-3.5 bg-muted/10 border-b border-border/10">
-                  <h3 className="text-xs font-semibold text-foreground">
+              <div className="admin-surface mt-8 overflow-hidden">
+                <div className="px-5 py-3.5 border-b border-border/10">
+                  <h3 className="text-base font-semibold text-foreground">
                     Regras do Split
                   </h3>
                 </div>

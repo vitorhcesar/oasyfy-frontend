@@ -1,4 +1,5 @@
 import { Transaction } from "@/domain/entities/transaction.entity";
+import PageHeader from "@/presentation/components/PageHeader";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import { Dialog, DialogContent } from "@/presentation/components/ui/dialog";
 import useSellerTransactionsQuery from "@/presentation/hooks/use-seller-transactions-query";
@@ -100,33 +101,33 @@ const statusConfig: Record<
 > = {
   pending: {
     label: "Pendente",
-    bg: "bg-amber-500/8",
-    text: "text-amber-600 dark:text-amber-400",
-    dot: "bg-amber-500",
+    bg: "bg-warning/10",
+    text: "text-warning",
+    dot: "bg-warning",
   },
   completed: {
     label: "Aprovada",
-    bg: "bg-primary/8",
+    bg: "bg-primary/10",
     text: "text-primary",
     dot: "bg-primary",
   },
   paid: {
     label: "Aprovada",
-    bg: "bg-primary/8",
+    bg: "bg-primary/10",
     text: "text-primary",
     dot: "bg-primary",
   },
   failed: {
     label: "Falhou",
-    bg: "bg-destructive/8",
+    bg: "bg-destructive/10",
     text: "text-destructive",
     dot: "bg-destructive",
   },
   refunded: {
     label: "Estornada",
-    bg: "bg-amber-500/8",
-    text: "text-amber-600 dark:text-amber-400",
-    dot: "bg-amber-500",
+    bg: "bg-warning/10",
+    text: "text-warning",
+    dot: "bg-warning",
   },
   cancelled: {
     label: "Cancelada",
@@ -219,143 +220,142 @@ export default function SellerTransactions() {
 
   return (
     <SellerLayout>
-      <div className="w-full max-w-5xl mx-auto px-3 md:px-6 py-6">
-        {/* Header */}
-        <div className="mb-5">
-          <h1 className="text-lg font-semibold text-foreground">Transações</h1>
-          <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
-            Histórico completo de movimentações
-          </p>
-        </div>
+      <div className="mx-auto w-full max-w-6xl px-5 py-6 md:px-8 md:py-9">
+        <PageHeader
+          eyebrow="Financeiro"
+          title="Transações"
+          description="Histórico completo de movimentações"
+        />
 
-        {/* Summary */}
-        <div className="grid grid-cols-3 gap-2 mb-5">
-          <div className="p-3.5 rounded-xl bg-card border border-border/40">
-            <p className="text-xs text-muted-foreground">Total</p>
-            <p className="text-sm font-semibold text-foreground">
+        <div className="mb-6 grid grid-cols-3 gap-3">
+          <div className="admin-surface p-4 md:p-5">
+            <p className="text-sm text-muted-foreground">Total</p>
+            <p className="mt-1 text-xl font-bold tracking-tight text-foreground tabular-nums md:text-2xl">
               {totalCount}
             </p>
           </div>
-          <div className="p-3.5 rounded-xl bg-card border border-border/40">
-            <p className="text-xs text-muted-foreground">Aprovadas</p>
-            <p className="text-sm font-semibold text-primary">{paidCount}</p>
+          <div className="admin-surface p-4 md:p-5">
+            <p className="text-sm text-muted-foreground">Aprovadas</p>
+            <p className="mt-1 text-xl font-bold tracking-tight text-primary tabular-nums md:text-2xl">
+              {paidCount}
+            </p>
           </div>
-          <div className="p-3.5 rounded-xl bg-card border border-border/40">
-            <p className="text-xs text-muted-foreground">Valor aprovado</p>
-            <p className="text-sm font-semibold text-foreground">
+          <div className="admin-surface admin-surface-featured p-4 md:p-5">
+            <p className="text-sm text-muted-foreground">Valor aprovado</p>
+            <p className="mt-1 text-xl font-bold tracking-tight text-foreground tabular-nums md:text-2xl">
               {formatCurrency(totalAmount)}
             </p>
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="flex flex-wrap items-center gap-2 mb-4">
-          <div className="relative flex-1 min-w-[180px] max-w-xs">
-            <Search
-              size={13}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/40"
-            />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar cliente, email ou ID..."
-              className="w-full pl-8 pr-3 py-2 rounded-lg bg-card border border-border/40 text-xs focus:outline-none focus:ring-1 focus:ring-primary/20 focus:border-primary/30 transition-all placeholder:text-muted-foreground/40"
-            />
+        <div className="admin-surface mb-6 p-4 md:p-5">
+          <h3 className="mb-4 text-sm font-semibold text-foreground">Filtros</h3>
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="relative min-w-[180px] flex-1 max-w-xs">
+              <Search
+                size={15}
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50"
+              />
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Buscar cliente, email ou ID..."
+                className="w-full rounded-xl border border-border/60 bg-background py-2.5 pl-10 pr-3.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+              />
+            </div>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
+              className="appearance-none rounded-xl border border-border/60 bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
+            >
+              <option value="all">Todos status</option>
+              <option value="pending">Pendente</option>
+              <option value="completed">Aprovada</option>
+              <option value="failed">Falhou</option>
+              <option value="refunded">Estornada</option>
+              <option value="cancelled">Cancelada</option>
+            </select>
+            <select
+              value={methodFilter}
+              onChange={(e) => setMethodFilter(e.target.value as MethodFilter)}
+              className="appearance-none rounded-xl border border-border/60 bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
+            >
+              <option value="all">Todos métodos</option>
+              <option value="pix">Pix</option>
+              <option value="card">Cartão</option>
+              <option value="boleto">Boleto</option>
+              <option value="crypto">Crypto</option>
+            </select>
           </div>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-            className="px-2.5 py-2 rounded-lg bg-card border border-border/40 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all"
-          >
-            <option value="all">Todos status</option>
-            <option value="pending">Pendente</option>
-            <option value="completed">Aprovada</option>
-            <option value="failed">Falhou</option>
-            <option value="refunded">Estornada</option>
-            <option value="cancelled">Cancelada</option>
-          </select>
-          <select
-            value={methodFilter}
-            onChange={(e) => setMethodFilter(e.target.value as MethodFilter)}
-            className="px-2.5 py-2 rounded-lg bg-card border border-border/40 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all"
-          >
-            <option value="all">Todos métodos</option>
-            <option value="pix">Pix</option>
-            <option value="card">Cartão</option>
-            <option value="boleto">Boleto</option>
-            <option value="crypto">Crypto</option>
-          </select>
         </div>
 
-        {/* Content */}
         {loading ? (
-          <div className="flex justify-center py-16">
-            <Loader2 size={18} className="animate-spin text-muted-foreground" />
+          <div className="flex justify-center py-24">
+            <Loader2 size={24} className="animate-spin text-muted-foreground" />
           </div>
         ) : filtered.length === 0 ? (
-          <div className="rounded-xl border border-border/40 bg-card p-12 text-center">
-            <div className="w-10 h-10 rounded-lg bg-muted/50 flex items-center justify-center mx-auto mb-3">
+          <div className="admin-surface px-6 py-16 text-center">
+            <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-muted/50">
               <Receipt className="text-muted-foreground/40" size={18} />
             </div>
-            <p className="text-xs font-medium text-foreground mb-0.5">
+            <p className="mb-0.5 text-sm font-medium text-foreground">
               Nenhuma transação
             </p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               As transações aparecerão aqui.
             </p>
           </div>
         ) : (
           <>
-            {/* Desktop table */}
-            <div className="hidden md:block rounded-xl bg-card border border-border/40 overflow-hidden">
-              <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 px-4 py-2.5 border-b border-border/30">
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <div className="admin-surface hidden overflow-hidden md:block">
+              <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 border-b border-border/40 px-5 py-3">
+                <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Cliente
                 </span>
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider w-24 text-right">
+                <span className="w-24 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Valor
                 </span>
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider w-16">
+                <span className="w-16 text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Método
                 </span>
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider w-20">
+                <span className="w-20 text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Status
                 </span>
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider w-28 text-right">
+                <span className="w-28 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Data
                 </span>
                 <span className="w-7" />
               </div>
-              <div className="divide-y divide-border/20">
+              <div className="divide-y divide-border/40">
                 {paginated.map((tx) => {
                   const isWithdrawal = tx.method === "withdrawal";
                   return (
                     <div
                       key={tx.id}
-                      className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] gap-4 px-4 py-3 items-center hover:bg-muted/10 transition-colors"
+                      className="grid grid-cols-[1fr_auto_auto_auto_auto_auto] items-center gap-4 px-5 py-3.5 transition-colors hover:bg-muted/10"
                     >
-                      <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="flex min-w-0 items-center gap-3">
                         <div
                           className={cn(
-                            "w-7 h-7 rounded-lg flex items-center justify-center shrink-0",
+                            "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
                             isWithdrawal
-                              ? "bg-amber-500/8 text-amber-500"
-                              : "bg-primary/8 text-primary"
+                              ? "bg-warning/10 text-warning"
+                              : "bg-primary/10 text-primary",
                           )}
                         >
                           {isWithdrawal ? (
-                            <ArrowUpRight size={12} strokeWidth={2} />
+                            <ArrowUpRight size={16} strokeWidth={2} />
                           ) : (
-                            <ArrowDownLeft size={12} strokeWidth={2} />
+                            <ArrowDownLeft size={16} strokeWidth={2} />
                           )}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-xs md:text-sm font-medium text-foreground truncate">
+                          <p className="truncate text-sm font-medium text-foreground">
                             {tx.customer_name}
                           </p>
                           {tx.customer_email && (
-                            <p className="text-sm md:text-xs text-muted-foreground truncate">
+                            <p className="truncate text-xs text-muted-foreground">
                               {tx.customer_email}
                             </p>
                           )}
@@ -363,27 +363,27 @@ export default function SellerTransactions() {
                       </div>
                       <span
                         className={cn(
-                          "text-xs font-semibold w-24 text-right tabular-nums",
-                          isWithdrawal ? "text-amber-500" : "text-foreground"
+                          "w-24 text-right text-sm font-semibold tabular-nums",
+                          isWithdrawal ? "text-warning" : "text-foreground",
                         )}
                       >
                         {isWithdrawal ? "- " : ""}
                         {formatCurrency(Math.abs(tx.amount))}
                       </span>
-                      <span className="text-xs text-muted-foreground w-16 font-medium">
+                      <span className="w-16 text-sm font-medium text-muted-foreground">
                         {methodLabels[tx.method] || tx.method}
                       </span>
                       <span className="w-20">
                         <StatusBadge status={tx.status} />
                       </span>
-                      <span className="text-xs text-muted-foreground w-28 text-right tabular-nums">
+                      <span className="w-28 text-right text-sm tabular-nums text-muted-foreground">
                         {formatDateTime(tx.created_at)}
                       </span>
                       <button
                         onClick={() => setSelectedTx(tx)}
-                        className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
+                        className="flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
                       >
-                        <Eye size={14} />
+                        <Eye size={16} />
                       </button>
                     </div>
                   );
@@ -391,37 +391,33 @@ export default function SellerTransactions() {
               </div>
             </div>
 
-            {/* Mobile card list */}
-            <div className="md:hidden space-y-2">
+            <div className="space-y-3 md:hidden">
               {paginated.map((tx) => {
                 const isWithdrawal = tx.method === "withdrawal";
                 return (
-                  <div
-                    key={tx.id}
-                    className="rounded-xl bg-card border border-border/40 p-3"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2 min-w-0">
+                  <div key={tx.id} className="admin-surface p-4">
+                    <div className="mb-2 flex items-center justify-between">
+                      <div className="flex min-w-0 items-center gap-3">
                         <div
                           className={cn(
-                            "w-7 h-7 rounded-lg flex items-center justify-center shrink-0",
+                            "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
                             isWithdrawal
-                              ? "bg-amber-500/8 text-amber-500"
-                              : "bg-primary/8 text-primary"
+                              ? "bg-warning/10 text-warning"
+                              : "bg-primary/10 text-primary",
                           )}
                         >
                           {isWithdrawal ? (
-                            <ArrowUpRight size={12} strokeWidth={2} />
+                            <ArrowUpRight size={16} strokeWidth={2} />
                           ) : (
-                            <ArrowDownLeft size={12} strokeWidth={2} />
+                            <ArrowDownLeft size={16} strokeWidth={2} />
                           )}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-xs md:text-sm font-medium text-foreground truncate">
+                          <p className="truncate text-sm font-medium text-foreground">
                             {tx.customer_name}
                           </p>
                           {tx.customer_email && (
-                            <p className="text-sm md:text-xs text-muted-foreground truncate">
+                            <p className="truncate text-xs text-muted-foreground">
                               {tx.customer_email}
                             </p>
                           )}
@@ -429,8 +425,8 @@ export default function SellerTransactions() {
                       </div>
                       <span
                         className={cn(
-                          "text-xs font-semibold tabular-nums shrink-0",
-                          isWithdrawal ? "text-amber-500" : "text-foreground"
+                          "shrink-0 text-sm font-semibold tabular-nums",
+                          isWithdrawal ? "text-warning" : "text-foreground",
                         )}
                       >
                         {isWithdrawal ? "- " : ""}
@@ -571,7 +567,7 @@ export default function SellerTransactions() {
                         : tx.status === "failed" || tx.status === "cancelled"
                         ? "bg-destructive/5"
                         : tx.status === "pending"
-                        ? "bg-amber-500/5"
+                        ? "bg-warning/5"
                         : "bg-muted/20"
                     )}
                   >
@@ -710,8 +706,8 @@ export default function SellerTransactions() {
                     )}
 
                     {tx.lock_reason && (
-                      <div className="rounded-xl bg-amber-500/5 border border-amber-500/10 p-3">
-                        <p className="text-sm font-medium text-amber-500 uppercase tracking-wider mb-1">
+                      <div className="rounded-xl bg-warning/5 border border-warning/10 p-3">
+                        <p className="mb-1 text-sm font-medium uppercase tracking-wider text-warning">
                           Motivo do bloqueio
                         </p>
                         <p className="text-xs text-foreground">

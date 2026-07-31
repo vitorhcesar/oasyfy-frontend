@@ -1,15 +1,10 @@
+import PageHeader from "@/presentation/components/PageHeader";
+import { Button } from "@/presentation/components/ui/button";
+import { Input } from "@/presentation/components/ui/input";
+import { useUserContext } from "@/presentation/context/UserContext";
 import useAdminManagersQuery from "@/presentation/hooks/use-admin-managers-query";
 import { useApiService } from "@/presentation/hooks/use-api-service";
-import { Button } from "@/presentation/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/presentation/components/ui/card";
-import { Input } from "@/presentation/components/ui/input";
 import { AdminLayout } from "@/presentation/layouts/AdminLayout";
-import { useUserContext } from "@/presentation/context/UserContext";
 import { Loader2, Mail, Shield, Trash2, UserPlus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -103,144 +98,130 @@ export default function AdminManagers() {
 
   return (
     <AdminLayout>
-      <div className="max-w-3xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-xl font-semibold text-foreground">
-            Administradores
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Gerencie quem tem acesso ao painel administrativo
-          </p>
-        </div>
+      <div className="mx-auto w-full max-w-3xl space-y-6 px-5 py-6 md:px-8 md:py-9">
+        <PageHeader
+          eyebrow="Equipe"
+          title="Administradores"
+          description="Gerencie quem tem acesso ao painel administrativo"
+          className="mb-0"
+        />
 
         {/* Add new admin */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <UserPlus size={18} />
-              Adicionar administrador
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleAddAdmin} className="space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1 block">
-                    Nome (opcional)
-                  </label>
-                  <Input
-                    value={fullName}
-                    onChange={(e) => setFullName(e.target.value)}
-                    placeholder="Nome completo"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-muted-foreground mb-1 block">
-                    Email
-                  </label>
-                  <Input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="admin@email.com"
-                    required
-                  />
-                </div>
-              </div>
+        <div className="admin-surface p-5 md:p-6">
+          <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-foreground">
+            <UserPlus size={18} />
+            Adicionar administrador
+          </h2>
+          <form onSubmit={handleAddAdmin} className="space-y-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div>
-                <label className="text-xs font-medium text-muted-foreground mb-1 block">
-                  Senha
+                <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                  Nome (opcional)
                 </label>
                 <Input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Mínimo 8 caracteres"
-                  required
-                  minLength={8}
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder="Nome completo"
                 />
               </div>
-              <Button
-                type="submit"
-                disabled={adding}
-                className="w-full sm:w-auto"
-              >
-                {adding ? (
-                  <Loader2 size={16} className="animate-spin" />
-                ) : (
-                  <UserPlus size={16} />
-                )}
-                {adding ? "Adicionando..." : "Adicionar"}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                  Email
+                </label>
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="admin@email.com"
+                  required
+                />
+              </div>
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                Senha
+              </label>
+              <Input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Mínimo 8 caracteres"
+                required
+                minLength={8}
+              />
+            </div>
+            <Button type="submit" disabled={adding} className="w-full sm:w-auto">
+              {adding ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <UserPlus size={16} />
+              )}
+              {adding ? "Adicionando..." : "Adicionar"}
+            </Button>
+          </form>
+        </div>
 
         {/* Admin list */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <Shield size={18} />
-              Administradores ativos ({admins.length})
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="flex items-center justify-center py-8 text-muted-foreground">
-                <Loader2 size={20} className="animate-spin mr-2" />
-                Carregando...
-              </div>
-            ) : admins.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-6">
-                Nenhum administrador encontrado
-              </p>
-            ) : (
-              <div className="space-y-2">
-                {admins.map((admin) => (
-                  <div
-                    key={admin.user_id}
-                    className="flex items-center justify-between p-3 rounded-lg border border-border bg-background"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <Shield size={16} className="text-primary" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">
-                          {admin.full_name || "Sem nome"}
-                          {admin.user_id === user?.id && (
-                            <span className="ml-2 text-sm font-normal text-muted-foreground">
-                              (você)
-                            </span>
-                          )}
-                        </p>
-                        <p className="text-xs text-muted-foreground flex items-center gap-1 truncate">
-                          <Mail size={11} />
-                          {admin.email}
-                        </p>
-                      </div>
+        <div className="admin-surface p-5 md:p-6">
+          <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-foreground">
+            <Shield size={18} />
+            Administradores ativos ({admins.length})
+          </h2>
+          {loading ? (
+            <div className="flex items-center justify-center py-8 text-muted-foreground">
+              <Loader2 size={24} className="mr-2 animate-spin" />
+              Carregando...
+            </div>
+          ) : admins.length === 0 ? (
+            <p className="py-6 text-center text-sm text-muted-foreground">
+              Nenhum administrador encontrado
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {admins.map((admin) => (
+                <div
+                  key={admin.user_id}
+                  className="flex items-center justify-between rounded-xl border border-border/50 bg-background p-3"
+                >
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full bg-primary/10">
+                      <Shield size={16} className="text-primary" />
                     </div>
-                    {admin.user_id !== user?.id && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleRemoveAdmin(admin.user_id)}
-                        disabled={removing === admin.user_id}
-                        className="text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex-shrink-0"
-                      >
-                        {removing === admin.user_id ? (
-                          <Loader2 size={16} className="animate-spin" />
-                        ) : (
-                          <Trash2 size={16} />
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-foreground">
+                        {admin.full_name || "Sem nome"}
+                        {admin.user_id === user?.id && (
+                          <span className="ml-2 text-sm font-normal text-muted-foreground">
+                            (você)
+                          </span>
                         )}
-                      </Button>
-                    )}
+                      </p>
+                      <p className="flex items-center gap-1 truncate text-xs text-muted-foreground">
+                        <Mail size={11} />
+                        {admin.email}
+                      </p>
+                    </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  {admin.user_id !== user?.id && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleRemoveAdmin(admin.user_id)}
+                      disabled={removing === admin.user_id}
+                      className="flex-shrink-0 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+                    >
+                      {removing === admin.user_id ? (
+                        <Loader2 size={16} className="animate-spin" />
+                      ) : (
+                        <Trash2 size={16} />
+                      )}
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </AdminLayout>
   );

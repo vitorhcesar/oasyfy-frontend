@@ -1,5 +1,6 @@
 import { Transaction } from "@/domain/entities/transaction.entity";
 import KycWithdrawalDetails from "@/presentation/components/KycOnboarding/KycWithdrawalDetails";
+import PageHeader from "@/presentation/components/PageHeader";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import { WithdrawalModal } from "@/presentation/components/seller/WithdrawalModal";
 import { Calendar } from "@/presentation/components/ui/calendar";
@@ -98,27 +99,27 @@ function StatusBadge({ status }: { status: string }) {
     pending: {
       label: "Pendente",
       icon: Clock,
-      className: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+      className: "bg-warning/10 text-warning",
     },
     paid: {
       label: "Concluído",
       icon: CheckCircle2,
-      className: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+      className: "bg-success/10 text-success",
     },
     completed: {
       label: "Concluído",
       icon: CheckCircle2,
-      className: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+      className: "bg-success/10 text-success",
     },
     failed: {
       label: "Falhou",
       icon: XCircle,
-      className: "bg-red-500/10 text-red-600 dark:text-red-400",
+      className: "bg-destructive/10 text-destructive",
     },
     rejected: {
       label: "Negado",
       icon: XCircle,
-      className: "bg-red-500/10 text-red-600 dark:text-red-400",
+      className: "bg-destructive/10 text-destructive",
     },
     cancelled: {
       label: "Cancelado",
@@ -136,7 +137,7 @@ function StatusBadge({ status }: { status: string }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium",
+        "inline-flex items-center gap-1 rounded-lg px-2 py-0.5 text-xs font-medium",
         s.className,
       )}
     >
@@ -398,57 +399,53 @@ export default function SellerTransfers() {
     {
       label: "Saques pendentes",
       value: formatCurrency(totalPending),
-      color: "text-amber-500",
+      color: "text-warning",
     },
     {
       label: "Total sacado",
       value: formatCurrency(totalCompleted),
-      color: "text-emerald-500",
+      color: "text-success",
     },
   ];
 
   return (
     <SellerLayout>
-      <div className="w-full max-w-4xl mx-auto px-4 md:px-8 lg:px-10 py-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
-          <div>
-            <h1 className="text-lg font-semibold text-foreground">
-              Transferências
-            </h1>
-            <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
-              Gerencie seus saques e acompanhe o histórico
-            </p>
-          </div>
-          <button
-            onClick={handleRequestWithdrawal}
-            disabled={withdrawalBlocked || !canSell}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs md:text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {withdrawalBlocked ? (
-              <Lock size={13} />
-            ) : (
-              <ArrowUpRight size={13} />
-            )}
-            {withdrawalBlocked
-              ? "Saque bloqueado"
-              : needsWithdrawalDetails
-                ? "Completar dados para saque"
-                : awaitingWithdrawalApproval
-                  ? "Aguardando aprovação"
-                  : "Solicitar saque"}
-          </button>
-        </div>
+      <div className="mx-auto w-full max-w-6xl px-5 py-6 md:px-8 md:py-9">
+        <PageHeader
+          eyebrow="Financeiro"
+          title="Transferências"
+          description="Gerencie seus saques e acompanhe o histórico"
+          actions={
+            <button
+              onClick={handleRequestWithdrawal}
+              disabled={withdrawalBlocked || !canSell}
+              className="flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {withdrawalBlocked ? (
+                <Lock size={14} />
+              ) : (
+                <ArrowUpRight size={14} />
+              )}
+              {withdrawalBlocked
+                ? "Saque bloqueado"
+                : needsWithdrawalDetails
+                  ? "Completar dados para saque"
+                  : awaitingWithdrawalApproval
+                    ? "Aguardando aprovação"
+                    : "Solicitar saque"}
+            </button>
+          }
+        />
 
         {withdrawalBlocked && (
-          <div className="mb-5 rounded-xl border border-destructive/30 bg-destructive/5 p-4 flex items-start gap-3">
-            <Lock size={16} className="text-destructive mt-0.5 flex-shrink-0" />
+          <div className="admin-surface mb-6 flex items-start gap-3 border-destructive/30 p-4 md:p-5">
+            <Lock size={16} className="mt-0.5 flex-shrink-0 text-destructive" />
             <div>
               <p className="text-sm font-medium text-destructive">
                 Saques bloqueados
               </p>
               {blockReason && (
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="mt-1 text-xs text-muted-foreground">
                   Motivo: {blockReason}
                 </p>
               )}
@@ -457,13 +454,13 @@ export default function SellerTransfers() {
         )}
 
         {!withdrawalBlocked && needsWithdrawalDetails && (
-          <div className="mb-5 rounded-xl border border-primary/20 bg-primary/5 p-4 flex items-start gap-3">
-            <Lock size={16} className="text-primary mt-0.5 flex-shrink-0" />
+          <div className="admin-surface mb-6 flex items-start gap-3 border-primary/20 p-4 md:p-5">
+            <Lock size={16} className="mt-0.5 flex-shrink-0 text-primary" />
             <div>
               <p className="text-sm font-medium text-foreground">
                 Complete endereço e dados bancários
               </p>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="mt-1 text-xs text-muted-foreground">
                 As vendas já podem estar liberadas. Para sacar, envie endereço e
                 conta/PIX para análise.
               </p>
@@ -472,13 +469,16 @@ export default function SellerTransfers() {
         )}
 
         {!withdrawalBlocked && awaitingWithdrawalApproval && (
-          <div className="mb-5 rounded-xl border border-border/60 bg-muted/20 p-4 flex items-start gap-3">
-            <Clock size={16} className="text-muted-foreground mt-0.5 flex-shrink-0" />
+          <div className="admin-surface mb-6 flex items-start gap-3 p-4 md:p-5">
+            <Clock
+              size={16}
+              className="mt-0.5 flex-shrink-0 text-muted-foreground"
+            />
             <div>
               <p className="text-sm font-medium text-foreground">
                 Dados de saque em análise
               </p>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="mt-1 text-xs text-muted-foreground">
                 Endereço e banco foram enviados. Assim que forem aprovados, os
                 saques serão liberados.
               </p>
@@ -486,237 +486,236 @@ export default function SellerTransfers() {
           </div>
         )}
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-3 gap-2 mb-5">
+        <div className="mb-6 grid grid-cols-3 gap-3">
           {statCards.map((c) => (
-            <div
-              key={c.label}
-              className="p-3 rounded-xl bg-card border border-border/40"
-            >
-              <p className="text-xs text-muted-foreground mb-0.5">{c.label}</p>
-              <p className={cn("text-sm font-bold tabular-nums", c.color)}>
+            <div key={c.label} className="admin-surface p-4 md:p-5">
+              <p className="text-sm text-muted-foreground">{c.label}</p>
+              <p
+                className={cn(
+                  "mt-1 text-xl font-bold tracking-tight tabular-nums md:text-2xl",
+                  c.color,
+                )}
+              >
                 {c.value}
               </p>
             </div>
           ))}
         </div>
 
-        {/* Filters */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-4">
-          <div className="relative flex-1">
-            <Search
-              size={13}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-            />
-            <input
-              type="text"
-              placeholder="Buscar por ID ou descrição..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-8 pr-3 py-2 rounded-lg border border-border/40 bg-background text-xs text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-all"
-            />
-          </div>
-          <div className="flex gap-1">
-            {[
-              { key: "all", label: "Todos" },
-              { key: "pending", label: "Pendente" },
-              { key: "paid", label: "Concluído" },
-              { key: "rejected", label: "Negado" },
-              { key: "failed", label: "Falhou" },
-            ].map((f) => (
-              <button
-                key={f.key}
-                onClick={() => setStatusFilter(f.key)}
-                className={cn(
-                  "px-3 py-1.5 rounded-lg text-xs md:text-sm font-medium transition-colors",
-                  statusFilter === f.key
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/30",
-                )}
-              >
-                {f.label}
-              </button>
-            ))}
-          </div>
-          <Popover>
-            <PopoverTrigger asChild>
-              <button
-                className={cn(
-                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs md:text-sm font-medium transition-all",
-                  dateFrom || dateTo
-                    ? "bg-primary/10 text-primary border border-primary/20"
-                    : "bg-card border border-border/40 text-muted-foreground hover:text-foreground",
-                )}
-              >
-                <CalendarIcon size={12} />
-                {dateFrom && dateTo
-                  ? `${format(dateFrom, "dd/MM", { locale: ptBR })} - ${format(
-                      dateTo,
-                      "dd/MM",
-                      { locale: ptBR },
-                    )}`
-                  : "Período"}
-              </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-3" align="end">
-              <div className="flex flex-col sm:grid sm:grid-cols-2 gap-3">
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">De</p>
-                  <Calendar
-                    mode="single"
-                    selected={dateFrom}
-                    onSelect={setDateFrom}
-                    disabled={(d) => d > new Date()}
-                    className="p-2 rounded-lg border border-border/40"
-                    locale={ptBR}
-                  />
-                </div>
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">Até</p>
-                  <Calendar
-                    mode="single"
-                    selected={dateTo}
-                    onSelect={setDateTo}
-                    disabled={(d) =>
-                      d > new Date() || (dateFrom ? d < dateFrom : false)
-                    }
-                    className="p-2 rounded-lg border border-border/40"
-                    locale={ptBR}
-                  />
-                </div>
-              </div>
-              {(dateFrom || dateTo) && (
+        <div className="admin-surface mb-6 p-4 md:p-5">
+          <h3 className="mb-4 text-sm font-semibold text-foreground">Filtros</h3>
+          <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+            <div className="relative flex-1">
+              <Search
+                size={15}
+                className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/50"
+              />
+              <input
+                type="text"
+                placeholder="Buscar por ID ou descrição..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full rounded-xl border border-border/60 bg-background py-2.5 pl-10 pr-3.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+              />
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {[
+                { key: "all", label: "Todos" },
+                { key: "pending", label: "Pendente" },
+                { key: "paid", label: "Concluído" },
+                { key: "rejected", label: "Negado" },
+                { key: "failed", label: "Falhou" },
+              ].map((f) => (
                 <button
-                  onClick={() => {
-                    setDateFrom(undefined);
-                    setDateTo(undefined);
-                  }}
-                  className="mt-2 text-xs text-primary hover:underline"
+                  key={f.key}
+                  onClick={() => setStatusFilter(f.key)}
+                  className={cn(
+                    "rounded-xl px-3 py-2 text-sm font-medium transition-colors",
+                    statusFilter === f.key
+                      ? "bg-primary/10 text-primary"
+                      : "text-muted-foreground hover:bg-muted/30 hover:text-foreground",
+                  )}
                 >
-                  Limpar filtro
+                  {f.label}
                 </button>
-              )}
-            </PopoverContent>
-          </Popover>
+              ))}
+            </div>
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  className={cn(
+                    "flex items-center gap-1.5 rounded-xl border px-3 py-2.5 text-sm font-medium transition-all",
+                    dateFrom || dateTo
+                      ? "border-primary/20 bg-primary/10 text-primary"
+                      : "border-border/60 bg-background text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  <CalendarIcon size={14} />
+                  {dateFrom && dateTo
+                    ? `${format(dateFrom, "dd/MM", { locale: ptBR })} - ${format(
+                        dateTo,
+                        "dd/MM",
+                        { locale: ptBR },
+                      )}`
+                    : "Período"}
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-3" align="end">
+                <div className="flex flex-col gap-3 sm:grid sm:grid-cols-2">
+                  <div>
+                    <p className="mb-1 text-xs text-muted-foreground">De</p>
+                    <Calendar
+                      mode="single"
+                      selected={dateFrom}
+                      onSelect={setDateFrom}
+                      disabled={(d) => d > new Date()}
+                      className="rounded-xl border border-border/60 p-2"
+                      locale={ptBR}
+                    />
+                  </div>
+                  <div>
+                    <p className="mb-1 text-xs text-muted-foreground">Até</p>
+                    <Calendar
+                      mode="single"
+                      selected={dateTo}
+                      onSelect={setDateTo}
+                      disabled={(d) =>
+                        d > new Date() || (dateFrom ? d < dateFrom : false)
+                      }
+                      className="rounded-xl border border-border/60 p-2"
+                      locale={ptBR}
+                    />
+                  </div>
+                </div>
+                {(dateFrom || dateTo) && (
+                  <button
+                    onClick={() => {
+                      setDateFrom(undefined);
+                      setDateTo(undefined);
+                    }}
+                    className="mt-2 text-sm font-medium text-primary hover:underline"
+                  >
+                    Limpar filtro
+                  </button>
+                )}
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
 
-        {/* List */}
         {loading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 size={18} className="animate-spin text-muted-foreground" />
+          <div className="flex justify-center py-24">
+            <Loader2 size={24} className="animate-spin text-muted-foreground" />
           </div>
         ) : filtered.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-border/50 bg-muted/10 py-12 text-center">
-            <ArrowUpRight
-              size={24}
-              className="mx-auto text-muted-foreground/30 mb-3"
-            />
-            <p className="text-sm font-medium text-foreground mb-1">
+          <div className="admin-surface px-6 py-16 text-center">
+            <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-muted/50">
+              <ArrowUpRight className="text-muted-foreground/40" size={18} />
+            </div>
+            <p className="mb-0.5 text-sm font-medium text-foreground">
               Nenhuma transferência encontrada
             </p>
-            <p className="text-xs md:text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               Solicite seu primeiro saque para começar.
             </p>
           </div>
         ) : (
           <>
-            {/* Desktop */}
-            <div className="hidden md:block rounded-xl bg-card border border-border/40 overflow-hidden">
-              <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 px-4 py-2.5 border-b border-border/30">
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <div className="admin-surface hidden overflow-hidden md:block">
+              <div className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 border-b border-border/40 px-5 py-3">
+                <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Descrição
                 </span>
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider w-24 text-right">
+                <span className="w-24 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Valor
                 </span>
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider w-20">
+                <span className="w-20 text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Status
                 </span>
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider w-28 text-right">
+                <span className="w-28 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Data
                 </span>
-                <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider w-8"></span>
+                <span className="w-9" />
               </div>
-              <div className="divide-y divide-border/20">
+              <div className="divide-y divide-border/40">
                 {filtered.map((w) => (
                   <div
                     key={w.id}
-                    className="grid grid-cols-[1fr_auto_auto_auto_auto] gap-4 px-4 py-3 items-center hover:bg-muted/10 transition-colors"
+                    className="grid grid-cols-[1fr_auto_auto_auto_auto] items-center gap-4 px-5 py-3.5 transition-colors hover:bg-muted/10"
                   >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-7 h-7 rounded-lg bg-amber-500/8 text-amber-500 flex items-center justify-center shrink-0">
-                        <ArrowUpRight size={12} strokeWidth={2} />
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-warning/10 text-warning">
+                        <ArrowUpRight size={16} strokeWidth={2} />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-xs md:text-sm font-medium text-foreground truncate">
+                        <p className="truncate text-sm font-medium text-foreground">
                           {w.description || "Saque"}
                         </p>
-                        <p className="text-sm md:text-xs text-muted-foreground truncate font-mono">
+                        <p className="truncate font-mono text-xs text-muted-foreground">
                           {w.id.slice(0, 8)}...
                         </p>
                         {w.status === "rejected" &&
                           w.metadata?.denial_reason && (
-                            <p className="text-sm text-destructive truncate mt-0.5">
+                            <p className="mt-0.5 truncate text-sm text-destructive">
                               Motivo: {w.metadata.denial_reason}
                             </p>
                           )}
                       </div>
                     </div>
-                    <span className="text-xs font-semibold text-amber-500 w-24 text-right tabular-nums">
+                    <span className="w-24 text-right text-sm font-semibold tabular-nums text-warning">
                       - {formatCurrency(w.amount)}
                     </span>
                     <span className="w-20">
                       <StatusBadge status={w.status} />
                     </span>
-                    <span className="text-xs text-muted-foreground w-28 text-right tabular-nums">
+                    <span className="w-28 text-right text-sm tabular-nums text-muted-foreground">
                       {formatDateTime(w.created_at)}
                     </span>
                     <button
                       onClick={() => setDetailW(w)}
-                      className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-muted/30 transition-colors text-muted-foreground hover:text-foreground"
+                      className="flex h-9 w-9 items-center justify-center rounded-xl text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
                     >
-                      <Eye size={14} />
+                      <Eye size={16} />
                     </button>
                   </div>
                 ))}
               </div>
             </div>
 
-            {/* Mobile */}
-            <div className="md:hidden space-y-2">
+            <div className="space-y-3 md:hidden">
               {filtered.map((w) => (
                 <div
                   key={w.id}
-                  className="rounded-xl bg-card border border-border/40 p-3"
+                  className="admin-surface p-4"
                   onClick={() => setDetailW(w)}
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <div className="w-7 h-7 rounded-lg bg-amber-500/8 text-amber-500 flex items-center justify-center shrink-0">
-                        <ArrowUpRight size={12} strokeWidth={2} />
+                  <div className="mb-2 flex items-center justify-between">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-warning/10 text-warning">
+                        <ArrowUpRight size={16} strokeWidth={2} />
                       </div>
                       <div className="min-w-0">
-                        <p className="text-xs md:text-sm font-medium text-foreground truncate">
+                        <p className="truncate text-sm font-medium text-foreground">
                           {w.description || "Saque"}
                         </p>
-                        <p className="text-sm md:text-xs text-muted-foreground font-mono">
+                        <p className="font-mono text-xs text-muted-foreground">
                           {w.id.slice(0, 8)}...
                         </p>
                         {w.status === "rejected" &&
                           w.metadata?.denial_reason && (
-                            <p className="text-sm text-destructive truncate mt-0.5">
+                            <p className="mt-0.5 truncate text-sm text-destructive">
                               Motivo: {w.metadata.denial_reason}
                             </p>
                           )}
                       </div>
                     </div>
-                    <span className="text-xs font-semibold text-amber-500 tabular-nums shrink-0">
+                    <span className="shrink-0 text-sm font-semibold tabular-nums text-warning">
                       - {formatCurrency(w.amount)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <StatusBadge status={w.status} />
-                    <span className="text-sm md:text-xs text-muted-foreground tabular-nums">
+                    <span className="text-sm tabular-nums text-muted-foreground">
                       {formatDateTime(w.created_at)}
                     </span>
                   </div>
@@ -826,7 +825,7 @@ export default function SellerTransfers() {
                         ? "bg-gradient-to-b from-destructive/8 to-transparent"
                         : isPaidW
                           ? "bg-gradient-to-b from-primary/8 to-transparent"
-                          : "bg-gradient-to-b from-amber-500/8 to-transparent",
+                          : "bg-gradient-to-b from-warning/8 to-transparent",
                     )}
                   >
                     <div
@@ -836,7 +835,7 @@ export default function SellerTransfers() {
                           ? "bg-destructive/10 text-destructive"
                           : isPaidW
                             ? "bg-primary/10 text-primary"
-                            : "bg-amber-500/10 text-amber-500",
+                            : "bg-warning/10 text-warning",
                       )}
                     >
                       {isRejected ? (
@@ -861,7 +860,7 @@ export default function SellerTransfers() {
                           ? "text-destructive"
                           : isPaidW
                             ? "text-primary"
-                            : "text-amber-500",
+                            : "text-warning",
                       )}
                     >
                       {formatCurrency(Math.abs(detailW.amount))}

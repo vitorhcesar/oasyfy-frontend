@@ -9,6 +9,7 @@ import {
 } from "@/infra/http/services/api/modules/types/kyc-submission-document-keys";
 import KycDocumentPreviewModal from "@/presentation/components/KycDocumentPreviewModal";
 import KycWithdrawalDetails from "@/presentation/components/KycOnboarding/KycWithdrawalDetails";
+import PageHeader from "@/presentation/components/PageHeader";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import { useSellerKycSubmissionQuery } from "@/presentation/hooks/use-seller-kyc-submission-query";
 import {
@@ -167,19 +168,8 @@ export default function SellerKyc() {
   if (isLoading) {
     return (
       <SellerLayout>
-        <div className="flex-1 flex items-center justify-center min-h-screen">
-          <div className="flex flex-col items-center gap-4">
-            <div className="relative w-10 h-10">
-              <div className="absolute inset-0 rounded-full border-2 border-border" />
-              <div
-                className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary"
-                style={{ animation: "spin 0.8s linear infinite" }}
-              />
-            </div>
-            <p className="text-xs text-muted-foreground tracking-wide">
-              Carregando...
-            </p>
-          </div>
+        <div className="mx-auto flex w-full max-w-4xl items-center justify-center px-5 py-24 md:px-8">
+          <Loader2 size={24} className="animate-spin text-muted-foreground" />
         </div>
       </SellerLayout>
     );
@@ -188,7 +178,7 @@ export default function SellerKyc() {
   if (!kyc) {
     return (
       <SellerLayout>
-        <div className="flex-1 flex flex-col items-center justify-center min-h-screen gap-3">
+        <div className="mx-auto flex w-full max-w-4xl flex-col items-center justify-center gap-3 px-5 py-24 md:px-8">
           <CircleDot className="text-muted-foreground/30" size={32} />
           <p className="text-sm text-muted-foreground">
             Nenhum KYC encontrado.
@@ -234,41 +224,40 @@ export default function SellerKyc() {
 
   return (
     <SellerLayout>
-      <div className="px-4 md:px-6 lg:px-12 py-6 md:py-10 max-w-4xl mx-auto">
-        <div className="mb-10 animate-fade-in">
-          <h1 className="text-3xl font-light text-foreground tracking-tight">
-            Status KYC
-          </h1>
-          <p className="text-muted-foreground text-sm mt-2 font-light">
-            {allApproved
+      <div className="mx-auto w-full max-w-4xl px-5 py-6 md:px-8 md:py-9">
+        <PageHeader
+          eyebrow="Conta"
+          title="Verificação KYC"
+          description={
+            allApproved
               ? "Sua verificação foi concluída com sucesso."
               : overallStatus === "rejected"
                 ? "Alguns itens precisam da sua atenção."
-                : "Estamos analisando seus dados. Isso não deve demorar."}
-          </p>
-        </div>
+                : "Estamos analisando seus dados. Isso não deve demorar."
+          }
+        />
 
         <div
-          className="mb-10 animate-fade-in"
+          className="mb-8 animate-fade-in"
           style={{ animationDelay: "50ms" }}
         >
           <div className="flex items-center gap-6">
             <div
-              className={`inline-flex items-center gap-2.5 px-5 py-2.5 rounded-full text-xs font-medium tracking-wide border ${
+              className={`inline-flex items-center gap-2.5 rounded-full border px-5 py-2.5 text-xs font-medium tracking-wide ${
                 allApproved
-                  ? "border-primary/20 bg-primary/5 text-primary"
+                  ? "border-success/25 bg-success/10 text-success"
                   : overallStatus === "rejected"
-                    ? "border-destructive/20 bg-destructive/5 text-destructive"
-                    : "border-border bg-muted/30 text-muted-foreground"
+                    ? "border-destructive/25 bg-destructive/10 text-destructive"
+                    : "border-warning/25 bg-warning/10 text-warning"
               }`}
             >
               <div
-                className={`w-1.5 h-1.5 rounded-full ${
+                className={`h-1.5 w-1.5 rounded-full ${
                   allApproved
-                    ? "bg-primary"
+                    ? "bg-success"
                     : overallStatus === "rejected"
                       ? "bg-destructive"
-                      : "bg-muted-foreground"
+                      : "bg-warning"
                 } ${!allApproved && overallStatus !== "rejected" ? "animate-pulse" : ""}`}
               />
               {allApproved
@@ -279,15 +268,11 @@ export default function SellerKyc() {
             </div>
 
             {!allApproved && (
-              <div className="flex-1 flex items-center gap-4">
-                <div className="flex-1 h-[3px] bg-border/40 rounded-full overflow-hidden relative">
+              <div className="flex flex-1 items-center gap-4">
+                <div className="relative h-[3px] flex-1 overflow-hidden rounded-full bg-border/40">
                   <div
-                    className="h-full rounded-full transition-all duration-700 ease-out relative overflow-hidden"
-                    style={{
-                      width: `${progress}%`,
-                      background:
-                        "linear-gradient(90deg, hsl(var(--primary) / 0.4), hsl(var(--primary) / 0.8))",
-                    }}
+                    className="relative h-full overflow-hidden rounded-full bg-primary/70 transition-all duration-700 ease-out"
+                    style={{ width: `${progress}%` }}
                   >
                     <div
                       className="absolute inset-0 rounded-full"
@@ -299,7 +284,7 @@ export default function SellerKyc() {
                     />
                   </div>
                 </div>
-                <span className="text-xs md:text-sm text-muted-foreground font-mono tabular-nums">
+                <span className="font-mono text-xs tabular-nums text-muted-foreground md:text-sm">
                   {docApproved}/{docs.length}
                 </span>
               </div>
@@ -308,14 +293,14 @@ export default function SellerKyc() {
         </div>
 
         <div
-          className="flex items-center gap-4 md:gap-8 border-b border-border/40 mb-6 md:mb-10 overflow-x-auto scrollbar-hide animate-fade-in"
+          className="mb-6 flex items-center gap-4 overflow-x-auto border-b border-border/40 scrollbar-hide animate-fade-in md:mb-10 md:gap-8"
           style={{ animationDelay: "100ms" }}
         >
           {tabs.map((t) => (
             <button
               key={t.key}
               onClick={() => setTab(t.key)}
-              className={`pb-3 text-sm font-medium transition-all duration-200 relative whitespace-nowrap ${
+              className={`relative whitespace-nowrap pb-3 text-sm font-medium transition-all duration-200 ${
                 tab === t.key
                   ? "text-foreground"
                   : "text-muted-foreground/60 hover:text-muted-foreground"
@@ -323,20 +308,20 @@ export default function SellerKyc() {
             >
               {t.label}
               {tabStatusMap[t.key] === "pending" && (
-                <span className="ml-2 px-2 py-0.5 rounded-full bg-amber-100 border border-amber-200/60 text-amber-700 text-sm md:text-xs font-semibold tracking-wide">
+                <span className="ml-2 rounded-full border border-warning/25 bg-warning/10 px-2 py-0.5 text-xs font-semibold tracking-wide text-warning md:text-xs">
                   Em análise
                 </span>
               )}
               {tabStatusMap[t.key] === "approved" && (
-                <span className="ml-2 px-2 py-0.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm md:text-xs font-semibold tracking-wide">
+                <span className="ml-2 rounded-full border border-success/25 bg-success/10 px-2 py-0.5 text-xs font-semibold tracking-wide text-success md:text-xs">
                   Aprovado
                 </span>
               )}
               {tab === t.key && (
-                <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-foreground rounded-full" />
+                <div className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full bg-foreground" />
               )}
               {t.key === "documents" && docRejected > 0 && (
-                <span className="ml-2 w-4 h-4 inline-flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-sm md:text-xs font-bold">
+                <span className="ml-2 inline-flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-xs font-bold text-destructive-foreground md:text-xs">
                   {docRejected}
                 </span>
               )}
@@ -440,10 +425,10 @@ export default function SellerKyc() {
         {tab === "documents" && (
           <div className="space-y-3 animate-fade-in">
             {docRejected > 0 && (
-              <div className="flex items-center gap-3 px-5 py-4 rounded-xl bg-destructive/[0.04] border border-destructive/10 mb-6">
+              <div className="admin-surface mb-6 flex items-center gap-3 border-destructive/20 px-5 py-4">
                 <AlertCircle
                   size={15}
-                  className="text-destructive flex-shrink-0"
+                  className="flex-shrink-0 text-destructive"
                 />
                 <p className="text-xs text-destructive/80">
                   <span className="font-semibold">
@@ -464,32 +449,32 @@ export default function SellerKyc() {
               return (
                 <div
                   key={doc.key}
-                  className={`rounded-xl border transition-all duration-300 ${
+                  className={`admin-surface transition-all duration-300 ${
                     isRejected
-                      ? "border-destructive/15 bg-destructive/[0.02]"
+                      ? "border-destructive/25"
                       : isApproved
-                        ? "border-primary/15 bg-primary/[0.02]"
-                        : "border-border/30 bg-card/50"
+                        ? "border-success/25"
+                        : ""
                   }`}
                   style={{ animationDelay: `${i * 40}ms` }}
                 >
                   <div className="flex items-center gap-4 px-5 py-4">
                     <div
-                      className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                      className={`h-2 w-2 flex-shrink-0 rounded-full ${
                         isApproved
-                          ? "bg-primary"
+                          ? "bg-success"
                           : isRejected
                             ? "bg-destructive"
                             : "bg-muted-foreground/30"
                       }`}
                     />
 
-                    <div className="flex-1 min-w-0">
+                    <div className="min-w-0 flex-1">
                       <p className="text-sm text-foreground">{doc.label}</p>
                       <p
-                        className={`text-xs md:text-sm mt-0.5 ${
+                        className={`mt-0.5 text-xs md:text-sm ${
                           isApproved
-                            ? "text-primary/70"
+                            ? "text-success/70"
                             : isRejected
                               ? "text-destructive/70"
                               : "text-muted-foreground/50"
@@ -510,14 +495,14 @@ export default function SellerKyc() {
                           onClick={() =>
                             setPreviewDoc({ label: doc.label, url: doc.url! })
                           }
-                          className="p-2 rounded-lg text-muted-foreground/40 hover:text-foreground hover:bg-muted/30 transition-all"
+                          className="rounded-lg p-2 text-muted-foreground/40 transition-all hover:bg-muted/30 hover:text-foreground"
                           title="Ver documento"
                         >
                           <Eye size={14} />
                         </button>
                       )}
                       {isApproved && (
-                        <CheckCircle2 size={16} className="text-primary/60" />
+                        <CheckCircle2 size={16} className="text-success/60" />
                       )}
                       {isRejected && (
                         <XCircle size={16} className="text-destructive/60" />
@@ -531,22 +516,22 @@ export default function SellerKyc() {
                   {isRejected && (
                     <div className="px-5 pb-5">
                       {review?.reason && (
-                        <div className="flex items-start gap-2 mb-4 px-4 py-3 rounded-lg bg-destructive/[0.04] border border-destructive/8">
+                        <div className="mb-4 flex items-start gap-2 rounded-lg border border-destructive/15 bg-destructive/5 px-4 py-3">
                           <AlertCircle
                             size={12}
-                            className="text-destructive/60 mt-0.5 flex-shrink-0"
+                            className="mt-0.5 flex-shrink-0 text-destructive/60"
                           />
-                          <p className="text-xs md:text-sm text-destructive/70 leading-relaxed">
+                          <p className="text-xs leading-relaxed text-destructive/70 md:text-sm">
                             {review.reason}
                           </p>
                         </div>
                       )}
-                      <label className="group flex items-center justify-center gap-3 w-full py-5 rounded-lg border border-dashed cursor-pointer transition-all duration-300 border-border/30 hover:border-primary/30 hover:bg-primary/[0.02]">
+                      <label className="group flex w-full cursor-pointer items-center justify-center gap-3 rounded-lg border border-dashed border-border/30 py-5 transition-all duration-300 hover:border-primary/30 hover:bg-primary/[0.02]">
                         <Upload
                           size={14}
-                          className="text-muted-foreground/40 group-hover:text-primary/60 transition-colors"
+                          className="text-muted-foreground/40 transition-colors group-hover:text-primary/60"
                         />
-                        <span className="text-xs text-muted-foreground/50 group-hover:text-foreground/70 transition-colors">
+                        <span className="text-xs text-muted-foreground/50 transition-colors group-hover:text-foreground/70">
                           Enviar novo arquivo
                         </span>
                         <input
@@ -709,21 +694,21 @@ export default function SellerKyc() {
 function BankStatusBadge({ status }: { status: string }) {
   return (
     <div
-      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs md:text-xs font-medium border ${
+      className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium ${
         status === "approved"
-          ? "border-primary/20 bg-primary/5 text-primary"
+          ? "border-success/25 bg-success/10 text-success"
           : status === "rejected"
-            ? "border-destructive/20 bg-destructive/5 text-destructive"
-            : "border-border bg-muted/30 text-muted-foreground"
+            ? "border-destructive/25 bg-destructive/10 text-destructive"
+            : "border-warning/25 bg-warning/10 text-warning"
       }`}
     >
       <div
-        className={`w-1.5 h-1.5 rounded-full ${
+        className={`h-1.5 w-1.5 rounded-full ${
           status === "approved"
-            ? "bg-primary"
+            ? "bg-success"
             : status === "rejected"
               ? "bg-destructive"
-              : "bg-muted-foreground"
+              : "bg-warning"
         }`}
       />
       {status === "approved"
@@ -750,14 +735,14 @@ function BankEditModal({
 }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-      <div className="bg-card border border-border rounded-2xl shadow-lg w-full max-w-md mx-4 p-6">
-        <div className="flex items-center justify-between mb-6">
+      <div className="admin-surface mx-4 w-full max-w-md p-6">
+        <div className="mb-6 flex items-center justify-between">
           <h3 className="text-base font-medium text-foreground">
             Editar conta bancária
           </h3>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-muted/50 text-muted-foreground"
+            className="rounded-lg p-1.5 text-muted-foreground hover:bg-muted/50"
           >
             <X size={16} />
           </button>

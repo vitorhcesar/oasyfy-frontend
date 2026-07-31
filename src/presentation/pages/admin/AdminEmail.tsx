@@ -1,12 +1,13 @@
 import { authClient } from "@/infra/auth/auth-client";
-import useAdminSmtpSettingsQuery from "@/presentation/hooks/use-admin-smtp-settings-query";
-import { useApiService } from "@/presentation/hooks/use-api-service";
+import PageHeader from "@/presentation/components/PageHeader";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/presentation/components/ui/dialog";
+import useAdminSmtpSettingsQuery from "@/presentation/hooks/use-admin-smtp-settings-query";
+import { useApiService } from "@/presentation/hooks/use-api-service";
 import { AdminLayout } from "@/presentation/layouts/AdminLayout";
 import { cn } from "@/presentation/utils/cn";
 import {
@@ -164,22 +165,21 @@ export default function AdminEmail() {
 
   return (
     <AdminLayout>
-      <div className="w-full max-w-2xl mx-auto px-4 md:px-6 py-6">
-        <div className="mb-6">
-          <h1 className="text-lg font-semibold text-foreground">E-mail</h1>
-          <p className="text-xs text-muted-foreground mt-1">
-            Configure o servidor SMTP para disparo de e-mails.
-          </p>
-        </div>
+      <div className="mx-auto w-full max-w-2xl px-5 py-6 md:px-8 md:py-9">
+        <PageHeader
+          eyebrow="Comunicação"
+          title="E-mail"
+          description="Configure o servidor SMTP para disparo de e-mails."
+        />
 
         {/* Status badge */}
         <div className="mb-6">
           <div
             className={cn(
-              "inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border",
+              "inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-semibold",
               settings.is_active
-                ? "bg-primary/5 border-primary/20 text-primary"
-                : "bg-muted/50 border-border/40 text-muted-foreground",
+                ? "border-success/25 bg-success/10 text-success"
+                : "border-border bg-muted text-muted-foreground",
             )}
           >
             {settings.is_active ? (
@@ -193,7 +193,7 @@ export default function AdminEmail() {
 
         <div className="space-y-6">
           {/* SMTP Config */}
-          <div className="rounded-xl border border-border/40 bg-card p-6">
+          <div className="admin-surface p-5 md:p-6">
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">

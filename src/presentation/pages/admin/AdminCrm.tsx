@@ -1,3 +1,4 @@
+import PageHeader from "@/presentation/components/PageHeader";
 import useAdminCrmSettingsQuery, {
   type TCrmSettingsView,
 } from "@/presentation/hooks/use-admin-crm-settings-query";
@@ -80,7 +81,7 @@ export default function AdminCrm() {
     return (
       <AdminLayout>
         <div className="flex items-center justify-center py-24">
-          <div className="w-5 h-5 border-2 border-border border-t-foreground rounded-full animate-spin" />
+          <Loader2 size={24} className="animate-spin text-muted-foreground" />
         </div>
       </AdminLayout>
     );
@@ -88,26 +89,16 @@ export default function AdminCrm() {
 
   return (
     <AdminLayout>
-      <div className="px-4 md:px-8 py-6 md:py-8 max-w-2xl mx-auto w-full">
-        <div className="mb-8 animate-fade-in">
-          <div className="flex items-center gap-3 mb-1">
-            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            <span className="text-xs md:text-sm font-medium text-muted-foreground uppercase tracking-widest">
-              Configurações
-            </span>
-          </div>
-          <h1 className="text-2xl font-bold text-foreground tracking-tight">
-            CRM WhatsApp
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Configure a integração com WhatsApp para envio automático de
-            mensagem de boas-vindas
-          </p>
-        </div>
+      <div className="mx-auto w-full max-w-2xl px-5 py-6 md:px-8 md:py-9">
+        <PageHeader
+          eyebrow="Integrações"
+          title="CRM WhatsApp"
+          description="Configure a integração com WhatsApp para envio automático de mensagem de boas-vindas"
+        />
 
         <div className="space-y-6">
           {/* Toggle */}
-          <div className="flex items-center justify-between p-4 rounded-xl border border-border/50 bg-card">
+          <div className="admin-surface flex items-center justify-between p-4 md:p-5">
             <div className="flex items-center gap-3">
               <MessageSquare size={20} className="text-primary" />
               <div>
@@ -137,7 +128,7 @@ export default function AdminCrm() {
           </div>
 
           {/* API Config */}
-          <div className="rounded-xl border border-border/50 bg-card p-5 space-y-4">
+          <div className="admin-surface space-y-4 p-5 md:p-6">
             <h2 className="text-sm font-semibold text-foreground">
               Conexão da API
             </h2>
@@ -183,7 +174,7 @@ export default function AdminCrm() {
           </div>
 
           {/* Welcome Message */}
-          <div className="rounded-xl border border-border/50 bg-card p-5 space-y-4">
+          <div className="admin-surface space-y-4 p-5 md:p-6">
             <h2 className="text-sm font-semibold text-foreground">
               Mensagem de boas-vindas
             </h2>
@@ -205,7 +196,7 @@ export default function AdminCrm() {
           </div>
 
           {/* Test */}
-          <div className="rounded-xl border border-border/50 bg-card p-5 space-y-4">
+          <div className="admin-surface space-y-4 p-5 md:p-6">
             <h2 className="text-sm font-semibold text-foreground">
               Testar envio
             </h2>

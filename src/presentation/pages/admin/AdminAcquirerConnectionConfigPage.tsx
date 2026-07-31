@@ -1,5 +1,6 @@
 import { AcquirerBrandLogo } from "@/presentation/components/admin/AcquirerBrandLogo";
 import { AcquirerConnectionConfigForm } from "@/presentation/components/admin/AcquirerConnectionConfigForm";
+import PageHeader from "@/presentation/components/PageHeader";
 import type { IAcquirerCredentialsForm } from "@/presentation/utils/acquirer-connection-config.util";
 import useAdminAcquirerConnectionsQuery from "@/presentation/hooks/use-admin-acquirer-connections-query";
 import { useApiService } from "@/presentation/hooks/use-api-service";
@@ -124,25 +125,42 @@ export default function AdminAcquirerConnectionConfigPage() {
 
         {isLoading ? (
           <div className="flex items-center justify-center py-20">
-            <Loader2 className="animate-spin text-muted-foreground" size={28} />
+            <Loader2 className="animate-spin text-muted-foreground" size={24} />
           </div>
         ) : !connection ? (
-          <div className="admin-surface space-y-4 px-6 py-12 text-center">
-            <p className="text-base font-semibold text-foreground">
-              {getPixAcquirerProviderLabel(provider)} não encontrada
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Carregue as adquirentes padrão na aba Conexões antes de configurar.
-            </p>
-            <Link
-              to="/admin/acquirer?tab=conexoes"
-              className="inline-flex h-10 items-center rounded-xl bg-white px-4 text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90"
-            >
-              Ir para conexões
-            </Link>
-          </div>
+          <>
+            <PageHeader
+              eyebrow="Adquirentes"
+              title={getPixAcquirerProviderLabel(provider)}
+              description="Configure as credenciais desta adquirente."
+            />
+            <div className="admin-surface space-y-4 px-6 py-12 text-center">
+              <p className="text-base font-semibold text-foreground">
+                {getPixAcquirerProviderLabel(provider)} não encontrada
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Carregue as adquirentes padrão na aba Conexões antes de configurar.
+              </p>
+              <Link
+                to="/admin/acquirer?tab=conexoes"
+                className="inline-flex h-10 items-center rounded-xl bg-white px-4 text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90"
+              >
+                Ir para conexões
+              </Link>
+            </div>
+          </>
         ) : (
           <div className="animate-fade-in space-y-6">
+            <PageHeader
+              className="mb-0"
+              eyebrow="Adquirentes"
+              title={connection.name}
+              description={
+                connection.description ||
+                "Configure as credenciais desta adquirente."
+              }
+            />
+
             <header className="admin-surface flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:p-6">
               <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border/50 bg-background shadow-sm">
                 <AcquirerBrandLogo
@@ -153,9 +171,6 @@ export default function AdminAcquirerConnectionConfigPage() {
 
               <div className="min-w-0 flex-1 space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="text-2xl font-bold tracking-tight text-foreground">
-                    {connection.name}
-                  </h1>
                   <span
                     className={cn(
                       "inline-flex items-center rounded-lg border px-2.5 py-1 text-xs font-semibold",
@@ -175,12 +190,6 @@ export default function AdminAcquirerConnectionConfigPage() {
                         : "Desconectada"}
                   </span>
                 </div>
-
-                {connection.description ? (
-                  <p className="text-sm text-muted-foreground">
-                    {connection.description}
-                  </p>
-                ) : null}
 
                 <div className="flex flex-wrap items-center gap-1.5">
                   {connection.methods.map((method) => (

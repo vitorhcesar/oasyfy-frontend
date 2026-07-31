@@ -13,9 +13,9 @@ function SellerStatusBadge({ status }: { status: TAdminSellerKycStatus }) {
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs md:text-sm font-medium border ${config.cls}`}
+      className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold ${config.cls}`}
     >
-      <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
+      <span className={`h-1.5 w-1.5 rounded-full ${config.dot}`} />
       {config.label}
     </span>
   );
@@ -24,17 +24,17 @@ function SellerStatusBadge({ status }: { status: TAdminSellerKycStatus }) {
 function TableHeader() {
   return (
     <thead>
-      <tr className="border-b border-border/40">
-        <th className="text-left px-5 py-3.5 font-medium text-muted-foreground/60 text-xs md:text-sm uppercase tracking-wider">
+      <tr className="border-b border-border/50">
+        <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Seller
         </th>
-        <th className="text-left px-5 py-3.5 font-medium text-muted-foreground/60 text-xs md:text-sm uppercase tracking-wider">
+        <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           ID
         </th>
-        <th className="text-left px-5 py-3.5 font-medium text-muted-foreground/60 text-xs md:text-sm uppercase tracking-wider">
+        <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Status
         </th>
-        <th className="text-left px-5 py-3.5 font-medium text-muted-foreground/60 text-xs md:text-sm uppercase tracking-wider">
+        <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Cadastro
         </th>
       </tr>
@@ -50,12 +50,12 @@ interface ITableRowProps {
 function TableRow({ seller, index }: ITableRowProps) {
   return (
     <tr
-      className="border-b border-border/20 last:border-0 hover:bg-muted/20 transition-colors animate-fade-in"
+      className="animate-fade-in border-b border-border/20 last:border-0 transition-colors hover:bg-muted/20"
       style={{ animationDelay: `${index * 30}ms` }}
     >
       <td className="px-5 py-3.5">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
             <span className="text-xs font-bold text-primary">
               {(seller.fullName || "?")
                 .split(" ")
@@ -65,18 +65,18 @@ function TableRow({ seller, index }: ITableRowProps) {
                 .toUpperCase()}
             </span>
           </div>
-          <span className="font-medium text-foreground text-sm">
+          <span className="text-sm font-medium text-foreground">
             {seller.fullName || "Sem nome"}
           </span>
         </div>
       </td>
-      <td className="px-5 py-3.5 text-muted-foreground/60 text-xs font-mono">
+      <td className="px-5 py-3.5 font-mono text-xs text-muted-foreground">
         #{seller.userId}
       </td>
       <td className="px-5 py-3.5">
         <SellerStatusBadge status={seller.kycStatus} />
       </td>
-      <td className="px-5 py-3.5 text-muted-foreground/60 text-xs">
+      <td className="px-5 py-3.5 text-xs text-muted-foreground">
         {seller.createdAt
           ? new Date(seller.createdAt).toLocaleDateString("pt-BR")
           : "—"}
@@ -89,8 +89,8 @@ export default function AdminSellersTable({
   sellers,
 }: IAdminSellersTableProps) {
   return (
-    <div className="rounded-xl border border-border/50 bg-card overflow-hidden overflow-x-auto">
-      <table className="w-full text-sm min-w-[600px]">
+    <div className="admin-surface overflow-hidden overflow-x-auto">
+      <table className="w-full min-w-[600px] text-sm">
         <TableHeader />
 
         <tbody>
