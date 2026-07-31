@@ -1,5 +1,6 @@
 import {
   ArrowDownRight,
+  Banknote,
   DollarSign,
   Loader2,
   Percent,
@@ -8,13 +9,18 @@ import {
 } from "lucide-react";
 import { cn } from "@/presentation/utils/cn";
 import useAdminFinanceMetricsQuery from "../hooks/use-admin-finance-metrics-query";
+import usePlatformAvailableBalanceQuery from "../hooks/use-platform-available-balance-query";
 import { formatCompact } from "../utils/format-compact";
 import ChangeIndicator from "./ChangeIndicator";
 
 export default function FinancialCards() {
   const { data, isLoading } = useAdminFinanceMetricsQuery();
+  const {
+    data: platformBalance,
+    isLoading: isPlatformBalanceLoading,
+  } = usePlatformAvailableBalanceQuery();
 
-  if (isLoading) {
+  if (isLoading || isPlatformBalanceLoading) {
     return (
       <div className="mb-6 flex items-center justify-center py-10">
         <Loader2 size={20} className="animate-spin text-muted-foreground" />
@@ -36,12 +42,19 @@ export default function FinancialCards() {
 
   const cards = [
     {
+      label: "Saldo Disponível",
+      value: formatCompact(platformBalance.totalAvailable),
+      icon: Banknote,
+      iconClass: "text-success",
+      meta: "Soma de todas as contas",
+      featured: true,
+    },
+    {
       label: "Volume Total",
       value: formatCompact(totalVolume),
       icon: DollarSign,
       iconClass: "text-primary",
       change: volumeChange,
-      featured: true,
     },
     {
       label: "Taxas Arrecadadas",
@@ -72,7 +85,7 @@ export default function FinancialCards() {
   ];
 
   return (
-    <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-5">
+    <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
       {cards.map((card) => (
         <div
           key={card.label}

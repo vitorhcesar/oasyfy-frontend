@@ -52,3 +52,10 @@ export interface IAdminSecondaryMetricsResponseDto {
   transactionsCountChange: number;
   feeMarginRate: number;
 }
+
+export interface IPlatformAvailableBalanceResponseDto {
+  totalAvailable: number;
+  totalRetained: number;
+  totalWithdrawn: number;
+  totalRefunded: number;
+}

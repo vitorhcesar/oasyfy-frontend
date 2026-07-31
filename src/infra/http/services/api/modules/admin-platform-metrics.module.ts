@@ -4,6 +4,7 @@ import type {
   IAdminFinanceMetricsQueryDto,
   IAdminFinanceMetricsResponseDto,
   IAdminSecondaryMetricsResponseDto,
+  IPlatformAvailableBalanceResponseDto,
   IPlatformMetricsResponseDto,
 } from "./types/admin-platform-metrics.types";
 
@@ -11,6 +12,7 @@ export type {
   IAdminFinanceMetricsQueryDto,
   IAdminFinanceMetricsResponseDto,
   IAdminSecondaryMetricsResponseDto,
+  IPlatformAvailableBalanceResponseDto,
   IPlatformMetricsResponseDto,
   IPlatformMetricsTransactionDto,
   ISellerProfileSummaryDto,
@@ -24,6 +26,7 @@ export interface IAdminPlatformMetricsModule {
   getSecondaryMetrics(
     query: IAdminFinanceMetricsQueryDto,
   ): Promise<IAdminSecondaryMetricsResponseDto>;
+  getPlatformAvailableBalance(): Promise<IPlatformAvailableBalanceResponseDto>;
 }
 
 export class AdminPlatformMetricsModule
@@ -54,6 +57,13 @@ export class AdminPlatformMetricsModule
     const response = await this.getClient().get<
       IApiEnvelope<IAdminSecondaryMetricsResponseDto>
     >("/api/v1/admin/metrics/secondary", { params: query });
+    return response.data;
+  }
+
+  async getPlatformAvailableBalance(): Promise<IPlatformAvailableBalanceResponseDto> {
+    const response = await this.getClient().get<
+      IApiEnvelope<IPlatformAvailableBalanceResponseDto>
+    >("/api/v1/admin/metrics/platform-balances");
     return response.data;
   }
 }
