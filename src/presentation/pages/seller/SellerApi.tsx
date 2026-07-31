@@ -1,4 +1,5 @@
 import { getApiBaseUrl } from "@/infra/http/services/api/api-env";
+import ModalPortal from "@/presentation/components/ModalPortal";
 import PageHeader from "@/presentation/components/PageHeader";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import { useApiService } from "@/presentation/hooks/use-api-service";
@@ -310,37 +311,39 @@ function ApiKeysTab() {
 
       {/* Delete Modal */}
       {showDeleteModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-          onClick={() => setShowDeleteModal(null)}
-        >
+        <ModalPortal>
           <div
-            className="bg-card border border-border rounded-2xl w-full max-w-sm p-6"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60"
+            onClick={() => setShowDeleteModal(null)}
           >
-            <h2 className="text-base font-semibold text-foreground mb-2">
-              Excluir chave API
-            </h2>
-            <p className="text-xs text-muted-foreground mb-5">
-              Essa ação é irreversível. Todas as integrações que usam essa chave
-              deixarão de funcionar imediatamente.
-            </p>
-            <div className="flex items-center justify-end gap-2">
-              <button
-                onClick={() => setShowDeleteModal(null)}
-                className="px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={() => handleDelete(showDeleteModal)}
-                className="px-4 py-1.5 rounded-lg bg-destructive text-destructive-foreground text-xs font-medium hover:opacity-90 transition-opacity"
-              >
-                Excluir
-              </button>
+            <div
+              className="w-full max-w-sm rounded-2xl border border-border bg-card p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="mb-2 text-base font-semibold text-foreground">
+                Excluir chave API
+              </h2>
+              <p className="mb-5 text-xs text-muted-foreground">
+                Essa ação é irreversível. Todas as integrações que usam essa chave
+                deixarão de funcionar imediatamente.
+              </p>
+              <div className="flex items-center justify-end gap-2">
+                <button
+                  onClick={() => setShowDeleteModal(null)}
+                  className="px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => handleDelete(showDeleteModal)}
+                  className="rounded-lg bg-destructive px-4 py-1.5 text-xs font-medium text-destructive-foreground transition-opacity hover:opacity-90"
+                >
+                  Excluir
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
     </div>
   );
@@ -373,14 +376,15 @@ function CreateKeyModal({
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-      onClick={onClose}
-    >
+    <ModalPortal>
       <div
-        className="bg-card border border-border rounded-2xl w-full max-w-md p-6"
-        onClick={(e) => e.stopPropagation()}
+        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60"
+        onClick={onClose}
       >
+        <div
+          className="w-full max-w-md rounded-2xl border border-border bg-card p-6"
+          onClick={(e) => e.stopPropagation()}
+        >
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-base font-semibold text-foreground">
             Criar chave de API
@@ -484,17 +488,17 @@ function CreateKeyModal({
           )}
         </div>
 
-        <div className="flex items-center justify-end gap-2 mt-5 pt-4 border-t border-border/30">
+        <div className="mt-5 flex items-center justify-end gap-2 border-t border-border/30 pt-4">
           <button
             onClick={onClose}
-            className="px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            className="px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
           >
             Cancelar
           </button>
           <button
             disabled={creating}
             onClick={handleSubmit}
-            className="px-4 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center gap-1.5"
+            className="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-40"
           >
             {creating && <Loader2 size={12} className="animate-spin" />}
             Cadastrar
@@ -502,6 +506,7 @@ function CreateKeyModal({
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 }
 
@@ -643,37 +648,39 @@ function AuthorizedIpsTab() {
       </p>
 
       {showDeleteModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-          onClick={() => setShowDeleteModal(null)}
-        >
+        <ModalPortal>
           <div
-            className="bg-card border border-border rounded-2xl w-full max-w-sm p-6"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60"
+            onClick={() => setShowDeleteModal(null)}
           >
-            <h2 className="text-base font-semibold text-foreground mb-2">
-              Remover IP
-            </h2>
-            <p className="text-xs text-muted-foreground mb-5">
-              Esse IP será removido da lista de autorizados. Requisições desse
-              endereço poderão ser bloqueadas.
-            </p>
-            <div className="flex items-center justify-end gap-2">
-              <button
-                onClick={() => setShowDeleteModal(null)}
-                className="px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={() => handleDelete(showDeleteModal)}
-                className="px-4 py-1.5 rounded-lg bg-destructive text-destructive-foreground text-xs font-medium hover:opacity-90 transition-opacity"
-              >
-                Remover
-              </button>
+            <div
+              className="w-full max-w-sm rounded-2xl border border-border bg-card p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="mb-2 text-base font-semibold text-foreground">
+                Remover IP
+              </h2>
+              <p className="mb-5 text-xs text-muted-foreground">
+                Esse IP será removido da lista de autorizados. Requisições desse
+                endereço poderão ser bloqueadas.
+              </p>
+              <div className="flex items-center justify-end gap-2">
+                <button
+                  onClick={() => setShowDeleteModal(null)}
+                  className="px-3 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => handleDelete(showDeleteModal)}
+                  className="rounded-lg bg-destructive px-4 py-1.5 text-xs font-medium text-destructive-foreground transition-opacity hover:opacity-90"
+                >
+                  Remover
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
     </div>
   );

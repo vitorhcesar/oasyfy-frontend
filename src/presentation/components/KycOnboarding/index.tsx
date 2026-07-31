@@ -1,5 +1,6 @@
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import { useUserContext } from "@/presentation/context/UserContext";
+import ModalPortal from "@/presentation/components/ModalPortal";
 import { getErrorMessageOrDefault } from "@/presentation/utils/get-error-message-or-default";
 import { useState } from "react";
 import KycOnboardingContent from "./KycOnboardingContent";
@@ -83,23 +84,25 @@ export default function KycOnboarding({ onComplete }: IKycOnboardingProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-background/80 backdrop-blur-sm animate-backdrop-enter" />
+    <ModalPortal>
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-background/80 backdrop-blur-sm animate-backdrop-enter" />
 
-      <div className="relative w-full max-w-2xl bg-card rounded-2xl border border-border/60 shadow-lg overflow-hidden animate-modal-enter max-h-[90vh] flex flex-col">
-        <KycOnboardingHeader steps={STEPS} currentIndex={currentIndex} />
+        <div className="relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-border/60 bg-card shadow-lg animate-modal-enter">
+          <KycOnboardingHeader steps={STEPS} currentIndex={currentIndex} />
 
-        <KycOnboardingContent />
+          <KycOnboardingContent />
 
-        <KycOnboardingFooter
-          currentStep={step}
-          currentIndex={currentIndex}
-          onPreviousStep={handlePreviousStep}
-          handleSubmit={handleSubmit}
-          submitting={submitting}
-          onNextStep={handleNextStep}
-        />
+          <KycOnboardingFooter
+            currentStep={step}
+            currentIndex={currentIndex}
+            onPreviousStep={handlePreviousStep}
+            handleSubmit={handleSubmit}
+            submitting={submitting}
+            onNextStep={handleNextStep}
+          />
+        </div>
       </div>
-    </div>
+    </ModalPortal>
   );
 }

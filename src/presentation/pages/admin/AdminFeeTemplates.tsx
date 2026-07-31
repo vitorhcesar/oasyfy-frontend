@@ -1,4 +1,5 @@
 import type { IGetFullSellerFeeResponseDto } from "@/infra/http/services/api/modules/seller-fee.module";
+import ModalPortal from "@/presentation/components/ModalPortal";
 import PageHeader from "@/presentation/components/PageHeader";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import useSellerFeeTemplatesQuery from "@/presentation/hooks/use-seller-fee-templates-query";
@@ -41,45 +42,47 @@ function DeleteConfirmModal({
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
-      onClick={onClose}
-    >
+    <ModalPortal>
       <div
-        className="liquid-glass-control w-full max-w-md animate-fade-in rounded-[22px] p-6 shadow-xl"
-        onClick={(e) => e.stopPropagation()}
+        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4"
+        onClick={onClose}
       >
-        <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-destructive/10">
-          <Trash2 size={20} className="text-destructive" />
-        </div>
-        <h3 className="mb-1 text-lg font-bold tracking-tight text-foreground">
-          Excluir plano
-        </h3>
-        <p className="mb-5 text-sm text-muted-foreground">
-          Tem certeza que deseja excluir o plano{" "}
-          <strong className="text-foreground">"{template.name}"</strong>? Esta
-          ação não pode ser desfeita.
-        </p>
-        <div className="flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={onClose}
-            className="h-10 rounded-xl bg-muted px-4 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Cancelar
-          </button>
-          <button
-            type="button"
-            onClick={handleDelete}
-            disabled={deleting}
-            className="inline-flex h-10 items-center gap-2 rounded-xl bg-destructive px-4 text-sm font-semibold text-destructive-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
-          >
-            {deleting && <Loader2 size={15} className="animate-spin" />}
-            Excluir
-          </button>
+        <div
+          className="liquid-glass-control w-full max-w-md animate-fade-in rounded-[22px] p-6 shadow-xl"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-destructive/10">
+            <Trash2 size={20} className="text-destructive" />
+          </div>
+          <h3 className="mb-1 text-lg font-bold tracking-tight text-foreground">
+            Excluir plano
+          </h3>
+          <p className="mb-5 text-sm text-muted-foreground">
+            Tem certeza que deseja excluir o plano{" "}
+            <strong className="text-foreground">"{template.name}"</strong>? Esta
+            ação não pode ser desfeita.
+          </p>
+          <div className="flex justify-end gap-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="h-10 rounded-xl bg-muted px-4 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={deleting}
+              className="inline-flex h-10 items-center gap-2 rounded-xl bg-destructive px-4 text-sm font-semibold text-destructive-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+            >
+              {deleting && <Loader2 size={15} className="animate-spin" />}
+              Excluir
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </ModalPortal>
   );
 }
 

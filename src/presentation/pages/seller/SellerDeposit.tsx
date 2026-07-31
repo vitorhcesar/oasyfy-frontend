@@ -1,12 +1,12 @@
-import { useApiService } from "@/presentation/hooks/use-api-service";
 import PageHeader from "@/presentation/components/PageHeader";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import { Badge } from "@/presentation/components/ui/badge";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 import { Label } from "@/presentation/components/ui/label";
-import { normalizePixChargeResponse } from "@/presentation/utils/normalize-pix-charge-response.util";
+import { useApiService } from "@/presentation/hooks/use-api-service";
 import { cn } from "@/presentation/utils/cn";
+import { normalizePixChargeResponse } from "@/presentation/utils/normalize-pix-charge-response.util";
 import { AlertCircle, CheckCircle2, Copy, Loader2, QrCode } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -73,8 +73,7 @@ export default function SellerDeposit() {
         toast.success("PIX gerado com sucesso!");
       }
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : "Erro de conexão";
+      const message = err instanceof Error ? err.message : "Erro de conexão";
       setError(message);
       toast.error(message);
     } finally {
@@ -167,7 +166,7 @@ export default function SellerDeposit() {
               <Button
                 onClick={handleGenerate}
                 disabled={loading}
-                className="w-full gap-2"
+                className="w-full gap-2 !mt-2"
               >
                 {loading ? (
                   <Loader2 size={16} className="animate-spin" />

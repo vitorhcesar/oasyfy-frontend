@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { authClient } from "@/infra/auth/auth-client";
 import { parseSecretFromTotpUri } from "@/infra/auth/two-factor-utils";
 import PageHeader from "@/presentation/components/PageHeader";
+import ModalPortal from "@/presentation/components/ModalPortal";
 
 type TTwoFAStatus = "loading" | "disabled" | "verifying" | "enabled";
 
@@ -356,43 +357,47 @@ export function TwoFactorSettingsPanel({
       )}
 
       {showPasswordModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-          onClick={() => setShowPasswordModal(false)}
-        >
+        <ModalPortal>
           <div
-            className="admin-surface w-full max-w-sm p-6"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60"
+            onClick={() => setShowPasswordModal(false)}
           >
-            <h2 className="mb-4 text-base font-semibold text-foreground">
-              {passwordAction === "enable" ? "Confirmar senha" : "Desativar 2FA"}
-            </h2>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Sua senha"
-              className="mb-4 w-full rounded-lg border border-border/40 bg-muted/20 px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:border-primary/40 focus:outline-none"
-            />
-            <div className="flex justify-end gap-2">
-              <button
-                onClick={() => setShowPasswordModal(false)}
-                className="px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={
-                  passwordAction === "enable" ? handleEnable : handleDisable
-                }
-                disabled={loading || disabling || !password}
-                className="rounded-lg bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-40"
-              >
-                {passwordAction === "enable" ? "Continuar" : "Desativar"}
-              </button>
+            <div
+              className="admin-surface w-full max-w-sm p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h2 className="mb-4 text-base font-semibold text-foreground">
+                {passwordAction === "enable"
+                  ? "Confirmar senha"
+                  : "Desativar 2FA"}
+              </h2>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Sua senha"
+                className="mb-4 w-full rounded-lg border border-border/40 bg-muted/20 px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:border-primary/40 focus:outline-none"
+              />
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => setShowPasswordModal(false)}
+                  className="px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={
+                    passwordAction === "enable" ? handleEnable : handleDisable
+                  }
+                  disabled={loading || disabling || !password}
+                  className="rounded-lg bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground disabled:opacity-40"
+                >
+                  {passwordAction === "enable" ? "Continuar" : "Desativar"}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
     </>
   );

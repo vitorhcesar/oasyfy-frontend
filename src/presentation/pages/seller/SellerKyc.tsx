@@ -9,6 +9,7 @@ import {
 } from "@/infra/http/services/api/modules/types/kyc-submission-document-keys";
 import KycDocumentPreviewModal from "@/presentation/components/KycDocumentPreviewModal";
 import KycWithdrawalDetails from "@/presentation/components/KycOnboarding/KycWithdrawalDetails";
+import ModalPortal from "@/presentation/components/ModalPortal";
 import PageHeader from "@/presentation/components/PageHeader";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import { useSellerKycSubmissionQuery } from "@/presentation/hooks/use-seller-kyc-submission-query";
@@ -734,8 +735,9 @@ function BankEditModal({
   onSave: () => void;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
-      <div className="admin-surface mx-4 w-full max-w-md p-6">
+    <ModalPortal>
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-background/80 backdrop-blur-sm">
+        <div className="admin-surface mx-4 w-full max-w-md p-6">
         <div className="mb-6 flex items-center justify-between">
           <h3 className="text-base font-medium text-foreground">
             Editar conta bancária
@@ -881,6 +883,7 @@ function BankEditModal({
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 }
 

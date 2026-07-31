@@ -1,5 +1,6 @@
 import useAdminRefundsQuery from "@/presentation/hooks/use-admin-refunds-query";
 import { useApiService } from "@/presentation/hooks/use-api-service";
+import ModalPortal from "@/presentation/components/ModalPortal";
 import { AdminLayout } from "@/presentation/layouts/AdminLayout";
 import { cn } from "@/presentation/utils/cn";
 import { Check, Clock, Loader2, RotateCcw, X } from "lucide-react";
@@ -329,14 +330,15 @@ export default function AdminRefunds() {
         )}
 
         {noteModal && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
-            onClick={() => setNoteModal(null)}
-          >
+          <ModalPortal>
             <div
-              className="liquid-glass-control w-full max-w-md animate-fade-in rounded-[22px] p-6 shadow-xl"
-              onClick={(e) => e.stopPropagation()}
+              className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4"
+              onClick={() => setNoteModal(null)}
             >
+              <div
+                className="liquid-glass-control w-full max-w-md animate-fade-in rounded-[22px] p-6 shadow-xl"
+                onClick={(e) => e.stopPropagation()}
+              >
               <h3 className="mb-1 text-lg font-bold tracking-tight text-foreground">
                 {noteModal.action === "approved"
                   ? "Aprovar reembolso"
@@ -391,7 +393,7 @@ export default function AdminRefunds() {
                 </button>
               </div>
             </div>
-          </div>
+          </ModalPortal>
         )}
       </div>
     </AdminLayout>

@@ -1,4 +1,5 @@
 import { authClient } from "@/infra/auth/auth-client";
+import ModalPortal from "@/presentation/components/ModalPortal";
 import PageHeader from "@/presentation/components/PageHeader";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import { useApiService } from "@/presentation/hooks/use-api-service";
@@ -183,14 +184,15 @@ function SecurityTab() {
 
       {/* Password Modal */}
       {showPasswordModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-          onClick={() => setShowPasswordModal(false)}
-        >
+        <ModalPortal>
           <div
-            className="bg-card border border-border rounded-2xl w-full max-w-sm p-6"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60"
+            onClick={() => setShowPasswordModal(false)}
           >
+            <div
+              className="w-full max-w-sm rounded-2xl border border-border bg-card p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
             <div className="flex items-center justify-between mb-5">
               <h2 className="text-base font-semibold text-foreground">
                 Alterar senha
@@ -343,7 +345,7 @@ function SecurityTab() {
               </div>
             </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
 
       {/* Dispositivos */}

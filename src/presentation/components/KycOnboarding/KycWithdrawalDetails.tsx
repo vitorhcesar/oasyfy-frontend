@@ -1,4 +1,5 @@
 import { useApiService } from "@/presentation/hooks/use-api-service";
+import ModalPortal from "@/presentation/components/ModalPortal";
 import { getErrorMessageOrDefault } from "@/presentation/utils/get-error-message-or-default";
 import { ArrowLeft, ArrowRight, CheckCircle2, Loader2, Landmark } from "lucide-react";
 import { useState } from "react";
@@ -157,98 +158,103 @@ export default function KycWithdrawalDetails({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-background/80 backdrop-blur-sm animate-backdrop-enter" />
+    <ModalPortal>
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+        <div className="absolute inset-0 animate-backdrop-enter bg-background/80 backdrop-blur-sm" />
 
-      <div className="relative w-full max-w-2xl bg-card rounded-2xl border border-border/60 shadow-lg overflow-hidden animate-modal-enter max-h-[90vh] flex flex-col">
-        <div className="px-7 pt-6 pb-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-              <Landmark className="text-primary" size={18} />
+        <div className="relative flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl border border-border/60 bg-card shadow-lg animate-modal-enter">
+          <div className="px-7 pb-4 pt-6">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+                <Landmark className="text-primary" size={18} />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-foreground">
+                  Liberar saques
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  Informe endereço e dados bancários para sacar
+                </p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-lg font-semibold text-foreground">
-                Liberar saques
-              </h2>
-              <p className="text-xs text-muted-foreground">
-                Informe endereço e dados bancários para sacar
-              </p>
-            </div>
-          </div>
 
-          <div className="mt-5 flex items-center gap-1">
-            {STEPS.map((s, i) => {
-              const isActive = i === currentIndex;
-              const isDone = i < currentIndex;
-              return (
-                <div key={s} className="flex flex-1 flex-col items-center gap-1.5">
+            <div className="mt-5 flex items-center gap-1">
+              {STEPS.map((s, i) => {
+                const isActive = i === currentIndex;
+                const isDone = i < currentIndex;
+                return (
                   <div
-                    className={`h-1 w-full rounded-full transition-all duration-500 ${
-                      isDone
-                        ? "bg-primary"
-                        : isActive
-                          ? "bg-primary/50"
-                          : "bg-border"
-                    }`}
-                  />
-                  <span
-                    className={`text-xs font-medium transition-colors ${
-                      isDone
-                        ? "text-primary"
-                        : isActive
-                          ? "text-foreground"
-                          : "text-muted-foreground/40"
-                    }`}
+                    key={s}
+                    className="flex flex-1 flex-col items-center gap-1.5"
                   >
-                    {STEP_LABELS[s]}
-                  </span>
-                </div>
-              );
-            })}
+                    <div
+                      className={`h-1 w-full rounded-full transition-all duration-500 ${
+                        isDone
+                          ? "bg-primary"
+                          : isActive
+                            ? "bg-primary/50"
+                            : "bg-border"
+                      }`}
+                    />
+                    <span
+                      className={`text-xs font-medium transition-colors ${
+                        isDone
+                          ? "text-primary"
+                          : isActive
+                            ? "text-foreground"
+                            : "text-muted-foreground/40"
+                      }`}
+                    >
+                      {STEP_LABELS[s]}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
 
-        <div className="flex-1 overflow-y-auto px-7 py-4">
-          {withdrawalStep === "address" && <AddressStep />}
-          {withdrawalStep === "bank" && <BankStep />}
-          {withdrawalStep === "review" && <WithdrawalReviewStep />}
-          {error ? (
-            <p className="mt-4 text-sm text-destructive">{error}</p>
-          ) : null}
-        </div>
+          <div className="flex-1 overflow-y-auto px-7 py-4">
+            {withdrawalStep === "address" && <AddressStep />}
+            {withdrawalStep === "bank" && <BankStep />}
+            {withdrawalStep === "review" && <WithdrawalReviewStep />}
+            {error ? (
+              <p className="mt-4 text-sm text-destructive">{error}</p>
+            ) : null}
+          </div>
 
-        <div className="px-7 py-4 border-t border-border/60 flex items-center justify-between">
-          <RippleButton
-            onClick={handlePreviousStep}
-            rippleColor="rgba(0,0,0,0.08)"
-            className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors active:scale-[0.97]"
-          >
-            <ArrowLeft size={15} /> {currentIndex > 0 ? "Voltar" : "Fechar"}
-          </RippleButton>
-
-          {withdrawalStep === "review" ? (
+          <div className="flex items-center justify-between border-t border-border/60 px-7 py-4">
             <RippleButton
-              onClick={() => void handleSubmit()}
-              disabled={submitting}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-all disabled:opacity-50 active:scale-[0.97]"
+              onClick={handlePreviousStep}
+              rippleColor="rgba(0,0,0,0.08)"
+              className="flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground active:scale-[0.97]"
             >
-              {submitting ? (
-                <Loader2 size={15} className="animate-spin" />
-              ) : (
-                <CheckCircle2 size={15} />
-              )}
-              {submitting ? "Enviando..." : "Enviar para Análise"}
+              <ArrowLeft size={15} /> {currentIndex > 0 ? "Voltar" : "Fechar"}
             </RippleButton>
-          ) : (
-            <RippleButton
-              onClick={handleNextStep}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-all active:scale-[0.97]"
-            >
-              Continuar <ArrowRight size={15} />
-            </RippleButton>
-          )}
+
+            {withdrawalStep === "review" ? (
+              <RippleButton
+                onClick={() => void handleSubmit()}
+                disabled={submitting}
+                className="flex items-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 disabled:opacity-50 active:scale-[0.97]"
+              >
+                {submitting ? (
+                  <Loader2 size={15} className="animate-spin" />
+                ) : (
+                  <CheckCircle2 size={15} />
+                )}
+                {submitting ? "Enviando..." : "Enviar para Análise"}
+              </RippleButton>
+            ) : (
+              <RippleButton
+                onClick={handleNextStep}
+                className="flex items-center gap-2 rounded-lg bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-all hover:bg-primary/90 active:scale-[0.97]"
+              >
+                Continuar <ArrowRight size={15} />
+              </RippleButton>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </ModalPortal>
   );
 }
