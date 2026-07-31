@@ -66,7 +66,9 @@ export default function AdminEmail() {
   useEffect(() => {
     if (!smtpData) return;
     setSettings({ ...(smtpData as unknown as SmtpSettings), is_active: true });
-    if (smtpData.host) setIsMasked(true);
+    // Só mascara quando há registro persistido no banco (tem `id`).
+    // Defaults do .env vêm sem `id` e ficam editáveis.
+    setIsMasked(Boolean(smtpData.id));
   }, [smtpData]);
 
   const handleSave = async () => {
@@ -138,10 +140,9 @@ export default function AdminEmail() {
       }
 
       await apiService.modules.adminConfig.deleteSmtpSettings();
-      setSettings(defaultSettings);
-      setIsMasked(false);
       setClearDialogOpen(false);
       setClearMfaCode("");
+      setShowPassword(false);
       toast.success("Credenciais SMTP removidas com sucesso");
       await invalidateQuery();
     } catch (err: any) {
