@@ -25,6 +25,8 @@ export interface ISellerStatsResponseDto {
   netProfit: number;
   transactionsCount: number;
   averageTicket: number;
+  conversionRate: number;
+  completedTransactionsCount: number;
 }
 
 export interface ISellerModule {

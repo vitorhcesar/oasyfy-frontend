@@ -12,30 +12,34 @@ const DEFAULT_RETURN: ISellerStatsResponseDto = {
   netProfit: 0,
   transactionsCount: 0,
   averageTicket: 0,
+  conversionRate: 0,
+  completedTransactionsCount: 0,
 };
 
 export default function useSellerStatsQuery(data?: ISellerStatsQueryDto) {
   const { rangeStart, rangeEnd } = data ?? {};
 
   const apiService = useApiService();
-
   const queryClient = useQueryClient();
 
-  const QUERY_KEY = ["seller-stats"];
+  const queryKey = [
+    "seller-stats",
+    rangeStart?.toISOString() ?? null,
+    rangeEnd?.toISOString() ?? null,
+  ] as const;
 
   const query = useQuery({
-    queryKey: QUERY_KEY,
+    queryKey,
     queryFn: async () => {
-      const data = await apiService.modules.seller.getSellerStats({
+      return apiService.modules.seller.getSellerStats({
         rangeStart,
         rangeEnd,
       });
-      return data;
     },
   });
 
   const invalidateQuery = async () => {
-    await queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+    await queryClient.invalidateQueries({ queryKey: ["seller-stats"] });
   };
 
   return {

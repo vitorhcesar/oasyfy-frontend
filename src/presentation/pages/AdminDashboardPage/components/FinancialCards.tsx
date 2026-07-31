@@ -7,6 +7,7 @@ import {
   TrendingUp,
   Wallet,
 } from "lucide-react";
+import { Progress } from "@/presentation/components/ui/progress";
 import { cn } from "@/presentation/utils/cn";
 import useAdminFinanceMetricsQuery from "../hooks/use-admin-finance-metrics-query";
 import usePlatformAvailableBalanceQuery from "../hooks/use-platform-available-balance-query";
@@ -75,6 +76,7 @@ export default function FinancialCards() {
       icon: Percent,
       iconClass: "text-primary",
       meta: `${completedTransactionsCount}/${filteredTransactionsCount}`,
+      progress: conversionRate,
     },
     {
       label: "Saques Realizados",
@@ -115,6 +117,12 @@ export default function FinancialCards() {
           >
             {card.value}
           </p>
+          {card.progress != null && (
+            <Progress
+              value={card.progress}
+              className="mt-3 h-2 bg-muted/60"
+            />
+          )}
           {card.change != null && (
             <div className="mt-2">
               <ChangeIndicator value={card.change} />
