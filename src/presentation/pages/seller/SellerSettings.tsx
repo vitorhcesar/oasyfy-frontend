@@ -344,6 +344,7 @@ function SecurityTab() {
                 </button>
               </div>
             </div>
+            </div>
           </div>
         </ModalPortal>
       )}

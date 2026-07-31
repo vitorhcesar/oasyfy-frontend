@@ -393,6 +393,7 @@ export default function AdminRefunds() {
                 </button>
               </div>
             </div>
+            </div>
           </ModalPortal>
         )}
       </div>
