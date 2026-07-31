@@ -137,6 +137,7 @@ export default function AdminManagers() {
                 />
               </div>
             </div>
+
             <div>
               <label className="mb-1 block text-xs font-medium text-muted-foreground">
                 Senha
@@ -150,7 +151,12 @@ export default function AdminManagers() {
                 minLength={8}
               />
             </div>
-            <Button type="submit" disabled={adding} className="w-full sm:w-auto">
+
+            <Button
+              type="submit"
+              disabled={adding}
+              className="w-full sm:w-auto !mt-2"
+            >
               {adding ? (
                 <Loader2 size={16} className="animate-spin" />
               ) : (

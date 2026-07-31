@@ -30,7 +30,7 @@ const buttonVariants = cva(
       variant: "default",
       size: "default",
     },
-  }
+  },
 );
 
 interface RippleState {
@@ -41,7 +41,8 @@ interface RippleState {
 }
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+  extends
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
   ripple?: boolean;
@@ -66,7 +67,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       disabled = false,
       ...props
     },
-    ref
+    ref,
   ) => {
     const [ripples, setRipples] = React.useState<RippleState[]>([]);
 
@@ -110,7 +111,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         className={cn(
           buttonVariants({ variant, size, className }),
-          ripple && "relative overflow-hidden isolate"
+          ripple && "relative overflow-hidden isolate",
         )}
         ref={ref}
         onClick={handleClick}
@@ -140,7 +141,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ))}
       </button>
     );
-  }
+  },
 );
 Button.displayName = "Button";
 
