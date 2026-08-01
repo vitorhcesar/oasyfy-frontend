@@ -28,7 +28,7 @@ export interface ISellerRevenueRankingMeDto {
 }
 
 export interface ISellerRevenueRankingDto {
-  range: "7d" | "30d" | "custom";
+  range: "today" | "7d" | "30d" | "custom";
   from: string;
   to: string;
   entries: ISellerRevenueRankingEntryDto[];
@@ -36,7 +36,7 @@ export interface ISellerRevenueRankingDto {
 }
 
 export interface ISellerRevenueRankingQueryDto {
-  range?: "7d" | "30d" | "custom";
+  range?: "today" | "7d" | "30d" | "custom";
   rangeStart?: string;
   rangeEnd?: string;
 }

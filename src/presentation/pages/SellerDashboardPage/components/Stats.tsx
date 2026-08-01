@@ -21,6 +21,11 @@ export default function Stats() {
 
   const rangeStart = useMemo(() => {
     if (timeRange === "custom" && dateRange?.from) return dateRange.from;
+    if (timeRange === "today") {
+      const start = new Date(now);
+      start.setHours(0, 0, 0, 0);
+      return start;
+    }
     const rangeMs = timeRange === "30d" ? 30 * 86400000 : 7 * 86400000;
     return new Date(now.getTime() - rangeMs);
   }, [timeRange, dateRange, now]);

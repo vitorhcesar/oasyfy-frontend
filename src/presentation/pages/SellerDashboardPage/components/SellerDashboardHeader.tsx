@@ -12,7 +12,7 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { ArrowUpRight, CalendarIcon, Eye, EyeOff } from "lucide-react";
 import { useSellerDashboardStore } from "../stores/seller-dashboard.store";
-import { TSellerDashboardTimeRange } from "../types/time-range.type";
+import { SELLER_DASHBOARD_PRESET_RANGES } from "../types/time-range.type";
 
 interface ISellerDashboardHeaderProps {
   onClickWithdrawal: () => void;
@@ -66,21 +66,21 @@ export default function SellerDashboardHeader({
         </Button>
 
         <div className="liquid-glass-control flex items-center gap-0.5 rounded-2xl p-1">
-          {(["7d", "30d"] as TSellerDashboardTimeRange[]).map((p) => (
+          {SELLER_DASHBOARD_PRESET_RANGES.map(({ value, label }) => (
             <button
-              key={p}
+              key={value}
               onClick={() => {
-                setTimeRange(p);
+                setTimeRange(value);
                 setDateRange(undefined);
               }}
               className={cn(
                 "rounded-xl px-3.5 py-2 text-sm font-semibold uppercase tracking-wide transition-all",
-                timeRange === p
+                timeRange === value
                   ? "bg-white text-[#0F0617] shadow-sm"
                   : "text-muted-foreground hover:bg-white/10 hover:text-foreground",
               )}
             >
-              {p}
+              {label}
             </button>
           ))}
         </div>
