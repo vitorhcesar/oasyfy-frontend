@@ -2,6 +2,7 @@ import PageHeader from "@/presentation/components/PageHeader";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import { Badge } from "@/presentation/components/ui/badge";
 import { Button } from "@/presentation/components/ui/button";
+import { Checkbox } from "@/presentation/components/ui/checkbox";
 import { Input } from "@/presentation/components/ui/input";
 import { Label } from "@/presentation/components/ui/label";
 import useSellerPartnersQuery from "@/presentation/hooks/use-seller-partners-query";
@@ -112,6 +113,7 @@ export default function SellerPartners() {
   const [searchResult, setSearchResult] =
     useState<TSellerPartnerSearchDto | null>(null);
   const [searching, setSearching] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const owned = data?.owned ?? [];
 
@@ -156,6 +158,10 @@ export default function SellerPartners() {
       toast.error("Percentual inválido (use até 99%)");
       return;
     }
+    if (!acceptedTerms) {
+      toast.error("Aceite os termos para adicionar o sócio");
+      return;
+    }
     try {
       await inviteMutation.mutateAsync({
         email: email.trim(),
@@ -164,6 +170,7 @@ export default function SellerPartners() {
       toast.success("Sócio adicionado");
       setEmail("");
       setSearchResult(null);
+      setAcceptedTerms(false);
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "Não foi possível adicionar",
@@ -236,6 +243,26 @@ export default function SellerPartners() {
             </div>
           )}
 
+          <label
+            htmlFor="partner-terms"
+            className="flex cursor-pointer items-start gap-3 rounded-xl border border-border/60 bg-muted/20 px-4 py-3"
+          >
+            <Checkbox
+              id="partner-terms"
+              checked={acceptedTerms}
+              onCheckedChange={(checked) =>
+                setAcceptedTerms(checked === true)
+              }
+              className="mt-0.5"
+            />
+            <span className="text-sm leading-relaxed text-muted-foreground">
+              Li e aceito que a adição do e-mail de um sócio para dividir a
+              porcentagem das minhas vendas é feita por minha conta e risco. Sou
+              responsável por confirmar que o e-mail informado pertence à pessoa
+              ou conta correta.
+            </span>
+          </label>
+
           <div className="flex flex-wrap gap-2">
             <Button
               variant="outline"
@@ -247,7 +274,7 @@ export default function SellerPartners() {
               ) : null}
               Buscar
             </Button>
-            <Button onClick={handleAdd} disabled={busy}>
+            <Button onClick={handleAdd} disabled={busy || !acceptedTerms}>
               {inviteMutation.isPending ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : null}
