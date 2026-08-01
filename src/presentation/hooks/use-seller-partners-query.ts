@@ -35,24 +35,10 @@ export default function useSellerPartnersQuery() {
     onSuccess: invalidate,
   });
 
-  const acceptMutation = useMutation({
-    mutationFn: (id: number) =>
-      apiService.modules.sellerPortal.acceptPartnerInvite(id),
-    onSuccess: invalidate,
-  });
-
-  const rejectMutation = useMutation({
-    mutationFn: (id: number) =>
-      apiService.modules.sellerPortal.rejectPartnerInvite(id),
-    onSuccess: invalidate,
-  });
-
   return {
     ...query,
     inviteMutation,
     updateMutation,
-    acceptMutation,
-    rejectMutation,
     invalidate,
     searchPartnerByEmail: (email: string) =>
       apiService.modules.sellerPortal.searchPartnerByEmail(email),

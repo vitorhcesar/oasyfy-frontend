@@ -73,6 +73,7 @@ type StatusFilter =
   | "refunded"
   | "cancelled";
 type MethodFilter = "all" | "pix" | "card" | "boleto" | "crypto";
+type SplitFilter = "all" | "with_split" | "split_credit";
 
 const PER_PAGE = 15;
 
@@ -81,6 +82,42 @@ function formatCurrency(cents: number) {
     style: "currency",
     currency: "BRL",
   }).format(cents / 100);
+}
+
+function isSplitCredit(meta: Record<string, unknown> | null): boolean {
+  return meta?.type === "split_credit";
+}
+
+function hasSaleSplit(meta: Record<string, unknown> | null): boolean {
+  if (!meta || isSplitCredit(meta)) return false;
+  const split = meta.split;
+  return (
+    !!split &&
+    typeof split === "object" &&
+    !Array.isArray(split) &&
+    Array.isArray((split as { breakdown?: unknown }).breakdown)
+  );
+}
+
+function formatSplitBreakdown(meta: Record<string, unknown> | null): string | null {
+  if (!hasSaleSplit(meta) || !meta) return null;
+  const split = meta.split as {
+    seller_amount?: number;
+    breakdown?: Array<{ amount?: number; percentage?: number }>;
+  };
+  const you =
+    typeof split.seller_amount === "number"
+      ? formatCurrency(split.seller_amount)
+      : null;
+  const partners = (split.breakdown ?? [])
+    .filter((b) => typeof b.amount === "number" && (b.amount ?? 0) > 0)
+    .map((b) => formatCurrency(b.amount as number));
+  if (!you && partners.length === 0) return null;
+  const parts = [
+    you ? `Você ${you}` : null,
+    partners.length ? `Sócio(s) ${partners.join(" · ")}` : null,
+  ].filter(Boolean);
+  return parts.join(" · ");
 }
 
 function formatDateTime(date: string) {
@@ -162,6 +199,7 @@ export default function SellerTransactions() {
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [methodFilter, setMethodFilter] = useState<MethodFilter>("all");
+  const [splitFilter, setSplitFilter] = useState<SplitFilter>("all");
   const [page, setPage] = useState(1);
   const [selectedTx, setSelectedTx] = useState<TransactionView | null>(null);
   const [copied, setCopied] = useState(false);
@@ -170,6 +208,9 @@ export default function SellerTransactions() {
     return transactions.filter((t) => {
       if (statusFilter !== "all" && t.status !== statusFilter) return false;
       if (methodFilter !== "all" && t.method !== methodFilter) return false;
+      if (splitFilter === "with_split" && !hasSaleSplit(t.metadata)) return false;
+      if (splitFilter === "split_credit" && !isSplitCredit(t.metadata))
+        return false;
       if (search) {
         const q = search.toLowerCase();
         return (
@@ -180,14 +221,14 @@ export default function SellerTransactions() {
       }
       return true;
     });
-  }, [transactions, search, statusFilter, methodFilter]);
+  }, [transactions, search, statusFilter, methodFilter, splitFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
   const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
   useEffect(() => {
     setPage(1);
-  }, [search, statusFilter, methodFilter]);
+  }, [search, statusFilter, methodFilter, splitFilter]);
 
   const totalAmount = filtered
     .filter((t) => t.status === "paid" || t.status === "completed")
@@ -287,6 +328,15 @@ export default function SellerTransactions() {
               <option value="boleto">Boleto</option>
               <option value="crypto">Crypto</option>
             </select>
+            <select
+              value={splitFilter}
+              onChange={(e) => setSplitFilter(e.target.value as SplitFilter)}
+              className="appearance-none rounded-xl border border-border/60 bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
+            >
+              <option value="all">Todos splits</option>
+              <option value="with_split">Venda com split</option>
+              <option value="split_credit">Split recebido</option>
+            </select>
           </div>
         </div>
 
@@ -330,6 +380,8 @@ export default function SellerTransactions() {
               <div className="divide-y divide-border/40">
                 {paginated.map((tx) => {
                   const isWithdrawal = tx.method === "withdrawal";
+                  const splitCredit = isSplitCredit(tx.metadata);
+                  const saleSplit = hasSaleSplit(tx.metadata);
                   return (
                     <div
                       key={tx.id}
@@ -351,9 +403,21 @@ export default function SellerTransactions() {
                           )}
                         </div>
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-medium text-foreground">
-                            {tx.customer_name}
-                          </p>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="truncate text-sm font-medium text-foreground">
+                              {tx.customer_name}
+                            </p>
+                            {splitCredit && (
+                              <span className="rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-primary">
+                                Split recebido
+                              </span>
+                            )}
+                            {saleSplit && (
+                              <span className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                                Com split
+                              </span>
+                            )}
+                          </div>
                           {tx.customer_email && (
                             <p className="truncate text-xs text-muted-foreground">
                               {tx.customer_email}
@@ -394,6 +458,8 @@ export default function SellerTransactions() {
             <div className="space-y-3 md:hidden">
               {paginated.map((tx) => {
                 const isWithdrawal = tx.method === "withdrawal";
+                const splitCredit = isSplitCredit(tx.metadata);
+                const saleSplit = hasSaleSplit(tx.metadata);
                 return (
                   <div key={tx.id} className="admin-surface p-4">
                     <div className="mb-2 flex items-center justify-between">
@@ -413,9 +479,21 @@ export default function SellerTransactions() {
                           )}
                         </div>
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-medium text-foreground">
-                            {tx.customer_name}
-                          </p>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="truncate text-sm font-medium text-foreground">
+                              {tx.customer_name}
+                            </p>
+                            {splitCredit && (
+                              <span className="rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-primary">
+                                Split
+                              </span>
+                            )}
+                            {saleSplit && (
+                              <span className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                                Com split
+                              </span>
+                            )}
+                          </div>
                           {tx.customer_email && (
                             <p className="truncate text-xs text-muted-foreground">
                               {tx.customer_email}
@@ -521,6 +599,12 @@ export default function SellerTransactions() {
               const pixKeyType = (meta.pix_key_type as string) || null;
               const bankName = (meta.bank_name as string) || null;
               const balanceSource = (meta.balance_source as string) || null;
+              const splitCredit = isSplitCredit(meta);
+              const splitSummary = formatSplitBreakdown(meta);
+              const parentId =
+                typeof meta.parent_transaction_id === "number"
+                  ? String(meta.parent_transaction_id)
+                  : null;
 
               const copyToClipboard = (text: string) => {
                 navigator.clipboard.writeText(text);
@@ -589,6 +673,20 @@ export default function SellerTransactions() {
                         {tx.customer_email}
                       </p>
                     )}
+                    {(splitCredit || splitSummary) && (
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {splitCredit && (
+                          <span className="rounded-md bg-primary/10 px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-primary">
+                            Split recebido
+                          </span>
+                        )}
+                        {splitSummary && (
+                          <span className="rounded-md bg-muted px-2 py-1 text-[10px] font-medium text-muted-foreground">
+                            {splitSummary}
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Details */}
@@ -633,11 +731,17 @@ export default function SellerTransactions() {
                     {/* Info rows */}
                     <div className="rounded-xl bg-muted/20 border border-border/40 divide-y divide-border/30">
                       <DetailRow label="ID" value={tx.id} mono />
+                      {parentId && (
+                        <DetailRow label="Venda origem" value={parentId} mono />
+                      )}
                       <DetailRow
                         label="Método"
                         value={methodLabels[tx.method] || tx.method}
                       />
                       <DetailRow label="Descrição" value={tx.description} />
+                      {splitSummary && (
+                        <DetailRow label="Split" value={splitSummary} />
+                      )}
                       <DetailRow label="Adquirente" value={tx.acquirer} />
                       {balanceSource && (
                         <DetailRow

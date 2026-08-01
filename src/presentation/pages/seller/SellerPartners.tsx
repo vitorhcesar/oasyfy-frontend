@@ -23,6 +23,13 @@ const STATUS_LABEL: Record<string, string> = {
   expired: "Expirado",
 };
 
+function formatCurrency(cents: number) {
+  return (cents / 100).toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
+}
+
 function statusVariant(
   status: string,
 ): "default" | "secondary" | "destructive" | "outline" {
@@ -37,14 +44,45 @@ function PartnerRow({
   onPause,
   onResume,
   onRevoke,
+  onSavePercentage,
   busy,
 }: {
   partner: ISellerPartnerDto;
   onPause?: () => void;
   onResume?: () => void;
   onRevoke?: () => void;
+  onSavePercentage?: (percentage: number) => Promise<void>;
   busy?: boolean;
 }) {
+  const [editingPct, setEditingPct] = useState(false);
+  const [pctValue, setPctValue] = useState(String(partner.percentage));
+  const [savingPct, setSavingPct] = useState(false);
+
+  const canEditPct =
+    partner.role === "owner" &&
+    (partner.status === "active" || partner.status === "paused");
+
+  const handleSavePct = async () => {
+    const pct = Number(pctValue.replace(",", "."));
+    if (!Number.isFinite(pct) || pct <= 0 || pct > 99) {
+      toast.error("Percentual inválido (use até 99%)");
+      return;
+    }
+    if (!onSavePercentage) return;
+    setSavingPct(true);
+    try {
+      await onSavePercentage(pct);
+      setEditingPct(false);
+      toast.success("Percentual atualizado");
+    } catch (err) {
+      toast.error(
+        err instanceof Error ? err.message : "Falha ao atualizar percentual",
+      );
+    } finally {
+      setSavingPct(false);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-3 border-b border-border/60 py-4 last:border-0 sm:flex-row sm:items-center sm:justify-between">
       <div className="min-w-0 space-y-1">
@@ -64,7 +102,60 @@ function PartnerRow({
         </p>
         <p className="text-sm text-muted-foreground">
           Participação:{" "}
-          <span className="text-foreground">{partner.percentage}%</span>
+          {editingPct ? (
+            <span className="inline-flex items-center gap-2">
+              <Input
+                className="h-8 w-20"
+                inputMode="decimal"
+                value={pctValue}
+                onChange={(e) => setPctValue(e.target.value)}
+                disabled={savingPct || busy}
+              />
+              <span className="text-foreground">%</span>
+              <Button
+                size="sm"
+                variant="outline"
+                disabled={savingPct || busy}
+                onClick={handleSavePct}
+              >
+                Salvar
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                disabled={savingPct || busy}
+                onClick={() => {
+                  setEditingPct(false);
+                  setPctValue(String(partner.percentage));
+                }}
+              >
+                Cancelar
+              </Button>
+            </span>
+          ) : (
+            <>
+              <span className="text-foreground">{partner.percentage}%</span>
+              {canEditPct && (
+                <button
+                  type="button"
+                  className="ml-2 text-xs text-primary hover:underline"
+                  disabled={busy}
+                  onClick={() => {
+                    setPctValue(String(partner.percentage));
+                    setEditingPct(true);
+                  }}
+                >
+                  Editar
+                </button>
+              )}
+            </>
+          )}
+        </p>
+        <p className="text-sm text-muted-foreground">
+          Total recebido:{" "}
+          <span className="text-foreground">
+            {formatCurrency(partner.total_received_amount ?? 0)}
+          </span>
         </p>
       </div>
       <div className="flex flex-wrap gap-2">
@@ -197,7 +288,7 @@ export default function SellerPartners() {
           <p className="text-sm text-muted-foreground">
             Busque pela conta pelo e-mail, defina a porcentagem e adicione. As
             vendas sem <code>split[]</code> na API já passam a dividir
-            automaticamente.
+            automaticamente. A parceria fica ativa na hora — não há convite.
           </p>
 
           <div className="grid gap-4 sm:grid-cols-[1fr_auto]">
@@ -304,6 +395,12 @@ export default function SellerPartners() {
                   key={p.id}
                   partner={p}
                   busy={busy}
+                  onSavePercentage={async (percentage) => {
+                    await updateMutation.mutateAsync({
+                      id: p.id,
+                      body: { percentage },
+                    });
+                  }}
                   onPause={async () => {
                     try {
                       await updateMutation.mutateAsync({

@@ -122,6 +122,7 @@ export interface ISellerPartnerDto {
   counterparty_name: string | null;
   counterparty_email: string | null;
   counterparty_account_id: string | null;
+  total_received_amount?: number;
 }
 
 export interface ISellerPartnersListDto {
