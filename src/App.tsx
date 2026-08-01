@@ -36,6 +36,7 @@ import SellerApi from "./presentation/pages/seller/SellerApi";
 import SellerApiDocs from "./presentation/pages/seller/SellerApiDocs";
 import SellerApps from "./presentation/pages/seller/SellerApps";
 import SellerDeposit from "./presentation/pages/seller/SellerDeposit";
+import SellerPartners from "./presentation/pages/seller/SellerPartners";
 import SellerKyc from "./presentation/pages/seller/SellerKyc";
 import SellerSettings from "./presentation/pages/seller/SellerSettings";
 import SellerTransactions from "./presentation/pages/seller/SellerTransactions";
@@ -196,6 +197,14 @@ export default function App() {
                   element={
                     <ProtectedRoute requiredRole="seller">
                       <SellerDeposit />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/seller/partners"
+                  element={
+                    <ProtectedRoute requiredRole="seller">
+                      <SellerPartners />
                     </ProtectedRoute>
                   }
                 />

@@ -968,8 +968,10 @@ const SPLIT_RULES = [
   "Pode combinar percentage e fixed_amount no mesmo split",
   "fixed_amount é descontado primeiro, depois os percentuais são calculados sobre o restante",
   "Valores são arredondados para o centavo mais próximo",
-  "O account_id deve ser o ID de uma conta ativa na plataforma",
+  "O account_id deve ser o ID de uma conta ativa na plataforma (validado)",
   "Se charge_processing_fee for true, a taxa de processamento é descontada daquele split",
+  "Sem split[] na request, o gateway aplica automaticamente os sócios ativos configurados em /seller/partners (adição direta, sem aceite)",
+  "No pagamento (paid), o split é liquidado: o sócio recebe crédito no saldo (split_credit)",
 ];
 
 /* ── Main page ── */

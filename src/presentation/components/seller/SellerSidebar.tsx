@@ -44,6 +44,7 @@ import {
   ShieldCheck,
   Sun,
   User,
+  Users,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -132,6 +133,12 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
       url: "/seller/transfers",
       icon: ArrowUpRight,
       locked: isWithdrawLocked,
+    },
+    {
+      title: "Sócios",
+      url: "/seller/partners",
+      icon: Users,
+      locked: isKycLocked,
     },
   ];
 
