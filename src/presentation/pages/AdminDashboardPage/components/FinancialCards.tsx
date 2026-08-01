@@ -3,11 +3,10 @@ import {
   Banknote,
   DollarSign,
   Loader2,
-  Percent,
   TrendingUp,
   Wallet,
 } from "lucide-react";
-import { Progress } from "@/presentation/components/ui/progress";
+import ConversionRateCard from "@/presentation/components/ConversionRateCard";
 import { cn } from "@/presentation/utils/cn";
 import useAdminFinanceMetricsQuery from "../hooks/use-admin-finance-metrics-query";
 import usePlatformAvailableBalanceQuery from "../hooks/use-platform-available-balance-query";
@@ -71,14 +70,6 @@ export default function FinancialCards() {
       iconClass: "text-primary",
     },
     {
-      label: "Taxa Conversão",
-      value: `${conversionRate}%`,
-      icon: Percent,
-      iconClass: "text-primary",
-      meta: `${completedTransactionsCount}/${filteredTransactionsCount}`,
-      progress: conversionRate,
-    },
-    {
       label: "Saques Realizados",
       value: formatCompact(withdrawalVolume),
       icon: ArrowDownRight,
@@ -87,54 +78,58 @@ export default function FinancialCards() {
   ];
 
   return (
-    <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
-      {cards.map((card) => (
-        <div
-          key={card.label}
-          className={cn(
-            "admin-surface p-4 md:p-5",
-            card.featured && "admin-surface-featured col-span-2 md:col-span-1",
-          )}
-        >
-          <div className="mb-3 flex items-center gap-2">
-            <div
-              className={cn(
-                "flex h-8 w-8 items-center justify-center rounded-lg bg-muted/40",
-                card.featured && "bg-primary/15",
-              )}
-            >
-              <card.icon size={15} className={card.iconClass} />
-            </div>
-            <span className="text-sm text-muted-foreground">{card.label}</span>
-          </div>
-          <p
+    <>
+      <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
+        {cards.map((card) => (
+          <div
+            key={card.label}
             className={cn(
-              "font-bold tracking-tight text-foreground tabular-nums",
-              card.featured
-                ? "text-2xl md:text-3xl"
-                : "text-xl md:text-2xl",
+              "admin-surface p-4 md:p-5",
+              card.featured && "admin-surface-featured col-span-2 md:col-span-1",
             )}
           >
-            {card.value}
-          </p>
-          {card.progress != null && (
-            <Progress
-              value={card.progress}
-              className="mt-3 h-2 bg-muted/60"
-            />
-          )}
-          {card.change != null && (
-            <div className="mt-2">
-              <ChangeIndicator value={card.change} />
+            <div className="mb-3 flex items-center gap-2">
+              <div
+                className={cn(
+                  "flex h-8 w-8 items-center justify-center rounded-lg bg-muted/40",
+                  card.featured && "bg-primary/15",
+                )}
+              >
+                <card.icon size={15} className={card.iconClass} />
+              </div>
+              <span className="text-sm text-muted-foreground">{card.label}</span>
             </div>
-          )}
-          {card.meta && (
-            <span className="mt-2 block text-xs text-muted-foreground">
-              {card.meta}
-            </span>
-          )}
-        </div>
-      ))}
-    </div>
+            <p
+              className={cn(
+                "font-bold tracking-tight text-foreground tabular-nums",
+                card.featured
+                  ? "text-2xl md:text-3xl"
+                  : "text-xl md:text-2xl",
+              )}
+            >
+              {card.value}
+            </p>
+            {card.change != null && (
+              <div className="mt-2">
+                <ChangeIndicator value={card.change} />
+              </div>
+            )}
+            {card.meta && (
+              <span className="mt-2 block text-xs text-muted-foreground">
+                {card.meta}
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <ConversionRateCard
+        value={conversionRate}
+        completedCount={completedTransactionsCount}
+        totalCount={filteredTransactionsCount}
+        title="Taxa de conversão"
+        description="Proporção de transações aprovadas no período selecionado"
+      />
+    </>
   );
 }

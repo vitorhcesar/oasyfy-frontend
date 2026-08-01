@@ -1,12 +1,10 @@
-import { Progress } from "@/presentation/components/ui/progress";
+import ConversionGauge from "@/presentation/components/ConversionGauge";
 import { useHideBalance } from "@/presentation/hooks/use-hide-balance";
 import { cn } from "@/presentation/utils/cn";
 import {
   ArrowLeftRight,
-  Clock,
   DollarSign,
   Percent,
-  ShieldCheck,
   Ticket,
   TrendingUp,
 } from "lucide-react";
@@ -46,34 +44,7 @@ export default function Stats() {
       accent: "bg-primary/10 text-primary",
       featured: true,
       hideable: true,
-    },
-    {
-      label: "Saldo pendente",
-      value: formatCurrency(stats.totalPending),
-      icon: Clock,
-      accent: "bg-warning/10 text-warning",
-      hideable: true,
-    },
-    {
-      label: "Saldo retido",
-      value: formatCurrency(stats.retainedBalance),
-      icon: ShieldCheck,
-      accent: "bg-primary/10 text-primary",
-      hideable: true,
-    },
-    {
-      label: "Lucro líquido",
-      value: formatCurrency(Math.max(0, stats.netProfit)),
-      icon: TrendingUp,
-      accent: "bg-success/10 text-success",
-      hideable: true,
-    },
-    {
-      label: "Transações",
-      value: stats.transactionsCount.toString(),
-      icon: ArrowLeftRight,
-      accent: "bg-primary/10 text-primary",
-      hideable: false,
+      order: "order-1",
     },
     {
       label: "Ticket médio",
@@ -81,26 +52,35 @@ export default function Stats() {
       icon: Ticket,
       accent: "bg-primary/10 text-primary",
       hideable: true,
+      order: "order-2",
     },
     {
-      label: "Taxa de conversão",
-      value: `${stats.conversionRate}%`,
-      icon: Percent,
+      label: "Transações",
+      value: stats.transactionsCount.toString(),
+      icon: ArrowLeftRight,
       accent: "bg-primary/10 text-primary",
       hideable: false,
-      progress: stats.conversionRate,
-      meta: `${stats.completedTransactionsCount}/${stats.transactionsCount}`,
+      order: "order-3 md:order-4",
+    },
+    {
+      label: "Lucro líquido",
+      value: formatCurrency(Math.max(0, stats.netProfit)),
+      icon: TrendingUp,
+      accent: "bg-success/10 text-success",
+      hideable: true,
+      order: "order-4 md:order-5",
     },
   ];
 
   return (
-    <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
+    <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3 md:grid-rows-2">
       {statCards.map((stat) => (
         <div
           key={stat.label}
           className={cn(
-            "admin-surface p-4 md:p-5",
+            "admin-surface flex h-full w-full flex-col p-4 md:p-5",
             stat.featured && "admin-surface-featured",
+            stat.order,
           )}
         >
           <div className="mb-3 flex items-center gap-2">
@@ -116,23 +96,53 @@ export default function Stats() {
           </div>
           <p
             className={cn(
-              "font-bold tracking-tight text-foreground tabular-nums transition-all",
+              "mt-auto font-bold tracking-tight text-foreground tabular-nums transition-all",
               stat.featured ? "text-2xl md:text-3xl" : "text-xl md:text-2xl",
               stat.hideable && hideBalance && "blur-md select-none",
             )}
           >
             {stat.value}
           </p>
-          {stat.progress != null && (
-            <Progress value={stat.progress} className="mt-3 h-2 bg-muted/60" />
-          )}
-          {stat.meta && (
-            <span className="mt-2 block text-xs text-muted-foreground">
-              {stat.meta}
-            </span>
-          )}
         </div>
       ))}
+
+      <div
+        className={cn(
+          "admin-surface order-5 flex h-full w-full flex-col p-5 md:order-3 md:col-start-3 md:row-span-2 md:p-6",
+          "col-span-2 md:col-span-1",
+        )}
+      >
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <Percent size={18} />
+          </div>
+          <div className="min-w-0">
+            <h3 className="text-base font-semibold text-foreground md:text-lg">
+              Taxa de conversão
+            </h3>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Transações aprovadas
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 py-2">
+          <ConversionGauge
+            value={stats.conversionRate}
+            size="lg"
+            className="pr-14"
+          />
+          <p className="text-center text-sm text-muted-foreground">
+            <span className="font-semibold text-foreground tabular-nums">
+              {stats.completedTransactionsCount.toLocaleString("pt-BR")}
+            </span>{" "}
+            pagos de{" "}
+            <span className="font-semibold text-foreground tabular-nums">
+              {stats.transactionsCount.toLocaleString("pt-BR")}
+            </span>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

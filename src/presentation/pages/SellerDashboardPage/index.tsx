@@ -222,7 +222,14 @@ export default function SellerDashboardPage() {
         <Stats />
 
         {stats.transactionsCount > 0 && (
-          <Conversion pixRate={pixRate} boletoRate={boletoRate} />
+          <Conversion
+            pixRate={pixRate}
+            boletoRate={boletoRate}
+            pixPaid={pixPaid}
+            pixTotal={pixTx.length}
+            boletoPaid={boletoPaid}
+            boletoTotal={boletoTx.length}
+          />
         )}
 
         <RevenueChart
