@@ -18,7 +18,7 @@ import { useAdminDashboardPageStore } from "./stores/admin-dashboard-page.store"
 
 export default function AdminDashboardPage() {
   const { data: metrics, isLoading } = usePlatformMetricsQuery();
-  const { transactions, sellerProfiles } = metrics;
+  const { transactions } = metrics;
 
   const { period, customFrom, customTo } = useAdminDashboardPageStore();
 
@@ -69,10 +69,7 @@ export default function AdminDashboardPage() {
             <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
               <FeesChart chartData={chartData} />
               <PeakHour completedTransactions={completedTransactions} />
-              <TopSellers
-                completedTransactions={completedTransactions}
-                sellerProfiles={sellerProfiles}
-              />
+              <TopSellers />
             </div>
 
             <QuickActions />

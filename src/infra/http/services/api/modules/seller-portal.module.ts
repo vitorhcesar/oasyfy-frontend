@@ -7,6 +7,38 @@ export interface ISellerProfileDto {
   avatarUrl: string | null;
   accountId: string;
   email: string | null;
+  showIdentityInRevenueRanking: boolean;
+}
+
+export interface ISellerRevenueRankingEntryDto {
+  position: number;
+  revenueAmount: number;
+  transactionCount: number;
+  anonymous: boolean;
+  displayName: string | null;
+  avatarUrl: string | null;
+  isCurrentUser: boolean;
+}
+
+export interface ISellerRevenueRankingMeDto {
+  position: number | null;
+  revenueAmount: number;
+  transactionCount: number;
+  showIdentityInRevenueRanking: boolean;
+}
+
+export interface ISellerRevenueRankingDto {
+  range: "7d" | "30d" | "custom";
+  from: string;
+  to: string;
+  entries: ISellerRevenueRankingEntryDto[];
+  me: ISellerRevenueRankingMeDto;
+}
+
+export interface ISellerRevenueRankingQueryDto {
+  range?: "7d" | "30d" | "custom";
+  rangeStart?: string;
+  rangeEnd?: string;
 }
 
 export interface ISellerWithdrawalLimitsDto {
@@ -110,8 +142,14 @@ export type TSellerPartnerSearchDto =
 
 export interface ISellerPortalModule {
   getProfile: () => Promise<ISellerProfileDto>;
-  updateProfile: (displayName: string) => Promise<ISellerProfileDto>;
+  updateProfile: (body: {
+    displayName?: string;
+    showIdentityInRevenueRanking?: boolean;
+  }) => Promise<ISellerProfileDto>;
   uploadAvatar: (file: File) => Promise<{ avatarUrl: string }>;
+  getRevenueRanking: (
+    query?: ISellerRevenueRankingQueryDto,
+  ) => Promise<ISellerRevenueRankingDto>;
   getWithdrawalContext: () => Promise<ISellerWithdrawalContextDto>;
   requestWithdrawal: (
     body: ICreateSellerWithdrawalBody,
@@ -167,10 +205,22 @@ export class SellerPortalModule
     return response.data;
   }
 
-  async updateProfile(displayName: string): Promise<ISellerProfileDto> {
+  async updateProfile(body: {
+    displayName?: string;
+    showIdentityInRevenueRanking?: boolean;
+  }): Promise<ISellerProfileDto> {
     const response = await this.getClient().patch<
       IApiEnvelope<ISellerProfileDto>
-    >(`${this.baseUrl}/profile`, { displayName });
+    >(`${this.baseUrl}/profile`, body);
+    return response.data;
+  }
+
+  async getRevenueRanking(
+    query?: ISellerRevenueRankingQueryDto,
+  ): Promise<ISellerRevenueRankingDto> {
+    const response = await this.getClient().get<
+      IApiEnvelope<ISellerRevenueRankingDto>
+    >(`${this.baseUrl}/revenue-ranking`, { params: query });
     return response.data;
   }
 

@@ -3,6 +3,7 @@ import { BaseApiModule } from "./base-api.module";
 import type {
   IAdminFinanceMetricsQueryDto,
   IAdminFinanceMetricsResponseDto,
+  IAdminRevenueRankingDto,
   IAdminSecondaryMetricsResponseDto,
   IPlatformAvailableBalanceResponseDto,
   IPlatformMetricsResponseDto,
@@ -11,6 +12,8 @@ import type {
 export type {
   IAdminFinanceMetricsQueryDto,
   IAdminFinanceMetricsResponseDto,
+  IAdminRevenueRankingDto,
+  IAdminRevenueRankingEntryDto,
   IAdminSecondaryMetricsResponseDto,
   IPlatformAvailableBalanceResponseDto,
   IPlatformMetricsResponseDto,
@@ -27,6 +30,9 @@ export interface IAdminPlatformMetricsModule {
     query: IAdminFinanceMetricsQueryDto,
   ): Promise<IAdminSecondaryMetricsResponseDto>;
   getPlatformAvailableBalance(): Promise<IPlatformAvailableBalanceResponseDto>;
+  getRevenueRanking(
+    query: IAdminFinanceMetricsQueryDto,
+  ): Promise<IAdminRevenueRankingDto>;
 }
 
 export class AdminPlatformMetricsModule
@@ -64,6 +70,15 @@ export class AdminPlatformMetricsModule
     const response = await this.getClient().get<
       IApiEnvelope<IPlatformAvailableBalanceResponseDto>
     >("/api/v1/admin/metrics/platform-balances");
+    return response.data;
+  }
+
+  async getRevenueRanking(
+    query: IAdminFinanceMetricsQueryDto,
+  ): Promise<IAdminRevenueRankingDto> {
+    const response = await this.getClient().get<
+      IApiEnvelope<IAdminRevenueRankingDto>
+    >("/api/v1/admin/revenue-ranking", { params: query });
     return response.data;
   }
 }

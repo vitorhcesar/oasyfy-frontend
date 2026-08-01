@@ -59,3 +59,23 @@ export interface IPlatformAvailableBalanceResponseDto {
   totalWithdrawn: number;
   totalRefunded: number;
 }
+
+export interface IAdminRevenueRankingEntryDto {
+  position: number;
+  userId: number;
+  accountId: string | null;
+  displayName: string;
+  fullName: string | null;
+  avatarUrl: string | null;
+  revenueAmount: number;
+  transactionCount: number;
+  feeAmount: number;
+  showIdentityInRevenueRanking: boolean;
+}
+
+export interface IAdminRevenueRankingDto {
+  range: "7d" | "30d" | "90d" | "custom";
+  from: string;
+  to: string;
+  entries: IAdminRevenueRankingEntryDto[];
+}

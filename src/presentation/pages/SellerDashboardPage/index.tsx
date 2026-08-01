@@ -13,6 +13,7 @@ import Banners from "./components/Banners";
 import Conversion from "./components/Conversion";
 import RecentTransactions from "./components/RecentTransactions";
 import RevenueChart from "./components/RevenueChart";
+import RevenueRanking from "./components/RevenueRanking";
 import SellerDashboardHeader from "./components/SellerDashboardHeader";
 import Stats from "./components/Stats";
 import useSellerStatsQuery from "./hooks/use-seller-stats-query";
@@ -220,6 +221,8 @@ export default function SellerDashboardPage() {
         />
 
         <Stats />
+
+        <RevenueRanking />
 
         {stats.transactionsCount > 0 && (
           <Conversion

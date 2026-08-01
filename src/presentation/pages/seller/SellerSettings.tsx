@@ -2,6 +2,7 @@ import { authClient } from "@/infra/auth/auth-client";
 import ModalPortal from "@/presentation/components/ModalPortal";
 import PageHeader from "@/presentation/components/PageHeader";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
+import { Switch } from "@/presentation/components/ui/switch";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import useFullSellerFeeQuery from "@/presentation/hooks/use-full-seller-fee-query";
 import { useSellerKycSubmissionQuery } from "@/presentation/hooks/use-seller-kyc-submission-query";
@@ -457,6 +458,8 @@ export default function SellerSettings() {
   const [email, setEmail] = useState("");
   const [accountId, setAccountId] = useState("");
   const [phone, setPhone] = useState("");
+  const [showIdentityInRevenueRanking, setShowIdentityInRevenueRanking] =
+    useState(false);
   const avatarUrl = profile?.avatarUrl ?? null;
   const { data: sellerFee, isLoading: feesLoading } = useFullSellerFeeQuery();
   const loading = profileLoading;
@@ -471,6 +474,9 @@ export default function SellerSettings() {
     setFullName(profile.fullName || user.name || "");
     setDisplayName(profile.displayName || user.name || "");
     setAccountId(profile.accountId || "");
+    setShowIdentityInRevenueRanking(
+      profile.showIdentityInRevenueRanking ?? false,
+    );
     if (profile.email) setEmail(profile.email);
   }, [profile, user.name]);
 
@@ -521,9 +527,15 @@ export default function SellerSettings() {
     setSaving(true);
     try {
       const updatedProfile = await apiService.modules.sellerPortal.updateProfile(
-        displayName.trim(),
+        {
+          displayName: displayName.trim(),
+          showIdentityInRevenueRanking,
+        },
       );
       setDisplayName(updatedProfile.displayName);
+      setShowIdentityInRevenueRanking(
+        updatedProfile.showIdentityInRevenueRanking,
+      );
       setCachedProfile(updatedProfile);
       await refetchSession();
       toast.success("Perfil salvo com sucesso!");
@@ -661,6 +673,23 @@ export default function SellerSettings() {
                         value={phone}
                         disabled
                         className="mt-1 w-full rounded-xl border border-border bg-muted/50 px-4 py-3 text-sm text-muted-foreground cursor-not-allowed"
+                      />
+                    </div>
+
+                    <div className="flex items-start justify-between gap-4 rounded-xl border border-border/60 bg-muted/20 px-4 py-3">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-foreground">
+                          Aparecer no ranking de faturamento
+                        </p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          Quando ativo, outros sellers veem seu nome e foto no
+                          ranking. Por padrão você aparece como anônimo.
+                        </p>
+                      </div>
+                      <Switch
+                        checked={showIdentityInRevenueRanking}
+                        onCheckedChange={setShowIdentityInRevenueRanking}
+                        aria-label="Aparecer no ranking de faturamento"
                       />
                     </div>
                   </div>
