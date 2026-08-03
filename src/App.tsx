@@ -40,7 +40,9 @@ import SellerPartners from "./presentation/pages/seller/SellerPartners";
 import SellerCheckouts from "./presentation/pages/seller/SellerCheckouts";
 import SellerCheckoutNew from "./presentation/pages/seller/SellerCheckoutNew";
 import SellerCheckoutDetail from "./presentation/pages/seller/SellerCheckoutDetail";
-import PublicCheckoutPage from "./presentation/pages/PublicCheckoutPage";
+import PublicCheckoutEntry from "./presentation/pages/PublicCheckoutEntry";
+import CheckoutHealthPage from "./presentation/pages/CheckoutHealthPage";
+import AdminCheckout from "./presentation/pages/admin/AdminCheckout";
 import SellerKyc from "./presentation/pages/seller/SellerKyc";
 import SellerSettings from "./presentation/pages/seller/SellerSettings";
 import SellerTransactions from "./presentation/pages/seller/SellerTransactions";
@@ -124,7 +126,8 @@ export default function App() {
                   }
                 />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
-                <Route path="/c/:publicId" element={<PublicCheckoutPage />} />
+                <Route path="/c/__health" element={<CheckoutHealthPage />} />
+                <Route path="/c/:publicId" element={<PublicCheckoutEntry />} />
                 <Route
                   path="/seller"
                   element={
@@ -378,6 +381,14 @@ export default function App() {
                   element={
                     <ProtectedRoute requiredRole="admin">
                       <AdminCrm />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/checkout"
+                  element={
+                    <ProtectedRoute requiredRole="admin">
+                      <AdminCheckout />
                     </ProtectedRoute>
                   }
                 />

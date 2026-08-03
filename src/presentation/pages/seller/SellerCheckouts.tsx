@@ -4,11 +4,19 @@ import { Badge } from "@/presentation/components/ui/badge";
 import { Button } from "@/presentation/components/ui/button";
 import { useSellerKycSubmissionQuery } from "@/presentation/hooks/use-seller-kyc-submission-query";
 import useSellerCheckoutsQuery from "@/presentation/hooks/use-seller-checkouts-query";
+import useSellerCheckoutServiceStatusQuery from "@/presentation/hooks/use-seller-checkout-service-status-query";
 import {
   CHECKOUT_STATUS_LABEL,
   formatCheckoutAmount,
 } from "@/presentation/pages/seller/checkout-shared";
-import { Copy, Link2, Loader2, Plus } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Copy,
+  Link2,
+  Loader2,
+  Plus,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
@@ -24,6 +32,7 @@ function statusVariant(
 export default function SellerCheckouts() {
   const { canSell, isLoading: kycLoading } = useSellerKycSubmissionQuery();
   const { checkouts, isLoading } = useSellerCheckoutsQuery();
+  const { status: serviceStatus } = useSellerCheckoutServiceStatusQuery();
 
   if (!kycLoading && canSell === false) {
     return (
@@ -50,6 +59,13 @@ export default function SellerCheckouts() {
     }
   };
 
+  const createDisabled = serviceStatus?.isEnabled === false;
+  const showStatusBanner = serviceStatus?.showStatus === true;
+  const health = serviceStatus?.healthStatus ?? "unknown";
+  const isOnline = serviceStatus?.isEnabled === true && health === "up";
+  const isOffline =
+    serviceStatus?.isEnabled === false || health === "down";
+
   return (
     <SellerLayout>
       <div className="mx-auto w-full max-w-5xl space-y-6 px-5 py-6 md:px-8 md:py-9">
@@ -58,14 +74,72 @@ export default function SellerCheckouts() {
           title="Checkouts"
           description="Crie links de pagamento personalizados para enviar aos seus clientes."
           actions={
-            <Button asChild>
-              <Link to="/seller/checkouts/new">
+            createDisabled ? (
+              <Button disabled>
                 <Plus className="mr-2 h-4 w-4" />
                 Novo checkout
-              </Link>
-            </Button>
+              </Button>
+            ) : (
+              <Button asChild>
+                <Link to="/seller/checkouts/new">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Novo checkout
+                </Link>
+              </Button>
+            )
           }
         />
+
+        {createDisabled ? (
+          <div className="flex items-start gap-3 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
+            <div>
+              <p className="font-medium text-foreground">
+                Checkout temporariamente desligado pela plataforma
+              </p>
+              <p className="mt-1 text-muted-foreground">
+                Não é possível criar novos links no momento.
+              </p>
+            </div>
+          </div>
+        ) : null}
+
+        {showStatusBanner && !createDisabled ? (
+          <div
+            className={`flex items-start gap-3 rounded-xl border px-4 py-3 text-sm ${
+              isOnline
+                ? "border-emerald-500/30 bg-emerald-500/10"
+                : isOffline
+                  ? "border-destructive/30 bg-destructive/10"
+                  : "border-amber-500/30 bg-amber-500/10"
+            }`}
+          >
+            {isOnline ? (
+              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
+            ) : (
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+            )}
+            <div>
+              <p className="font-medium text-foreground">
+                {isOnline
+                  ? "Checkout online"
+                  : isOffline
+                    ? "Checkout temporariamente indisponível"
+                    : "Status do checkout ainda não verificado"}
+              </p>
+              {serviceStatus?.healthMessage && isOffline ? (
+                <p className="mt-1 text-muted-foreground">
+                  {serviceStatus.healthMessage}
+                </p>
+              ) : null}
+              {serviceStatus?.publicBaseUrl ? (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Domínio: {serviceStatus.publicBaseUrl}
+                </p>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
 
         {isLoading || kycLoading ? (
           <div className="flex justify-center py-16">
@@ -78,9 +152,15 @@ export default function SellerCheckouts() {
             <p className="mt-2 text-sm text-muted-foreground">
               Crie um link com a sua marca e compartilhe com o cliente.
             </p>
-            <Button asChild className="mt-6">
-              <Link to="/seller/checkouts/new">Criar primeiro checkout</Link>
-            </Button>
+            {createDisabled ? (
+              <Button className="mt-6" disabled>
+                Criar primeiro checkout
+              </Button>
+            ) : (
+              <Button asChild className="mt-6">
+                <Link to="/seller/checkouts/new">Criar primeiro checkout</Link>
+              </Button>
+            )}
           </div>
         ) : (
           <div className="divide-y divide-border/60 rounded-2xl border border-border/60">

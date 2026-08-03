@@ -40,7 +40,14 @@ export default function PublicCheckoutPage() {
         const data = await apiService.modules.publicCheckouts.get(publicId);
         if (cancelled) return;
         setCheckout(data);
-        setStep(data.available ? "form" : "unavailable");
+        if (!data.available) {
+          setStep("unavailable");
+          if (data.serviceDisabled && data.maintenanceMessage) {
+            setError(data.maintenanceMessage);
+          }
+        } else {
+          setStep("form");
+        }
       } catch (err) {
         if (cancelled) return;
         setError(

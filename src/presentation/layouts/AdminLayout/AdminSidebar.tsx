@@ -46,6 +46,7 @@ import {
   Sun,
   Target,
   UserCog,
+  Link2,
   X,
 } from "lucide-react";
 import { useEffect, useState, type ComponentType } from "react";
@@ -69,6 +70,7 @@ const settingsSubItems = [
   { title: "Taxas globais", url: "/admin/global-fees", icon: DollarSign },
   { title: "Planos de taxa", url: "/admin/fee-templates", icon: Layers },
   { title: "E-mail", url: "/admin/email", icon: Mail },
+  { title: "Checkout", url: "/admin/checkout", icon: Link2 },
   {
     title: "CRM",
     url: "/admin/crm",
@@ -134,6 +136,7 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
     location.pathname.startsWith("/admin/global-fees") ||
     location.pathname.startsWith("/admin/fee-templates") ||
     location.pathname.startsWith("/admin/email") ||
+    location.pathname.startsWith("/admin/checkout") ||
     location.pathname.startsWith("/admin/crm") ||
     location.pathname.startsWith("/admin/2fa") ||
     location.pathname.startsWith("/admin/managers");

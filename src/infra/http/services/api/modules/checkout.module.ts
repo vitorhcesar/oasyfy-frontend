@@ -70,6 +70,8 @@ export interface IPublicCheckoutDto {
   currency: string;
   status: string;
   available: boolean;
+  serviceDisabled?: boolean;
+  maintenanceMessage?: string | null;
   branding: {
     logoUrl: string | null;
     primaryColor: string;
@@ -78,6 +80,15 @@ export interface IPublicCheckoutDto {
   };
   customerDocumentRequired: boolean;
   successMessage: string;
+}
+
+export interface ISellerCheckoutServiceStatusDto {
+  showStatus: boolean;
+  isEnabled: boolean;
+  healthStatus?: "unknown" | "up" | "down";
+  healthMessage?: string | null;
+  checkedAt?: string | null;
+  publicBaseUrl: string;
 }
 
 export interface IPublicCheckoutPayResult {
@@ -107,6 +118,7 @@ export interface ISellerCheckoutModule {
   ) => Promise<ISellerCheckoutDto>;
   listPayments: (id: number) => Promise<ISellerCheckoutPaymentDto[]>;
   uploadLogo: (file: File) => Promise<{ logoUrl: string }>;
+  getServiceStatus: () => Promise<ISellerCheckoutServiceStatusDto>;
 }
 
 export interface IPublicCheckoutModule {
@@ -130,9 +142,17 @@ export class SellerCheckoutModule
   implements ISellerCheckoutModule
 {
   private readonly baseUrl = "/api/v1/seller/checkouts";
+  private readonly sellerBaseUrl = "/api/v1/seller";
 
   constructor(httpClient: IHttpClient) {
     super(httpClient);
+  }
+
+  async getServiceStatus(): Promise<ISellerCheckoutServiceStatusDto> {
+    const response = await this.getClient().get<
+      IApiEnvelope<ISellerCheckoutServiceStatusDto>
+    >(`${this.sellerBaseUrl}/checkout-service-status`);
+    return response.data;
   }
 
   async list(): Promise<ISellerCheckoutDto[]> {

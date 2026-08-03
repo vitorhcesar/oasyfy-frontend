@@ -1,6 +1,35 @@
 import type { IApiEnvelope } from "../api-types";
 import { BaseApiModule } from "./base-api.module";
 
+export interface IAdminCheckoutSettingsDto {
+  baseUrl: string;
+  isEnabled: boolean;
+  showStatusToSellers: boolean;
+  healthMessage: string;
+  lastHealthStatus: "unknown" | "up" | "down";
+  lastHealthCheckedAt: string | null;
+  effectiveBaseUrl: string;
+  portalFrontendUrl: string;
+}
+
+export interface IAdminCheckoutSettingsUpdateBody {
+  baseUrl: string;
+  isEnabled: boolean;
+  showStatusToSellers: boolean;
+  healthMessage: string;
+}
+
+export interface IAdminCheckoutTestResultDto {
+  ok: boolean;
+  status: "up" | "down";
+  latencyMs: number;
+  checkedAt: string;
+  detail: string;
+  statusCode: number | null;
+  probedUrl: string;
+  settings: IAdminCheckoutSettingsDto;
+}
+
 function toGlobalFeeBody(fees: Record<string, number>) {
   return {
     pixVariableFee: fees.pix_variable_fee,
@@ -45,6 +74,11 @@ export interface IAdminConfigModule {
   deleteSmtpSettings(): Promise<void>;
   getCrmSettings(): Promise<Record<string, unknown> | null>;
   updateCrmSettings(payload: Record<string, unknown>): Promise<Record<string, unknown>>;
+  getCheckoutSettings(): Promise<IAdminCheckoutSettingsDto>;
+  updateCheckoutSettings(
+    payload: IAdminCheckoutSettingsUpdateBody,
+  ): Promise<IAdminCheckoutSettingsDto>;
+  testCheckoutDomain(baseUrl?: string | null): Promise<IAdminCheckoutTestResultDto>;
   listAcquirerConnections(): Promise<Record<string, unknown>[]>;
   ensureDefaultAcquirerConnections(): Promise<Record<string, unknown>[]>;
   updateAcquirerConnection(
@@ -175,6 +209,29 @@ export class AdminConfigModule
       instanceName: payload.instance_name,
       welcomeMessage: payload.welcome_message,
       isActive: payload.is_active,
+    });
+    return response.data;
+  }
+
+  async getCheckoutSettings() {
+    const response = await this.getClient().get<
+      IApiEnvelope<IAdminCheckoutSettingsDto>
+    >(`${this.baseUrl}/checkout-settings`);
+    return response.data;
+  }
+
+  async updateCheckoutSettings(payload: IAdminCheckoutSettingsUpdateBody) {
+    const response = await this.getClient().put<
+      IApiEnvelope<IAdminCheckoutSettingsDto>
+    >(`${this.baseUrl}/checkout-settings`, payload);
+    return response.data;
+  }
+
+  async testCheckoutDomain(baseUrl?: string | null) {
+    const response = await this.getClient().post<
+      IApiEnvelope<IAdminCheckoutTestResultDto>
+    >(`${this.baseUrl}/checkout-settings/test`, {
+      baseUrl: baseUrl ?? null,
     });
     return response.data;
   }
