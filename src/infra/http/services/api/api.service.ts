@@ -49,6 +49,12 @@ import {
   ISellerPortalModule,
   SellerPortalModule,
 } from "./modules/seller-portal.module";
+import {
+  IPublicCheckoutModule,
+  ISellerCheckoutModule,
+  PublicCheckoutModule,
+  SellerCheckoutModule,
+} from "./modules/checkout.module";
 import { ISessionModule, SessionModule } from "./modules/session.module";
 import {
   ITransactionModule,
@@ -76,6 +82,8 @@ export interface IApiServiceModules {
   sellerFee: ISellerFeeModule;
   seller: ISellerModule;
   sellerPortal: ISellerPortalModule;
+  sellerCheckouts: ISellerCheckoutModule;
+  publicCheckouts: IPublicCheckoutModule;
   gatewayTheme: IGatewayThemeModule;
   email: IEmailModule;
   pix: IPixModule;
@@ -105,6 +113,8 @@ function attachModules(httpClient: IHttpClient): IApiServiceModules {
     sellerFee: new SellerFeeModule(httpClient),
     seller: new SellerModule(httpClient),
     sellerPortal: new SellerPortalModule(httpClient),
+    sellerCheckouts: new SellerCheckoutModule(httpClient),
+    publicCheckouts: new PublicCheckoutModule(httpClient),
     email: new EmailModule(httpClient),
     pix: new PixModule(httpClient),
     whatsapp: new WhatsappModule(httpClient),

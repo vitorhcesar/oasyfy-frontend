@@ -45,6 +45,7 @@ import {
   Sun,
   User,
   Users,
+  Link2,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -133,6 +134,12 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
       url: "/seller/transfers",
       icon: ArrowUpRight,
       locked: isWithdrawLocked,
+    },
+    {
+      title: "Checkouts",
+      url: "/seller/checkouts",
+      icon: Link2,
+      locked: isKycLocked,
     },
     {
       title: "Sócios",

@@ -37,6 +37,10 @@ import SellerApiDocs from "./presentation/pages/seller/SellerApiDocs";
 import SellerApps from "./presentation/pages/seller/SellerApps";
 import SellerDeposit from "./presentation/pages/seller/SellerDeposit";
 import SellerPartners from "./presentation/pages/seller/SellerPartners";
+import SellerCheckouts from "./presentation/pages/seller/SellerCheckouts";
+import SellerCheckoutNew from "./presentation/pages/seller/SellerCheckoutNew";
+import SellerCheckoutDetail from "./presentation/pages/seller/SellerCheckoutDetail";
+import PublicCheckoutPage from "./presentation/pages/PublicCheckoutPage";
 import SellerKyc from "./presentation/pages/seller/SellerKyc";
 import SellerSettings from "./presentation/pages/seller/SellerSettings";
 import SellerTransactions from "./presentation/pages/seller/SellerTransactions";
@@ -120,6 +124,7 @@ export default function App() {
                   }
                 />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
+                <Route path="/c/:publicId" element={<PublicCheckoutPage />} />
                 <Route
                   path="/seller"
                   element={
@@ -205,6 +210,30 @@ export default function App() {
                   element={
                     <ProtectedRoute requiredRole="seller">
                       <SellerPartners />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/seller/checkouts"
+                  element={
+                    <ProtectedRoute requiredRole="seller">
+                      <SellerCheckouts />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/seller/checkouts/new"
+                  element={
+                    <ProtectedRoute requiredRole="seller">
+                      <SellerCheckoutNew />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/seller/checkouts/:id"
+                  element={
+                    <ProtectedRoute requiredRole="seller">
+                      <SellerCheckoutDetail />
                     </ProtectedRoute>
                   }
                 />
