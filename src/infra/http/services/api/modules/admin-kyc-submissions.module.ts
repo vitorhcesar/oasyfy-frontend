@@ -10,6 +10,8 @@ import type {
   IBlockKycSubmissionWithdrawalsResponseDto,
   IRejectKycSubmissionAddressBodyDto,
   IRejectKycSubmissionBodyDto,
+  ISetKycSubmissionApiAccessBodyDto,
+  ISetKycSubmissionApiAccessResponseDto,
   IToggleKycSubmissionBanResponseDto,
   IUnblockKycSubmissionWithdrawalsResponseDto,
 } from "./types/admin-kyc-submissions.types";
@@ -26,6 +28,8 @@ export type {
   IBlockKycSubmissionWithdrawalsResponseDto,
   IRejectKycSubmissionAddressBodyDto,
   IRejectKycSubmissionBodyDto,
+  ISetKycSubmissionApiAccessBodyDto,
+  ISetKycSubmissionApiAccessResponseDto,
   IToggleKycSubmissionBanResponseDto,
   IUnblockKycSubmissionWithdrawalsResponseDto,
   TAdminKycListFilter,
@@ -60,6 +64,10 @@ export interface IAdminKycSubmissionsModule {
   unblockWithdrawals(
     submissionId: number,
   ): Promise<IUnblockKycSubmissionWithdrawalsResponseDto>;
+  setApiAccess(
+    submissionId: number,
+    body: ISetKycSubmissionApiAccessBodyDto,
+  ): Promise<ISetKycSubmissionApiAccessResponseDto>;
   approveDocument(
     submissionId: number,
     documentKey: string,
@@ -160,6 +168,16 @@ export class AdminKycSubmissionsModule
     const response = await this.getClient().post<
       IApiEnvelope<IUnblockKycSubmissionWithdrawalsResponseDto>
     >(`${this.baseUrl}/${submissionId}/withdrawals/unblock`);
+    return response.data;
+  }
+
+  async setApiAccess(
+    submissionId: number,
+    body: ISetKycSubmissionApiAccessBodyDto,
+  ): Promise<ISetKycSubmissionApiAccessResponseDto> {
+    const response = await this.getClient().post<
+      IApiEnvelope<ISetKycSubmissionApiAccessResponseDto>
+    >(`${this.baseUrl}/${submissionId}/api-access`, body);
     return response.data;
   }
 

@@ -46,6 +46,7 @@ export function mapAdminKycSubmissionToView(
     is_banned: submission.isBanned,
     withdrawals_blocked: submission.withdrawalsBlocked,
     withdrawal_block_reason: submission.withdrawalBlockReason,
+    api_access_enabled: submission.apiAccessEnabled ?? false,
     email_manually_approved: submission.emailManuallyApproved,
   };
 }
@@ -101,6 +102,7 @@ export function mapRegisteredSellerToKycView(
     is_banned: false,
     withdrawals_blocked: false,
     withdrawal_block_reason: null,
+    api_access_enabled: false,
     email_manually_approved: seller.email_manually_approved,
   };
 }

@@ -61,6 +61,7 @@ export interface IKycSubmissionDto {
   isBanned: boolean;
   withdrawalsBlocked: boolean;
   withdrawalBlockReason: string | null;
+  apiAccessEnabled: boolean;
   reviewedAt: Date | null;
   reviewedBy: number | null;
   createdAt: Date;
@@ -74,6 +75,7 @@ export interface ISellerKycSubmissionResponseDto {
   canSell: boolean;
   canWithdraw: boolean;
   fullyApproved: boolean;
+  apiAccessEnabled: boolean;
 }
 
 /** Corpo do POST `/api/v1/seller/kyc-submission` (multipart/form-data). */

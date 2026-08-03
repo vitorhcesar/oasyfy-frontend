@@ -100,6 +100,7 @@ export function mapSellerKycSubmissionResponse(
     canSell: raw.canSell ?? false,
     canWithdraw: raw.canWithdraw ?? false,
     fullyApproved: raw.fullyApproved ?? raw.canWithdraw ?? false,
+    apiAccessEnabled: raw.apiAccessEnabled ?? false,
     submission: mapSubmission(raw.submission),
   };
 }

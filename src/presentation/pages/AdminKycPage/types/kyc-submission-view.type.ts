@@ -38,6 +38,7 @@ export interface IKycSubmissionView {
   is_banned: boolean;
   withdrawals_blocked: boolean;
   withdrawal_block_reason: string | null;
+  api_access_enabled: boolean;
   email_manually_approved?: boolean;
 }
 

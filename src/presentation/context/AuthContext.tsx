@@ -20,6 +20,7 @@ export interface IAuthContext {
   session: Session | null;
   role: TAppRole | null;
   isBanned: boolean;
+  apiAccessEnabled: boolean;
   signOut: () => Promise<void>;
 }
 
@@ -30,6 +31,7 @@ export function AuthContextProvider({ children }: PropsWithChildren) {
 
   const [role, setRole] = useState<TAppRole | null>(null);
   const [isBanned, setIsBanned] = useState(false);
+  const [apiAccessEnabled, setApiAccessEnabled] = useState(false);
   /**
    * true enquanto o GET /session/context está em voo.
    * Usado para manter isLoading = true durante a busca de role.
@@ -55,9 +57,11 @@ export function AuthContextProvider({ children }: PropsWithChildren) {
       const ctx = await fetchSessionContext();
       setRole(ctx.role);
       setIsBanned(ctx.isBanned);
+      setApiAccessEnabled(ctx.apiAccessEnabled ?? false);
     } catch {
       setRole(null);
       setIsBanned(false);
+      setApiAccessEnabled(false);
     } finally {
       setRoleFetching(false);
       setRoleFetched(true);
@@ -71,6 +75,7 @@ export function AuthContextProvider({ children }: PropsWithChildren) {
     if (!userId) {
       setRole(null);
       setIsBanned(false);
+      setApiAccessEnabled(false);
       setRoleFetched(true);
       return;
     }
@@ -83,6 +88,7 @@ export function AuthContextProvider({ children }: PropsWithChildren) {
     await authClient.signOut();
     setRole(null);
     setIsBanned(false);
+    setApiAccessEnabled(false);
     setRoleFetched(false);
   }, []);
 
@@ -100,6 +106,7 @@ export function AuthContextProvider({ children }: PropsWithChildren) {
         session,
         role,
         isBanned,
+        apiAccessEnabled,
         signOut,
       }}
     >

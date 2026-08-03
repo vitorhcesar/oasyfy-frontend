@@ -4,6 +4,7 @@ import {
   Ban,
   CheckCircle,
   ChevronDown,
+  Code2,
   Loader2,
   Lock,
   Mail,
@@ -50,6 +51,7 @@ export function AdminKycDetailsHeader({
     useState(false);
   const [banLoading, setBanLoading] = useState(false);
   const [withdrawalsLoading, setWithdrawalsLoading] = useState(false);
+  const [apiAccessLoading, setApiAccessLoading] = useState(false);
 
   const allApproved =
     submission.documents_status === "approved" &&
@@ -145,6 +147,44 @@ export function AdminKycDetailsHeader({
     setShowBlockReasonModal(true);
   };
 
+  const handleToggleApiAccess = async () => {
+    if (!submission.id) {
+      toast.error("Seller ainda sem submissão KYC");
+      return;
+    }
+
+    const nextEnabled = !submission.api_access_enabled;
+    if (
+      !nextEnabled &&
+      !window.confirm(
+        "Revogar o acesso à API? Integrações em produção param imediatamente.",
+      )
+    ) {
+      setActionsOpen(false);
+      return;
+    }
+
+    setActionsOpen(false);
+    setApiAccessLoading(true);
+
+    await tryOrToastError(
+      async () => {
+        await apiService.modules.adminKycSubmissions.setApiAccess(
+          Number(submission.id),
+          { enabled: nextEnabled },
+        );
+        toast.success(
+          nextEnabled ? "Acesso à API liberado" : "Acesso à API revogado",
+        );
+        onUpdate();
+      },
+      {
+        defaultErrorMessage: "Erro ao atualizar acesso à API",
+        finallyFn: () => setApiAccessLoading(false),
+      },
+    );
+  };
+
   return (
     <header className="admin-surface mb-6 p-5 md:p-6">
       <div className="mb-1 flex flex-wrap items-center gap-3">
@@ -211,6 +251,20 @@ export function AdminKycDetailsHeader({
                     : "Travar saque"}
                 </button>
                 <button
+                  onClick={handleToggleApiAccess}
+                  disabled={apiAccessLoading || !submission.id}
+                  className="flex w-full items-center gap-2 px-3.5 py-2.5 text-sm text-foreground transition-colors hover:bg-white/10 disabled:opacity-50"
+                >
+                  {apiAccessLoading ? (
+                    <Loader2 size={15} className="animate-spin" />
+                  ) : (
+                    <Code2 size={15} />
+                  )}
+                  {submission.api_access_enabled
+                    ? "Revogar API"
+                    : "Liberar API"}
+                </button>
+                <button
                   onClick={handleManualEmailApproval}
                   disabled={
                     manualEmailApprovalLoading ||
@@ -266,6 +320,12 @@ export function AdminKycDetailsHeader({
         <span className="text-sm text-muted-foreground">
           {new Date(submission.created_at).toLocaleDateString("pt-BR")}
         </span>
+        {submission.api_access_enabled && (
+          <span className="inline-flex items-center gap-1.5 rounded-lg border border-success/25 bg-success/10 px-2 py-0.5 text-xs font-semibold text-success">
+            <Code2 size={12} />
+            API liberada
+          </span>
+        )}
       </div>
     </header>
   );

@@ -2,8 +2,12 @@ import { getApiBaseUrl } from "@/infra/http/services/api/api-env";
 import ModalPortal from "@/presentation/components/ModalPortal";
 import PageHeader from "@/presentation/components/PageHeader";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
+import { useAuthContext } from "@/presentation/context/AuthContext";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import { useKycStatus } from "@/presentation/hooks/use-kyc-status";
+import useSellerProfileQuery from "@/presentation/hooks/use-seller-profile-query";
+import { useSellerKycSubmissionQuery } from "@/presentation/hooks/use-seller-kyc-submission-query";
+import { buildApiAccessSupportUrl } from "@/presentation/utils/build-api-access-support-url";
 import { cn } from "@/presentation/utils/cn";
 import {
   AlertTriangle,
@@ -15,6 +19,7 @@ import {
   EyeOff,
   Key,
   Loader2,
+  MessageCircle,
   PackageSearch,
   Plus,
   SearchCheck,
@@ -68,12 +73,59 @@ function generateKey() {
 
 export default function SellerApi() {
   const [activeTab, setActiveTab] = useState<"keys" | "ips">("keys");
+  const { user } = useAuthContext();
   const { kycApproved, loading: kycLoading } = useKycStatus();
+  const { apiAccessEnabled, isLoading: kycQueryLoading } =
+    useSellerKycSubmissionQuery();
+  const { data: profile } = useSellerProfileQuery();
 
   const tabs = [
     { id: "keys" as const, label: "Chaves API", icon: Key },
     { id: "ips" as const, label: "IPs Autorizados a Sacar", icon: Shield },
   ];
+
+  const openSupport = () => {
+    const url = buildApiAccessSupportUrl({
+      accountId: profile?.accountId,
+      email: profile?.email ?? user?.email,
+    });
+    if (!url) {
+      toast.error(
+        "Canal de suporte não configurado. Contate a administração Omegapay.",
+      );
+      return;
+    }
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  if (!apiAccessEnabled && !kycLoading && !kycQueryLoading) {
+    return (
+      <SellerLayout>
+        <div className="mx-auto w-full max-w-5xl px-5 py-6 md:px-8 md:py-9">
+          <div className="mx-auto max-w-lg py-20 text-center">
+            <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+              <Key size={24} className="text-primary" />
+            </div>
+            <h2 className="mb-2 text-base font-semibold text-foreground">
+              API disponível sob liberação
+            </h2>
+            <p className="mb-6 text-sm text-muted-foreground">
+              Sua conta ainda não tem acesso à API. Solicite a liberação com o
+              suporte Omegapay.
+            </p>
+            <button
+              type="button"
+              onClick={openSupport}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+            >
+              <MessageCircle size={16} />
+              Falar com o suporte
+            </button>
+          </div>
+        </div>
+      </SellerLayout>
+    );
+  }
 
   if (kycApproved === false && !kycLoading) {
     return (

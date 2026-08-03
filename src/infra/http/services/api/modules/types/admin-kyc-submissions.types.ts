@@ -54,6 +54,7 @@ export interface IAdminKycSubmissionDto {
   isBanned: boolean;
   withdrawalsBlocked: boolean;
   withdrawalBlockReason: string | null;
+  apiAccessEnabled: boolean;
   documentsReview: Record<string, unknown>;
   dateOfBirth: string | null;
   tradingName: string | null;
@@ -111,4 +112,12 @@ export interface IBlockKycSubmissionWithdrawalsResponseDto {
 
 export interface IUnblockKycSubmissionWithdrawalsResponseDto {
   withdrawalsBlocked: boolean;
+}
+
+export interface ISetKycSubmissionApiAccessBodyDto {
+  enabled: boolean;
+}
+
+export interface ISetKycSubmissionApiAccessResponseDto {
+  apiAccessEnabled: boolean;
 }

@@ -16,6 +16,7 @@ export interface IUseSellerKycSubmissionResult {
   canSell: boolean;
   canWithdraw: boolean;
   fullyApproved: boolean;
+  apiAccessEnabled: boolean;
   documentsReview: TSellerKycDocumentsReview;
   isLoading: boolean;
   invalidateQuery: () => Promise<void>;
@@ -39,6 +40,7 @@ export function useSellerKycSubmissionQuery(): IUseSellerKycSubmissionResult {
   const canSell = query.data?.canSell ?? false;
   const canWithdraw = query.data?.canWithdraw ?? false;
   const fullyApproved = query.data?.fullyApproved ?? false;
+  const apiAccessEnabled = query.data?.apiAccessEnabled ?? false;
   const kycStatus: TSellerDashboardKycStatus = submission?.status ?? "none";
   const documentsReview: TSellerKycDocumentsReview =
     submission?.documentsReview ?? {};
@@ -56,6 +58,7 @@ export function useSellerKycSubmissionQuery(): IUseSellerKycSubmissionResult {
     canSell,
     canWithdraw,
     fullyApproved,
+    apiAccessEnabled,
     documentsReview,
     isLoading: query.isLoading,
     invalidateQuery,

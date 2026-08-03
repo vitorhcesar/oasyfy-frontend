@@ -5,6 +5,7 @@ export interface ISessionContextDto {
   role: "admin" | "seller" | null;
   isBanned: boolean;
   emailManuallyApproved: boolean;
+  apiAccessEnabled: boolean;
 }
 
 export interface ISessionModule {
