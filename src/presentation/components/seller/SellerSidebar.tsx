@@ -30,6 +30,7 @@ import {
   ArrowDownLeft,
   ArrowLeftRight,
   ArrowUpRight,
+  Bell,
   Blocks,
   ChevronDown,
   ChevronLeft,
@@ -96,7 +97,8 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
   const isOnSettingsPage =
     location.pathname.startsWith("/seller/settings") ||
     location.pathname.startsWith("/seller/kyc") ||
-    location.pathname.startsWith("/seller/2fa");
+    location.pathname.startsWith("/seller/2fa") ||
+    location.pathname.startsWith("/seller/notifications");
   const [settingsOpen, setSettingsOpen] = useState(isOnSettingsPage);
 
   const isKycLocked = kycLoading || !canSell;
@@ -155,6 +157,12 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
       url: "/seller/settings",
       icon: User,
       locked: isKycLocked,
+    },
+    {
+      title: "Notificações",
+      url: "/seller/notifications",
+      icon: Bell,
+      locked: false,
     },
     { title: "Documentos", url: "/seller/kyc", icon: FileText, locked: false },
     { title: "2FA", url: "/seller/2fa", icon: ShieldCheck, locked: false },

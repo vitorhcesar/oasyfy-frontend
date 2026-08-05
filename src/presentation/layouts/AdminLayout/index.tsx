@@ -1,3 +1,4 @@
+import { OfflineBanner } from "@/presentation/components/OfflineBanner";
 import { Menu } from "lucide-react";
 import { PropsWithChildren, useState } from "react";
 import { AdminSidebar } from "./AdminSidebar";
@@ -33,6 +34,7 @@ export function AdminLayout({ children }: PropsWithChildren) {
           id="layout-main-scroll"
           className="relative z-10 flex h-full min-w-0 flex-1 flex-col overflow-y-auto md:rounded-[22px] md:border md:border-white/10 md:bg-background/55 md:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] md:backdrop-blur-2xl md:backdrop-saturate-150"
         >
+          <OfflineBanner />
           <div className="liquid-glass-control flex h-14 items-center border-b border-white/10 px-4 md:hidden">
             <button
               onClick={() => setSidebarOpen(true)}

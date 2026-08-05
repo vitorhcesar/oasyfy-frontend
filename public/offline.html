@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#7C3AED" />
+    <title>Sem conexão — Omegapay</title>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        font-family: "Albert Sans", system-ui, sans-serif;
+        background: #0b0b0f;
+        color: #f5f5f7;
+      }
+      main {
+        max-width: 360px;
+        text-align: center;
+      }
+      h1 {
+        margin: 0 0 8px;
+        font-size: 1.35rem;
+        font-weight: 600;
+      }
+      p {
+        margin: 0;
+        color: #a1a1aa;
+        line-height: 1.5;
+        font-size: 0.95rem;
+      }
+      button {
+        margin-top: 20px;
+        border: 0;
+        border-radius: 10px;
+        padding: 10px 18px;
+        background: #7c3aed;
+        color: #fff;
+        font: inherit;
+        font-weight: 600;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Sem conexão</h1>
+      <p>
+        O Omegapay precisa de internet para login, pagamentos e dados da conta.
+        Reconecte e tente novamente.
+      </p>
+      <button type="button" onclick="location.reload()">Tentar de novo</button>
+    </main>
+  </body>
+</html>

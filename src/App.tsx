@@ -45,6 +45,7 @@ import CheckoutHealthPage from "./presentation/pages/CheckoutHealthPage";
 import AdminCheckout from "./presentation/pages/admin/AdminCheckout";
 import SellerKyc from "./presentation/pages/seller/SellerKyc";
 import SellerSettings from "./presentation/pages/seller/SellerSettings";
+import SellerNotifications from "./presentation/pages/seller/SellerNotifications";
 import SellerTransactions from "./presentation/pages/seller/SellerTransactions";
 import SellerTransfers from "./presentation/pages/seller/SellerTransfers";
 
@@ -149,6 +150,14 @@ export default function App() {
                   element={
                     <ProtectedRoute requiredRole="seller">
                       <SellerSettings />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/seller/notifications"
+                  element={
+                    <ProtectedRoute requiredRole="seller">
+                      <SellerNotifications />
                     </ProtectedRoute>
                   }
                 />
