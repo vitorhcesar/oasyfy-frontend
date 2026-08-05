@@ -1,11 +1,17 @@
 import PageHeader from "@/presentation/components/PageHeader";
+import { PwaInstallGuide } from "@/presentation/components/seller/PwaInstallGuide";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import { Button } from "@/presentation/components/ui/button";
 import { Switch } from "@/presentation/components/ui/switch";
 import { useApiService } from "@/presentation/hooks/use-api-service";
+import {
+  detectPwaInstallContext,
+  getDefaultPwaInstallContext,
+  type TPwaInstallContext,
+} from "@/presentation/utils/detect-pwa-install-context";
 import { getErrorMessageOrDefault } from "@/presentation/utils/get-error-message-or-default";
-import { Bell, BellOff, Loader2, Smartphone } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Bell, BellOff, Loader2 } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 type TPermissionState = NotificationPermission | "unsupported";
@@ -21,17 +27,6 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array {
   return outputArray;
 }
 
-function detectIosWithoutStandalone(): boolean {
-  const ua = navigator.userAgent;
-  const isIos = /iPad|iPhone|iPod/.test(ua);
-  if (!isIos) return false;
-  const standalone =
-    ("standalone" in navigator &&
-      Boolean((navigator as Navigator & { standalone?: boolean }).standalone)) ||
-    window.matchMedia("(display-mode: standalone)").matches;
-  return !standalone;
-}
-
 export default function SellerNotifications() {
   const apiService = useApiService();
   const [loading, setLoading] = useState(true);
@@ -43,9 +38,12 @@ export default function SellerNotifications() {
   const [refund, setRefund] = useState(true);
   const [withdrawal, setWithdrawal] = useState(true);
   const [hasLocalSubscription, setHasLocalSubscription] = useState(false);
+  const [installContext, setInstallContext] = useState<TPwaInstallContext>(
+    getDefaultPwaInstallContext,
+  );
+  const [contextReady, setContextReady] = useState(false);
 
   const unsupported = permission === "unsupported";
-  const iosHint = useMemo(() => detectIosWithoutStandalone(), []);
 
   const refreshLocalSubscription = useCallback(async () => {
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
@@ -62,6 +60,9 @@ export default function SellerNotifications() {
   }, []);
 
   useEffect(() => {
+    setInstallContext(detectPwaInstallContext());
+    setContextReady(true);
+
     if (!("Notification" in window) || !("PushManager" in window)) {
       setPermission("unsupported");
     } else {
@@ -71,7 +72,8 @@ export default function SellerNotifications() {
     let cancelled = false;
     (async () => {
       try {
-        const prefs = await apiService.modules.sellerNotifications.getPreferences();
+        const prefs =
+          await apiService.modules.sellerNotifications.getPreferences();
         if (cancelled) return;
         setSale(prefs.sale);
         setRefund(prefs.refund);
@@ -79,7 +81,10 @@ export default function SellerNotifications() {
         await refreshLocalSubscription();
       } catch (err) {
         toast.error(
-          getErrorMessageOrDefault(err, "Não foi possível carregar preferências"),
+          getErrorMessageOrDefault(
+            err,
+            "Não foi possível carregar preferências",
+          ),
         );
       } finally {
         if (!cancelled) setLoading(false);
@@ -102,9 +107,10 @@ export default function SellerNotifications() {
     if (key === "withdrawal") setWithdrawal(value);
 
     try {
-      const updated = await apiService.modules.sellerNotifications.updatePreferences(
-        { [key]: value },
-      );
+      const updated =
+        await apiService.modules.sellerNotifications.updatePreferences({
+          [key]: value,
+        });
       setSale(updated.sale);
       setRefund(updated.refund);
       setWithdrawal(updated.withdrawal);
@@ -190,7 +196,10 @@ export default function SellerNotifications() {
       toast.success("Notificações desativadas neste dispositivo");
     } catch (err) {
       toast.error(
-        getErrorMessageOrDefault(err, "Não foi possível desativar neste dispositivo"),
+        getErrorMessageOrDefault(
+          err,
+          "Não foi possível desativar neste dispositivo",
+        ),
       );
     } finally {
       setDeactivating(false);
@@ -213,6 +222,10 @@ export default function SellerNotifications() {
           </div>
         ) : (
           <div className="mx-auto flex max-w-2xl flex-col gap-5">
+            {contextReady ? (
+              <PwaInstallGuide context={installContext} />
+            ) : null}
+
             <section className="rounded-2xl border border-white/10 bg-background/40 p-5 backdrop-blur-md">
               <div className="flex items-start gap-3">
                 <div className="rounded-xl bg-primary/15 p-2.5 text-primary">
@@ -235,13 +248,6 @@ export default function SellerNotifications() {
                           ? "Notificações ativas neste dispositivo."
                           : "Ative para receber avisos mesmo com o portal fechado."}
                   </p>
-                  {iosHint ? (
-                    <p className="mt-2 flex items-start gap-2 text-xs text-amber-200/90">
-                      <Smartphone className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                      No iPhone/iPad, adicione o Omegapay à Tela de Início para
-                      receber push.
-                    </p>
-                  ) : null}
                   <div className="mt-4 flex flex-wrap gap-2">
                     {!unsupported && permission !== "denied" ? (
                       <Button
