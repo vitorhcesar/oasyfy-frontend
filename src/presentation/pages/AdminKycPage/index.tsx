@@ -1,4 +1,5 @@
 import { AdminLayout } from "@/presentation/layouts/AdminLayout";
+import { useApiService } from "@/presentation/hooks/use-api-service";
 import { Loader2 } from "lucide-react";
 import { useMemo } from "react";
 import { AdminKycDetails } from "./components/AdminKycDetails";
@@ -7,6 +8,7 @@ import AdminKycPageHeader from "./components/AdminKycPageHeader";
 import Filters from "./components/Filters";
 import useAdminKycSubmissionsQuery from "./hooks/use-admin-kyc-submissions-query";
 import { useAdminKycPageStore } from "./stores/admin-kyc-page.store";
+import type { IKycSubmissionView } from "./types/kyc-submission-view.type";
 import {
   mapAdminKycSubmissionToView,
   mapRegisteredSellerToKycView,
@@ -14,6 +16,7 @@ import {
 } from "./utils/map-admin-kyc-submissions-to-view.util";
 
 export default function AdminKycPage() {
+  const apiService = useApiService();
   const { filter, search, selectedSeller, setSelectedSeller } =
     useAdminKycPageStore();
 
@@ -71,26 +74,42 @@ export default function AdminKycPage() {
     const result = await refetch();
     if (!selectedSeller || !result.data) return;
 
+    let next: IKycSubmissionView | null = null;
+
     if (selectedSeller.id) {
       const updatedSubmission = result.data.submissions.find(
         (submission) => String(submission.id) === selectedSeller.id,
       );
       if (updatedSubmission) {
-        setSelectedSeller(mapAdminKycSubmissionToView(updatedSubmission));
+        next = mapAdminKycSubmissionToView(updatedSubmission);
       }
-      return;
+    } else {
+      const updatedRegistered = result.data.registeredOnly.find(
+        (seller) => String(seller.userId) === selectedSeller.user_id,
+      );
+      if (updatedRegistered) {
+        next = mapRegisteredSellerToKycView(
+          mapRegisteredSellerToView(updatedRegistered),
+        );
+      }
     }
 
-    const updatedRegistered = result.data.registeredOnly.find(
-      (seller) => String(seller.userId) === selectedSeller.user_id,
-    );
-    if (updatedRegistered) {
-      setSelectedSeller(
-        mapRegisteredSellerToKycView(
-          mapRegisteredSellerToView(updatedRegistered),
-        ),
+    if (!next) return;
+
+    try {
+      const profile = await apiService.modules.adminSellers.getSellerProfile(
+        Number(next.user_id),
       );
+      next = {
+        ...next,
+        withdrawals_blocked: profile.withdrawal.blocked,
+        withdrawal_block_reason: profile.withdrawal.reason,
+      };
+    } catch {
+      // Keep KYC list fields if profile fetch fails.
     }
+
+    setSelectedSeller(next);
   };
 
   if (selectedSeller) {

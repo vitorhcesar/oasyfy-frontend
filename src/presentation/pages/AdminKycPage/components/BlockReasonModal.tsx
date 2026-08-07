@@ -1,16 +1,16 @@
-import { useApiService } from "@/presentation/hooks/use-api-service";
 import ModalPortal from "@/presentation/components/ModalPortal";
+import { useApiService } from "@/presentation/hooks/use-api-service";
 import { tryOrToastError } from "@/presentation/utils/try-or-toast-error";
 import { toast } from "sonner";
 import { useAdminKycDetailsStore } from "../stores/admin-kyc-details.store";
 
 interface IBlockReasonModalProps {
-  submissionId: string;
+  sellerId: number;
   onUpdate: () => void;
 }
 
 export default function BlockReasonModal({
-  submissionId,
+  sellerId,
   onUpdate,
 }: IBlockReasonModalProps) {
   const apiService = useApiService();
@@ -32,7 +32,8 @@ export default function BlockReasonModal({
             Travar saque
           </h3>
           <p className="mb-4 text-sm text-muted-foreground">
-            Informe o motivo do bloqueio. O seller verá esta mensagem.
+            Informe o motivo do bloqueio. Novos envios serão impedidos; saques
+            já liquidados não são revertidos.
           </p>
           <textarea
             value={blockReason}
@@ -48,12 +49,12 @@ export default function BlockReasonModal({
               Cancelar
             </button>
             <button
-              disabled={!blockReason.trim()}
+              disabled={blockReason.trim().length < 5}
               onClick={async () => {
                 await tryOrToastError(
                   async () => {
-                    await apiService.modules.adminKycSubmissions.blockWithdrawals(
-                      Number(submissionId),
+                    await apiService.modules.adminSellers.blockWithdrawals(
+                      sellerId,
                       { reason: blockReason.trim() },
                     );
                     toast.success("Saque travado");

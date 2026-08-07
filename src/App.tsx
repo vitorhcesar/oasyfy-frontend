@@ -13,6 +13,7 @@ import AdminDashboardPage from "./presentation/pages/AdminDashboardPage";
 import AdminGeneralPage from "./presentation/pages/AdminGeneralPage";
 import AdminKycPage from "./presentation/pages/AdminKycPage";
 import AdminSellersPage from "./presentation/pages/AdminSellersPage";
+import AdminSellerProfilePage from "./presentation/pages/AdminSellerProfilePage";
 import LoginAdmin from "./presentation/pages/LoginAdminPage";
 import LoginSellerPage from "./presentation/pages/LoginSellerPage";
 import ResetPasswordPage from "./presentation/pages/ResetPasswordPage";
@@ -270,6 +271,14 @@ export default function App() {
                   element={
                     <ProtectedRoute requiredRole="admin">
                       <AdminSellersPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/sellers/:sellerId"
+                  element={
+                    <ProtectedRoute requiredRole="admin">
+                      <AdminSellerProfilePage />
                     </ProtectedRoute>
                   }
                 />

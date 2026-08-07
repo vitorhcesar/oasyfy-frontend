@@ -17,8 +17,9 @@ import {
 } from "@/presentation/components/ui/select";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import { getErrorMessageOrDefault } from "@/presentation/utils/get-error-message-or-default";
-import { Loader2, Settings2, X } from "lucide-react";
+import { Loader2, Settings2, UserRound, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { SELLER_STATUS_CONFIG } from "../constants/seller-status.config";
 
@@ -256,15 +257,22 @@ interface ITableRowProps {
   seller: IAdminSellerDto;
   index: number;
   onEditAcquirer: (seller: IAdminSellerDto) => void;
+  onOpenProfile: (seller: IAdminSellerDto) => void;
 }
 
-function TableRow({ seller, index, onEditAcquirer }: ITableRowProps) {
+function TableRow({
+  seller,
+  index,
+  onEditAcquirer,
+  onOpenProfile,
+}: ITableRowProps) {
   const acquirer = seller.acquirer;
 
   return (
     <tr
-      className="animate-fade-in border-b border-border/20 last:border-0 transition-colors hover:bg-muted/20"
+      className="animate-fade-in border-b border-border/20 last:border-0 transition-colors hover:bg-muted/20 cursor-pointer"
       style={{ animationDelay: `${index * 30}ms` }}
+      onClick={() => onOpenProfile(seller)}
     >
       <td className="px-5 py-3.5">
         <div className="flex items-center gap-3">
@@ -316,16 +324,34 @@ function TableRow({ seller, index, onEditAcquirer }: ITableRowProps) {
           : "—"}
       </td>
       <td className="px-5 py-3.5 text-right">
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          className="gap-1.5 text-muted-foreground hover:text-foreground"
-          onClick={() => onEditAcquirer(seller)}
-        >
-          <Settings2 size={14} />
-          Adquirente
-        </Button>
+        <div className="flex justify-end gap-1">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="gap-1.5 text-muted-foreground hover:text-foreground"
+            onClick={(e) => {
+              e.stopPropagation();
+              onOpenProfile(seller);
+            }}
+          >
+            <UserRound size={14} />
+            Ver perfil
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="gap-1.5 text-muted-foreground hover:text-foreground"
+            onClick={(e) => {
+              e.stopPropagation();
+              onEditAcquirer(seller);
+            }}
+          >
+            <Settings2 size={14} />
+            Adquirente
+          </Button>
+        </div>
       </td>
     </tr>
   );
@@ -335,6 +361,7 @@ export default function AdminSellersTable({
   sellers,
   onSellerUpdated,
 }: IAdminSellersTableProps) {
+  const navigate = useNavigate();
   const [editingSeller, setEditingSeller] = useState<IAdminSellerDto | null>(
     null,
   );
@@ -364,6 +391,7 @@ export default function AdminSellersTable({
                 seller={seller}
                 index={index}
                 onEditAcquirer={setEditingSeller}
+                onOpenProfile={(s) => navigate(`/admin/sellers/${s.userId}`)}
               />
             ))}
           </tbody>

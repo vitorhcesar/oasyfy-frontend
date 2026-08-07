@@ -1,18 +1,16 @@
+import { AddBalanceCreditModal } from "@/presentation/components/admin/AddBalanceCreditModal";
 import { useApiService } from "@/presentation/hooks/use-api-service";
-import { tryOrToastError } from "@/presentation/utils/try-or-toast-error";
+import type { IAdminBalanceAdjustmentDto } from "@/infra/http/services/api/modules/types/admin-sellers.types";
 import {
   ArrowDownLeft,
   ArrowUpRight,
-  Check,
   DollarSign,
   Loader2,
   Lock,
-  Pencil,
+  Plus,
   RotateCcw,
-  X,
 } from "lucide-react";
-import { useState } from "react";
-import { toast } from "sonner";
+import { useCallback, useEffect, useState } from "react";
 import useAdminSellerBalancerQuery from "../hooks/use-admin-seller-balancer-query";
 import { IKycSubmissionView } from "../types/kyc-submission-view.type";
 
@@ -23,137 +21,33 @@ function formatCurrencyAdmin(cents: number) {
   }).format(cents / 100);
 }
 
-interface IBalanceEditorProps {
+interface IAvailableBalanceCardProps {
   available: number;
-  sellerId: string;
-  onUpdated: () => void;
-  invalidateBalanceQuery: () => Promise<void>;
+  onAddCredit: () => void;
 }
 
-function BalanceEditor({
+function AvailableBalanceCard({
   available,
-  sellerId,
-  onUpdated,
-  invalidateBalanceQuery,
-}: IBalanceEditorProps) {
-  const apiService = useApiService();
-
-  const [editing, setEditing] = useState(false);
-  const [value, setValue] = useState("");
-  const [saving, setSaving] = useState(false);
-
-  const formatToInput = (cents: number) => {
-    const num = (cents / 100).toFixed(2);
-    const [int, dec] = num.split(".");
-    return int.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + "," + dec;
-  };
-
-  const parseFromInput = (str: string) => {
-    const raw = str.replace(/\D/g, "");
-    return parseInt(raw || "0", 10);
-  };
-
-  const handleEdit = () => {
-    setValue(formatToInput(available));
-    setEditing(true);
-  };
-
-  const handleSave = async () => {
-    const newCents = parseFromInput(value);
-    if (newCents < 0) {
-      toast.error("Valor inválido");
-      return;
-    }
-
-    const diff = newCents - available;
-    if (diff === 0) {
-      setEditing(false);
-      return;
-    }
-
-    setSaving(true);
-
-    await tryOrToastError(
-      async () => {
-        // Insert an adjustment transaction
-        await apiService.modules.transaction.insertAdjustmentTransaction({
-          sellerId: Number(sellerId),
-          amount: diff,
-        });
-
-        await invalidateBalanceQuery();
-
-        toast.success("Saldo ajustado!");
-        onUpdated();
-      },
-      {
-        defaultErrorMessage: "Erro ao ajustar saldo",
-        finallyFn: () => {
-          setSaving(false);
-          setEditing(false);
-        },
-      },
-    );
-  };
-
+  onAddCredit,
+}: IAvailableBalanceCardProps) {
   return (
     <div className="admin-surface admin-surface-featured p-5 md:p-6">
       <div className="mb-1 flex items-center justify-between">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Disponível para saque
         </p>
-        {!editing && (
-          <button
-            onClick={handleEdit}
-            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
-            title="Editar saldo"
-          >
-            <Pencil size={14} />
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={onAddCredit}
+          className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary/10"
+        >
+          <Plus size={14} />
+          Adicionar saldo
+        </button>
       </div>
-
-      {editing ? (
-        <div className="flex items-center gap-2">
-          <span className="text-lg font-bold text-foreground">R$</span>
-          <input
-            type="text"
-            inputMode="numeric"
-            value={value}
-            onChange={(e) => {
-              const raw = e.target.value.replace(/\D/g, "");
-              const num = (parseInt(raw || "0", 10) / 100).toFixed(2);
-              const [int, dec] = num.split(".");
-              const formatted =
-                int.replace(/\B(?=(\d{3})+(?!\d))/g, ".") + "," + dec;
-              setValue(formatted);
-            }}
-            autoFocus
-            className="flex-1 text-2xl font-bold bg-transparent border-b-2 border-primary/30 focus:border-primary outline-none text-foreground tabular-nums py-0.5"
-          />
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            className="p-1.5 rounded-lg bg-primary text-primary-foreground hover:opacity-90 transition-opacity disabled:opacity-50"
-          >
-            {saving ? (
-              <Loader2 size={14} className="animate-spin" />
-            ) : (
-              <Check size={14} />
-            )}
-          </button>
-          <button
-            onClick={() => setEditing(false)}
-            className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted/50 transition-colors"
-          >
-            <X size={14} />
-          </button>
-        </div>
-      ) : (
-        <p className="text-2xl font-bold text-foreground tabular-nums">
-          {formatCurrencyAdmin(available)}
-        </p>
-      )}
+      <p className="text-2xl font-bold text-foreground tabular-nums">
+        {formatCurrencyAdmin(available)}
+      </p>
     </div>
   );
 }
@@ -323,14 +217,35 @@ interface IAdminKycDetailsBalanceTabProps {
 export function AdminKycDetailsBalanceTab({
   seller,
 }: IAdminKycDetailsBalanceTabProps) {
+  const apiService = useApiService();
   const {
     data: balanceData,
     isLoading: balanceLoading,
     invalidateQuery: invalidateBalanceQuery,
   } = useAdminSellerBalancerQuery(seller.user_id);
+  const [showCreditModal, setShowCreditModal] = useState(false);
+  const [adjustments, setAdjustments] = useState<IAdminBalanceAdjustmentDto[]>(
+    [],
+  );
 
-  const handleUpdateBalanceEditor = async () => {
+  const loadAdjustments = useCallback(async () => {
+    try {
+      const rows = await apiService.modules.adminSellers.listBalanceAdjustments(
+        Number(seller.user_id),
+      );
+      setAdjustments(rows);
+    } catch {
+      setAdjustments([]);
+    }
+  }, [apiService, seller.user_id]);
+
+  useEffect(() => {
+    void loadAdjustments();
+  }, [loadAdjustments]);
+
+  const handleCreditSuccess = async () => {
     await invalidateBalanceQuery();
+    await loadAdjustments();
   };
 
   return (
@@ -341,11 +256,9 @@ export function AdminKycDetailsBalanceTab({
         </div>
       ) : (
         <div className="space-y-4">
-          <BalanceEditor
+          <AvailableBalanceCard
             available={balanceData.available}
-            sellerId={seller.user_id}
-            onUpdated={handleUpdateBalanceEditor}
-            invalidateBalanceQuery={invalidateBalanceQuery}
+            onAddCredit={() => setShowCreditModal(true)}
           />
 
           <div className="grid grid-cols-2 gap-3">
@@ -368,8 +281,49 @@ export function AdminKycDetailsBalanceTab({
               refundAmount={balanceData.refundAmount}
             />
           </div>
+
+          <div className="admin-surface p-4">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Histórico de créditos administrativos
+            </p>
+            {adjustments.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                Nenhum crédito administrativo registrado.
+              </p>
+            ) : (
+              <ul className="space-y-2">
+                {adjustments.map((item) => (
+                  <li
+                    key={item.id}
+                    className="flex flex-wrap items-center justify-between gap-2 border-b border-border/30 pb-2 text-sm last:border-0"
+                  >
+                    <div>
+                      <p className="font-medium text-foreground">
+                        {formatCurrencyAdmin(item.amount)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {item.reason}
+                      </p>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(item.createdAt).toLocaleString("pt-BR")}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
       )}
+
+      {showCreditModal && balanceData ? (
+        <AddBalanceCreditModal
+          sellerId={Number(seller.user_id)}
+          availableCents={balanceData.available}
+          onClose={() => setShowCreditModal(false)}
+          onSuccess={handleCreditSuccess}
+        />
+      ) : null}
     </div>
   );
 }

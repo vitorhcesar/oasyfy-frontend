@@ -129,8 +129,8 @@ export function AdminKycDetailsHeader({
 
       await tryOrToastError(
         async () => {
-          await apiService.modules.adminKycSubmissions.unblockWithdrawals(
-            Number(submission.id),
+          await apiService.modules.adminSellers.unblockWithdrawals(
+            Number(submission.user_id),
           );
           toast.success("Saque liberado");
           onUpdate();

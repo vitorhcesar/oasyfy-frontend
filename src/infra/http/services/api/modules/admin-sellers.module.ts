@@ -1,6 +1,12 @@
 import type { IApiEnvelope } from "../api-types";
 import { BaseApiModule } from "./base-api.module";
-import type { IAdminSellerDto } from "./types/admin-sellers.types";
+import type {
+  IAdminBalanceAdjustmentDto,
+  IAdminBalanceCreditResultDto,
+  IAdminSellerDto,
+  IAdminSellerProfileDto,
+  IAdminWithdrawalControlDto,
+} from "./types/admin-sellers.types";
 import type {
   IAcquirerPreferenceResponseDto,
   IAdminAcquirerPreferenceDto,
@@ -9,10 +15,27 @@ import type {
 export type {
   IAdminSellerDto,
   TAdminSellerKycStatus,
+  IAdminSellerProfileDto,
+  IAdminBalanceAdjustmentDto,
+  IAdminBalanceCreditResultDto,
+  IAdminWithdrawalControlDto,
 } from "./types/admin-sellers.types";
 
 export interface IAdminSellersModule {
   listSellers(): Promise<IAdminSellerDto[]>;
+  getSellerProfile(sellerId: number): Promise<IAdminSellerProfileDto>;
+  listBalanceAdjustments(
+    sellerId: number,
+  ): Promise<IAdminBalanceAdjustmentDto[]>;
+  addBalanceCredit(
+    sellerId: number,
+    body: { amount: number; reason: string; idempotencyKey?: string },
+  ): Promise<IAdminBalanceCreditResultDto>;
+  blockWithdrawals(
+    sellerId: number,
+    body: { reason: string },
+  ): Promise<IAdminWithdrawalControlDto>;
+  unblockWithdrawals(sellerId: number): Promise<IAdminWithdrawalControlDto>;
   getSellerAcquirerPreference(
     sellerId: number,
   ): Promise<IAcquirerPreferenceResponseDto>;
@@ -38,6 +61,51 @@ export class AdminSellersModule
     const response = await this.getClient().get<
       IApiEnvelope<IAdminSellerDto[]>
     >(this.baseUrl);
+    return response.data;
+  }
+
+  async getSellerProfile(sellerId: number): Promise<IAdminSellerProfileDto> {
+    const response = await this.getClient().get<
+      IApiEnvelope<IAdminSellerProfileDto>
+    >(`${this.baseUrl}/${sellerId}/profile`);
+    return response.data;
+  }
+
+  async listBalanceAdjustments(
+    sellerId: number,
+  ): Promise<IAdminBalanceAdjustmentDto[]> {
+    const response = await this.getClient().get<
+      IApiEnvelope<IAdminBalanceAdjustmentDto[]>
+    >(`${this.baseUrl}/${sellerId}/balance/adjustments`);
+    return response.data;
+  }
+
+  async addBalanceCredit(
+    sellerId: number,
+    body: { amount: number; reason: string; idempotencyKey?: string },
+  ): Promise<IAdminBalanceCreditResultDto> {
+    const response = await this.getClient().post<
+      IApiEnvelope<IAdminBalanceCreditResultDto>
+    >(`${this.baseUrl}/${sellerId}/balance/credits`, body);
+    return response.data;
+  }
+
+  async blockWithdrawals(
+    sellerId: number,
+    body: { reason: string },
+  ): Promise<IAdminWithdrawalControlDto> {
+    const response = await this.getClient().post<
+      IApiEnvelope<IAdminWithdrawalControlDto>
+    >(`${this.baseUrl}/${sellerId}/withdrawals/block`, body);
+    return response.data;
+  }
+
+  async unblockWithdrawals(
+    sellerId: number,
+  ): Promise<IAdminWithdrawalControlDto> {
+    const response = await this.getClient().post<
+      IApiEnvelope<IAdminWithdrawalControlDto>
+    >(`${this.baseUrl}/${sellerId}/withdrawals/unblock`, {});
     return response.data;
   }
 

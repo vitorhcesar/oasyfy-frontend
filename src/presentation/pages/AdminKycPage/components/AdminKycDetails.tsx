@@ -307,7 +307,10 @@ export function AdminKycDetails({
 
       {/* Block Reason Modal */}
       {showBlockReasonModal && (
-        <BlockReasonModal submissionId={submission.id} onUpdate={onUpdate} />
+        <BlockReasonModal
+          sellerId={Number(submission.user_id)}
+          onUpdate={onUpdate}
+        />
       )}
 
       <KycDocumentPreviewModal
