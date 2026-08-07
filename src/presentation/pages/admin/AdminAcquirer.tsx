@@ -1,4 +1,5 @@
 import { AcquirerGuideTab } from "@/presentation/components/admin/AcquirerGuideTab";
+import { AdminPlatformDefaultAcquirerSection } from "@/presentation/components/admin/AdminPlatformDefaultAcquirerSection";
 import { AcquirerBrandLogo, getAcquirerLogoSrc } from "@/presentation/components/admin/AcquirerBrandLogo";
 import {
   getAcquirerConfigPath,
@@ -1181,6 +1182,8 @@ export default function AdminAcquirer() {
             conexões de adquirentes.
           </p>
         </header>
+
+        <AdminPlatformDefaultAcquirerSection />
 
         <div className="liquid-glass-control mb-8 flex flex-wrap items-center gap-0.5 rounded-2xl p-1">
           {tabs.map((tab) => (

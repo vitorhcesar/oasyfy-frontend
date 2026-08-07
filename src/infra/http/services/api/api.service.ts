@@ -54,6 +54,10 @@ import {
   SellerNotificationsModule,
 } from "./modules/seller-notifications.module";
 import {
+  ISellerAcquirerModule,
+  SellerAcquirerModule,
+} from "./modules/seller-acquirer.module";
+import {
   IPublicCheckoutModule,
   ISellerCheckoutModule,
   PublicCheckoutModule,
@@ -87,6 +91,7 @@ export interface IApiServiceModules {
   seller: ISellerModule;
   sellerPortal: ISellerPortalModule;
   sellerNotifications: ISellerNotificationsModule;
+  sellerAcquirer: ISellerAcquirerModule;
   sellerCheckouts: ISellerCheckoutModule;
   publicCheckouts: IPublicCheckoutModule;
   gatewayTheme: IGatewayThemeModule;
@@ -119,6 +124,7 @@ function attachModules(httpClient: IHttpClient): IApiServiceModules {
     seller: new SellerModule(httpClient),
     sellerPortal: new SellerPortalModule(httpClient),
     sellerNotifications: new SellerNotificationsModule(httpClient),
+    sellerAcquirer: new SellerAcquirerModule(httpClient),
     sellerCheckouts: new SellerCheckoutModule(httpClient),
     publicCheckouts: new PublicCheckoutModule(httpClient),
     email: new EmailModule(httpClient),

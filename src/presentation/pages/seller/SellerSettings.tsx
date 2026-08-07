@@ -13,6 +13,7 @@ import { getErrorMessageOrDefault } from "@/presentation/utils/get-error-message
 import { translateError } from "@/presentation/utils/translate-error";
 import {
   Copy,
+  CreditCard,
   Loader2,
   LogOut,
   Monitor,
@@ -25,6 +26,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { SellerAcquirersTab } from "@/presentation/components/seller/SellerAcquirersTab";
 
 function parseUserAgent(ua: string | null) {
   if (!ua)
@@ -447,7 +449,7 @@ export default function SellerSettings() {
     setProfile: setCachedProfile,
   } = useSellerProfileQuery();
   const [activeTab, setActiveTab] = useState<
-    "perfil" | "antecipacao" | "seguranca" | "taxas"
+    "perfil" | "antecipacao" | "seguranca" | "taxas" | "adquirentes"
   >("perfil");
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -576,6 +578,7 @@ export default function SellerSettings() {
     },
     { key: "seguranca" as const, label: "Segurança", icon: Shield },
     { key: "taxas" as const, label: "Minhas taxas", icon: Receipt },
+    { key: "adquirentes" as const, label: "Adquirentes", icon: CreditCard },
   ];
 
   return (
@@ -881,6 +884,8 @@ export default function SellerSettings() {
                 </p>
               </div>
             )}
+
+            {activeTab === "adquirentes" && <SellerAcquirersTab />}
         </div>
       </div>
     </SellerLayout>
