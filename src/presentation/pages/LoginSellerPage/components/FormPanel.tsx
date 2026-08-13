@@ -1,4 +1,5 @@
 import { TwoFactorLoginStep } from "@/presentation/components/auth/TwoFactorLoginStep";
+import { setPortalLoginInFlight } from "@/presentation/components/auth/portal-login-lock";
 import { useAuthContext } from "@/presentation/context/AuthContext";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import { tryOrToastError } from "@/presentation/utils/try-or-toast-error";
@@ -25,7 +26,7 @@ type TFormView = "login" | "signup" | "forgotPassword" | "code" | "twoFactor";
 export default function LoginSellerFormPanel() {
   const navigate = useNavigate();
   const apiService = useApiService();
-  const { signOut } = useAuthContext();
+  const { signOut, isAuthenticated, isLoading } = useAuthContext();
 
   const [formView, setFormView] = useState<TFormView>("login");
 
@@ -36,6 +37,7 @@ export default function LoginSellerFormPanel() {
   useEffect(() => {
     const pendingTwoFactor = loadPendingTwoFactor();
     if (pendingTwoFactor?.email) {
+      setPortalLoginInFlight("seller", true);
       setEmail(pendingTwoFactor.email);
       setFormView("twoFactor");
       return;
@@ -47,6 +49,12 @@ export default function LoginSellerFormPanel() {
       setFormView("code");
     }
   }, []);
+
+  useEffect(() => {
+    if (isAuthenticated || isLoading) return;
+    if (loadPendingTwoFactor() || loadPendingVerification()) return;
+    setPortalLoginInFlight("seller", false);
+  }, [isAuthenticated, isLoading]);
 
   const sendSignUpVerificationCodeAndOpenCodeFormView = async () => {
     await tryOrToastError(
@@ -67,6 +75,7 @@ export default function LoginSellerFormPanel() {
   };
 
   const handleTwoFactorVerified = async () => {
+    setPortalLoginInFlight("seller", true);
     await completeSellerPortalLogin({
       email,
       navigate,
@@ -108,7 +117,15 @@ export default function LoginSellerFormPanel() {
 
                 {twoFactorError && (
                   <div className="mb-4 rounded-xl border border-destructive/20 bg-destructive/10 px-3.5 py-3 text-sm text-destructive">
-                    {twoFactorError}
+                    <p>{twoFactorError}</p>
+                    {twoFactorError.includes("login de admin") && (
+                      <a
+                        href="/login/admin"
+                        className="mt-2 inline-block font-semibold text-primary hover:text-primary/80"
+                      >
+                        Ir para o login de admin
+                      </a>
+                    )}
                   </div>
                 )}
 
@@ -118,6 +135,7 @@ export default function LoginSellerFormPanel() {
                     clearPendingTwoFactor();
                     setTwoFactorError("");
                     setFormView("login");
+                    setPortalLoginInFlight("seller", false);
                     void signOut();
                   }}
                 />

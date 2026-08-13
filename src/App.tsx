@@ -1,9 +1,10 @@
 import ScrollToTop from "@/presentation/components/ScrollToTop";
 import { ProtectedRoute } from "@/presentation/components/auth/ProtectedRoute";
+import { PublicRoute } from "@/presentation/components/auth/PublicRoute";
 import { Toaster as Sonner } from "@/presentation/components/ui/sonner";
 import { Toaster } from "@/presentation/components/ui/toaster";
 import { TooltipProvider } from "@/presentation/components/ui/tooltip";
-import { AuthContextProvider, useAuthContext } from "@/presentation/context/AuthContext";
+import { AuthContextProvider } from "@/presentation/context/AuthContext";
 import { ThemeProvider } from "@/presentation/hooks/use-theme";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
@@ -64,42 +65,6 @@ function ThemeLoader() {
   return null;
 }
 
-/**
- * Guard para rotas públicas (login).
- * Redireciona usuários já autenticados para o dashboard correto
- * evitando que acessem a tela de login após estarem logados.
- */
-function PublicRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading, role } = useAuthContext();
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-6">
-        <div className="relative w-16 h-16">
-          <div className="absolute inset-0 rounded-full border-[3px] border-muted" />
-          <div
-            className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-primary"
-            style={{ animation: "spin 0.8s linear infinite" }}
-          />
-          <div
-            className="absolute inset-[6px] rounded-full border-[3px] border-transparent border-b-primary/50"
-            style={{ animation: "spin 1.2s linear infinite reverse" }}
-          />
-        </div>
-        <p className="text-sm text-muted-foreground animate-pulse">
-          Carregando...
-        </p>
-      </div>
-    );
-  }
-
-  if (isAuthenticated && role) {
-    return <Navigate to={role === "admin" ? "/admin" : "/seller"} replace />;
-  }
-
-  return <>{children}</>;
-}
-
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
@@ -115,7 +80,7 @@ export default function App() {
                 <Route
                   path="/login/admin"
                   element={
-                    <PublicRoute>
+                    <PublicRoute portal="admin">
                       <LoginAdmin />
                     </PublicRoute>
                   }
@@ -123,7 +88,7 @@ export default function App() {
                 <Route
                   path="/login/seller"
                   element={
-                    <PublicRoute>
+                    <PublicRoute portal="seller">
                       <LoginSellerPage />
                     </PublicRoute>
                   }

@@ -5,6 +5,7 @@ import { isTwoFactorRedirect } from "@/infra/auth/two-factor-utils";
 import { Input } from "@/presentation/components/Input";
 import { Label } from "@/presentation/components/Label";
 import { PasswordInput } from "@/presentation/components/PasswordInput";
+import { setPortalLoginInFlight } from "@/presentation/components/auth/portal-login-lock";
 import { Button } from "@/presentation/components/ui/button";
 import { translateError } from "@/presentation/utils/translate-error";
 import { tryOrToastError } from "@/presentation/utils/try-or-toast-error";
@@ -12,6 +13,10 @@ import { ArrowRight, Mail, X } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { completeSellerPortalLogin } from "../seller-login-completion";
+import {
+  clearSellerLoginError,
+  consumeSellerLoginError,
+} from "../seller-login-error-storage";
 import { savePendingTwoFactor } from "../seller-login-two-factor-storage";
 
 const clientIpService = new ClientIpService();
@@ -37,21 +42,24 @@ export default function LoginForm({
 }: ILoginFormProps) {
   const navigate = useNavigate();
 
-  const [error, setError] = useState("");
+  const [error, setError] = useState(() => consumeSellerLoginError() ?? "");
 
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    clearSellerLoginError();
     setError("");
 
     setLoading(true);
+    setPortalLoginInFlight("seller", true);
 
     tryOrToastError(
       async () => {
         const ip = await clientIpService.getClientIp();
         if (!ip) {
+          setPortalLoginInFlight("seller", false);
           throw new AppError(
             "Erro ao identificar seu IP. Verifique sua conexão e tente novamente.",
             400
@@ -65,6 +73,7 @@ export default function LoginForm({
         });
 
         if (signInResult.error) {
+          setPortalLoginInFlight("seller", false);
           const raw =
             signInResult.error.message || signInResult.error.code || "";
           if (
@@ -131,9 +140,19 @@ export default function LoginForm({
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
-          <div className="flex items-center gap-2 rounded-xl border border-destructive/20 bg-destructive/10 px-3.5 py-3 text-sm text-destructive">
-            <X size={15} className="flex-shrink-0" />
-            <span>{error}</span>
+          <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-3.5 py-3 text-sm text-destructive">
+            <div className="flex items-center gap-2">
+              <X size={15} className="flex-shrink-0" />
+              <span>{error}</span>
+            </div>
+            {error.includes("login de admin") && (
+              <a
+                href="/login/admin"
+                className="mt-2 inline-block font-semibold text-primary hover:text-primary/80"
+              >
+                Ir para o login de admin
+              </a>
+            )}
           </div>
         )}
 

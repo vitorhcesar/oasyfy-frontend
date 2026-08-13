@@ -42,7 +42,8 @@ export async function ensureSellerPortalAccess(): Promise<TEnsureSellerPortalAcc
   }
 
   if (!baUser?.emailVerified && !ctx.emailManuallyApproved) {
-    await authClient.signOut();
+    // O caller persiste o e-mail e faz signOut em seguida, para o OTP
+    // sobreviver caso a tela de login remonte.
     return { kind: "needs_verification" };
   }
 

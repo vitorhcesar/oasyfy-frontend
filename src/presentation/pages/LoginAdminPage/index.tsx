@@ -9,6 +9,7 @@ import { Input } from "@/presentation/components/Input";
 import { PasswordInput } from "@/presentation/components/PasswordInput";
 import { TwoFactorLoginStep } from "@/presentation/components/auth/TwoFactorLoginStep";
 import { Button } from "@/presentation/components/ui/button";
+import { setPortalLoginInFlight } from "@/presentation/components/auth/portal-login-lock";
 import { useAuthContext } from "@/presentation/context/AuthContext";
 import { tryOrToastError } from "@/presentation/utils/try-or-toast-error";
 import { ArrowRight, Mail, Shield } from "lucide-react";
@@ -24,7 +25,7 @@ const clientIpService = new ClientIpService();
 
 export default function LoginAdmin() {
   const navigate = useNavigate();
-  const { signOut } = useAuthContext();
+  const { signOut, isAuthenticated, isLoading } = useAuthContext();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,9 +35,15 @@ export default function LoginAdmin() {
 
   useEffect(() => {
     if (hasPendingAdminTwoFactor()) {
+      setPortalLoginInFlight("admin", true);
       setNeedsTwoFactor(true);
     }
   }, []);
+
+  useEffect(() => {
+    if (isAuthenticated || isLoading || hasPendingAdminTwoFactor()) return;
+    setPortalLoginInFlight("admin", false);
+  }, [isAuthenticated, isLoading]);
 
   const completeAdminLogin = async () => {
     const ctx = await fetchSessionContext();
@@ -46,6 +53,7 @@ export default function LoginAdmin() {
     }
 
     clearPendingAdminTwoFactor();
+    setPortalLoginInFlight("admin", false);
     navigate("/admin");
   };
 
@@ -55,11 +63,13 @@ export default function LoginAdmin() {
     setError("");
 
     setLoading(true);
+    setPortalLoginInFlight("admin", true);
 
     tryOrToastError(
       async () => {
         const ip = await clientIpService.getClientIp();
         if (!ip) {
+          setPortalLoginInFlight("admin", false);
           throw new AppError(
             "Erro ao identificar seu IP. Verifique sua conexão e tente novamente.",
             400
@@ -72,6 +82,7 @@ export default function LoginAdmin() {
         });
 
         if (signInResult.error) {
+          setPortalLoginInFlight("admin", false);
           setError("Email ou senha inválidos");
           return;
         }
@@ -156,6 +167,7 @@ export default function LoginAdmin() {
               {needsTwoFactor ? (
                 <TwoFactorLoginStep
                   onVerified={async () => {
+                    setPortalLoginInFlight("admin", true);
                     try {
                       await completeAdminLogin();
                     } catch (err) {
@@ -168,6 +180,7 @@ export default function LoginAdmin() {
                   onCancel={() => {
                     clearPendingAdminTwoFactor();
                     setNeedsTwoFactor(false);
+                    setPortalLoginInFlight("admin", false);
                     void signOut();
                   }}
                 />
