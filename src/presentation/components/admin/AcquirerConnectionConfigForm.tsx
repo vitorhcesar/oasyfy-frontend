@@ -386,7 +386,7 @@ export function AcquirerConnectionConfigForm({
                 type="button"
                 onClick={handleSave}
                 disabled={saving}
-                className="inline-flex h-10 items-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90 disabled:opacity-50"
+                className="inline-flex h-10 items-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-[#111827] transition-opacity hover:opacity-90 disabled:opacity-50"
               >
                 {saving && <Loader2 size={15} className="animate-spin" />}
                 Salvar credenciais

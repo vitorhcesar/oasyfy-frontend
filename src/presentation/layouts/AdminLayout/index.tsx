@@ -11,7 +11,7 @@ export function AdminLayout({ children }: PropsWithChildren) {
       {/* Canvas atmosphere — refrata sob o chrome Liquid Glass */}
       <div aria-hidden className="pointer-events-none fixed inset-0 z-0">
         <div className="absolute -left-28 -top-32 h-[560px] w-[560px] rounded-full bg-primary/40 blur-[150px]" />
-        <div className="absolute right-[-120px] top-[18%] h-[480px] w-[480px] rounded-full bg-[#2E0E4F]/50 blur-[130px]" />
+        <div className="absolute right-[-120px] top-[18%] h-[480px] w-[480px] rounded-full bg-primary/30 blur-[130px]" />
         <div className="absolute bottom-[-140px] left-[28%] h-[520px] w-[520px] rounded-full bg-primary/25 blur-[140px]" />
         <div className="absolute left-[45%] top-[42%] h-[280px] w-[280px] rounded-full bg-primary/15 blur-[100px]" />
         <div
@@ -43,7 +43,7 @@ export function AdminLayout({ children }: PropsWithChildren) {
               <Menu size={22} />
             </button>
             <span className="ml-2 text-base font-semibold text-foreground">
-              OmegaPay
+              Oasyfy
             </span>
           </div>
           <div className="flex-1">{children}</div>

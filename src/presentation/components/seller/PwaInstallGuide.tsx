@@ -23,7 +23,7 @@ const PLATFORM_META: Record<
       "Abra o menu ⋮ (canto superior do Chrome).",
       "Toque em Instalar app ou Adicionar à tela inicial.",
       "Confirme a instalação.",
-      "Abra o Omegapay pelo ícone novo e volte em Notificações → Ativar notificações.",
+      "Abra o Oasyfy pelo ícone novo e volte em Notificações → Ativar notificações.",
     ],
     note: "Use Chrome ou Edge atualizados; funciona melhor em HTTPS.",
   },
@@ -43,7 +43,7 @@ const PLATFORM_META: Record<
     label: "Desktop",
     title: "Instalar no computador",
     steps: [
-      "Na barra de endereço, clique no ícone de instalação (monitor/+) ou abra o menu ⋮ → Instalar Omegapay.",
+      "Na barra de endereço, clique no ícone de instalação (monitor/+) ou abra o menu ⋮ → Instalar Oasyfy.",
       "Confirme a instalação.",
       "O app abre em janela própria; em Notificações, ative os avisos se desejar.",
     ],
@@ -138,8 +138,8 @@ export function PwaInstallGuide({
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
             {context.isStandalone
-              ? "Você já está usando o Omegapay instalado. Ative as notificações abaixo para receber avisos."
-              : "Instale o Omegapay para abrir como app e receber avisos com mais estabilidade."}
+              ? "Você já está usando o Oasyfy instalado. Ative as notificações abaixo para receber avisos."
+              : "Instale o Oasyfy para abrir como app e receber avisos com mais estabilidade."}
           </p>
         </div>
       </div>

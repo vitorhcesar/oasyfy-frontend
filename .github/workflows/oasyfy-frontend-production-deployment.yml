@@ -1,4 +1,4 @@
-name: OmegaPay Frontend Production Deployment
+name: Oasyfy Frontend Production Deployment
 
 on:
   push:
@@ -15,8 +15,8 @@ permissions:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ghcr.io/vitorhcesar/omegapay-frontend
-  REMOTE_APP_DIR: ~/omegapay-frontend/omegapay-frontend
+  IMAGE_NAME: ghcr.io/vitorhcesar/oasyfy-frontend
+  REMOTE_APP_DIR: ~/oasyfy-frontend/oasyfy-frontend
 
 jobs:
   quality:
@@ -69,7 +69,7 @@ jobs:
 
   validate-secrets:
     runs-on: ubuntu-latest
-    environment: omegapay-frontend-env
+    environment: oasyfy-frontend-env
     steps:
       - name: Validate required secrets
         shell: bash
@@ -89,7 +89,7 @@ jobs:
 
   build-and-push:
     runs-on: ubuntu-latest
-    environment: omegapay-frontend-env
+    environment: oasyfy-frontend-env
     needs: [quality, e2e, validate-secrets]
 
     steps:
@@ -131,7 +131,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    environment: omegapay-frontend-env
+    environment: oasyfy-frontend-env
     needs: build-and-push
 
     steps:
@@ -171,7 +171,7 @@ jobs:
             "gunzip | sudo docker load"
 
           ssh "${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}" "
-            flock /tmp/omegapay-deploy.lock -c '
+            flock /tmp/oasyfy-deploy.lock -c '
               cd ${REMOTE_APP_DIR} &&
               sudo APP_VERSION=${{ github.ref_name }} docker compose -f docker-compose.prod.yml up -d --no-build --remove-orphans &&
               sudo docker image prune -f

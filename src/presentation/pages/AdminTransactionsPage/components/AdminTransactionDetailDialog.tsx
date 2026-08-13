@@ -140,13 +140,13 @@ export default function AdminTransactionDetailDialog({
             <TabsList className="liquid-glass-control h-auto w-full gap-0.5 rounded-2xl p-1">
               <TabsTrigger
                 value="venda"
-                className="flex-1 rounded-xl px-3.5 py-2 text-sm font-semibold data-[state=active]:bg-white data-[state=active]:text-[#0F0617] data-[state=active]:shadow-sm"
+                className="flex-1 rounded-xl px-3.5 py-2 text-sm font-semibold data-[state=active]:bg-white data-[state=active]:text-[#111827] data-[state=active]:shadow-sm"
               >
                 Venda
               </TabsTrigger>
               <TabsTrigger
                 value="mais"
-                className="flex-1 rounded-xl px-3.5 py-2 text-sm font-semibold data-[state=active]:bg-white data-[state=active]:text-[#0F0617] data-[state=active]:shadow-sm"
+                className="flex-1 rounded-xl px-3.5 py-2 text-sm font-semibold data-[state=active]:bg-white data-[state=active]:text-[#111827] data-[state=active]:shadow-sm"
               >
                 Mais Detalhes
               </TabsTrigger>
@@ -374,7 +374,7 @@ export default function AdminTransactionDetailDialog({
                       className={cn(
                         "inline-flex h-10 items-center gap-2 rounded-xl border px-4 text-sm font-semibold transition-colors",
                         selectedTx.is_locked
-                          ? "border-transparent bg-white text-[#0F0617] hover:bg-white/90"
+                          ? "border-transparent bg-white text-[#111827] hover:bg-white/90"
                           : "border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground",
                       )}
                     >
@@ -445,7 +445,7 @@ export default function AdminTransactionDetailDialog({
                     <button
                       onClick={() => onRefund(true)}
                       disabled={actionLoading || !refundReason.trim()}
-                      className="h-10 rounded-xl bg-white px-4 text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90 disabled:opacity-50"
+                      className="h-10 rounded-xl bg-white px-4 text-sm font-semibold text-[#111827] transition-opacity hover:opacity-90 disabled:opacity-50"
                     >
                       {actionLoading
                         ? "Processando..."

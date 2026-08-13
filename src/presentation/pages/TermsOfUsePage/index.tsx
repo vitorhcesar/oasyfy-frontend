@@ -5,19 +5,19 @@ import { Link } from "react-router-dom";
 const sections = [
   {
     title: "1. Aceitação dos Termos",
-    body: "Ao criar uma conta e utilizar a plataforma Omegapay, você declara ter lido, compreendido e aceito integralmente estes Termos de Uso. Caso não concorde com qualquer disposição, não utilize os serviços.",
+    body: "Ao criar uma conta e utilizar a plataforma Oasyfy, você declara ter lido, compreendido e aceito integralmente estes Termos de Uso. Caso não concorde com qualquer disposição, não utilize os serviços.",
   },
   {
     title: "2. Descrição do Serviço",
-    body: "A Omegapay disponibiliza uma plataforma de gateway de pagamentos que permite a sellers receberem valores, gerenciarem transações, checkouts e demais funcionalidades relacionadas à intermediação de pagamentos digitais, observadas as regras e limites aplicáveis à sua conta.",
+    body: "A Oasyfy disponibiliza uma plataforma de gateway de pagamentos que permite a sellers receberem valores, gerenciarem transações, checkouts e demais funcionalidades relacionadas à intermediação de pagamentos digitais, observadas as regras e limites aplicáveis à sua conta.",
   },
   {
     title: "3. Cadastro e Conta",
-    body: "Você se compromete a fornecer informações verdadeiras, completas e atualizadas no cadastro e no processo de verificação (KYC). É de sua responsabilidade manter a confidencialidade das credenciais de acesso e de todas as atividades realizadas em sua conta. A Omegapay poderá solicitar documentos e dados adicionais para validação da identidade e da atividade comercial.",
+    body: "Você se compromete a fornecer informações verdadeiras, completas e atualizadas no cadastro e no processo de verificação (KYC). É de sua responsabilidade manter a confidencialidade das credenciais de acesso e de todas as atividades realizadas em sua conta. A Oasyfy poderá solicitar documentos e dados adicionais para validação da identidade e da atividade comercial.",
   },
   {
     title: "4. Uso Adequado",
-    body: "É vedado utilizar a plataforma para atividades ilícitas, fraudulentas, de lavagem de dinheiro, financiamento ao terrorismo, ou qualquer operação que viole a legislação brasileira ou políticas de adquirentes e instituições financeiras parceiras. A Omegapay poderá suspender ou encerrar contas que violem estas regras.",
+    body: "É vedado utilizar a plataforma para atividades ilícitas, fraudulentas, de lavagem de dinheiro, financiamento ao terrorismo, ou qualquer operação que viole a legislação brasileira ou políticas de adquirentes e instituições financeiras parceiras. A Oasyfy poderá suspender ou encerrar contas que violem estas regras.",
   },
   {
     title: "5. Taxas e Valores",
@@ -29,11 +29,11 @@ const sections = [
   },
   {
     title: "7. Disponibilidade e Limitações",
-    body: "A Omegapay envida esforços para manter a plataforma disponível e segura, mas não garante funcionamento ininterrupto. Eventuais indisponibilidades, atrasos de liquidação ou limitações impostas por terceiros (adquirentes, bancos, provedores) não geram, por si só, direito a indenização.",
+    body: "A Oasyfy envida esforços para manter a plataforma disponível e segura, mas não garante funcionamento ininterrupto. Eventuais indisponibilidades, atrasos de liquidação ou limitações impostas por terceiros (adquirentes, bancos, provedores) não geram, por si só, direito a indenização.",
   },
   {
     title: "8. Propriedade Intelectual",
-    body: "Marcas, logotipos, softwares, layouts e demais conteúdos da plataforma são de titularidade da Omegapay ou de seus licenciadores. É proibida a reprodução, engenharia reversa ou uso não autorizado desses ativos.",
+    body: "Marcas, logotipos, softwares, layouts e demais conteúdos da plataforma são de titularidade da Oasyfy ou de seus licenciadores. É proibida a reprodução, engenharia reversa ou uso não autorizado desses ativos.",
   },
   {
     title: "9. Alterações",
@@ -41,7 +41,7 @@ const sections = [
   },
   {
     title: "10. Contato",
-    body: "Em caso de dúvidas sobre estes Termos de Uso, entre em contato pelo suporte disponível na plataforma ou pelo canal oficial informado no site da Omegapay.",
+    body: "Em caso de dúvidas sobre estes Termos de Uso, entre em contato pelo suporte disponível na plataforma ou pelo canal oficial informado no site da Oasyfy.",
   },
 ];
 

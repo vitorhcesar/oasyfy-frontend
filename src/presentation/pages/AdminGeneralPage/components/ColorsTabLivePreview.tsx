@@ -47,7 +47,7 @@ export function ColorsTabLivePreview({
             </span>
           </div>
           <span className="text-xs font-bold" style={{ color: `hsl(${fg})` }}>
-            OmegaPay
+            Oasyfy
           </span>
         </div>
         <div className="flex items-center gap-3">

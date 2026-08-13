@@ -51,7 +51,7 @@ export default function SellerApps() {
     });
     if (!url) {
       toast.error(
-        "Canal de suporte não configurado. Contate a administração Omegapay.",
+        "Canal de suporte não configurado. Contate a administração Oasyfy.",
       );
       return;
     }
@@ -64,7 +64,7 @@ export default function SellerApps() {
         <PageHeader
           eyebrow="Developer"
           title="Integração"
-          description="API Omegapay e documentação para conectar sua operação"
+          description="API Oasyfy e documentação para conectar sua operação"
         />
 
         {loading ? (
@@ -120,7 +120,7 @@ export default function SellerApps() {
               API disponível sob liberação
             </h2>
             <p className="mb-6 text-sm text-muted-foreground">
-              A API Omegapay é privada. Após análise da administração, sua conta
+              A API Oasyfy é privada. Após análise da administração, sua conta
               poderá criar chaves e consumir o gateway. Fale com o suporte para
               solicitar a liberação.
             </p>

@@ -160,7 +160,7 @@ export default function NewPasswordRecoveryStep({
           disabled={loading}
           className="auth-cta !mt-3 h-12 w-full rounded-xl text-base font-semibold"
           loading={loading}
-          rippleColor="rgba(15, 6, 23, 0.2)"
+          rippleColor="rgba(15, 15, 16, 0.2)"
         >
           Atualizar senha <ArrowRight size={17} />
         </Button>

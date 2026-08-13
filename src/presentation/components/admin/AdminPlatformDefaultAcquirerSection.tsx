@@ -150,7 +150,7 @@ export function AdminPlatformDefaultAcquirerSection() {
           type="button"
           onClick={handleSave}
           disabled={saving}
-          className="gap-2 bg-white text-[#0F0617] hover:bg-white/90"
+          className="gap-2 bg-white text-[#111827] hover:bg-white/90"
         >
           {saving ? (
             <Loader2 size={16} className="animate-spin" />

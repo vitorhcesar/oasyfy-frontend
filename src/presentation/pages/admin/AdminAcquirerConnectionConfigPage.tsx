@@ -143,7 +143,7 @@ export default function AdminAcquirerConnectionConfigPage() {
               </p>
               <Link
                 to="/admin/acquirer?tab=conexoes"
-                className="inline-flex h-10 items-center rounded-xl bg-white px-4 text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90"
+                className="inline-flex h-10 items-center rounded-xl bg-white px-4 text-sm font-semibold text-[#111827] transition-opacity hover:opacity-90"
               >
                 Ir para conexões
               </Link>

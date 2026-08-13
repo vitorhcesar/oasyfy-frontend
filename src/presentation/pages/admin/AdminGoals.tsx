@@ -305,7 +305,7 @@ export default function AdminGoals() {
           </div>
           <button
             onClick={openCreate}
-            className="inline-flex h-10 items-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90"
+            className="inline-flex h-10 items-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-[#111827] transition-opacity hover:opacity-90"
           >
             <Plus size={16} />
             Nova Meta
@@ -368,7 +368,7 @@ export default function AdminGoals() {
             </p>
             <button
               onClick={openCreate}
-              className="inline-flex h-10 items-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90"
+              className="inline-flex h-10 items-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-[#111827] transition-opacity hover:opacity-90"
             >
               <Plus size={15} /> Criar Meta
             </button>
@@ -536,7 +536,7 @@ export default function AdminGoals() {
                           <div className="flex items-center gap-1.5">
                             <button
                               onClick={() => toggleActive(goal)}
-                              className="inline-flex h-9 items-center rounded-xl border border-transparent bg-white px-3 text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90"
+                              className="inline-flex h-9 items-center rounded-xl border border-transparent bg-white px-3 text-sm font-semibold text-[#111827] transition-opacity hover:opacity-90"
                             >
                               Reativar
                             </button>
@@ -761,7 +761,7 @@ export default function AdminGoals() {
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="h-10 flex-1 rounded-xl bg-white text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90 disabled:opacity-50"
+                className="h-10 flex-1 rounded-xl bg-white text-sm font-semibold text-[#111827] transition-opacity hover:opacity-90 disabled:opacity-50"
               >
                 {saving
                   ? "Salvando..."

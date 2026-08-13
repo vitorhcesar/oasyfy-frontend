@@ -45,7 +45,7 @@ export default function AdminKycDetailsTabs({
           className={cn(
             "relative rounded-xl px-3.5 py-2 text-sm font-semibold transition-all",
             tab === t.key
-              ? "bg-white text-[#0F0617] shadow-sm"
+              ? "bg-white text-[#111827] shadow-sm"
               : "text-muted-foreground hover:bg-white/10 hover:text-foreground",
           )}
         >
@@ -55,7 +55,7 @@ export default function AdminKycDetailsTabs({
               className={cn(
                 "ml-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-md px-1 text-xs font-bold leading-none",
                 tab === t.key
-                  ? "bg-[#0F0617]/12 text-[#0F0617]"
+                  ? "bg-[#0F0F10]/12 text-[#111827]"
                   : "bg-warning/15 text-warning",
               )}
             >

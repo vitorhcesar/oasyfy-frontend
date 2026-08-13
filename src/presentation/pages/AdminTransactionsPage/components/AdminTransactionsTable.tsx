@@ -173,7 +173,7 @@ export default function AdminTransactionsTable({
                   className={cn(
                     "flex h-8 w-8 items-center justify-center rounded-lg text-sm font-semibold transition-all",
                     currentPage === page
-                      ? "bg-white text-[#0F0617] shadow-sm"
+                      ? "bg-white text-[#111827] shadow-sm"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   )}
                 >

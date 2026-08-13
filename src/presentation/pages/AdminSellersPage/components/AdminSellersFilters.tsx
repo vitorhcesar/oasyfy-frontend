@@ -28,7 +28,7 @@ export default function AdminSellersFilters({
             className={cn(
               "rounded-xl px-3.5 py-2 text-sm font-semibold transition-all",
               filter === item.key
-                ? "bg-white text-[#0F0617] shadow-sm"
+                ? "bg-white text-[#111827] shadow-sm"
                 : "text-muted-foreground hover:bg-white/10 hover:text-foreground",
             )}
           >
@@ -37,7 +37,7 @@ export default function AdminSellersFilters({
               className={cn(
                 "ml-1.5 text-xs",
                 filter === item.key
-                  ? "text-[#0F0617]/60"
+                  ? "text-[#111827]/60"
                   : "text-muted-foreground/50",
               )}
             >

@@ -50,15 +50,15 @@ export default defineConfig(({ mode }) => {
           "icons/apple-touch-icon.png",
         ],
         manifest: {
-          name: "Omegapay",
-          short_name: "Omegapay",
-          description: "Gateway de pagamentos Omegapay",
+          name: "Oasyfy",
+          short_name: "Oasyfy",
+          description: "Gateway de pagamentos Oasyfy",
           start_url: "/seller",
           scope: "/",
           display: "standalone",
           orientation: "any",
-          background_color: "#0B0B0F",
-          theme_color: "#7C3AED",
+          background_color: "#0F0F10",
+          theme_color: "#22C55E",
           lang: "pt-BR",
           icons: [
             {

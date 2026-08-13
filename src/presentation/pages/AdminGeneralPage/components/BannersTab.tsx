@@ -54,7 +54,7 @@ export function BannersTab() {
         <button
           type="button"
           onClick={() => setAddOpen(true)}
-          className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl bg-white px-4 text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90"
+          className="inline-flex h-10 shrink-0 items-center gap-1.5 rounded-xl bg-white px-4 text-sm font-semibold text-[#111827] transition-opacity hover:opacity-90"
         >
           <Plus size={15} />
           Novo banner

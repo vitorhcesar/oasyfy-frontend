@@ -65,7 +65,7 @@ export function CheckoutPreview({
         >
           {buttonText || "Pagar com PIX"}
         </button>
-        <p className="text-[11px] text-zinc-500">Pagamento processado por Omegapay</p>
+        <p className="text-[11px] text-zinc-500">Pagamento processado por Oasyfy</p>
       </div>
     </div>
   );

@@ -32,7 +32,7 @@ export default function SellerCheckoutDetail() {
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("0");
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
-  const [primaryColor, setPrimaryColor] = useState("#16A34A");
+  const [primaryColor, setPrimaryColor] = useState("#22C55E");
   const [backgroundColor, setBackgroundColor] = useState("#FAFAFA");
   const [buttonText, setButtonText] = useState("Pagar com PIX");
   const [successMessage, setSuccessMessage] = useState("");

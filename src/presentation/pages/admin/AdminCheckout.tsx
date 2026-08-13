@@ -115,7 +115,7 @@ export default function AdminCheckout() {
               className={inputClass}
               value={baseUrl}
               onChange={(e) => setBaseUrl(e.target.value)}
-              placeholder="https://pay.omegapay.com"
+              placeholder="https://pay.oasyfy.com"
             />
             <p className="mt-1.5 text-xs text-muted-foreground">
               Deve ser diferente do portal em produção. Efetiva agora:{" "}

@@ -98,7 +98,7 @@ export default function LoginAdmin() {
   };
 
   return (
-    <div className="auth-skin relative flex min-h-screen overflow-hidden bg-[#0F0617] text-foreground">
+    <div className="auth-skin relative flex min-h-screen overflow-hidden bg-[#0F0F10] text-foreground">
       <AuthAmbientBackground />
 
       <div className="relative z-10 flex min-h-screen w-full animate-fade-in">
@@ -124,7 +124,7 @@ export default function LoginAdmin() {
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-white/40">
               {["Controle total", "Monitoramento", "Seguro"].map((t) => (
                 <span key={t} className="flex items-center gap-2">
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#5F2998]" />
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#22C55E]" />
                   {t}
                 </span>
               ))}
@@ -146,7 +146,7 @@ export default function LoginAdmin() {
                   <Shield className="text-primary" size={20} />
                 </div>
                 <h1 className="text-3xl font-bold tracking-tight text-foreground">
-                  OmegaPay Admin
+                  Oasyfy Admin
                 </h1>
                 <p className="mt-2 text-base text-muted-foreground">
                   Acesse o painel administrativo do gateway
@@ -185,7 +185,7 @@ export default function LoginAdmin() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    placeholder="admin@omegapay.com"
+                    placeholder="admin@oasyfy.com"
                     className="auth-field h-12 rounded-xl text-base"
                     startComponent={
                       <Mail size={16} className="text-muted-foreground/40" />
@@ -204,7 +204,7 @@ export default function LoginAdmin() {
                     disabled={loading}
                     className="auth-cta !mt-3 h-12 w-full rounded-xl text-base font-semibold"
                     loading={loading}
-                    rippleColor="rgba(15, 6, 23, 0.2)"
+                    rippleColor="rgba(15, 15, 16, 0.2)"
                   >
                     Entrar como Admin <ArrowRight size={16} />
                   </Button>

@@ -166,7 +166,7 @@ const darkGroups: IColorGroup[] = [
 
 function hslToHex(hsl: string): string {
   const parts = hsl.trim().split(/\s+/);
-  if (parts.length < 3) return "#33a06f";
+  if (parts.length < 3) return "#22C55E";
   const h = parseFloat(parts[0]);
   const s = parseFloat(parts[1]) / 100;
   const l = parseFloat(parts[2]) / 100;

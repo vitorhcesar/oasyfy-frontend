@@ -160,7 +160,7 @@ export function AdminKycDetailsFeesTab({ sellerId }: IAdminKycDetailsFeesTabProp
           <button
             onClick={handleAssign}
             disabled={saving}
-            className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-white text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90 disabled:opacity-50"
+            className="flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-white text-sm font-semibold text-[#111827] transition-opacity hover:opacity-90 disabled:opacity-50"
           >
             {saving && <Loader2 size={14} className="animate-spin" />}
             Atribuir plano

@@ -82,7 +82,7 @@ export function TwoFactorLoginStep({
           className="auth-cta h-12 flex-1 rounded-xl text-base font-semibold"
           disabled={loading || code.length !== 6}
           loading={loading}
-          rippleColor="rgba(15, 6, 23, 0.2)"
+          rippleColor="rgba(15, 15, 16, 0.2)"
         >
           Verificar
         </Button>

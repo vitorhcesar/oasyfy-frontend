@@ -1054,7 +1054,7 @@ export default function SellerApiDocs() {
                     className={cn(
                       "shrink-0 inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all",
                       activeSection === section.id
-                        ? "bg-white text-[#0F0617] shadow-sm"
+                        ? "bg-white text-[#111827] shadow-sm"
                         : "text-muted-foreground hover:bg-white/10 hover:text-foreground",
                     )}
                   >

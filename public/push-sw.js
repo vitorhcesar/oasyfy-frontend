@@ -1,7 +1,7 @@
 /* global self, clients */
 
 self.addEventListener("push", (event) => {
-  let title = "Omegapay";
+  let title = "Oasyfy";
   let options = {
     body: "Você tem uma nova atualização",
     icon: "/icons/icon-192.png",

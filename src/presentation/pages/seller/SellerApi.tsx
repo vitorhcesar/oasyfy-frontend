@@ -91,7 +91,7 @@ export default function SellerApi() {
     });
     if (!url) {
       toast.error(
-        "Canal de suporte não configurado. Contate a administração Omegapay.",
+        "Canal de suporte não configurado. Contate a administração Oasyfy.",
       );
       return;
     }
@@ -111,7 +111,7 @@ export default function SellerApi() {
             </h2>
             <p className="mb-6 text-sm text-muted-foreground">
               Sua conta ainda não tem acesso à API. Solicite a liberação com o
-              suporte Omegapay.
+              suporte Oasyfy.
             </p>
             <button
               type="button"
@@ -166,7 +166,7 @@ export default function SellerApi() {
               className={cn(
                 "inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-semibold transition-all",
                 activeTab === tab.id
-                  ? "bg-white text-[#0F0617] shadow-sm"
+                  ? "bg-white text-[#111827] shadow-sm"
                   : "text-muted-foreground hover:bg-white/10 hover:text-foreground",
               )}
             >

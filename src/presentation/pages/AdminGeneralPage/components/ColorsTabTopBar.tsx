@@ -81,7 +81,7 @@ export default function ColorsTabTopBar({
           className={cn(
             "inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-semibold transition-all",
             mode === "light"
-              ? "bg-white text-[#0F0617] shadow-sm"
+              ? "bg-white text-[#111827] shadow-sm"
               : "text-muted-foreground hover:bg-white/10 hover:text-foreground",
           )}
         >
@@ -93,7 +93,7 @@ export default function ColorsTabTopBar({
           className={cn(
             "inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-semibold transition-all",
             mode === "dark"
-              ? "bg-white text-[#0F0617] shadow-sm"
+              ? "bg-white text-[#111827] shadow-sm"
               : "text-muted-foreground hover:bg-white/10 hover:text-foreground",
           )}
         >
@@ -114,7 +114,7 @@ export default function ColorsTabTopBar({
           type="button"
           onClick={handleSave}
           disabled={saving}
-          className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-white px-5 text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90 disabled:opacity-50"
+          className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-white px-5 text-sm font-semibold text-[#111827] transition-opacity hover:opacity-90 disabled:opacity-50"
         >
           {saving ? (
             <Loader2 size={14} className="animate-spin" />

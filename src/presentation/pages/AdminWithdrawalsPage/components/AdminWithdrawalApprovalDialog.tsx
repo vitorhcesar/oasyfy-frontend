@@ -152,7 +152,7 @@ export default function AdminWithdrawalApprovalDialog({
                 className={cn(
                   "flex-1 rounded-xl px-3.5 py-2 text-sm font-semibold transition-all",
                   modalTab === "info"
-                    ? "bg-white text-[#0F0617] shadow-sm"
+                    ? "bg-white text-[#111827] shadow-sm"
                     : "text-muted-foreground hover:bg-white/10 hover:text-foreground",
                 )}
               >
@@ -163,7 +163,7 @@ export default function AdminWithdrawalApprovalDialog({
                 className={cn(
                   "flex-1 rounded-xl px-3.5 py-2 text-sm font-semibold transition-all",
                   modalTab === "history"
-                    ? "bg-white text-[#0F0617] shadow-sm"
+                    ? "bg-white text-[#111827] shadow-sm"
                     : "text-muted-foreground hover:bg-white/10 hover:text-foreground",
                 )}
               >
@@ -430,13 +430,13 @@ export default function AdminWithdrawalApprovalDialog({
                       <button
                         onClick={() => handleApprove("manual")}
                         disabled={!!actionLoading}
-                        className="flex flex-col items-center gap-2 rounded-2xl border border-transparent bg-white p-4 text-[#0F0617] transition-opacity hover:opacity-90 disabled:opacity-50"
+                        className="flex flex-col items-center gap-2 rounded-2xl border border-transparent bg-white p-4 text-[#111827] transition-opacity hover:opacity-90 disabled:opacity-50"
                       >
                         <CheckCircle size={20} />
                         <span className="text-sm font-semibold">
                           Aprovar Manual
                         </span>
-                        <span className="text-center text-xs text-[#0F0617]/70">
+                        <span className="text-center text-xs text-[#111827]/70">
                           Marca como aprovado sem enviar via API
                         </span>
                       </button>

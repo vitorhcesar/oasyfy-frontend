@@ -147,7 +147,7 @@ export default function AdminTransactionsFilters({
         </div>
         <button
           onClick={onPixSearch}
-          className="flex h-[42px] items-center justify-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90"
+          className="flex h-[42px] items-center justify-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-[#111827] transition-opacity hover:opacity-90"
         >
           <Search size={15} />
           Buscar

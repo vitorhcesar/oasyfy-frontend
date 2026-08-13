@@ -10,7 +10,7 @@ export function buildApiAccessSupportUrl(input: {
   if (!base) return null;
 
   const lines = [
-    "Olá! Gostaria de solicitar a liberação da API Omegapay.",
+    "Olá! Gostaria de solicitar a liberação da API Oasyfy.",
     input.accountId ? `Conta: ${input.accountId}` : null,
     input.email ? `E-mail: ${input.email}` : null,
   ].filter(Boolean);

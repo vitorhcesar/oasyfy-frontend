@@ -158,7 +158,7 @@ function SellerAcquirerDrawer({
         aria-label="Fechar"
         onClick={onClose}
       />
-      <aside className="relative z-10 flex h-full w-full max-w-md flex-col border-l border-border bg-[#141018] shadow-2xl">
+      <aside className="relative z-10 flex h-full w-full max-w-md flex-col border-l border-border bg-[#181818] shadow-2xl">
         <div className="flex items-center justify-between border-b border-border/50 px-5 py-4">
           <div>
             <p className="text-xs uppercase tracking-wider text-muted-foreground">
@@ -240,7 +240,7 @@ function SellerAcquirerDrawer({
             type="button"
             onClick={handleSave}
             disabled={saving || loading || !detail}
-            className="w-full gap-2 bg-white text-[#0F0617] hover:bg-white/90"
+            className="w-full gap-2 bg-white text-[#111827] hover:bg-white/90"
           >
             {saving ? (
               <Loader2 size={16} className="animate-spin" />

@@ -138,7 +138,7 @@ export default function PublicCheckoutPage() {
     );
   }
 
-  const primary = checkout?.branding.primaryColor ?? "#16A34A";
+  const primary = checkout?.branding.primaryColor ?? "#22C55E";
   const background = checkout?.branding.backgroundColor ?? "#FAFAFA";
 
   return (
@@ -275,7 +275,7 @@ export default function PublicCheckoutPage() {
           ) : null}
 
           <p className="pt-2 text-center text-[11px] text-zinc-500">
-            Pagamento processado por Omegapay
+            Pagamento processado por Oasyfy
           </p>
         </div>
       </div>

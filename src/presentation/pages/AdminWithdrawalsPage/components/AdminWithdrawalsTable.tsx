@@ -122,7 +122,7 @@ export default function AdminWithdrawalsTable({
                     <button
                       onClick={() => onOpenApprovalModal(w)}
                       disabled={actionLoading === w.id}
-                      className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-transparent bg-white px-3 text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90 disabled:opacity-50"
+                      className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-transparent bg-white px-3 text-sm font-semibold text-[#111827] transition-opacity hover:opacity-90 disabled:opacity-50"
                     >
                       <CheckCircle size={14} />
                       Aprovar
@@ -163,7 +163,7 @@ export default function AdminWithdrawalsTable({
                   className={cn(
                     "flex h-8 w-8 items-center justify-center rounded-lg text-sm font-semibold transition-all",
                     currentPage === page
-                      ? "bg-white text-[#0F0617] shadow-sm"
+                      ? "bg-white text-[#111827] shadow-sm"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground",
                   )}
                 >

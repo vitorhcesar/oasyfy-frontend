@@ -352,7 +352,7 @@ export default function AdminGlobalFees() {
               type="button"
               onClick={handleSave}
               disabled={saving || isLoading}
-              className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90 disabled:opacity-50"
+              className="inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-[#111827] transition-opacity hover:opacity-90 disabled:opacity-50"
             >
               {saving ? (
                 <Loader2 size={15} className="animate-spin" />
@@ -373,7 +373,7 @@ export default function AdminGlobalFees() {
               className={cn(
                 "inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-semibold transition-all",
                 activeTab === tab.value
-                  ? "bg-white text-[#0F0617] shadow-sm"
+                  ? "bg-white text-[#111827] shadow-sm"
                   : "text-muted-foreground hover:bg-white/10 hover:text-foreground",
               )}
             >
@@ -416,7 +416,7 @@ export default function AdminGlobalFees() {
                 type="button"
                 onClick={handleSave}
                 disabled={saving}
-                className="inline-flex h-10 items-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90 disabled:opacity-50"
+                className="inline-flex h-10 items-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-[#111827] transition-opacity hover:opacity-90 disabled:opacity-50"
               >
                 {saving ? (
                   <Loader2 size={15} className="animate-spin" />

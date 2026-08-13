@@ -195,7 +195,7 @@ export default function AdminAcquirer() {
             type="button"
             onClick={ensureDefaultConnections}
             disabled={bootstrapping}
-            className="inline-flex h-10 items-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90 disabled:opacity-50"
+            className="inline-flex h-10 items-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-[#111827] transition-opacity hover:opacity-90 disabled:opacity-50"
           >
             {bootstrapping ? (
               <Loader2 size={14} className="animate-spin" />
@@ -273,7 +273,7 @@ export default function AdminAcquirer() {
                 </div>
                 <Link
                   to={getAcquirerConfigPath(inferPixAcquirerProvider(conn))}
-                  className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-white px-4 text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90"
+                  className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-white px-4 text-sm font-semibold text-[#111827] transition-opacity hover:opacity-90"
                 >
                   <Settings2 size={15} />
                   Configurar
@@ -1131,7 +1131,7 @@ export default function AdminAcquirer() {
                       type="button"
                       onClick={() => saveCostsForAcquirer(conn.id)}
                       disabled={savingCosts}
-                      className="inline-flex h-10 items-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90 disabled:opacity-50"
+                      className="inline-flex h-10 items-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-[#111827] transition-opacity hover:opacity-90 disabled:opacity-50"
                     >
                       {savingCosts ? (
                         <Loader2 size={14} className="animate-spin" />
@@ -1194,7 +1194,7 @@ export default function AdminAcquirer() {
               className={cn(
                 "inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-semibold transition-all whitespace-nowrap",
                 activeTab === tab.key
-                  ? "bg-white text-[#0F0617] shadow-sm"
+                  ? "bg-white text-[#111827] shadow-sm"
                   : "text-muted-foreground hover:bg-white/10 hover:text-foreground",
               )}
             >

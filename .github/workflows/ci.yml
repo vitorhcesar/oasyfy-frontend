@@ -1,4 +1,4 @@
-name: OmegaPay Frontend CI
+name: Oasyfy Frontend CI
 
 on:
   push:

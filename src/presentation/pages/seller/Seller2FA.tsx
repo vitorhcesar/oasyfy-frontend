@@ -6,7 +6,7 @@ export default function Seller2FA() {
     <SellerLayout>
       <div className="mx-auto w-full max-w-xl px-5 py-6 md:px-8 md:py-9">
         <TwoFactorSettingsPanel
-          issuer="OmegaPay Seller"
+          issuer="Oasyfy Seller"
           description="Proteja sua conta com verificação via Google Authenticator"
           disabledDescription="Recomendamos ativar para maior segurança."
           enabledDescription="Sua conta está protegida com autenticação de dois fatores."

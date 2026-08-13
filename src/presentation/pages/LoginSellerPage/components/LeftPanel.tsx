@@ -22,7 +22,7 @@ export default function LoginSellerLeftPanel() {
         </div>
 
         <div className="flex items-center gap-3 text-sm text-white/40">
-          <span className="h-1.5 w-1.5 rounded-full bg-[#5F2998]" />
+          <span className="h-1.5 w-1.5 rounded-full bg-[#22C55E]" />
           Infraestrutura pronta para escalar
         </div>
       </div>

@@ -301,7 +301,7 @@ export default function AdminRefunds() {
                             setAdminNote("");
                           }}
                           disabled={actionLoading === refund.id}
-                          className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-white px-4 text-sm font-semibold text-[#0F0617] transition-opacity hover:opacity-90 disabled:opacity-50"
+                          className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-white px-4 text-sm font-semibold text-[#111827] transition-opacity hover:opacity-90 disabled:opacity-50"
                         >
                           <Check size={14} />
                           Aprovar
@@ -376,7 +376,7 @@ export default function AdminRefunds() {
                   className={cn(
                     "inline-flex h-10 items-center gap-1.5 rounded-xl px-4 text-sm font-semibold transition-opacity disabled:opacity-50",
                     noteModal.action === "approved"
-                      ? "bg-white text-[#0F0617] hover:opacity-90"
+                      ? "bg-white text-[#111827] hover:opacity-90"
                       : "bg-destructive text-destructive-foreground hover:opacity-90",
                   )}
                 >

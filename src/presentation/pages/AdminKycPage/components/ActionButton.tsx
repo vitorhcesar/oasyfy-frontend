@@ -17,7 +17,7 @@ export function ActionButton({
 }: IActionBtnProps) {
   const base =
     variant === "approve"
-      ? "border-transparent bg-white text-[#0F0617] hover:bg-white/90"
+      ? "border-transparent bg-white text-[#111827] hover:bg-white/90"
       : "border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground";
 
   return (

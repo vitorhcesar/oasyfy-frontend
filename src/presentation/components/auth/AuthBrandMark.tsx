@@ -23,9 +23,9 @@ const iconByVariant: Record<TLogoVariant, string> = {
 interface IAuthBrandMarkProps {
   className?: string;
   size?: "sm" | "md" | "lg";
-  /** white = fundo dark; black = fundo claro; purple = acento de marca */
+  /** white = fundo dark; black = fundo claro; purple = acento de marca (asset legado) */
   variant?: TLogoVariant;
-  /** `horizontal` = wordmark; `icon` = só o símbolo Ω */
+  /** `horizontal` = wordmark; `icon` = só o símbolo */
   mark?: "horizontal" | "icon";
 }
 
@@ -55,7 +55,7 @@ export function AuthBrandMark({
     <div className={cn("flex items-center", className)}>
       <img
         src={src}
-        alt="OmegaPay"
+        alt="Oasyfy"
         className={cn(
           "w-auto object-contain object-left",
           heightClass,

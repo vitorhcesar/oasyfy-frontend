@@ -61,7 +61,7 @@ export default function PeakHour({ completedTransactions }: IPeakHourProps) {
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "rgba(15, 6, 23, 0.85)",
+                  backgroundColor: "rgba(15, 15, 16, 0.85)",
                   backdropFilter: "blur(16px)",
                   border: "1px solid rgba(255,255,255,0.14)",
                   borderRadius: "14px",

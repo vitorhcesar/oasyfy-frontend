@@ -277,7 +277,7 @@ export default function SellerPartners() {
         <PageHeader
           eyebrow="Financeiro"
           title="Sócios"
-          description="Divida automaticamente o valor das vendas com outro seller da OmegaPay."
+          description="Divida automaticamente o valor das vendas com outro seller da Oasyfy."
         />
 
         <section className="mt-8 space-y-4 rounded-2xl border border-border/70 bg-background/40 p-5">

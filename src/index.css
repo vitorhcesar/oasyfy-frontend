@@ -3,74 +3,74 @@
 @tailwind utilities;
 
 @layer base {
-  /* Defaults alinhados ao seed (GatewayTheme) — brand #5F2998 / #0F0617 */
+  /* Defaults alinhados ao seed (GatewayTheme) — brand #22C55E / #0F0F10 */
   :root {
-    --background: 0 0% 98%;
-    --foreground: 0 0% 4%;
+    --background: 210 20% 98%;
+    --foreground: 222 47% 11%;
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 4%;
+    --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 4%;
-    --primary: 269 58% 38%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 142 71% 45%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 269 40% 96%;
-    --secondary-foreground: 269 58% 28%;
-    --muted: 270 15% 96%;
-    --muted-foreground: 0 0% 40%;
-    --accent: 269 40% 96%;
-    --accent-foreground: 269 58% 28%;
+    --secondary: 142 40% 96%;
+    --secondary-foreground: 142 64% 24%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+    --accent: 142 76% 94%;
+    --accent-foreground: 142 64% 24%;
     --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 100%;
-    --success: 152 60% 40%;
+    --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
     --warning: 38 90% 50%;
     --warning-foreground: 0 0% 100%;
-    --border: 270 10% 90%;
-    --input: 270 10% 90%;
-    --ring: 269 58% 38%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 142 71% 45%;
     --radius: 0.75rem;
-    --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 0 0% 28%;
-    --sidebar-primary: 269 58% 38%;
+    --sidebar-background: 210 20% 97%;
+    --sidebar-foreground: 220 9% 28%;
+    --sidebar-primary: 142 71% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 269 40% 96%;
-    --sidebar-accent-foreground: 269 58% 28%;
-    --sidebar-border: 270 10% 92%;
-    --sidebar-ring: 269 58% 38%;
+    --sidebar-accent: 142 40% 96%;
+    --sidebar-accent-foreground: 142 64% 24%;
+    --sidebar-border: 220 13% 92%;
+    --sidebar-ring: 142 71% 45%;
   }
 
   .dark {
-    --background: 268 58% 6%;
-    --foreground: 0 0% 98%;
-    --card: 268 30% 10%;
-    --card-foreground: 0 0% 98%;
-    --popover: 268 30% 10%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 269 58% 45%;
+    --background: 0 0% 6%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 11%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 11%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 142 71% 45%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 269 55% 18%;
+    --secondary: 142 20% 12%;
     --secondary-foreground: 0 0% 98%;
-    --muted: 268 25% 12%;
-    --muted-foreground: 0 0% 58%;
-    --accent: 269 55% 18%;
+    --muted: 0 0% 12%;
+    --muted-foreground: 220 9% 65%;
+    --accent: 142 20% 12%;
     --accent-foreground: 0 0% 98%;
     --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 100%;
-    --success: 152 60% 40%;
+    --success: 142 71% 45%;
     --success-foreground: 0 0% 100%;
     --warning: 38 90% 50%;
     --warning-foreground: 0 0% 100%;
-    --border: 270 15% 18%;
-    --input: 270 15% 18%;
-    --ring: 269 58% 45%;
-    --sidebar-background: 268 58% 6%;
+    --border: 0 0% 18%;
+    --input: 0 0% 18%;
+    --ring: 142 71% 45%;
+    --sidebar-background: 0 0% 9%;
     --sidebar-foreground: 0 0% 65%;
-    --sidebar-primary: 269 58% 45%;
+    --sidebar-primary: 142 71% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 269 55% 18%;
+    --sidebar-accent: 142 20% 12%;
     --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 270 15% 18%;
-    --sidebar-ring: 269 58% 45%;
+    --sidebar-border: 0 0% 18%;
+    --sidebar-ring: 142 71% 45%;
   }
 }
 
@@ -160,8 +160,8 @@
 
   /* Liquid Glass — tokens (design.md §3) */
   --glass-bg: rgba(255, 255, 255, 0.06);
-  --glass-bg-tint: rgba(46, 14, 79, 0.35);
-  --glass-bg-strong: rgba(15, 6, 23, 0.72);
+  --glass-bg-tint: rgba(34, 197, 94, 0.12);
+  --glass-bg-strong: rgba(15, 15, 16, 0.72);
   --glass-blur: 28px;
   --glass-border: rgba(255, 255, 255, 0.16);
   --glass-highlight: linear-gradient(
@@ -171,7 +171,7 @@
     transparent 70%
   );
   --glass-shadow: 0 24px 80px -20px rgba(0, 0, 0, 0.55),
-    0 0 0 1px rgba(95, 41, 152, 0.12);
+    0 0 0 1px rgba(34, 197, 94, 0.12);
 }
 
 .dark {
@@ -209,16 +209,16 @@
     rgba(255, 255, 255, 0.2) 45%,
     transparent 70%
   );
-  --glass-shadow: 0 16px 48px -20px rgba(15, 6, 23, 0.18),
-    0 0 0 1px rgba(95, 41, 152, 0.06);
+  --glass-shadow: 0 16px 48px -20px rgba(15, 15, 16, 0.18),
+    0 0 0 1px rgba(34, 197, 94, 0.08);
 }
 
 /* Auth é sempre dark — não herdar o glass claro do tema global */
 :root:not(.dark) .auth-skin .liquid-glass,
 :root:not(.dark) .auth-skin .liquid-glass-control {
   --glass-bg: rgba(255, 255, 255, 0.07);
-  --glass-bg-tint: rgba(46, 14, 79, 0.42);
-  --glass-bg-strong: rgba(15, 6, 23, 0.82);
+  --glass-bg-tint: rgba(34, 197, 94, 0.16);
+  --glass-bg-strong: rgba(15, 15, 16, 0.82);
   --glass-blur: 32px;
   --glass-border: rgba(255, 255, 255, 0.18);
   --glass-highlight: linear-gradient(
@@ -228,7 +228,7 @@
     transparent 70%
   );
   --glass-shadow: 0 24px 80px -20px rgba(0, 0, 0, 0.55),
-    0 0 0 1px rgba(95, 41, 152, 0.12);
+    0 0 0 1px rgba(34, 197, 94, 0.12);
 }
 
 .liquid-glass::before {
@@ -304,7 +304,7 @@
 .admin-surface-interactive:hover {
   border-color: hsl(var(--primary) / 0.35);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08),
-    0 16px 44px -24px rgba(95, 41, 152, 0.35);
+    0 16px 44px -24px rgba(34, 197, 94, 0.35);
   transform: translateY(-1px);
 }
 
@@ -337,8 +337,8 @@
   border-radius: 40%;
   background: radial-gradient(
     ellipse at center,
-    rgba(95, 41, 152, 0.55),
-    rgba(46, 14, 79, 0.2) 45%,
+    rgba(34, 197, 94, 0.45),
+    rgba(22, 101, 52, 0.2) 45%,
     transparent 70%
   );
   filter: blur(40px);
@@ -389,7 +389,7 @@
  * Auth ambient — fundo único animado (sem split de painéis)
  */
 .auth-ambient {
-  background: #0f0617;
+  background: #0f0f10;
 }
 
 .auth-ambient-blob {
@@ -404,7 +404,7 @@
   left: -10%;
   width: min(58vw, 620px);
   height: min(58vw, 620px);
-  background: rgba(95, 41, 152, 0.62);
+  background: rgba(34, 197, 94, 0.42);
   animation: auth-blob-drift-a 11s ease-in-out infinite;
 }
 
@@ -413,7 +413,7 @@
   right: -12%;
   width: min(54vw, 580px);
   height: min(54vw, 580px);
-  background: rgba(46, 14, 79, 0.72);
+  background: rgba(22, 101, 52, 0.55);
   animation: auth-blob-drift-b 13s ease-in-out infinite;
 }
 
@@ -422,7 +422,7 @@
   left: 18%;
   width: min(48vw, 500px);
   height: min(48vw, 500px);
-  background: rgba(123, 44, 191, 0.42);
+  background: rgba(16, 185, 129, 0.32);
   animation: auth-blob-drift-c 12s ease-in-out infinite;
 }
 
@@ -431,7 +431,7 @@
   left: 40%;
   width: min(34vw, 380px);
   height: min(34vw, 380px);
-  background: rgba(157, 78, 221, 0.32);
+  background: rgba(74, 222, 128, 0.22);
   animation: auth-blob-drift-d 9s ease-in-out infinite;
 }
 
@@ -440,12 +440,12 @@
   inset: 0;
   background: radial-gradient(
       ellipse 70% 55% at 50% -10%,
-      rgba(95, 41, 152, 0.32),
+      rgba(34, 197, 94, 0.22),
       transparent 60%
     ),
     radial-gradient(
       ellipse 50% 40% at 85% 70%,
-      rgba(46, 14, 79, 0.45),
+      rgba(22, 101, 52, 0.35),
       transparent 55%
     );
   animation: auth-veil-breathe 8s ease-in-out infinite;
@@ -545,30 +545,30 @@
  * Escopo local: não altera o tema global do dashboard.
  */
 .auth-skin {
-  --background: 268 58% 6%;
-  --foreground: 0 0% 98%;
-  --card: 268 30% 10%;
-  --card-foreground: 0 0% 98%;
-  --popover: 268 30% 10%;
-  --popover-foreground: 0 0% 98%;
-  --primary: 269 58% 45%;
+  --background: 0 0% 6%;
+  --foreground: 0 0% 100%;
+  --card: 0 0% 11%;
+  --card-foreground: 0 0% 100%;
+  --popover: 0 0% 11%;
+  --popover-foreground: 0 0% 100%;
+  --primary: 142 71% 45%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 269 55% 18%;
+  --secondary: 142 20% 12%;
   --secondary-foreground: 0 0% 98%;
-  --muted: 268 25% 12%;
-  --muted-foreground: 0 0% 58%;
-  --accent: 269 55% 18%;
+  --muted: 0 0% 12%;
+  --muted-foreground: 220 9% 65%;
+  --accent: 142 20% 12%;
   --accent-foreground: 0 0% 98%;
   --destructive: 0 72% 55%;
   --destructive-foreground: 0 0% 100%;
-  --border: 270 15% 18%;
-  --input: 268 28% 14%;
-  --ring: 269 58% 45%;
+  --border: 0 0% 18%;
+  --input: 0 0% 14%;
+  --ring: 142 71% 45%;
   --radius: 1rem;
-  --button-ripple-color: rgba(15, 6, 23, 0.2);
+  --button-ripple-color: rgba(15, 15, 16, 0.2);
   --glass-bg: rgba(255, 255, 255, 0.07);
-  --glass-bg-tint: rgba(46, 14, 79, 0.42);
-  --glass-bg-strong: rgba(15, 6, 23, 0.82);
+  --glass-bg-tint: rgba(34, 197, 94, 0.16);
+  --glass-bg-strong: rgba(15, 15, 16, 0.82);
   --glass-blur: 32px;
   --glass-border: rgba(255, 255, 255, 0.18);
   font-family: "Afacad", "Albert Sans", system-ui, sans-serif;
@@ -590,18 +590,18 @@
 
 /* Inputs/campos: superfície sólida legível (não glass) */
 .auth-skin .auth-field {
-  background-color: rgba(15, 6, 23, 0.72) !important;
+  background-color: rgba(15, 15, 16, 0.72) !important;
   border-color: rgba(255, 255, 255, 0.1) !important;
 }
 
 .auth-skin .auth-cta {
-  background-color: #ffffff;
-  color: #0f0617;
+  background-color: #22c55e;
+  color: #ffffff;
   font-size: 1.0625rem;
 }
 
 .auth-skin .auth-cta:hover {
-  background-color: rgba(255, 255, 255, 0.9);
+  background-color: #16a34a;
 }
 
 .auth-skin .auth-cta:disabled {
