@@ -3,7 +3,7 @@ import { useAuthContext } from "@/presentation/context/AuthContext";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import { tryOrToastError } from "@/presentation/utils/try-or-toast-error";
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { completeSellerPortalLogin } from "../seller-login-completion";
 import {
   clearPendingVerification,
@@ -160,8 +160,16 @@ export default function LoginSellerFormPanel() {
         </div>
 
         <p className="mt-6 text-center text-xs leading-relaxed text-muted-foreground/60">
-          Ao continuar, você concorda com os Termos de Uso e Política de
-          Privacidade.
+          Ao continuar, você concorda com os{" "}
+          <Link
+            to="/termos"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline underline-offset-2 transition-colors hover:text-muted-foreground"
+          >
+            Termos de Uso
+          </Link>
+          .
         </p>
       </div>
     </div>

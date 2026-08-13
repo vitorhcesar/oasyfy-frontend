@@ -6,6 +6,7 @@ import { Label } from "@/presentation/components/Label";
 import { PasswordChecks } from "@/presentation/components/PasswordChecks";
 import { PasswordInput } from "@/presentation/components/PasswordInput";
 import { Button } from "@/presentation/components/ui/button";
+import { Checkbox } from "@/presentation/components/ui/checkbox";
 import { PasswordStrengthHelper } from "@/presentation/helper/password-strength.helper";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import { getErrorMessageOrDefault } from "@/presentation/utils/get-error-message-or-default";
@@ -14,6 +15,7 @@ import { tryOrToastError } from "@/presentation/utils/try-or-toast-error";
 import { phoneValidationSchema } from "@/presentation/validation/schemas/phone-validation.schema";
 import { ArrowRight, Mail, Phone, User, X } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import z from "zod";
 
 const passwordStrengthHelper = new PasswordStrengthHelper();
@@ -42,6 +44,7 @@ export default function SignUpForm({
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const [error, setError] = useState("");
 
@@ -51,6 +54,11 @@ export default function SignUpForm({
     e.preventDefault();
 
     setError("");
+
+    if (!acceptedTerms) {
+      setError("Aceite os termos para criar sua conta");
+      return;
+    }
 
     const schema = z.object({
       email: emailValidationSchema,
@@ -133,6 +141,7 @@ export default function SignUpForm({
     setFullName("");
     setPhone("");
     setConfirmPassword("");
+    setAcceptedTerms(false);
   };
 
   return (
@@ -239,9 +248,33 @@ export default function SignUpForm({
           />
         </div>
 
+        <label
+          htmlFor="signup-terms"
+          className="flex cursor-pointer items-start gap-3 rounded-xl border border-border/60 bg-muted/20 px-4 py-3"
+        >
+          <Checkbox
+            id="signup-terms"
+            checked={acceptedTerms}
+            onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+            className="mt-0.5"
+          />
+          <span className="text-sm leading-relaxed text-muted-foreground">
+            Aceitar os{" "}
+            <Link
+              to="/termos"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-primary underline-offset-4 hover:underline"
+              onClick={(e) => e.stopPropagation()}
+            >
+              termos de uso
+            </Link>
+          </span>
+        </label>
+
         <Button
           type="submit"
-          disabled={loading}
+          disabled={loading || !acceptedTerms}
           className="auth-cta !mt-3 h-12 w-full rounded-xl text-base font-semibold"
           loading={loading}
           rippleColor="rgba(15, 6, 23, 0.2)"

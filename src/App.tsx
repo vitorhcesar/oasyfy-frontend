@@ -17,6 +17,7 @@ import AdminSellerProfilePage from "./presentation/pages/AdminSellerProfilePage"
 import LoginAdmin from "./presentation/pages/LoginAdminPage";
 import LoginSellerPage from "./presentation/pages/LoginSellerPage";
 import ResetPasswordPage from "./presentation/pages/ResetPasswordPage";
+import TermsOfUsePage from "./presentation/pages/TermsOfUsePage";
 import SellerDashboardPage from "./presentation/pages/SellerDashboardPage";
 import Admin2FA from "./presentation/pages/admin/Admin2FA";
 import AdminAcquirer from "./presentation/pages/admin/AdminAcquirer";
@@ -128,6 +129,7 @@ export default function App() {
                   }
                 />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
+                <Route path="/termos" element={<TermsOfUsePage />} />
                 <Route path="/c/__health" element={<CheckoutHealthPage />} />
                 <Route path="/c/:publicId" element={<PublicCheckoutEntry />} />
                 <Route
