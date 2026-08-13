@@ -16,7 +16,7 @@ permissions:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ghcr.io/vitorhcesar/oasyfy-frontend
-  REMOTE_APP_DIR: ~/oasyfy-frontend/oasyfy-frontend
+  REMOTE_APP_DIR: ~/oasyfy-frontend
 
 jobs:
   quality:
