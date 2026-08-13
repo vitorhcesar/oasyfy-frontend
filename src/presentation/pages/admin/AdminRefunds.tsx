@@ -99,22 +99,22 @@ export default function AdminRefunds() {
 
   const stats = [
     {
+      ...STATUS_CONFIG.pending,
       label: "Pendentes",
       count: pendingCount,
       filterVal: "pending" as const,
-      ...STATUS_CONFIG.pending,
     },
     {
+      ...STATUS_CONFIG.approved,
       label: "Aprovados",
       count: approvedCount,
       filterVal: "approved" as const,
-      ...STATUS_CONFIG.approved,
     },
     {
+      ...STATUS_CONFIG.rejected,
       label: "Rejeitados",
       count: rejectedCount,
       filterVal: "rejected" as const,
-      ...STATUS_CONFIG.rejected,
     },
   ];
 

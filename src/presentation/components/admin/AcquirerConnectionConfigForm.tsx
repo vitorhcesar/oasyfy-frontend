@@ -78,8 +78,6 @@ export function AcquirerConnectionConfigForm({
     setReconfiguring(false);
   };
 
-  const showForm = !configured || reconfiguring;
-
   return (
     <div className="space-y-6">
       <div className="admin-surface space-y-4 p-5 md:p-6">

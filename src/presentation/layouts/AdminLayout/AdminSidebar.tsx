@@ -48,8 +48,13 @@ import {
   UserCog,
   Link2,
   X,
+  type LucideIcon,
 } from "lucide-react";
-import { useEffect, useState, type ComponentType } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+
+type TSidebarIcon =
+  | LucideIcon
+  | ((props: { size?: number; className?: string }) => ReactNode);
 import { useLocation, useNavigate } from "react-router-dom";
 
 const menuItems = [
@@ -214,9 +219,9 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
     items: Array<{
       title: string;
       url: string;
-      icon: ComponentType<{ size?: number; className?: string }>;
+      icon: TSidebarIcon;
     }>,
-    icon: ComponentType<{ size?: number; className?: string }>,
+    icon: TSidebarIcon,
     isActive: boolean,
     className?: string,
   ) => {

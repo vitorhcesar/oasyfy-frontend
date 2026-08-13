@@ -50,7 +50,7 @@ import {
   X,
   type LucideIcon,
 } from "lucide-react";
-import { useEffect, useState, type ComponentType } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 interface ISellerSidebarProps {
@@ -306,7 +306,7 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
   const renderCollapsedGroupHover = (
     label: string,
     items: INavItem[],
-    icon: ComponentType<{ size?: number; className?: string }>,
+    icon: LucideIcon,
     isActive: boolean,
     className?: string,
   ) => {
