@@ -50,7 +50,7 @@ export default function TermsOfUsePage() {
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b border-border/60 bg-background/80 backdrop-blur-sm sticky top-0 z-10">
         <div className="mx-auto flex max-w-3xl items-center justify-between gap-4 px-6 py-4">
-          <AuthBrandMark size="sm" variant="purple" />
+          <AuthBrandMark size="sm" variant="black" />
           <Link
             to="/login/seller"
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"

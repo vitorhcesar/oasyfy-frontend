@@ -1,29 +1,25 @@
 import logoHorizontalBlack from "@/assets/logos/horizontal-black.png";
-import logoHorizontalPurple from "@/assets/logos/horizontal-purple.png";
 import logoHorizontalWhite from "@/assets/logos/horizontal-white.png";
 import iconBlack from "@/assets/logos/icon-black.svg";
-import iconPurple from "@/assets/logos/icon-purple.svg";
 import iconWhite from "@/assets/logos/icon-white.svg";
 import { cn } from "@/presentation/utils/cn";
 
-type TLogoVariant = "white" | "black" | "purple";
+type TLogoVariant = "white" | "black";
 
 const horizontalByVariant: Record<TLogoVariant, string> = {
   white: logoHorizontalWhite,
   black: logoHorizontalBlack,
-  purple: logoHorizontalPurple,
 };
 
 const iconByVariant: Record<TLogoVariant, string> = {
   white: iconWhite,
   black: iconBlack,
-  purple: iconPurple,
 };
 
 interface IAuthBrandMarkProps {
   className?: string;
   size?: "sm" | "md" | "lg";
-  /** white = fundo dark; black = fundo claro; purple = acento de marca (asset legado) */
+  /** white = fundo dark; black = fundo claro */
   variant?: TLogoVariant;
   /** `horizontal` = wordmark; `icon` = só o símbolo */
   mark?: "horizontal" | "icon";

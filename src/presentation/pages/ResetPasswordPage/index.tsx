@@ -35,7 +35,7 @@ export default function ResetPasswordPage() {
       <div className="hidden lg:flex lg:w-1/2 bg-primary/[0.03] items-center justify-center relative overflow-hidden">
         <div className="relative text-center px-12">
           <div className="mb-8 flex justify-center">
-            <AuthBrandMark size="lg" variant="purple" />
+            <AuthBrandMark size="lg" variant="black" />
           </div>
           <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center mx-auto mb-8 shadow-xl shadow-primary/10">
             <ShieldCheck className="text-primary" size={36} />
