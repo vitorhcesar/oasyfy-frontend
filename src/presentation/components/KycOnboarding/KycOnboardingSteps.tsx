@@ -18,6 +18,6 @@ export default function KycOnboardingSteps() {
     case "review":
       return <ReviewStep />;
     default:
-      throw new AppError("Step not found on KycOnboardingSteps", 500, { step });
+      throw new AppError("Etapa não encontrada no cadastro KYC", 500, { step });
   }
 }

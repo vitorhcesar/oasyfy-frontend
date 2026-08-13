@@ -106,7 +106,9 @@ export default function SignUpForm({
         if (signUpResult.error) {
           throw new AppError(
             translateError(
-              signUpResult.error.message ?? "Erro desconhecido ao cadastrar"
+              signUpResult.error.message ||
+                signUpResult.error.code ||
+                "Erro desconhecido ao cadastrar"
             ),
             400
           );

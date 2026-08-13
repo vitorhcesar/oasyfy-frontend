@@ -11,6 +11,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { authClient } from "@/infra/auth/auth-client";
 import { parseSecretFromTotpUri } from "@/infra/auth/two-factor-utils";
+import { translateError } from "@/presentation/utils/translate-error";
 import PageHeader from "@/presentation/components/PageHeader";
 import ModalPortal from "@/presentation/components/ModalPortal";
 
@@ -75,7 +76,10 @@ export function TwoFactorSettingsPanel({
       });
 
       if (error || !data?.totpURI) {
-        toast.error(error?.message || "Erro ao configurar 2FA");
+        toast.error(
+          translateError(error?.message || error?.code || "") ||
+            "Erro ao configurar 2FA",
+        );
         setLoading(false);
         return;
       }
@@ -130,7 +134,10 @@ export function TwoFactorSettingsPanel({
     try {
       const { error } = await authClient.twoFactor.disable({ password });
       if (error) {
-        toast.error(error.message || "Erro ao desativar 2FA");
+        toast.error(
+          translateError(error.message || error.code || "") ||
+            "Erro ao desativar 2FA",
+        );
         setDisabling(false);
         return;
       }

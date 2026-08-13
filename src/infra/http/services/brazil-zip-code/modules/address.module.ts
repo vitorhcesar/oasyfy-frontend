@@ -34,7 +34,7 @@ export class AddressModule
     const result = getAddressResponseSchema.safeParse(res);
     if (!result.success) {
       throw new AppError(
-        getErrorMessageOrDefault(result.error, "Invalid address"),
+        getErrorMessageOrDefault(result.error, "Endereço inválido"),
         400
       );
     }

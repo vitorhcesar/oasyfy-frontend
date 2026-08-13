@@ -65,7 +65,8 @@ export default function LoginForm({
         });
 
         if (signInResult.error) {
-          const raw = signInResult.error.message ?? "";
+          const raw =
+            signInResult.error.message || signInResult.error.code || "";
           if (
             raw.toLowerCase().includes("confirm") ||
             raw.toLowerCase().includes("verified") ||
