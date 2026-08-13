@@ -56,6 +56,9 @@ export default function SellerDeposit() {
       const data = await apiService.modules.pix.createPixCharge({
         amount: amountCents,
         customer_name: name.trim(),
+        ...(document.replace(/\D/g, "")
+          ? { customer_tax_id: document.replace(/\D/g, "") }
+          : {}),
         comment: document.trim()
           ? `Doc: ${document.replace(/\D/g, "")}`
           : "Depósito via portal",

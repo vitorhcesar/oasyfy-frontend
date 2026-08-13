@@ -45,9 +45,33 @@ export function normalizePixChargeResponse(
     readString(root.base_64_image);
 
   const error = readString(root.error) || undefined;
+  const attempts = Array.isArray(root.attempts) ? root.attempts : [];
+  const attemptDetails = attempts
+    .map((item) => {
+      const attempt = readRecord(item);
+      if (!attempt) {
+        return "";
+      }
+      const acquirer = readString(attempt.acquirer) || "adquirente";
+      const status =
+        typeof attempt.status === "number" ? String(attempt.status) : "?";
+      const details = attempt.details;
+      const detailRecord = readRecord(details);
+      const detailText =
+        readString(detailRecord?.error) ||
+        readString(detailRecord?.message) ||
+        (typeof details === "string" ? details : "");
+      return detailText
+        ? `${acquirer} (${status}): ${detailText}`
+        : `${acquirer} (${status})`;
+    })
+    .filter(Boolean);
 
   return {
-    error,
+    error:
+      error && attemptDetails.length > 0
+        ? `${error} — ${attemptDetails.join("; ")}`
+        : error,
     pixCode,
     qrCodeImage,
     acquirer: readString(routing?.acquirer) || undefined,

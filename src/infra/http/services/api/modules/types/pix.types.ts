@@ -2,6 +2,7 @@ export interface ICreatePixChargeBody {
   amount: number;
   customer_name: string;
   customer_email?: string;
+  customer_tax_id?: string;
   comment?: string;
 }
 

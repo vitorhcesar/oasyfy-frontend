@@ -37,6 +37,7 @@ export class PixModule extends BaseApiModule implements IPixModule {
         amount: body.amount,
         customer_name: body.customer_name,
         ...(body.customer_email ? { customer_email: body.customer_email } : {}),
+        ...(body.customer_tax_id ? { customer_tax_id: body.customer_tax_id } : {}),
         ...(body.comment ? { comment: body.comment } : {}),
       },
     );
