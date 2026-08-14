@@ -510,13 +510,13 @@ export default function AdminTransactionDetailDialog({
                   <textarea
                     value={refundReason}
                     onChange={(e) => onRefundReasonChange(e.target.value)}
-                    placeholder="Motivo do reembolso..."
+                    placeholder="Motivo do reembolso (opcional)"
                     className="h-20 w-full resize-none rounded-xl border border-border/60 bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-warning/40 focus:outline-none focus:ring-2 focus:ring-warning/20"
                   />
                   <div className="flex flex-wrap gap-2">
                     <button
                       onClick={() => onRefund(false)}
-                      disabled={actionLoading || !refundReason.trim()}
+                      disabled={actionLoading}
                       className="h-10 rounded-xl bg-warning px-4 text-sm font-semibold text-warning-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
                     >
                       {actionLoading
@@ -545,13 +545,13 @@ export default function AdminTransactionDetailDialog({
                   <textarea
                     value={refundReason}
                     onChange={(e) => onRefundReasonChange(e.target.value)}
-                    placeholder="Motivo do reembolso fake..."
+                    placeholder="Motivo do reembolso fake (opcional)"
                     className="h-20 w-full resize-none rounded-xl border border-border/60 bg-background px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
                   />
                   <div className="flex flex-wrap gap-2">
                     <button
                       onClick={() => onRefund(true)}
-                      disabled={actionLoading || !refundReason.trim()}
+                      disabled={actionLoading}
                       className="h-10 rounded-xl bg-white px-4 text-sm font-semibold text-[#111827] transition-opacity hover:opacity-90 disabled:opacity-50"
                     >
                       {actionLoading

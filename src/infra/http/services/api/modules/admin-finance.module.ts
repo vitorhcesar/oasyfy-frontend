@@ -144,7 +144,7 @@ export interface IAdminFinanceModule {
   ): Promise<IAdminTransactionSellerInfoDto | null>;
   refundTransaction(
     transactionId: number,
-    body: { reason: string; isFake: boolean },
+    body: { reason?: string; isFake: boolean },
   ): Promise<ReturnType<typeof mapAdminTransactionToView>>;
   lockTransaction(
     transactionId: number,
@@ -200,7 +200,7 @@ export class AdminFinanceModule
 
   async refundTransaction(
     transactionId: number,
-    body: { reason: string; isFake: boolean },
+    body: { reason?: string; isFake: boolean },
   ) {
     const response = await this.getClient().post<
       IApiEnvelope<IAdminTransactionDto>

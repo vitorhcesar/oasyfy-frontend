@@ -161,12 +161,12 @@ export default function AdminTransactionsPage() {
   };
 
   const handleRefund = async (fake: boolean) => {
-    if (!selectedTx || !refundReason.trim()) return;
+    if (!selectedTx) return;
     setActionLoading(true);
     try {
       const updated = await apiService.modules.adminFinance.refundTransaction(
         Number(selectedTx.id),
-        { reason: refundReason.trim(), isFake: fake },
+        { reason: refundReason.trim() || undefined, isFake: fake },
       );
       toast.success(fake ? "Reembolso fake aplicado" : "Reembolso realizado");
       setSelectedTx(updated);
