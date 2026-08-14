@@ -40,6 +40,30 @@ export class Transaction {
     return this.props.status === "refunded";
   }
 
+  /** Valor creditado ao seller (respeita split do dono e desconta a taxa). */
+  getCreditedAmount(): number {
+    const meta = this.props.metadata;
+    if (meta.type === "split_credit") {
+      return this.props.amount;
+    }
+
+    const split = meta.split;
+    if (
+      split !== null &&
+      typeof split === "object" &&
+      !Array.isArray(split) &&
+      typeof (split as { seller_amount?: unknown }).seller_amount === "number"
+    ) {
+      return Math.max(
+        0,
+        (split as { seller_amount: number }).seller_amount -
+          this.props.feeAmount,
+      );
+    }
+
+    return Math.max(0, this.props.amount - this.props.feeAmount);
+  }
+
   get id() {
     return this.props.id;
   }

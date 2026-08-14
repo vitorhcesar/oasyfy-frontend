@@ -3,6 +3,8 @@ import {
   Banknote,
   DollarSign,
   Loader2,
+  PiggyBank,
+  Receipt,
   TrendingUp,
   Wallet,
 } from "lucide-react";
@@ -34,6 +36,10 @@ export default function FinancialCards() {
     totalFees,
     feesChange,
     totalNet,
+    totalAcquirerCost,
+    acquirerCostChange,
+    platformProfit,
+    profitChange,
     conversionRate,
     completedTransactionsCount,
     filteredTransactionsCount,
@@ -50,6 +56,16 @@ export default function FinancialCards() {
       featured: true,
     },
     {
+      label: "Lucro da Plataforma",
+      value: formatCompact(platformProfit),
+      icon: PiggyBank,
+      iconClass: platformProfit < 0 ? "text-destructive" : "text-success",
+      change: profitChange,
+      meta: "Taxas arrecadadas − custo da adquirente",
+      featured: true,
+      negative: platformProfit < 0,
+    },
+    {
       label: "Volume Total",
       value: formatCompact(totalVolume),
       icon: DollarSign,
@@ -62,6 +78,13 @@ export default function FinancialCards() {
       icon: TrendingUp,
       iconClass: "text-success",
       change: feesChange,
+    },
+    {
+      label: "Custo Adquirentes",
+      value: formatCompact(totalAcquirerCost),
+      icon: Receipt,
+      iconClass: "text-warning",
+      change: acquirerCostChange,
     },
     {
       label: "Líquido Sellers",
@@ -79,7 +102,7 @@ export default function FinancialCards() {
 
   return (
     <>
-      <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
+      <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
         {cards.map((card) => (
           <div
             key={card.label}
@@ -101,10 +124,11 @@ export default function FinancialCards() {
             </div>
             <p
               className={cn(
-                "font-bold tracking-tight text-foreground tabular-nums",
+                "font-bold tracking-tight tabular-nums",
                 card.featured
                   ? "text-2xl md:text-3xl"
                   : "text-xl md:text-2xl",
+                card.negative ? "text-destructive" : "text-foreground",
               )}
             >
               {card.value}

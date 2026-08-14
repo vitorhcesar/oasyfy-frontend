@@ -10,6 +10,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/presentation/components/ui/popover";
+import useSellerBalanceQuery from "@/presentation/hooks/use-seller-balance-query";
 import useSellerFeeQuery from "@/presentation/hooks/use-seller-fee-query";
 import { useSellerKycSubmissionQuery } from "@/presentation/hooks/use-seller-kyc-submission-query";
 import useSellerTransactionsQuery from "@/presentation/hooks/use-seller-transactions-query";
@@ -154,6 +155,11 @@ export default function SellerTransfers() {
     isLoading: txLoading,
     invalidateQuery: invalidateTransactions,
   } = useSellerTransactionsQuery();
+  const {
+    data: balance,
+    isLoading: balanceLoading,
+    invalidateQuery: invalidateBalance,
+  } = useSellerBalanceQuery();
   const { data: sellerFee, isLoading: feeLoading } = useSellerFeeQuery();
   const {
     submission,
@@ -171,7 +177,7 @@ export default function SellerTransfers() {
   const [detailW, setDetailW] = useState<Withdrawal | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
-  const loading = txLoading || feeLoading || kycLoading;
+  const loading = txLoading || feeLoading || kycLoading || balanceLoading;
 
   const withdrawals = useMemo(
     () =>
@@ -186,7 +192,7 @@ export default function SellerTransfers() {
       transactions
         .filter((t) => t.method !== "withdrawal")
         .map((t) => ({
-          amount: t.amount,
+          amount: t.getCreditedAmount(),
           method: t.method,
           status: t.status,
           created_at:
@@ -234,52 +240,15 @@ export default function SellerTransfers() {
 
   const refetchData = () => {
     void invalidateTransactions();
+    void invalidateBalance();
   };
 
-  // Balance calculations
   const now = new Date();
   const paidTx = useMemo(
     () => allTx.filter((t) => isPaid(t.status) && t.amount > 0),
     [allTx],
   );
-  const totalPaid = useMemo(
-    () => paidTx.reduce((s, t) => s + t.amount, 0),
-    [paidTx],
-  );
-  const totalWithdrawn = useMemo(
-    () =>
-      Math.abs(
-        withdrawals
-          .filter((w) => isPaid(w.status))
-          .reduce((s, w) => s + w.amount, 0),
-      ),
-    [withdrawals],
-  );
-
-  const retainedBalance = useMemo(() => {
-    if (!fees) return 0;
-    return paidTx
-      .filter((t) => {
-        const days =
-          t.method === "pix"
-            ? fees.pix_retention_days
-            : t.method === "card"
-              ? fees.card_retention_days
-              : t.method === "boleto"
-                ? fees.boleto_retention_days
-                : fees.crypto_retention_days;
-        if (!days) return false;
-        return (
-          new Date(new Date(t.created_at).getTime() + days * 86400000) > now
-        );
-      })
-      .reduce((s, t) => s + t.amount, 0);
-  }, [paidTx, fees]);
-
-  const availableBalance = Math.max(
-    0,
-    totalPaid - totalWithdrawn - retainedBalance,
-  );
+  const availableBalance = Math.max(0, balance.available);
 
   // Card vs PIX/Boleto balances
   const cardPaid = useMemo(

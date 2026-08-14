@@ -1,3 +1,4 @@
+import { PixIcon } from "@/presentation/components/PixIcon";
 import {
   Accordion,
   AccordionContent,
@@ -354,17 +355,6 @@ function extractDetailFields(tx: ISellerTransactionDetail) {
   };
 }
 
-function PixMark({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" className={className} aria-hidden>
-      <path
-        fill="currentColor"
-        d="M15.45 4.2 12.7 6.94a1.9 1.9 0 0 1-2.68 0L7.27 4.2a.75.75 0 1 0-1.06 1.06l2.74 2.74a3.4 3.4 0 0 0 4.8 0l2.74-2.74a.75.75 0 1 0-1.06-1.06Zm-9.2 2.14L3.5 9.08a.75.75 0 0 0 0 1.06l2.75 2.75a3.4 3.4 0 0 0 4.8 0l2.74-2.75a.75.75 0 1 0-1.06-1.06L10 11.83a1.9 1.9 0 0 1-2.68 0L4.56 9.08a.75.75 0 0 0-1.06 0Zm12.4.08a.75.75 0 0 0-1.06 0l-2.75 2.75a.75.75 0 1 0 1.06 1.06l2.75-2.74a1.9 1.9 0 0 1 2.68 0l2.74 2.74a.75.75 0 1 0 1.06-1.06l-2.74-2.75a3.4 3.4 0 0 0-4.8 0Zm-7.47 7.16-2.74 2.74a.75.75 0 1 0 1.06 1.06l2.74-2.74a1.9 1.9 0 0 1 2.68 0l2.75 2.74a.75.75 0 1 0 1.06-1.06l-2.75-2.74a3.4 3.4 0 0 0-4.8 0Z"
-      />
-    </svg>
-  );
-}
-
 function StatusIcon({
   kind,
   size = 22,
@@ -549,7 +539,7 @@ export default function SellerTransactionDetailDialog({
             <div className="flex items-center gap-2.5">
               <span className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-foreground">
                 {tx.method === "pix" ? (
-                  <PixMark className="h-4 w-4" />
+                  <PixIcon className="h-5 w-5" />
                 ) : (
                   <span className="text-[10px] font-semibold">
                     {methodLabel.slice(0, 2)}

@@ -113,7 +113,7 @@ export default function SellerDashboardPage() {
     () =>
       allPositiveTx
         .filter((t) => t.isPaid() && t.method === "card")
-        .reduce((s, t) => s + t.amount, 0),
+        .reduce((s, t) => s + t.getCreditedAmount(), 0),
     [allPositiveTx],
   );
   const pixBoletoPaid = useMemo(
@@ -122,7 +122,7 @@ export default function SellerDashboardPage() {
         .filter(
           (t) => t.isPaid() && (t.method === "pix" || t.method === "boleto"),
         )
-        .reduce((s, t) => s + t.amount, 0),
+        .reduce((s, t) => s + t.getCreditedAmount(), 0),
     [allPositiveTx],
   );
 
@@ -138,7 +138,7 @@ export default function SellerDashboardPage() {
             new Date(t.createdAt).getTime() + fees.cardRetentionDays * 86400000,
           ) > now,
       )
-      .reduce((s, t) => s + t.amount, 0);
+      .reduce((s, t) => s + t.getCreditedAmount(), 0);
   }, [allPositiveTx, fees, now]);
 
   const pixBoletoRetained = useMemo(() => {
@@ -164,7 +164,7 @@ export default function SellerDashboardPage() {
           );
         return false;
       })
-      .reduce((s, t) => s + t.amount, 0);
+      .reduce((s, t) => s + t.getCreditedAmount(), 0);
   }, [allPositiveTx, fees, now]);
 
   // Use total available balance and distribute proportionally between card and pix/boleto

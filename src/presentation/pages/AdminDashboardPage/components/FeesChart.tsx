@@ -23,7 +23,10 @@ export default function FeesChart({ chartData }: IFeesChartProps) {
       <h3 className="mb-1 text-base font-semibold text-foreground">
         Taxas arrecadadas
       </h3>
-      <p className="mb-4 text-xs text-muted-foreground">Evolução no período</p>
+      <p className="mb-4 text-xs text-muted-foreground">
+        Evolução no período. O lucro da plataforma é taxas menos o custo da
+        adquirente usada.
+      </p>
       {chartData.length > 0 ? (
         <div className="h-36">
           <ResponsiveContainer width="100%" height="100%">

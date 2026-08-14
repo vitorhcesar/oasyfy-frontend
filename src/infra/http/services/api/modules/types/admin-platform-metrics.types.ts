@@ -39,6 +39,10 @@ export interface IAdminFinanceMetricsResponseDto {
   totalFees: number;
   feesChange: number;
   totalNet: number;
+  totalAcquirerCost: number;
+  acquirerCostChange: number;
+  platformProfit: number;
+  profitChange: number;
   conversionRate: number;
   completedTransactionsCount: number;
   filteredTransactionsCount: number;
@@ -51,6 +55,7 @@ export interface IAdminSecondaryMetricsResponseDto {
   completedTransactionsCount: number;
   transactionsCountChange: number;
   feeMarginRate: number;
+  netProfitMarginRate: number;
 }
 
 export interface IPlatformAvailableBalanceResponseDto {

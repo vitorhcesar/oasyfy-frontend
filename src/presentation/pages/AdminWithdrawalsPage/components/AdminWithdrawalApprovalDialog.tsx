@@ -347,12 +347,25 @@ export default function AdminWithdrawalApprovalDialog({
                         </span>
                       </div>
                       {approvalModal.withdrawalFee > 0 && (
-                        <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground">Taxa</span>
-                          <span className="font-semibold tabular-nums text-destructive">
-                            -{formatCurrency(approvalModal.withdrawalFee)}
-                          </span>
-                        </div>
+                        <>
+                          <div className="flex items-center justify-between">
+                            <span className="text-muted-foreground">Taxa</span>
+                            <span className="font-semibold tabular-nums text-destructive">
+                              -{formatCurrency(approvalModal.withdrawalFee)}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-muted-foreground">
+                              A transferir
+                            </span>
+                            <span className="font-semibold tabular-nums text-foreground">
+                              {formatCurrency(
+                                Math.abs(approvalModal.withdrawal.amount) -
+                                  approvalModal.withdrawalFee,
+                              )}
+                            </span>
+                          </div>
+                        </>
                       )}
                       <div className="my-1 h-px bg-border/50" />
                       <div className="flex items-center justify-between">
@@ -363,8 +376,7 @@ export default function AdminWithdrawalApprovalDialog({
                           className={cn(
                             "font-bold tabular-nums",
                             approvalModal.balance +
-                              approvalModal.withdrawal.amount -
-                              approvalModal.withdrawalFee >=
+                              approvalModal.withdrawal.amount >=
                               0
                               ? "text-success"
                               : "text-destructive",
@@ -372,8 +384,7 @@ export default function AdminWithdrawalApprovalDialog({
                         >
                           {formatCurrency(
                             approvalModal.balance +
-                              approvalModal.withdrawal.amount -
-                              approvalModal.withdrawalFee,
+                              approvalModal.withdrawal.amount,
                           )}
                         </span>
                       </div>

@@ -180,13 +180,13 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
   const logoVariant = theme === "dark" ? "white" : "black";
 
   const linkClass =
-    "flex items-center gap-3 px-3.5 py-3 rounded-xl text-[15px] text-muted-foreground hover:bg-white/10 hover:text-foreground transition-all duration-200";
+    "flex items-center gap-3 px-3.5 py-3 rounded-xl text-[15px] text-muted-foreground hover:bg-foreground/10 hover:text-foreground transition-all duration-200";
   const activeClass =
-    "bg-white/15 text-foreground font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]";
+    "bg-black/[0.06] text-foreground font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] dark:bg-white/15";
   const flyoutClass =
     "z-50 rounded-xl border border-white/10 bg-popover/95 p-0 text-popover-foreground shadow-lg backdrop-blur-md";
   const flyoutItemClass =
-    "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground";
+    "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground";
 
   const renderAvatarBadge = () => (
     <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-primary/15 ring-1 ring-primary/25">

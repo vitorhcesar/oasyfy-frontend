@@ -25,7 +25,7 @@ export default function SecondaryMetrics() {
     refundRate,
     completedTransactionsCount,
     transactionsCountChange,
-    feeMarginRate,
+    netProfitMarginRate,
   } = data;
 
   const metrics = [
@@ -49,8 +49,8 @@ export default function SecondaryMetrics() {
       change: transactionsCountChange,
     },
     {
-      label: "Margem (Taxas/Vol)",
-      value: `${feeMarginRate.toFixed(1)}%`,
+      label: "Margem líquida",
+      value: `${(netProfitMarginRate ?? 0).toFixed(1)}%`,
       icon: DollarSign,
       iconClass: "text-primary",
     },

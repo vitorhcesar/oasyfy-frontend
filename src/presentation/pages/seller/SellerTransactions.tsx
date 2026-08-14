@@ -4,6 +4,7 @@ import {
   isApprovedTransactionStatus,
   matchesTransactionStatusFilter,
 } from "@/presentation/utils/transaction-status";
+import { PixIcon } from "@/presentation/components/PixIcon";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import SellerTransactionDetailDialog from "@/presentation/pages/seller/components/SellerTransactionDetailDialog";
 import useSellerTransactionsQuery from "@/presentation/hooks/use-seller-transactions-query";
@@ -161,6 +162,26 @@ const methodLabels: Record<string, string> = {
   crypto: "Crypto",
   withdrawal: "Saque",
 };
+
+function MethodLabel({
+  method,
+  className,
+}: {
+  method: string;
+  className?: string;
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground",
+        className,
+      )}
+    >
+      {method === "pix" && <PixIcon className="h-4 w-4" />}
+      {methodLabels[method] || method}
+    </span>
+  );
+}
 
 export default function SellerTransactions() {
   const { data: rawTransactions, isPending: loading } =
@@ -345,7 +366,7 @@ export default function SellerTransactions() {
                 <span className="w-24 text-right text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Valor
                 </span>
-                <span className="w-16 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                <span className="w-20 text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Método
                 </span>
                 <span className="w-20 text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -413,8 +434,8 @@ export default function SellerTransactions() {
                         {isWithdrawal ? "- " : ""}
                         {formatCurrency(Math.abs(tx.amount))}
                       </span>
-                      <span className="w-16 text-sm font-medium text-muted-foreground">
-                        {methodLabels[tx.method] || tx.method}
+                      <span className="w-20">
+                        <MethodLabel method={tx.method} />
                       </span>
                       <span className="w-20">
                         <StatusBadge status={tx.status} />
@@ -492,9 +513,7 @@ export default function SellerTransactions() {
                     </div>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground font-medium">
-                          {methodLabels[tx.method] || tx.method}
-                        </span>
+                        <MethodLabel method={tx.method} className="text-xs" />
                         <StatusBadge status={tx.status} />
                       </div>
                       <div className="flex items-center gap-2">

@@ -47,6 +47,12 @@ export interface ISellerWithdrawalLimitsDto {
   withdrawalDailyMax: number;
 }
 
+export interface ISellerWithdrawalFeeDto {
+  withdrawalFixedFee: number;
+  withdrawalVariableFee: number;
+  withdrawalMinFee: number;
+}
+
 export interface ISellerBankAccountDto {
   bankName: string;
   agency: string;
@@ -63,6 +69,7 @@ export interface ISellerWithdrawalContextDto {
   withdrawalsBlocked: boolean;
   withdrawalBlockReason: string | null;
   limits: ISellerWithdrawalLimitsDto;
+  fee: ISellerWithdrawalFeeDto;
   dailyWithdrawnTotal: number;
 }
 

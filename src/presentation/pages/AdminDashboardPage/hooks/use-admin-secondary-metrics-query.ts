@@ -9,6 +9,7 @@ const DEFAULT_RETURN: IAdminSecondaryMetricsResponseDto = {
   completedTransactionsCount: 0,
   transactionsCountChange: 0,
   feeMarginRate: 0,
+  netProfitMarginRate: 0,
 };
 
 export default function useAdminSecondaryMetricsQuery() {
