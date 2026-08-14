@@ -103,7 +103,7 @@ export default function RecentTransactions({
                     {getMethodLabel(tx.method)}
                   </p>
                   <p className="mt-0.5 text-xs text-muted-foreground">
-                    {formatDateTime(tx.createdAt.toISOString())}
+                    {formatDateTime(new Date(tx.createdAt).toISOString())}
                   </p>
                 </div>
               </div>

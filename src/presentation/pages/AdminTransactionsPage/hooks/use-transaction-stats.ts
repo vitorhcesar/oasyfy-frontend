@@ -1,3 +1,4 @@
+import { isApprovedTransactionStatus } from "@/presentation/utils/transaction-status";
 import {
   Clock,
   DollarSign,
@@ -22,7 +23,7 @@ export type TransactionStat = {
 export default function useTransactionStats(filtered: Transaction[]) {
   return useMemo(() => {
     const paid = filtered.filter(
-      (t) => t.status === "completed" && t.method !== "withdrawal",
+      (t) => isApprovedTransactionStatus(t.status) && t.method !== "withdrawal",
     );
     const pending = filtered.filter((t) => t.status === "pending");
     const failed = filtered.filter((t) => t.status === "failed");

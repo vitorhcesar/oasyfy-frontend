@@ -21,8 +21,12 @@ export interface ITransactionDto {
   acquirer: string | null;
   feeAmount: number;
   netAmount: number;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+}
+
+function toDate(value: Date | string): Date {
+  return value instanceof Date ? value : new Date(value);
 }
 
 export class TransactionMapper {
@@ -37,7 +41,7 @@ export class TransactionMapper {
       customerName: dto.customerName,
       customerEmail: dto.customerEmail,
       description: dto.description,
-      metadata: dto.metadata,
+      metadata: dto.metadata ?? {},
       pixCode: dto.pixCode,
       isLocked: dto.isLocked,
       isFakeRefund: dto.isFakeRefund,
@@ -46,8 +50,8 @@ export class TransactionMapper {
       acquirer: dto.acquirer,
       feeAmount: dto.feeAmount,
       netAmount: dto.netAmount,
-      createdAt: dto.createdAt,
-      updatedAt: dto.updatedAt,
+      createdAt: toDate(dto.createdAt),
+      updatedAt: toDate(dto.updatedAt),
     });
   }
 }
@@ -74,7 +78,8 @@ export class TransactionModule
     const response = await this.getClient().get<
       IApiEnvelope<ITransactionDto[]>
     >(this.baseUrl);
-    return response.data.map(TransactionMapper.toDomain);
+    const rows = Array.isArray(response.data) ? response.data : [];
+    return rows.map(TransactionMapper.toDomain);
   }
 
   async insertAdjustmentTransaction(

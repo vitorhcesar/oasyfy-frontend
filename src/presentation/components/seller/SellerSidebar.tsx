@@ -40,10 +40,8 @@ import {
   Home,
   Lock,
   LogOut,
-  Moon,
   Settings,
   ShieldCheck,
-  Sun,
   User,
   Users,
   Link2,
@@ -86,7 +84,7 @@ function writeCollapsedPreference(collapsed: boolean) {
 export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
   const user = useUserContext();
   const { signOut } = useAuthContext();
-  const { theme, toggleTheme } = useThemeContext();
+  const { theme } = useThemeContext();
   const { data: profile } = useSellerProfileQuery();
   const { canSell, isLoading: kycLoading } = useSellerKycSubmissionQuery();
   const navigate = useNavigate();
@@ -479,26 +477,10 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
       {!isMobile && (
         <div className="hidden space-y-1 px-3 pb-1 md:block">
           <button
-            onClick={toggleTheme}
-            className="flex w-full items-center justify-center rounded-xl p-3 text-muted-foreground transition-all duration-200 hover:bg-muted/40 hover:text-foreground"
-            title={theme === "dark" ? "Modo claro" : "Modo escuro"}
-          >
-            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-          </button>
-          <button
             onClick={toggleCollapsed}
             className="flex w-full items-center justify-center rounded-xl p-3 text-muted-foreground transition-all duration-200 hover:bg-muted/40 hover:text-foreground"
           >
             {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-          </button>
-        </div>
-      )}
-
-      {isMobile && (
-        <div className="px-3 pb-2">
-          <button onClick={toggleTheme} className={cn("w-full", linkClass)}>
-            {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-            <span>{theme === "dark" ? "Modo Claro" : "Modo Escuro"}</span>
           </button>
         </div>
       )}

@@ -1,3 +1,4 @@
+import { matchesTransactionStatusFilter } from "@/presentation/utils/transaction-status";
 import { useMemo } from "react";
 import { type DateRange } from "react-day-picker";
 import type { Transaction } from "../types/admin-transaction.type";
@@ -56,7 +57,11 @@ export default function useFilterTransactions({
         (t.acquirer || "Gateway interno") !== filterAcquirer
       )
         return false;
-      if (filterStatus && t.status !== filterStatus) return false;
+      if (
+        filterStatus &&
+        !matchesTransactionStatusFilter(t.status, filterStatus)
+      )
+        return false;
       if (dateRange?.from) {
         const txDate = new Date(t.created_at);
         if (txDate < dateRange.from) return false;

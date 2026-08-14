@@ -7,6 +7,11 @@ export const statusConfig: Record<
     cls: "border-warning/25 bg-warning/10 text-warning",
     dot: "bg-warning",
   },
+  paid: {
+    label: "Pago",
+    cls: "border-success/25 bg-success/10 text-success",
+    dot: "bg-success",
+  },
   completed: {
     label: "Completa",
     cls: "border-success/25 bg-success/10 text-success",

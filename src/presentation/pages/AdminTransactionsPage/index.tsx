@@ -9,6 +9,7 @@ import useAdminTransactionsQuery from "@/presentation/hooks/use-admin-transactio
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import { AdminLayout } from "@/presentation/layouts/AdminLayout";
 import { cn } from "@/presentation/utils/cn";
+import { matchesTransactionStatusFilter } from "@/presentation/utils/transaction-status";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CalendarIcon, Loader2 } from "lucide-react";
@@ -115,7 +116,9 @@ export default function AdminTransactionsPage() {
 
     if (filterStatus === "completed") {
       return source.filter(
-        (t) => t.status === "completed" && t.method !== "withdrawal",
+        (t) =>
+          matchesTransactionStatusFilter(t.status, "completed") &&
+          t.method !== "withdrawal",
       );
     }
 

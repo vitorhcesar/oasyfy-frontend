@@ -1,5 +1,9 @@
 import { Transaction } from "@/domain/entities/transaction.entity";
 import PageHeader from "@/presentation/components/PageHeader";
+import {
+  isApprovedTransactionStatus,
+  matchesTransactionStatusFilter,
+} from "@/presentation/utils/transaction-status";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import { Dialog, DialogContent } from "@/presentation/components/ui/dialog";
 import useSellerTransactionsQuery from "@/presentation/hooks/use-seller-transactions-query";
@@ -51,8 +55,8 @@ function toTransactionView(tx: Transaction): TransactionView {
     customer_name: tx.customerName,
     customer_email: tx.customerEmail,
     description: tx.description,
-    created_at: tx.createdAt.toISOString(),
-    updated_at: tx.updatedAt.toISOString(),
+    created_at: new Date(tx.createdAt).toISOString(),
+    updated_at: new Date(tx.updatedAt).toISOString(),
     fee_amount: tx.feeAmount,
     net_amount: tx.netAmount,
     pix_code: tx.pixCode,
@@ -206,7 +210,7 @@ export default function SellerTransactions() {
 
   const filtered = useMemo(() => {
     return transactions.filter((t) => {
-      if (statusFilter !== "all" && t.status !== statusFilter) return false;
+      if (!matchesTransactionStatusFilter(t.status, statusFilter)) return false;
       if (methodFilter !== "all" && t.method !== methodFilter) return false;
       if (splitFilter === "with_split" && !hasSaleSplit(t.metadata)) return false;
       if (splitFilter === "split_credit" && !isSplitCredit(t.metadata))
@@ -231,11 +235,11 @@ export default function SellerTransactions() {
   }, [search, statusFilter, methodFilter, splitFilter]);
 
   const totalAmount = filtered
-    .filter((t) => t.status === "paid" || t.status === "completed")
+    .filter((t) => isApprovedTransactionStatus(t.status))
     .reduce((s, t) => s + t.amount, 0);
   const totalCount = filtered.length;
-  const paidCount = filtered.filter(
-    (t) => t.status === "paid" || t.status === "completed"
+  const paidCount = filtered.filter((t) =>
+    isApprovedTransactionStatus(t.status),
   ).length;
 
   const StatusBadge = ({ status }: { status: string }) => {
@@ -646,7 +650,7 @@ export default function SellerTransactions() {
                   <div
                     className={cn(
                       "px-6 pt-6 pb-4",
-                      tx.status === "paid" || tx.status === "completed"
+                      isApprovedTransactionStatus(tx.status)
                         ? "bg-primary/5"
                         : tx.status === "failed" || tx.status === "cancelled"
                         ? "bg-destructive/5"
