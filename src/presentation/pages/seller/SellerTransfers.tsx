@@ -59,13 +59,56 @@ interface SellerFee {
   crypto_retention_days: number;
 }
 
+function isAcquirerFailedWithdrawal(
+  status: string,
+  acquirer: string | null,
+  metadata: Record<string, any> | null,
+): boolean {
+  if (status === "failed") return true;
+  const deniedBy = metadata?.denied_by;
+  if (deniedBy === "acquirer") return true;
+  if (deniedBy === "admin") return false;
+  const reason = String(metadata?.denial_reason ?? "").toLowerCase();
+  if (reason.includes("woovi")) return true;
+  if (status !== "cancelled") return false;
+  const logs = Array.isArray(metadata?.logs) ? metadata.logs : [];
+  const sentToApi = logs.some(
+    (entry: Record<string, unknown>) =>
+      entry?.event === "sent_to_api" || entry?.denied_by === "acquirer",
+  );
+  return (
+    metadata?.approval_type === "api" ||
+    Boolean(metadata?.withdrawal_payment_status) ||
+    acquirer === "api" ||
+    sentToApi
+  );
+}
+
+function resolveWithdrawalDisplayStatus(
+  status: string,
+  acquirer: string | null,
+  metadata: Record<string, any> | null,
+): string {
+  if (isAcquirerFailedWithdrawal(status, acquirer, metadata)) return "failed";
+  if (
+    status === "rejected" ||
+    status === "cancelled" ||
+    metadata?.denied_by === "admin" ||
+    metadata?.event === "denied"
+  ) {
+    return "rejected";
+  }
+  return status;
+}
+
 function mapTransactionToWithdrawal(t: Transaction): Withdrawal {
+  const metadata = t.metadata as Record<string, any> | null;
   return {
     id: String(t.id),
     amount: t.amount,
     fee_amount: t.feeAmount,
     net_amount: t.netAmount,
-    status: t.status,
+    status: resolveWithdrawalDisplayStatus(t.status, t.acquirer, metadata),
     description: t.description,
     pix_code: t.pixCode,
     acquirer: t.acquirer,
@@ -123,9 +166,9 @@ function StatusBadge({ status }: { status: string }) {
       className: "bg-destructive/10 text-destructive",
     },
     cancelled: {
-      label: "Cancelado",
+      label: "Negado",
       icon: XCircle,
-      className: "bg-muted text-muted-foreground",
+      className: "bg-destructive/10 text-destructive",
     },
     refunded: {
       label: "Estornado",
@@ -335,11 +378,11 @@ export default function SellerTransfers() {
       if (statusFilter === "paid") {
         list = list.filter((w) => isPaid(w.status));
       } else if (statusFilter === "failed") {
-        list = list.filter(
-          (w) => w.status === "failed" || w.status === "cancelled",
-        );
+        list = list.filter((w) => w.status === "failed");
       } else if (statusFilter === "rejected") {
-        list = list.filter((w) => w.status === "rejected");
+        list = list.filter(
+          (w) => w.status === "rejected" || w.status === "cancelled",
+        );
       } else {
         list = list.filter((w) => w.status === statusFilter);
       }
@@ -737,7 +780,10 @@ export default function SellerTransfers() {
                 detailW.acquirer || detailW.metadata?.acquirer || null;
               const bankName = detailW.metadata?.bank_name || null;
               const balanceSource = detailW.metadata?.balance_source || null;
-              const isRejected = detailW.status === "rejected";
+              const isRejected =
+                detailW.status === "rejected" ||
+                detailW.status === "cancelled";
+              const isFailed = detailW.status === "failed";
               const isPaidW = isPaid(detailW.status);
 
               const copyToClipboard = (text: string, field: string) => {
@@ -784,13 +830,22 @@ export default function SellerTransfers() {
                 </div>
               );
 
+              const isUnsuccessful = isRejected || isFailed;
+              const detailTitle = isRejected
+                ? "Saque Negado"
+                : isFailed
+                  ? "Saque Falhou"
+                  : isPaidW
+                    ? "Saque Concluído"
+                    : "Saque Pendente";
+
               return (
                 <>
                   {/* Hero header */}
                   <div
                     className={cn(
                       "relative px-6 pt-8 pb-5 text-center",
-                      isRejected
+                      isUnsuccessful
                         ? "bg-gradient-to-b from-destructive/8 to-transparent"
                         : isPaidW
                           ? "bg-gradient-to-b from-primary/8 to-transparent"
@@ -800,14 +855,14 @@ export default function SellerTransfers() {
                     <div
                       className={cn(
                         "w-14 h-14 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm",
-                        isRejected
+                        isUnsuccessful
                           ? "bg-destructive/10 text-destructive"
                           : isPaidW
                             ? "bg-primary/10 text-primary"
                             : "bg-warning/10 text-warning",
                       )}
                     >
-                      {isRejected ? (
+                      {isUnsuccessful ? (
                         <XCircle size={26} />
                       ) : isPaidW ? (
                         <CheckCircle2 size={26} />
@@ -816,16 +871,12 @@ export default function SellerTransfers() {
                       )}
                     </div>
                     <p className="text-xs font-medium text-muted-foreground mb-1">
-                      {isRejected
-                        ? "Saque Negado"
-                        : isPaidW
-                          ? "Saque Concluído"
-                          : "Saque Pendente"}
+                      {detailTitle}
                     </p>
                     <p
                       className={cn(
                         "text-3xl font-bold tabular-nums tracking-tight",
-                        isRejected
+                        isUnsuccessful
                           ? "text-destructive"
                           : isPaidW
                             ? "text-primary"
@@ -840,10 +891,10 @@ export default function SellerTransfers() {
                   </div>
 
                   {/* Rejection reason */}
-                  {isRejected && detailW.metadata?.denial_reason && (
+                  {isUnsuccessful && detailW.metadata?.denial_reason && (
                     <div className="mx-5 mb-1 px-3.5 py-3 rounded-xl bg-destructive/5 border border-destructive/10">
                       <p className="text-sm font-semibold text-destructive mb-1">
-                        Motivo da rejeição
+                        {isRejected ? "Motivo da rejeição" : "Motivo da falha"}
                       </p>
                       <p className="text-xs text-foreground leading-relaxed">
                         {detailW.metadata.denial_reason}
