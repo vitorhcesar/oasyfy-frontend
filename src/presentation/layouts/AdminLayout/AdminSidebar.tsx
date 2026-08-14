@@ -269,23 +269,27 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
     );
   };
 
-  const sidebarContent = (
+  const renderSidebarContent = (isCollapsed: boolean, isMobile = false) => (
     <>
       <div
         className={cn(
-          "flex h-[4.5rem] items-center border-b border-white/10",
-          collapsed ? "justify-center px-2" : "justify-between px-5",
+          "relative flex h-[4.5rem] items-center justify-center border-b border-white/10",
+          isCollapsed ? "px-2" : "px-5",
         )}
       >
-        {collapsed ? (
+        {isCollapsed ? (
           <AuthBrandMark mark="icon" size="sm" variant={logoVariant} />
         ) : (
-          <AuthBrandMark size="sm" variant={logoVariant} />
+          <AuthBrandMark
+            size="sm"
+            variant={logoVariant}
+            className="justify-center"
+          />
         )}
-        {onClose && !collapsed && (
+        {isMobile && onClose && (
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted/30 md:hidden"
+            className="absolute right-3 rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted/30"
           >
             <X size={20} />
           </button>
@@ -293,12 +297,12 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
       </div>
 
       <nav className="flex-1 overflow-y-auto px-3 py-5 scrollbar-hide">
-        {!collapsed && (
+        {!isCollapsed && (
           <p className="mb-2 px-3 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70">
             Principal
           </p>
         )}
-        {collapsed
+        {isCollapsed
           ? menuItems.map((item) => renderCollapsedNavTooltip(item))
           : menuItems.map((item) => (
               <NavLink
@@ -313,7 +317,7 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
               </NavLink>
             ))}
 
-        {!collapsed && (
+        {!isCollapsed && (
           <div className="mt-5">
             <p className="mb-2 px-3 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70">
               Comercial
@@ -355,7 +359,7 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
             </Collapsible>
           </div>
         )}
-        {collapsed &&
+        {isCollapsed &&
           renderCollapsedGroupHover(
             "Financeiro",
             financialSubItems,
@@ -364,7 +368,7 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
             "mt-2",
           )}
 
-        {!collapsed && (
+        {!isCollapsed && (
           <div className="mt-5">
             <p className="mb-2 px-3 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70">
               Sistema
@@ -406,7 +410,7 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
             </Collapsible>
           </div>
         )}
-        {collapsed &&
+        {isCollapsed &&
           renderCollapsedGroupHover(
             "Configurações",
             settingsSubItems,
@@ -416,7 +420,7 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
           )}
       </nav>
 
-      <div className="hidden space-y-1 px-3 pb-1 md:block">
+      <div className="space-y-1 px-3 pb-1">
         <button
           onClick={toggleTheme}
           className="flex w-full items-center justify-center rounded-xl p-3 text-muted-foreground transition-all duration-200 hover:bg-muted/40 hover:text-foreground"
@@ -424,23 +428,18 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
         >
           {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
         </button>
-        <button
-          onClick={toggleCollapsed}
-          className="flex w-full items-center justify-center rounded-xl p-3 text-muted-foreground transition-all duration-200 hover:bg-muted/40 hover:text-foreground"
-        >
-          {collapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-        </button>
-      </div>
-
-      <div className="px-3 pb-2 md:hidden">
-        <button onClick={toggleTheme} className={cn("w-full", linkClass)}>
-          {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
-          <span>{theme === "dark" ? "Modo Claro" : "Modo Escuro"}</span>
-        </button>
+        {!isMobile && (
+          <button
+            onClick={toggleCollapsed}
+            className="flex w-full items-center justify-center rounded-xl p-3 text-muted-foreground transition-all duration-200 hover:bg-muted/40 hover:text-foreground"
+          >
+            {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+          </button>
+        )}
       </div>
 
       <div className="border-t border-white/10 p-3.5">
-        {collapsed ? (
+        {isCollapsed ? (
           <Popover>
             <PopoverTrigger asChild>
               <button
@@ -515,7 +514,7 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
           collapsed ? "w-[76px]" : "w-[280px]",
         )}
       >
-        {sidebarContent}
+        {renderSidebarContent(collapsed)}
       </aside>
 
       {mobileOpen && (
@@ -524,8 +523,8 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
             className="fixed inset-0 z-40 bg-background/60 backdrop-blur-sm md:hidden"
             onClick={onClose}
           />
-          <aside className="liquid-glass fixed inset-y-0 left-0 z-50 flex w-[300px] flex-col md:hidden animate-in slide-in-from-left duration-200">
-            {sidebarContent}
+          <aside className="liquid-glass !fixed top-4 bottom-4 left-3 z-50 flex w-[min(20rem,calc(100vw-1.5rem))] flex-col rounded-[2rem] md:hidden animate-in slide-in-from-left duration-200">
+            {renderSidebarContent(false, true)}
           </aside>
         </>
       )}

@@ -19,7 +19,7 @@ import {
   Loader2,
   QrCode,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 const DEPOSIT_EXPIRES_IN_SECONDS = 5 * 60;
@@ -46,6 +46,49 @@ function formatCountdown(totalSeconds: number) {
 
 function digitsOnly(value: string | null | undefined) {
   return (value ?? "").replace(/\D/g, "");
+}
+
+function copyWithExecCommand(text: string, input?: HTMLInputElement | null) {
+  if (input) {
+    const wasReadOnly = input.hasAttribute("readonly");
+    input.removeAttribute("readonly");
+    input.focus();
+    input.select();
+    input.setSelectionRange(0, text.length);
+    const ok = document.execCommand("copy");
+    if (wasReadOnly) input.setAttribute("readonly", "");
+    if (ok) return true;
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.top = "0";
+  textarea.style.left = "0";
+  textarea.style.opacity = "0";
+  document.body.appendChild(textarea);
+  textarea.focus();
+  textarea.select();
+  textarea.setSelectionRange(0, text.length);
+  const ok = document.execCommand("copy");
+  document.body.removeChild(textarea);
+  return ok;
+}
+
+async function copyTextToClipboard(
+  text: string,
+  input?: HTMLInputElement | null,
+) {
+  if (navigator.clipboard?.writeText && window.isSecureContext) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch {
+      // iOS/Safari often rejects Clipboard API; fall back below
+    }
+  }
+  return copyWithExecCommand(text, input);
 }
 
 function DepositConfirmedAnimation() {
@@ -87,6 +130,8 @@ export default function SellerDeposit() {
   const [remainingSeconds, setRemainingSeconds] = useState(DEPOSIT_EXPIRES_IN_SECONDS);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
+  const pixInputRef = useRef<HTMLInputElement>(null);
+  const copiedResetRef = useRef<number>();
 
   const depositorName = useMemo(() => {
     return (
@@ -213,11 +258,17 @@ export default function SellerDeposit() {
     }
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
+  const copyToClipboard = async (text: string) => {
+    const ok = await copyTextToClipboard(text, pixInputRef.current);
+    if (!ok) {
+      toast.error("Não foi possível copiar o código");
+      return;
+    }
+
     setCopied(true);
     toast.success("Código copiado!");
-    setTimeout(() => setCopied(false), 2000);
+    window.clearTimeout(copiedResetRef.current);
+    copiedResetRef.current = window.setTimeout(() => setCopied(false), 2500);
   };
 
   const pixCode = pixData?.pixCode ?? "";
@@ -229,20 +280,27 @@ export default function SellerDeposit() {
     setAmount("");
     setExpiresAtMs(null);
     setRemainingSeconds(DEPOSIT_EXPIRES_IN_SECONDS);
+    setCopied(false);
+    window.clearTimeout(copiedResetRef.current);
     setStep("form");
   };
 
+  useEffect(() => {
+    return () => window.clearTimeout(copiedResetRef.current);
+  }, []);
+
   return (
     <SellerLayout>
-      <div className="mx-auto w-full max-w-3xl space-y-6 px-5 py-6 md:px-8 md:py-9">
+      <div className="mx-auto w-full min-w-0 max-w-3xl space-y-5 overflow-x-hidden px-4 py-5 sm:space-y-6 sm:px-5 md:px-8 md:py-9">
         <PageHeader
+          className="mb-0"
           eyebrow="Financeiro"
           title="Depósito via PIX"
           description="Gere um QR Code PIX para depositar na sua conta. O código expira em 5 minutos."
         />
 
         {step === "form" ? (
-          <div className="admin-surface space-y-5 p-5 md:p-6">
+          <div className="admin-surface space-y-4 p-4 sm:space-y-5 sm:p-5 md:p-6">
             <div>
               <h2 className="text-sm font-semibold text-foreground">
                 Valor do depósito
@@ -287,11 +345,11 @@ export default function SellerDeposit() {
         ) : null}
 
         {step === "pix" && pixData ? (
-          <div className="admin-surface space-y-5 p-5 md:p-6">
-            <div className="flex items-center justify-between gap-3">
-              <div>
+          <div className="admin-surface space-y-4 p-4 sm:space-y-5 sm:p-5 md:p-6">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0">
                 <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                  <CheckCircle2 size={16} className="text-primary" />
+                  <CheckCircle2 size={16} className="shrink-0 text-primary" />
                   PIX gerado
                 </h2>
                 <p className="mt-1 text-sm text-muted-foreground">
@@ -299,14 +357,17 @@ export default function SellerDeposit() {
                 </p>
               </div>
               {pixData.acquirer && (
-                <Badge variant="outline" className="text-xs">
+                <Badge
+                  variant="outline"
+                  className="w-fit shrink-0 self-start text-xs"
+                >
                   via {pixData.acquirer}
                 </Badge>
               )}
             </div>
 
             <div className="text-center">
-              <p className="mb-3 text-3xl font-bold tabular-nums text-foreground">
+              <p className="mb-3 text-2xl font-bold tabular-nums text-foreground sm:text-3xl">
                 {formatCurrencyFromCents(amount)}
               </p>
               <div
@@ -324,7 +385,7 @@ export default function SellerDeposit() {
 
             {qrCodeImage && (
               <div className="flex justify-center">
-                <div className="rounded-xl border border-border/60 bg-white p-4">
+                <div className="w-full max-w-[13.5rem] rounded-xl border border-border/60 bg-white p-3 sm:max-w-[15.5rem] sm:p-4">
                   <img
                     src={
                       qrCodeImage.startsWith("data:")
@@ -334,7 +395,7 @@ export default function SellerDeposit() {
                           : `data:image/png;base64,${qrCodeImage}`
                     }
                     alt="QR Code PIX"
-                    className="h-48 w-48"
+                    className="aspect-square h-auto w-full"
                     loading="lazy"
                   />
                 </div>
@@ -342,25 +403,30 @@ export default function SellerDeposit() {
             )}
 
             {pixCode && (
-              <div className="space-y-1.5">
+              <div className="min-w-0 space-y-1.5">
                 <Label className="text-xs">Código PIX (copia e cola)</Label>
-                <div className="flex gap-2">
+                <div className="flex min-w-0 flex-col gap-2 sm:flex-row">
                   <Input
+                    ref={pixInputRef}
                     readOnly
                     value={pixCode}
-                    className="flex-1 rounded-xl border-border/60 text-sm font-mono"
+                    onFocus={(e) => e.currentTarget.select()}
+                    className="min-w-0 flex-1 rounded-xl border-border/60 text-sm font-mono"
                   />
                   <Button
+                    type="button"
                     size="sm"
-                    variant="outline"
+                    variant={copied ? "default" : "outline"}
                     className={cn(
-                      "gap-1.5 shrink-0",
-                      copied && "text-primary border-primary/30",
+                      "w-full min-w-[7.5rem] gap-1.5 sm:w-auto sm:shrink-0",
+                      copied &&
+                        "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
                     )}
-                    onClick={() => copyToClipboard(pixCode)}
+                    onClick={() => void copyToClipboard(pixCode)}
+                    aria-live="polite"
                   >
                     {copied ? <CheckCircle2 size={14} /> : <Copy size={14} />}
-                    {copied ? "Copiado" : "Copiar"}
+                    {copied ? "Copiado!" : "Copiar"}
                   </Button>
                 </div>
               </div>
@@ -381,7 +447,7 @@ export default function SellerDeposit() {
         ) : null}
 
         {step === "success" ? (
-          <div className="admin-surface space-y-5 p-8 text-center md:p-10">
+          <div className="admin-surface space-y-5 p-6 text-center sm:p-8 md:p-10">
             <DepositConfirmedAnimation />
             <div className="space-y-1.5 animate-fade-in">
               <h2 className="text-xl font-semibold text-foreground">
@@ -401,7 +467,7 @@ export default function SellerDeposit() {
         ) : null}
 
         {step === "expired" ? (
-          <div className="admin-surface space-y-5 p-8 text-center md:p-10">
+          <div className="admin-surface space-y-5 p-6 text-center sm:p-8 md:p-10">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
               <Clock className="text-destructive" size={28} />
             </div>

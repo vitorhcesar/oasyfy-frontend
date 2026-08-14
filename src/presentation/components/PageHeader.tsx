@@ -27,11 +27,13 @@ export default function PageHeader({
         <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
           {eyebrow}
         </p>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-[2.15rem]">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl md:text-[2.15rem]">
           {title}
         </h1>
         {description != null && description !== "" && (
-          <p className="mt-1.5 text-sm text-muted-foreground">{description}</p>
+          <p className="mt-1.5 max-w-prose text-sm leading-relaxed text-muted-foreground">
+            {description}
+          </p>
         )}
       </div>
       {actions && (

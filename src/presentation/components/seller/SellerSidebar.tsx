@@ -368,19 +368,23 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
     <>
       <div
         className={cn(
-          "flex h-[4.5rem] items-center border-b border-white/10",
-          isCollapsed ? "justify-center px-2" : "justify-between px-5",
+          "relative flex h-[4.5rem] items-center justify-center border-b border-white/10",
+          isCollapsed ? "px-2" : "px-5",
         )}
       >
         {isCollapsed ? (
           <AuthBrandMark mark="icon" size="sm" variant={logoVariant} />
         ) : (
-          <AuthBrandMark size="sm" variant={logoVariant} />
+          <AuthBrandMark
+            size="sm"
+            variant={logoVariant}
+            className="justify-center"
+          />
         )}
         {isMobile && onClose && (
           <button
             onClick={onClose}
-            className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted/30"
+            className="absolute right-3 rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted/30"
           >
             <X size={20} />
           </button>
@@ -570,7 +574,7 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
             className="fixed inset-0 z-40 bg-background/60 backdrop-blur-sm md:hidden"
             onClick={onClose}
           />
-          <aside className="liquid-glass fixed inset-y-0 left-0 z-50 flex w-[300px] flex-col md:hidden animate-in slide-in-from-left duration-200">
+          <aside className="liquid-glass !fixed top-4 bottom-4 left-3 z-50 flex w-[min(20rem,calc(100vw-1.5rem))] flex-col rounded-[2rem] md:hidden animate-in slide-in-from-left duration-200">
             {renderSidebarContent(false, true)}
           </aside>
         </>

@@ -1,10 +1,14 @@
+import { AuthBrandMark } from "@/presentation/components/auth/AuthBrandMark";
 import { OfflineBanner } from "@/presentation/components/OfflineBanner";
+import { useThemeContext } from "@/presentation/hooks/use-theme";
 import { Menu } from "lucide-react";
 import { PropsWithChildren, useState } from "react";
 import { AdminSidebar } from "./AdminSidebar";
 
 export function AdminLayout({ children }: PropsWithChildren) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { theme } = useThemeContext();
+  const logoVariant = theme === "dark" ? "white" : "black";
 
   return (
     <div className="relative flex h-screen w-full overflow-hidden bg-background">
@@ -35,16 +39,22 @@ export function AdminLayout({ children }: PropsWithChildren) {
           className="relative z-10 flex h-full min-w-0 flex-1 flex-col overflow-y-auto md:rounded-[22px] md:border md:border-white/10 md:bg-background/55 md:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] md:backdrop-blur-2xl md:backdrop-saturate-150"
         >
           <OfflineBanner />
-          <div className="liquid-glass-control flex h-14 items-center border-b border-white/10 px-4 md:hidden">
-            <button
-              onClick={() => setSidebarOpen(true)}
-              className="rounded-xl p-2.5 text-muted-foreground transition-colors hover:bg-white/10"
-            >
-              <Menu size={22} />
-            </button>
-            <span className="ml-2 text-base font-semibold text-foreground">
-              Oasyfy
-            </span>
+          <div className="sticky top-3 z-30 mx-3 mt-3 shrink-0 md:hidden">
+            <header className="liquid-glass flex h-12 min-h-12 items-center justify-between rounded-full py-1 pl-1.5 pr-2">
+              <button
+                type="button"
+                onClick={() => setSidebarOpen(true)}
+                aria-label="Abrir menu"
+                className="flex h-9 w-9 items-center justify-center rounded-full text-foreground transition-colors hover:bg-white/10"
+              >
+                <Menu size={20} />
+              </button>
+              <AuthBrandMark
+                mark="icon"
+                size="sm"
+                variant={logoVariant}
+              />
+            </header>
           </div>
           <div className="flex-1">{children}</div>
         </main>
