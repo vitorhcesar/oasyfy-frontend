@@ -6,7 +6,6 @@ import {
   FileCheck,
   RefreshCcw,
   ShieldCheck,
-  Users,
   Wallet,
 } from "lucide-react";
 import { useMemo } from "react";
@@ -21,7 +20,6 @@ export default function StatusCards({ metrics }: IStatusCardsProps) {
   const navigate = useNavigate();
 
   const {
-    sellersCount: sellers,
     pendingKycCount: pendingKyc,
     approvedKycCount: approvedKyc,
     rejectedKycCount: rejectedKyc,
@@ -68,13 +66,6 @@ export default function StatusCards({ metrics }: IStatusCardsProps) {
   );
 
   const statCards = [
-    {
-      label: "Total de Sellers",
-      value: sellers,
-      icon: Users,
-      accent: "bg-primary/10 text-primary",
-      link: "/admin/sellers",
-    },
     {
       label: "KYC Pendentes",
       value: pendingKyc,
@@ -127,7 +118,7 @@ export default function StatusCards({ metrics }: IStatusCardsProps) {
   ];
 
   return (
-    <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4 md:grid-cols-8">
+    <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4 md:grid-cols-7">
       {statCards.map((card) => (
         <button
           key={card.label}

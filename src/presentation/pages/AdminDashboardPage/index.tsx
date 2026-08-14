@@ -4,7 +4,6 @@ import AdminDashboardPageHeader from "./components/AdminDashboardPageHeader";
 import FeesChart from "./components/FeesChart";
 import FinancialCards from "./components/FinancialCards";
 import PeakHour from "./components/PeakHour";
-import QuickActions from "./components/QuickActions";
 import RevenueChart from "./components/RevenueChart";
 import SecondaryMetrics from "./components/SecondaryMetrics";
 import StatusAndMethod from "./components/StatusAndMethod";
@@ -71,8 +70,6 @@ export default function AdminDashboardPage() {
               <PeakHour completedTransactions={completedTransactions} />
               <TopSellers />
             </div>
-
-            <QuickActions />
           </>
         )}
       </div>
