@@ -5,7 +5,6 @@ import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import { Switch } from "@/presentation/components/ui/switch";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import useFullSellerFeeQuery from "@/presentation/hooks/use-full-seller-fee-query";
-import { useSellerKycSubmissionQuery } from "@/presentation/hooks/use-seller-kyc-submission-query";
 import useSellerProfileQuery from "@/presentation/hooks/use-seller-profile-query";
 import { useUserContext } from "@/presentation/context/UserContext";
 import { cn } from "@/presentation/utils/cn";
@@ -441,7 +440,6 @@ export default function SellerSettings() {
   const user = useUserContext();
   const apiService = useApiService();
   const { refetch: refetchSession } = authClient.useSession();
-  const { submission } = useSellerKycSubmissionQuery();
   const {
     data: profile,
     isLoading: profileLoading,
@@ -480,13 +478,8 @@ export default function SellerSettings() {
       profile.showIdentityInRevenueRanking ?? false,
     );
     if (profile.email) setEmail(profile.email);
+    setPhone(profile.phone || "");
   }, [profile, user.name]);
-
-  useEffect(() => {
-    if (!submission) return;
-    if (submission.fullName) setFullName((prev) => prev || submission.fullName);
-    if (submission.phone) setPhone(submission.phone);
-  }, [submission]);
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -519,10 +512,6 @@ export default function SellerSettings() {
     if (!user) return;
     if (!displayName.trim()) {
       toast.error("O nome de exibição é obrigatório");
-      return;
-    }
-    if (!phone.trim()) {
-      toast.error("O telefone é obrigatório");
       return;
     }
 
@@ -669,7 +658,7 @@ export default function SellerSettings() {
 
                     <div>
                       <label className="text-xs text-muted-foreground">
-                        Telefone <span className="text-destructive">*</span>
+                        Telefone
                       </label>
                       <input
                         type="tel"

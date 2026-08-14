@@ -7,6 +7,7 @@ export interface ISellerProfileDto {
   avatarUrl: string | null;
   accountId: string;
   email: string | null;
+  phone: string | null;
   showIdentityInRevenueRanking: boolean;
 }
 
