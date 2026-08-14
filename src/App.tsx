@@ -68,7 +68,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <TooltipProvider>
+        <TooltipProvider delayDuration={400} disableHoverableContent>
           <Toaster />
           <Sonner />
           <ThemeLoader />

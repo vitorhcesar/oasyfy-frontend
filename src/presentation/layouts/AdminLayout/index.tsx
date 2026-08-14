@@ -11,9 +11,9 @@ export function AdminLayout({ children }: PropsWithChildren) {
   const logoVariant = theme === "dark" ? "white" : "black";
 
   return (
-    <div className="relative flex h-screen w-full overflow-hidden bg-background">
+    <div className="relative flex h-dvh w-full overflow-hidden bg-background">
       {/* Canvas atmosphere — refrata sob o chrome Liquid Glass */}
-      <div aria-hidden className="pointer-events-none fixed inset-0 z-0">
+      <div aria-hidden className="layout-atmosphere pointer-events-none fixed inset-0 z-0">
         <div className="absolute -left-28 -top-32 h-[560px] w-[560px] rounded-full bg-primary/40 blur-[150px]" />
         <div className="absolute right-[-120px] top-[18%] h-[480px] w-[480px] rounded-full bg-primary/30 blur-[130px]" />
         <div className="absolute bottom-[-140px] left-[28%] h-[520px] w-[520px] rounded-full bg-primary/25 blur-[140px]" />

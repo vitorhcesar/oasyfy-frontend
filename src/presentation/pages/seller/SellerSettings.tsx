@@ -10,6 +10,8 @@ import { useUserContext } from "@/presentation/context/UserContext";
 import { cn } from "@/presentation/utils/cn";
 import { getErrorMessageOrDefault } from "@/presentation/utils/get-error-message-or-default";
 import { translateError } from "@/presentation/utils/translate-error";
+import { formatPhone } from "@/presentation/components/KycOnboarding/utils/format-phone";
+import { phoneValidationSchema } from "@/presentation/validation/schemas/phone-validation.schema";
 import {
   Copy,
   CreditCard,
@@ -515,18 +517,26 @@ export default function SellerSettings() {
       return;
     }
 
+    const trimmedPhone = phone.trim();
+    if (trimmedPhone && !phoneValidationSchema.safeParse(trimmedPhone).success) {
+      toast.error("Insira um telefone válido. Ex: (11) 99999-9999");
+      return;
+    }
+
     setSaving(true);
     try {
       const updatedProfile = await apiService.modules.sellerPortal.updateProfile(
         {
           displayName: displayName.trim(),
           showIdentityInRevenueRanking,
+          ...(trimmedPhone ? { phone: trimmedPhone } : {}),
         },
       );
       setDisplayName(updatedProfile.displayName);
       setShowIdentityInRevenueRanking(
         updatedProfile.showIdentityInRevenueRanking,
       );
+      setPhone(updatedProfile.phone || "");
       setCachedProfile(updatedProfile);
       await refetchSession();
       toast.success("Perfil salvo com sucesso!");
@@ -663,8 +673,9 @@ export default function SellerSettings() {
                       <input
                         type="tel"
                         value={phone}
-                        disabled
-                        className="mt-1 w-full rounded-xl border border-border bg-muted/50 px-4 py-3 text-sm text-muted-foreground cursor-not-allowed"
+                        onChange={(e) => setPhone(formatPhone(e.target.value))}
+                        placeholder="(11) 99999-9999"
+                        className="mt-1 w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground outline-none focus:ring-2 focus:ring-primary/30 transition-all placeholder:text-muted-foreground/50"
                       />
                     </div>
 

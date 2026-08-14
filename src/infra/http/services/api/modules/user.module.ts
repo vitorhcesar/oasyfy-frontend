@@ -6,14 +6,20 @@ export interface ISetUserToSellerResponseDto {
 }
 
 export interface IUserModule {
-  setUserToSeller: (userId: number) => Promise<ISetUserToSellerResponseDto>;
+  setUserToSeller: (
+    userId: number,
+    phone?: string,
+  ) => Promise<ISetUserToSellerResponseDto>;
 }
 
 export class UserModule extends BaseApiModule implements IUserModule {
-  async setUserToSeller(userId: number): Promise<ISetUserToSellerResponseDto> {
+  async setUserToSeller(
+    userId: number,
+    phone?: string,
+  ): Promise<ISetUserToSellerResponseDto> {
     const response = await this.getClient().post<
       IApiEnvelope<ISetUserToSellerResponseDto>
-    >(`/api/v1/users/set-seller/${userId}`);
+    >(`/api/v1/users/set-seller/${userId}`, phone ? { phone } : {});
     return response.data;
   }
 }

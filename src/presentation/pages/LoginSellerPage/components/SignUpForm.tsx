@@ -13,6 +13,7 @@ import { getErrorMessageOrDefault } from "@/presentation/utils/get-error-message
 import { translateError } from "@/presentation/utils/translate-error";
 import { tryOrToastError } from "@/presentation/utils/try-or-toast-error";
 import { phoneValidationSchema } from "@/presentation/validation/schemas/phone-validation.schema";
+import { formatPhone } from "@/presentation/components/KycOnboarding/utils/format-phone";
 import { ArrowRight, Mail, Phone, User, X } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
@@ -115,7 +116,8 @@ export default function SignUpForm({
         }
 
         await apiService.modules.user.setUserToSeller(
-          Number(signUpResult.data.user.id)
+          Number(signUpResult.data.user.id),
+          phone
         );
 
         // Persiste o e-mail antes do signOut para que o FormPanel, ao remontar
@@ -207,7 +209,7 @@ export default function SignUpForm({
             id="phone"
             type="tel"
             value={phone}
-            onChange={(e) => setPhone(e.target.value)}
+            onChange={(e) => setPhone(formatPhone(e.target.value))}
             required
             placeholder="(11) 99999-9999"
             className="auth-field h-12 rounded-xl text-base"

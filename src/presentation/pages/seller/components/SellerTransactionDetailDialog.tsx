@@ -12,7 +12,10 @@ import {
   DialogTitle,
 } from "@/presentation/components/ui/dialog";
 import { cn } from "@/presentation/utils/cn";
-import { isApprovedTransactionStatus } from "@/presentation/utils/transaction-status";
+import {
+  isApprovedTransactionStatus,
+  isExpiredUnpaidTransaction,
+} from "@/presentation/utils/transaction-status";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
@@ -85,6 +88,11 @@ const statusUi: Record<
   },
   failed: {
     label: "Recusado",
+    badge: "bg-destructive/15 text-destructive",
+    icon: "x",
+  },
+  expired: {
+    label: "Expirado",
     badge: "bg-destructive/15 text-destructive",
     icon: "x",
   },
@@ -511,12 +519,15 @@ export default function SellerTransactionDetailDialog({
 
   const tx = transaction;
   const isWithdrawal = tx?.method === "withdrawal";
+  const expired = tx ? isExpiredUnpaidTransaction(tx) : false;
   const status = tx
-    ? (statusUi[tx.status] ?? {
-        label: tx.status,
-        badge: "bg-muted text-muted-foreground",
-        icon: "clock" as const,
-      })
+    ? expired
+      ? statusUi.expired
+      : (statusUi[tx.status] ?? {
+          label: tx.status,
+          badge: "bg-muted text-muted-foreground",
+          icon: "clock" as const,
+        })
     : null;
   const amountLabel = isWithdrawal ? "Valor da saída" : "Valor da entrada";
   const methodLabel = tx ? methodLabels[tx.method] || tx.method : "";
@@ -759,7 +770,7 @@ export default function SellerTransactionDetailDialog({
                   active={Boolean(detail.paidAt)}
                 />
                 <TimelineRow
-                  label="Data/Hora recusado"
+                  label={expired ? "Data/Hora expirado" : "Data/Hora recusado"}
                   value={formatModalDate(detail.rejectedAt)}
                   active={Boolean(detail.rejectedAt)}
                   last

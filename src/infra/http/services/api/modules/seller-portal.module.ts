@@ -154,6 +154,7 @@ export interface ISellerPortalModule {
   updateProfile: (body: {
     displayName?: string;
     showIdentityInRevenueRanking?: boolean;
+    phone?: string;
   }) => Promise<ISellerProfileDto>;
   uploadAvatar: (file: File) => Promise<{ avatarUrl: string }>;
   getRevenueRanking: (
@@ -217,6 +218,7 @@ export class SellerPortalModule
   async updateProfile(body: {
     displayName?: string;
     showIdentityInRevenueRanking?: boolean;
+    phone?: string;
   }): Promise<ISellerProfileDto> {
     const response = await this.getClient().patch<
       IApiEnvelope<ISellerProfileDto>

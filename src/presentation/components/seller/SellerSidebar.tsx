@@ -24,6 +24,7 @@ import { useAuthContext } from "@/presentation/context/AuthContext";
 import { useUserContext } from "@/presentation/context/UserContext";
 import { useSellerKycSubmissionQuery } from "@/presentation/hooks/use-seller-kyc-submission-query";
 import useSellerProfileQuery from "@/presentation/hooks/use-seller-profile-query";
+import { useIsDesktop } from "@/presentation/hooks/use-mobile";
 import { useThemeContext } from "@/presentation/hooks/use-theme";
 import { cn } from "@/presentation/utils/cn";
 import {
@@ -82,6 +83,7 @@ function writeCollapsedPreference(collapsed: boolean) {
 }
 
 export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
+  const isDesktop = useIsDesktop();
   const user = useUserContext();
   const { signOut } = useAuthContext();
   const { theme } = useThemeContext();
@@ -200,7 +202,7 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
   const activeClass =
     "bg-black/[0.06] text-foreground font-semibold shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] dark:bg-white/15";
   const flyoutClass =
-    "z-50 rounded-xl border border-white/10 bg-popover/95 p-0 text-popover-foreground shadow-lg backdrop-blur-md";
+    "z-50 rounded-xl border border-white/10 bg-popover/95 p-0 text-popover-foreground shadow-lg md:backdrop-blur-md";
   const flyoutItemClass =
     "flex w-full items-center gap-2.5 rounded-lg px-2.5 py-2 text-sm text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground";
   const lockedClass =
@@ -558,20 +560,22 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
 
   return (
     <>
-      <aside
-        className={cn(
-          "liquid-glass hidden h-full shrink-0 flex-col transition-all duration-300 ease-in-out md:flex",
-          "rounded-2xl",
-          collapsed ? "w-[76px]" : "w-[280px]",
-        )}
-      >
-        {renderSidebarContent(collapsed)}
-      </aside>
+      {isDesktop && (
+        <aside
+          className={cn(
+            "liquid-glass hidden h-full shrink-0 flex-col transition-all duration-300 ease-in-out md:flex",
+            "rounded-2xl",
+            collapsed ? "w-[76px]" : "w-[280px]",
+          )}
+        >
+          {renderSidebarContent(collapsed)}
+        </aside>
+      )}
 
       {mobileOpen && (
         <>
           <div
-            className="fixed inset-0 z-40 bg-background/60 backdrop-blur-sm md:hidden"
+            className="fixed inset-0 z-40 bg-background/80 md:hidden"
             onClick={onClose}
           />
           <aside className="liquid-glass !fixed top-4 bottom-4 left-3 z-50 flex w-[min(20rem,calc(100vw-1.5rem))] flex-col rounded-[2rem] md:hidden animate-in slide-in-from-left duration-200">

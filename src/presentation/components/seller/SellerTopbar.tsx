@@ -219,7 +219,7 @@ export function SellerTopbar({ onMenuToggle }: ISellerTopbarProps) {
             <div
               ref={menuRef}
               style={{ top: menuPos.top, right: menuPos.right }}
-              className="fixed z-50 w-56 rounded-xl border border-white/10 bg-popover/95 py-2 text-popover-foreground shadow-lg backdrop-blur-md"
+          className="fixed z-50 w-56 rounded-xl border border-white/10 bg-popover/95 py-2 text-popover-foreground shadow-lg md:backdrop-blur-md"
             >
               <div className="flex items-center gap-3 border-b border-white/10 bg-muted/20 px-4 py-3">
                 {avatarUrl ? (

@@ -2,6 +2,7 @@ import { Transaction } from "@/domain/entities/transaction.entity";
 import PageHeader from "@/presentation/components/PageHeader";
 import {
   isApprovedTransactionStatus,
+  isExpiredUnpaidTransaction,
   matchesTransactionStatusFilter,
 } from "@/presentation/utils/transaction-status";
 import { PixIcon } from "@/presentation/components/PixIcon";
@@ -141,6 +142,12 @@ const statusConfig: Record<
     text: "text-destructive",
     dot: "bg-destructive",
   },
+  expired: {
+    label: "Expirado",
+    bg: "bg-destructive/10",
+    text: "text-destructive",
+    dot: "bg-destructive",
+  },
   refunded: {
     label: "Estornada",
     bg: "bg-warning/10",
@@ -238,13 +245,15 @@ export default function SellerTransactions() {
     isApprovedTransactionStatus(t.status),
   ).length;
 
-  const StatusBadge = ({ status }: { status: string }) => {
-    const s = statusConfig[status] || {
-      label: status,
-      bg: "bg-muted",
-      text: "text-muted-foreground",
-      dot: "bg-muted-foreground/40",
-    };
+  const StatusBadge = ({ tx }: { tx: TransactionView }) => {
+    const s = isExpiredUnpaidTransaction(tx)
+      ? statusConfig.expired
+      : statusConfig[tx.status] || {
+          label: tx.status,
+          bg: "bg-muted",
+          text: "text-muted-foreground",
+          dot: "bg-muted-foreground/40",
+        };
     return (
       <span
         className={cn(
@@ -438,7 +447,7 @@ export default function SellerTransactions() {
                         <MethodLabel method={tx.method} />
                       </span>
                       <span className="w-20">
-                        <StatusBadge status={tx.status} />
+                        <StatusBadge tx={tx} />
                       </span>
                       <span className="w-28 text-right text-sm tabular-nums text-muted-foreground">
                         {formatDateTime(tx.created_at)}
@@ -514,7 +523,7 @@ export default function SellerTransactions() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <MethodLabel method={tx.method} className="text-xs" />
-                        <StatusBadge status={tx.status} />
+                        <StatusBadge tx={tx} />
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="text-sm md:text-xs text-muted-foreground tabular-nums">
