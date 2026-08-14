@@ -41,6 +41,8 @@ export interface IKycSubmissionView {
   api_access_enabled: boolean;
   email_manually_approved?: boolean;
   email_verified?: boolean;
+  pending_email_code?: string | null;
+  pending_email_code_expires_at?: string | null;
 }
 
 export interface IRegisteredSellerView {
@@ -51,4 +53,6 @@ export interface IRegisteredSellerView {
   created_at: string;
   email_manually_approved?: boolean;
   email_verified?: boolean;
+  pending_email_code?: string | null;
+  pending_email_code_expires_at?: string | null;
 }

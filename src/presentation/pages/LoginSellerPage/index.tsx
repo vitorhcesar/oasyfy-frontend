@@ -6,7 +6,7 @@ export default function LoginSellerPage() {
   return (
     <div className="auth-skin relative flex min-h-screen overflow-hidden bg-[#0F0F10] text-foreground">
       <AuthAmbientBackground />
-      <div className="relative z-10 flex min-h-screen w-full animate-fade-in">
+      <div className="auth-enter relative z-10 flex min-h-screen w-full">
         <LoginSellerLeftPanel />
         <LoginSellerFormPanel />
       </div>

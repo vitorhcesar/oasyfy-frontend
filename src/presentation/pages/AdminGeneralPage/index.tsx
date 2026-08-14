@@ -1,8 +1,9 @@
 import { AdminLayout } from "@/presentation/layouts/AdminLayout";
 import { BannersTab } from "@/presentation/pages/AdminGeneralPage/components/BannersTab";
 import { ColorsTab } from "@/presentation/pages/AdminGeneralPage/components/ColorsTab";
+import { FinancialTab } from "@/presentation/pages/AdminGeneralPage/components/FinancialTab";
 import { cn } from "@/presentation/utils/cn";
-import { Building2, Image, LayoutGrid, Palette } from "lucide-react";
+import { Building2, Image, LayoutGrid, Palette, Wallet } from "lucide-react";
 import { useState } from "react";
 
 const tabs = [
@@ -10,6 +11,7 @@ const tabs = [
   { key: "imagens", label: "Imagens", icon: Image },
   { key: "cores", label: "Cores", icon: Palette },
   { key: "banners", label: "Banners", icon: LayoutGrid },
+  { key: "financeiro", label: "Financeiro", icon: Wallet },
 ] as const;
 
 type TabKey = (typeof tabs)[number]["key"];
@@ -24,6 +26,8 @@ export default function AdminGeneralPage() {
         return <BannersTab />;
       case "cores":
         return <ColorsTab />;
+      case "financeiro":
+        return <FinancialTab />;
       default:
         return (
           <div className="admin-surface px-6 py-16 text-center">

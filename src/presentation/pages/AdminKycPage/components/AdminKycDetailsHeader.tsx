@@ -5,6 +5,7 @@ import {
   CheckCircle,
   ChevronDown,
   Code2,
+  Copy,
   Loader2,
   Lock,
   Mail,
@@ -120,6 +121,7 @@ export function AdminKycDetailsHeader({
         );
         toast.success("Código de confirmação enviado");
         setActionsOpen(false);
+        onUpdate();
       },
       {
         defaultErrorMessage: "Erro ao enviar código de confirmação",
@@ -381,21 +383,53 @@ export function AdminKycDetailsHeader({
       </div>
     </header>
     {pendingEmailVerification && (
-      <div className="admin-surface mb-6 flex flex-col gap-3 p-5 md:flex-row md:items-center md:justify-between md:p-6">
-        <div>
+      <div className="admin-surface mb-6 flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between md:p-6">
+        <div className="min-w-0">
           <p className="text-sm font-semibold text-foreground">
             E-mail pendente de confirmação
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
             Este seller ainda está na etapa de OTP e não consegue acessar o
-            painel até confirmar o código enviado por e-mail.
+            painel até confirmar o código. Se o e-mail não chegar, use o código
+            abaixo.
           </p>
+          {submission.pending_email_code && (
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <span className="rounded-lg border border-warning/25 bg-warning/10 px-3 py-1.5 font-mono text-lg font-semibold tracking-[0.3em] text-foreground">
+                {submission.pending_email_code}
+              </span>
+              <button
+                type="button"
+                onClick={() =>
+                  copyToClipboard(
+                    submission.pending_email_code ?? null,
+                    "Código OTP",
+                  )
+                }
+                className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                <Copy size={14} />
+                Copiar
+              </button>
+              {submission.pending_email_code_expires_at && (
+                <span className="text-xs text-muted-foreground">
+                  Expira às{" "}
+                  {new Date(
+                    submission.pending_email_code_expires_at,
+                  ).toLocaleTimeString("pt-BR", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+              )}
+            </div>
+          )}
         </div>
         <button
           type="button"
           onClick={handleSendSignupVerification}
           disabled={sendVerificationLoading || !submission.email}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+          className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {sendVerificationLoading ? (
             <Loader2 size={15} className="animate-spin" />

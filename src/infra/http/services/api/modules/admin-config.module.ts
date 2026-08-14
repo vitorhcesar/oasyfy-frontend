@@ -30,6 +30,14 @@ export interface IAdminCheckoutTestResultDto {
   settings: IAdminCheckoutSettingsDto;
 }
 
+export interface IAdminFinancialSettingsDto {
+  autoWithdrawalEnabled: boolean;
+}
+
+export interface IAdminFinancialSettingsUpdateBody {
+  autoWithdrawalEnabled: boolean;
+}
+
 function toGlobalFeeBody(fees: Record<string, number>) {
   return {
     pixVariableFee: fees.pix_variable_fee,
@@ -79,6 +87,10 @@ export interface IAdminConfigModule {
     payload: IAdminCheckoutSettingsUpdateBody,
   ): Promise<IAdminCheckoutSettingsDto>;
   testCheckoutDomain(baseUrl?: string | null): Promise<IAdminCheckoutTestResultDto>;
+  getFinancialSettings(): Promise<IAdminFinancialSettingsDto>;
+  updateFinancialSettings(
+    payload: IAdminFinancialSettingsUpdateBody,
+  ): Promise<IAdminFinancialSettingsDto>;
   listAcquirerConnections(): Promise<Record<string, unknown>[]>;
   ensureDefaultAcquirerConnections(): Promise<Record<string, unknown>[]>;
   updateAcquirerConnection(
@@ -233,6 +245,20 @@ export class AdminConfigModule
     >(`${this.baseUrl}/checkout-settings/test`, {
       baseUrl: baseUrl ?? null,
     });
+    return response.data;
+  }
+
+  async getFinancialSettings() {
+    const response = await this.getClient().get<
+      IApiEnvelope<IAdminFinancialSettingsDto>
+    >(`${this.baseUrl}/financial-settings`);
+    return response.data;
+  }
+
+  async updateFinancialSettings(payload: IAdminFinancialSettingsUpdateBody) {
+    const response = await this.getClient().put<
+      IApiEnvelope<IAdminFinancialSettingsDto>
+    >(`${this.baseUrl}/financial-settings`, payload);
     return response.data;
   }
 

@@ -25,6 +25,8 @@ export interface IAdminRegisteredSellerDto {
   createdAt: string;
   emailManuallyApproved: boolean;
   emailVerified: boolean;
+  pendingEmailCode: string | null;
+  pendingEmailCodeExpiresAt: string | null;
 }
 
 export interface IAdminKycSubmissionDto {
@@ -67,6 +69,8 @@ export interface IAdminKycSubmissionDto {
   accountId: string | null;
   emailManuallyApproved: boolean;
   emailVerified: boolean;
+  pendingEmailCode: string | null;
+  pendingEmailCodeExpiresAt: string | null;
   documentFrontUrl: string | null;
   documentBackUrl: string | null;
   selfieUrl: string | null;

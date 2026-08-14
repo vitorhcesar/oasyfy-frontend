@@ -49,6 +49,8 @@ export function mapAdminKycSubmissionToView(
     api_access_enabled: submission.apiAccessEnabled ?? false,
     email_manually_approved: submission.emailManuallyApproved,
     email_verified: submission.emailVerified,
+    pending_email_code: submission.pendingEmailCode,
+    pending_email_code_expires_at: submission.pendingEmailCodeExpiresAt,
   };
 }
 
@@ -63,6 +65,8 @@ export function mapRegisteredSellerToView(
     created_at: seller.createdAt,
     email_manually_approved: seller.emailManuallyApproved,
     email_verified: seller.emailVerified,
+    pending_email_code: seller.pendingEmailCode,
+    pending_email_code_expires_at: seller.pendingEmailCodeExpiresAt,
   };
 }
 
@@ -107,5 +111,7 @@ export function mapRegisteredSellerToKycView(
     api_access_enabled: false,
     email_manually_approved: seller.email_manually_approved,
     email_verified: seller.email_verified,
+    pending_email_code: seller.pending_email_code,
+    pending_email_code_expires_at: seller.pending_email_code_expires_at,
   };
 }
