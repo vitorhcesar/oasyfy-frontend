@@ -42,40 +42,7 @@ export interface IAdminFinancialSettingsUpdateBody {
   pixMaxAmount: number;
 }
 
-function toGlobalFeeBody(fees: Record<string, number>) {
-  return {
-    pixVariableFee: fees.pix_variable_fee,
-    pixFixedFee: fees.pix_fixed_fee,
-    pixMinFee: fees.pix_min_fee,
-    pixRetentionDays: fees.pix_retention_days,
-    pixRetentionFee: fees.pix_retention_fee,
-    cardVariableFee: fees.card_variable_fee,
-    cardFixedFee: fees.card_fixed_fee,
-    cardMinFee: fees.card_min_fee,
-    cardRetentionDays: fees.card_retention_days,
-    cardRetentionFee: fees.card_retention_fee,
-    boletoVariableFee: fees.boleto_variable_fee,
-    boletoFixedFee: fees.boleto_fixed_fee,
-    boletoMinFee: fees.boleto_min_fee,
-    boletoRetentionDays: fees.boleto_retention_days,
-    boletoRetentionFee: fees.boleto_retention_fee,
-    cryptoVariableFee: fees.crypto_variable_fee,
-    cryptoFixedFee: fees.crypto_fixed_fee,
-    cryptoMinFee: fees.crypto_min_fee,
-    cryptoRetentionDays: fees.crypto_retention_days,
-    cryptoRetentionFee: fees.crypto_retention_fee,
-    withdrawalVariableFee: fees.withdrawal_variable_fee,
-    withdrawalFixedFee: fees.withdrawal_fixed_fee,
-    withdrawalMinFee: fees.withdrawal_min_fee,
-    withdrawalMinAmount: fees.withdrawal_min_amount,
-    withdrawalMaxAmount: fees.withdrawal_max_amount,
-    withdrawalDailyMax: fees.withdrawal_daily_max,
-  };
-}
-
 export interface IAdminConfigModule {
-  getGlobalFees(): Promise<Record<string, number | string> | null>;
-  updateGlobalFees(fees: Record<string, number>): Promise<void>;
   listSellerGoals(): Promise<Record<string, unknown>[]>;
   createSellerGoal(payload: Record<string, unknown>): Promise<void>;
   updateSellerGoal(id: number, payload: Record<string, unknown>): Promise<void>;
@@ -121,17 +88,6 @@ export class AdminConfigModule
   implements IAdminConfigModule
 {
   private readonly baseUrl = "/api/v1/admin";
-
-  async getGlobalFees() {
-    const response = await this.getClient().get<
-      IApiEnvelope<Record<string, number | string> | null>
-    >(`${this.baseUrl}/global-fees`);
-    return response.data;
-  }
-
-  async updateGlobalFees(fees: Record<string, number>) {
-    await this.getClient().put(`${this.baseUrl}/global-fees`, toGlobalFeeBody(fees));
-  }
 
   async listSellerGoals() {
     const response = await this.getClient().get<

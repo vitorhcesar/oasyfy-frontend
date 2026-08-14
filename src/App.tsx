@@ -26,7 +26,6 @@ import AdminCrm from "./presentation/pages/admin/AdminCrm";
 import AdminEmail from "./presentation/pages/admin/AdminEmail";
 import AdminFeeTemplates from "./presentation/pages/admin/AdminFeeTemplates";
 import AdminFeeTemplateFormPage from "./presentation/pages/admin/AdminFeeTemplateFormPage";
-import AdminGlobalFees from "./presentation/pages/admin/AdminGlobalFees";
 import AdminGoals from "./presentation/pages/admin/AdminGoals";
 import AdminManagers from "./presentation/pages/admin/AdminManagers";
 import AdminRefunds from "./presentation/pages/admin/AdminRefunds";
@@ -293,14 +292,6 @@ export default function App() {
                   element={
                     <ProtectedRoute requiredRole="admin">
                       <AdminFeeTemplates />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/admin/global-fees"
-                  element={
-                    <ProtectedRoute requiredRole="admin">
-                      <AdminGlobalFees />
                     </ProtectedRoute>
                   }
                 />

@@ -31,7 +31,6 @@ import {
   ChevronLeft,
   ChevronRight,
   CreditCard,
-  DollarSign,
   FileCheck,
   Image,
   Layers,
@@ -75,7 +74,6 @@ const financialSubItems = [
 const settingsSubItems = [
   { title: "Geral", url: "/admin/general", icon: Sliders },
   { title: "Adquirente", url: "/admin/acquirer", icon: CreditCard },
-  { title: "Taxas globais", url: "/admin/global-fees", icon: DollarSign },
   { title: "Planos de taxa", url: "/admin/fee-templates", icon: Layers },
   { title: "E-mail", url: "/admin/email", icon: Mail },
   { title: "Checkout", url: "/admin/checkout", icon: Link2 },
@@ -142,7 +140,6 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
   const isOnSettings =
     location.pathname.startsWith("/admin/general") ||
     location.pathname.startsWith("/admin/acquirer") ||
-    location.pathname.startsWith("/admin/global-fees") ||
     location.pathname.startsWith("/admin/fee-templates") ||
     location.pathname.startsWith("/admin/email") ||
     location.pathname.startsWith("/admin/checkout") ||
