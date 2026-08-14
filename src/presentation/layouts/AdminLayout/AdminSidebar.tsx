@@ -292,7 +292,7 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
         )}
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-3 py-5">
+      <nav className="flex-1 overflow-y-auto px-3 py-5 scrollbar-hide">
         {!collapsed && (
           <p className="mb-2 px-3 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70">
             Principal

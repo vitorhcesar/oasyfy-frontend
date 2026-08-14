@@ -387,7 +387,7 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
         )}
       </div>
 
-      <nav className="flex-1 overflow-y-auto px-3 py-5">
+      <nav className="flex-1 overflow-y-auto px-3 py-5 scrollbar-hide">
         {!isCollapsed && (
           <p className="mb-2 px-3 text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-muted-foreground/70">
             Geral
