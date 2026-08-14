@@ -38,6 +38,12 @@ export interface IAdminTransactionSellerInfoDto {
   cnpj: string | null;
 }
 
+export interface IAdminSellerByAccountDto {
+  accountId: string;
+  fullName: string | null;
+  email: string | null;
+}
+
 export interface IAdminWithdrawalContextDto {
   withdrawal: IAdminTransactionDto;
   bankData: Record<string, unknown> | null;
@@ -142,6 +148,9 @@ export interface IAdminFinanceModule {
   getTransactionSellerInfo(
     sellerId: number,
   ): Promise<IAdminTransactionSellerInfoDto | null>;
+  getSellersByAccountIds(
+    accountIds: string[],
+  ): Promise<IAdminSellerByAccountDto[]>;
   refundTransaction(
     transactionId: number,
     body: { reason?: string; isFake: boolean },
@@ -194,6 +203,16 @@ export class AdminFinanceModule
       IApiEnvelope<IAdminTransactionSellerInfoDto | null>
     >(`${this.baseUrl}/transactions/seller-info`, {
       params: { sellerId },
+    });
+    return response.data;
+  }
+
+  async getSellersByAccountIds(accountIds: string[]) {
+    if (accountIds.length === 0) return [];
+    const response = await this.getClient().get<
+      IApiEnvelope<IAdminSellerByAccountDto[]>
+    >(`${this.baseUrl}/transactions/sellers-by-account`, {
+      params: { accountIds: accountIds.join(",") },
     });
     return response.data;
   }

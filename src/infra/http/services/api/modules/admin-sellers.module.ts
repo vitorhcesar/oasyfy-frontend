@@ -31,6 +31,10 @@ export interface IAdminSellersModule {
     sellerId: number,
     body: { amount: number; reason?: string; idempotencyKey?: string },
   ): Promise<IAdminBalanceCreditResultDto>;
+  addBalanceDebit(
+    sellerId: number,
+    body: { amount: number; reason?: string; idempotencyKey?: string },
+  ): Promise<IAdminBalanceCreditResultDto>;
   blockWithdrawals(
     sellerId: number,
     body: { reason: string },
@@ -88,6 +92,16 @@ export class AdminSellersModule
     const response = await this.getClient().post<
       IApiEnvelope<IAdminBalanceCreditResultDto>
     >(`${this.baseUrl}/${sellerId}/balance/credits`, body);
+    return response.data;
+  }
+
+  async addBalanceDebit(
+    sellerId: number,
+    body: { amount: number; reason?: string; idempotencyKey?: string },
+  ): Promise<IAdminBalanceCreditResultDto> {
+    const response = await this.getClient().post<
+      IApiEnvelope<IAdminBalanceCreditResultDto>
+    >(`${this.baseUrl}/${sellerId}/balance/debits`, body);
     return response.data;
   }
 

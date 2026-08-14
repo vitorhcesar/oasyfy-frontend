@@ -1,5 +1,8 @@
 import type { IAdminSellerProfileDto } from "@/infra/http/services/api/modules/types/admin-sellers.types";
-import { AddBalanceCreditModal } from "@/presentation/components/admin/AddBalanceCreditModal";
+import {
+  AdminBalanceAdjustmentModal,
+  type TAdminBalanceAdjustmentMode,
+} from "@/presentation/components/admin/AdminBalanceAdjustmentModal";
 import DeleteSellerAccountModal from "@/presentation/components/admin/DeleteSellerAccountModal";
 import { Button } from "@/presentation/components/ui/button";
 import { AdminLayout } from "@/presentation/layouts/AdminLayout";
@@ -10,6 +13,7 @@ import {
   ArrowLeft,
   Loader2,
   Lock,
+  Minus,
   Plus,
   Shield,
   Trash2,
@@ -39,7 +43,8 @@ export default function AdminSellerProfilePage() {
 
   const [profile, setProfile] = useState<IAdminSellerProfileDto | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showCreditModal, setShowCreditModal] = useState(false);
+  const [balanceModal, setBalanceModal] =
+    useState<TAdminBalanceAdjustmentMode | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
@@ -241,18 +246,29 @@ export default function AdminSellerProfilePage() {
 
       <section className="space-y-4">
         <div className="admin-surface admin-surface-featured p-5">
-          <div className="mb-1 flex items-center justify-between">
+          <div className="mb-1 flex items-center justify-between gap-3">
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Disponível para saque
             </p>
-            <button
-              type="button"
-              onClick={() => setShowCreditModal(true)}
-              className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-primary hover:bg-primary/10"
-            >
-              <Plus size={14} />
-              Adicionar saldo
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setBalanceModal("credit")}
+                className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-primary hover:bg-primary/10"
+              >
+                <Plus size={14} />
+                Adicionar saldo
+              </button>
+              <button
+                type="button"
+                onClick={() => setBalanceModal("debit")}
+                disabled={balance.available <= 0}
+                className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-destructive hover:bg-destructive/10 disabled:pointer-events-none disabled:opacity-40"
+              >
+                <Minus size={14} />
+                Remover saldo
+              </button>
+            </div>
           </div>
           <p className="text-2xl font-bold tabular-nums text-foreground">
             {formatCurrency(balance.available)}
@@ -290,12 +306,12 @@ export default function AdminSellerProfilePage() {
           <div className="mb-3 flex items-center gap-2">
             <Shield size={14} className="text-muted-foreground" />
             <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Últimos créditos administrativos
+              Ajustes administrativos
             </p>
           </div>
           {recentAdjustments.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Nenhum crédito registrado.
+              Nenhum ajuste registrado.
             </p>
           ) : (
             <ul className="space-y-2">
@@ -305,7 +321,14 @@ export default function AdminSellerProfilePage() {
                   className="flex flex-wrap items-center justify-between gap-2 border-b border-border/30 pb-2 text-sm last:border-0"
                 >
                   <div>
-                    <p className="font-medium text-foreground">
+                    <p
+                      className={
+                        item.amount < 0
+                          ? "font-medium text-destructive"
+                          : "font-medium text-foreground"
+                      }
+                    >
+                      {item.amount > 0 ? "+" : ""}
                       {formatCurrency(item.amount)}
                     </p>
                     <p className="text-xs text-muted-foreground">
@@ -340,14 +363,16 @@ export default function AdminSellerProfilePage() {
         </Button>
       </section>
 
-      {showCreditModal ? (
-        <AddBalanceCreditModal
-          sellerId={seller.id}
-          availableCents={balance.available}
-          onClose={() => setShowCreditModal(false)}
-          onSuccess={loadProfile}
-        />
-      ) : null}
+      <AdminBalanceAdjustmentModal
+        sellerId={seller.id}
+        availableCents={balance.available}
+        mode={balanceModal ?? "credit"}
+        open={balanceModal !== null}
+        onOpenChange={(open) => {
+          if (!open) setBalanceModal(null);
+        }}
+        onSuccess={loadProfile}
+      />
 
       {showBlockReasonModal ? (
         <BlockReasonModal sellerId={seller.id} onUpdate={loadProfile} />

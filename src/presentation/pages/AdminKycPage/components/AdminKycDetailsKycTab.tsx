@@ -1,4 +1,5 @@
 import { useApiService } from "@/presentation/hooks/use-api-service";
+import { hasSubmittedKycAddress } from "@/presentation/utils/kyc-section-display-status.util";
 import { tryOrToastError } from "@/presentation/utils/try-or-toast-error";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -136,7 +137,10 @@ export default function AdminKycDetailsKycTab({
       <div className="admin-surface p-5 md:p-6">
         <div className="mb-4 flex items-center gap-2">
           <SectionLabel text="Endereço (libera saques)" />
-          <StatusPill status={submission.address_status} />
+          {hasSubmittedKycAddress({
+            zipCode: submission.zip_code,
+            street: submission.street,
+          }) && <StatusPill status={submission.address_status} />}
         </div>
         {!submission.street ? (
           <p className="text-sm text-muted-foreground">

@@ -1,4 +1,8 @@
 import { cn } from "@/presentation/utils/cn";
+import {
+  hasSubmittedKycAddress,
+  hasSubmittedKycBank,
+} from "@/presentation/utils/kyc-section-display-status.util";
 import { useAdminKycDetailsStore } from "../stores/admin-kyc-details.store";
 import { TAdminKycDetailsTab } from "../types/admin-kyc-details-tab.type";
 import { IKycSubmissionView } from "../types/kyc-submission-view.type";
@@ -25,8 +29,18 @@ export default function AdminKycDetailsTabs({
   const pendingDocs = docKeys.filter(
     (k) => !docReview[k] || docReview[k].status === "pending",
   ).length;
-  const pendingKyc = submission.address_status === "pending" ? 1 : 0;
-  const pendingBank = submission.bank_status === "pending" ? 1 : 0;
+  const pendingKyc =
+    hasSubmittedKycAddress({
+      zipCode: submission.zip_code,
+      street: submission.street,
+    }) && submission.address_status === "pending"
+      ? 1
+      : 0;
+  const pendingBank =
+    hasSubmittedKycBank(submission.bank_data) &&
+    submission.bank_status === "pending"
+      ? 1
+      : 0;
 
   const tabs: { key: TAdminKycDetailsTab; label: string; pending: number }[] = [
     { key: "kyc", label: "Endereço (saques)", pending: pendingKyc },

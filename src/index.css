@@ -705,3 +705,25 @@
     -webkit-backdrop-filter: none !important;
   }
 }
+
+/*
+ * Sonner (≤600px) usa width:100% + left/right offset, o que empurra o toast
+ * para fora da viewport. Estica entre os offsets em vez de somar 100% + inset.
+ */
+@media (max-width: 600px) {
+  [data-sonner-toaster] {
+    left: var(--mobile-offset-left) !important;
+    right: var(--mobile-offset-right) !important;
+    width: auto !important;
+  }
+
+  [data-sonner-toaster][data-x-position="center"] {
+    transform: none !important;
+  }
+
+  [data-sonner-toaster] [data-sonner-toast] {
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+  }
+}

@@ -1,3 +1,4 @@
+import KycWithdrawalDetails from "@/presentation/components/KycOnboarding/KycWithdrawalDetails";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import { WithdrawalModal } from "@/presentation/components/seller/WithdrawalModal";
 import useSellerFeeQuery from "@/presentation/hooks/use-seller-fee-query";
@@ -8,6 +9,7 @@ import { cn } from "@/presentation/utils/cn";
 import { Loader2 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import KycOnboarding from "../../components/KycOnboarding";
 import Banners from "./components/Banners";
 import Conversion from "./components/Conversion";
@@ -28,6 +30,8 @@ export default function SellerDashboardPage() {
     kycStatus,
     isLoading: kycLoading,
     canSell,
+    canWithdraw,
+    submission,
     documentsReview,
     invalidateQuery: invalidateKycSubmissionQuery,
   } = useSellerKycSubmissionQuery();
@@ -79,6 +83,25 @@ export default function SellerDashboardPage() {
   };
 
   const [withdrawalOpen, setWithdrawalOpen] = useState(false);
+  const [withdrawalDetailsOpen, setWithdrawalDetailsOpen] = useState(false);
+
+  const withdrawalBlocked = submission?.withdrawalsBlocked ?? false;
+  const needsWithdrawalDetails =
+    canSell &&
+    (!submission?.zipCode || !submission?.street || !submission?.bankData);
+
+  const handleRequestWithdrawal = () => {
+    if (withdrawalBlocked) return;
+    if (needsWithdrawalDetails) {
+      setWithdrawalDetailsOpen(true);
+      return;
+    }
+    if (!canWithdraw) {
+      toast.info("Confirme endereço e dados bancários para sacar.");
+      return;
+    }
+    setWithdrawalOpen(true);
+  };
 
   const showKycForm = kycStatus === "none" || kycStatus === "rejected";
   const hasRejectedDocs = Object.values(documentsReview).some(
@@ -217,6 +240,17 @@ export default function SellerDashboardPage() {
         />
       )}
 
+      {withdrawalDetailsOpen && (
+        <KycWithdrawalDetails
+          onComplete={() => {
+            setWithdrawalDetailsOpen(false);
+            void invalidateKycSubmissionQuery();
+            toast.success("Dados enviados. Aguarde a aprovação para sacar.");
+          }}
+          onCancel={() => setWithdrawalDetailsOpen(false)}
+        />
+      )}
+
       <div
         className={cn(
           "mx-auto w-full max-w-7xl px-5 py-6 md:px-8 md:py-9",
@@ -225,9 +259,7 @@ export default function SellerDashboardPage() {
       >
         <Banners />
 
-        <SellerDashboardHeader
-          onClickWithdrawal={() => setWithdrawalOpen(true)}
-        />
+        <SellerDashboardHeader onClickWithdrawal={handleRequestWithdrawal} />
 
         <Stats />
 

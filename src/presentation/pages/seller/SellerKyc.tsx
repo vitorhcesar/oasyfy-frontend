@@ -14,6 +14,11 @@ import PageHeader from "@/presentation/components/PageHeader";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import { useSellerKycSubmissionQuery } from "@/presentation/hooks/use-seller-kyc-submission-query";
 import {
+  hasSubmittedKycAddress,
+  hasSubmittedKycBank,
+  kycSectionDisplayStatus,
+} from "@/presentation/utils/kyc-section-display-status.util";
+import {
   AlertCircle,
   Building2,
   CheckCircle2,
@@ -24,7 +29,6 @@ import {
   Landmark,
   Loader2,
   Pencil,
-  Plus,
   Trash2,
   Upload,
   User,
@@ -133,20 +137,6 @@ export default function SellerKyc() {
     setEditingBank(true);
   };
 
-  const openBankAdd = () => {
-    setBankForm({
-      bankName: "",
-      accountType: "corrente",
-      agency: "",
-      agencyDigit: "",
-      account: "",
-      accountDigit: "",
-      pixKey: "",
-      pixKeyType: "cpf",
-    });
-    setEditingBank(true);
-  };
-
   const saveBankData = async () => {
     if (!kyc || !bankForm.bankName || !bankForm.agency || !bankForm.account) {
       toast.error("Preencha pelo menos banco, agência e conta.");
@@ -189,23 +179,36 @@ export default function SellerKyc() {
     );
   }
 
+  const hasAddress = hasSubmittedKycAddress({
+    zipCode: kyc.zipCode,
+    street: kyc.street,
+  });
+  const hasBank = hasSubmittedKycBank(kyc.bankData);
+  const addressDisplayStatus = kycSectionDisplayStatus(
+    kyc.addressStatus,
+    hasAddress,
+  );
+  const bankDisplayStatus = kycSectionDisplayStatus(kyc.bankStatus, hasBank);
+
   const allApproved =
-    kyc.status === "approved" &&
     kyc.documentsStatus === "approved" &&
-    kyc.bankStatus === "approved" &&
-    kyc.addressStatus === "approved";
+    (addressDisplayStatus === null || addressDisplayStatus === "approved") &&
+    (bankDisplayStatus === null || bankDisplayStatus === "approved");
   const overallStatus = allApproved
     ? "approved"
-    : kyc.status === "rejected"
+    : kyc.status === "rejected" ||
+        kyc.documentsStatus === "rejected" ||
+        addressDisplayStatus === "rejected" ||
+        bankDisplayStatus === "rejected"
       ? "rejected"
       : "pending";
 
   const bankData = kyc.bankData;
 
-  const tabStatusMap: Record<TTab, string> = {
-    info: kyc.addressStatus || "pending",
+  const tabStatusMap: Record<TTab, string | null> = {
+    info: addressDisplayStatus,
     documents: kyc.documentsStatus || "pending",
-    bank: kyc.bankStatus || "pending",
+    bank: bankDisplayStatus,
   };
 
   const tabs: { key: TTab; label: string }[] = [
@@ -231,7 +234,9 @@ export default function SellerKyc() {
           title="Verificação KYC"
           description={
             allApproved
-              ? "Sua verificação foi concluída com sucesso."
+              ? needsWithdrawalDetails
+                ? "Documentos aprovados. Complete endereço e banco para liberar saques."
+                : "Sua verificação foi concluída com sucesso."
               : overallStatus === "rejected"
                 ? "Alguns itens precisam da sua atenção."
                 : "Estamos analisando seus dados. Isso não deve demorar."
@@ -565,106 +570,124 @@ export default function SellerKyc() {
               />
             )}
 
-            <button
-              onClick={() => setBankExpanded(!bankExpanded)}
-              className="w-full flex items-center gap-3 pb-4 border-b border-border/30 mb-0 text-left"
-            >
-              <div className="w-10 h-10 rounded-full bg-muted/40 flex items-center justify-center flex-shrink-0">
-                <Landmark size={16} className="text-muted-foreground" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground truncate">
-                  {bankData?.bankName || "—"}
+            {!hasBank ? (
+              <div className="space-y-3 py-2">
+                <p className="text-sm text-muted-foreground">
+                  Conta bancária ainda não enviada. É necessária para liberar
+                  saques.
                 </p>
-                <div className="flex items-center gap-2 mt-1">
-                  <p className="text-xs text-muted-foreground">
-                    {bankData?.accountType === "corrente"
-                      ? "Conta Corrente"
-                      : bankData?.accountType === "poupanca"
-                        ? "Poupança"
-                        : bankData?.accountType || "—"}
-                  </p>
-                  <BankStatusBadge status={kyc.bankStatus} />
-                </div>
+                {needsWithdrawalDetails && (
+                  <button
+                    type="button"
+                    onClick={() => setWithdrawalDetailsOpen(true)}
+                    className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3 py-2 text-xs font-medium text-primary-foreground"
+                  >
+                    Completar dados para saque
+                  </button>
+                )}
               </div>
-              <ChevronRight
-                size={14}
-                className={`text-muted-foreground/40 transition-transform duration-200 flex-shrink-0 ${
-                  bankExpanded ? "rotate-90" : ""
-                }`}
-              />
-            </button>
+            ) : (
+              <>
+                <button
+                  onClick={() => setBankExpanded(!bankExpanded)}
+                  className="w-full flex items-center gap-3 pb-4 border-b border-border/30 mb-0 text-left"
+                >
+                  <div className="w-10 h-10 rounded-full bg-muted/40 flex items-center justify-center flex-shrink-0">
+                    <Landmark size={16} className="text-muted-foreground" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">
+                      {bankData?.bankName || "—"}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <p className="text-xs text-muted-foreground">
+                        {bankData?.accountType === "corrente"
+                          ? "Conta Corrente"
+                          : bankData?.accountType === "poupanca"
+                            ? "Poupança"
+                            : bankData?.accountType || "—"}
+                      </p>
+                      {bankDisplayStatus && (
+                        <BankStatusBadge status={bankDisplayStatus} />
+                      )}
+                    </div>
+                  </div>
+                  <ChevronRight
+                    size={14}
+                    className={`text-muted-foreground/40 transition-transform duration-200 flex-shrink-0 ${
+                      bankExpanded ? "rotate-90" : ""
+                    }`}
+                  />
+                </button>
 
-            {bankExpanded && (
-              <div className="pt-4 animate-fade-in">
-                <div className="flex items-center justify-end gap-2 mb-4">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      openBankEdit();
-                    }}
-                    className="p-2 rounded-lg text-muted-foreground/50 hover:text-foreground hover:bg-muted/30 transition-all"
-                    title="Editar conta"
-                  >
-                    <Pencil size={14} />
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      deleteBankData();
-                    }}
-                    className="p-2 rounded-lg text-muted-foreground/50 hover:text-destructive hover:bg-destructive/5 transition-all"
-                    title="Excluir conta"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-0">
-                  <DataRow label="Banco" value={bankData?.bankName} />
-                  <DataRow
-                    label="Tipo de conta"
-                    value={
-                      bankData?.accountType === "corrente"
-                        ? "Conta Corrente"
-                        : bankData?.accountType === "poupanca"
-                          ? "Poupança"
-                          : bankData?.accountType
-                    }
-                  />
-                  <DataRow
-                    label="Agência"
-                    value={
-                      bankData?.agencyDigit
-                        ? `${bankData.agency}-${bankData.agencyDigit}`
-                        : bankData?.agency
-                    }
-                    mono
-                  />
-                  <DataRow
-                    label="Conta"
-                    value={
-                      bankData?.accountDigit
-                        ? `${bankData.account}-${bankData.accountDigit}`
-                        : bankData?.account
-                    }
-                    mono
-                  />
-                  <DataRow label="Chave PIX" value={bankData?.pixKey} mono />
-                  <DataRow
-                    label="Tipo de chave PIX"
-                    value={bankData?.pixKeyType?.toUpperCase()}
-                  />
-                </div>
-              </div>
+                {bankExpanded && (
+                  <div className="pt-4 animate-fade-in">
+                    <div className="flex items-center justify-end gap-2 mb-4">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openBankEdit();
+                        }}
+                        className="p-2 rounded-lg text-muted-foreground/50 hover:text-foreground hover:bg-muted/30 transition-all"
+                        title="Editar conta"
+                      >
+                        <Pencil size={14} />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteBankData();
+                        }}
+                        className="p-2 rounded-lg text-muted-foreground/50 hover:text-destructive hover:bg-destructive/5 transition-all"
+                        title="Excluir conta"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-0">
+                      <DataRow label="Banco" value={bankData?.bankName} />
+                      <DataRow
+                        label="Tipo de conta"
+                        value={
+                          bankData?.accountType === "corrente"
+                            ? "Conta Corrente"
+                            : bankData?.accountType === "poupanca"
+                              ? "Poupança"
+                              : bankData?.accountType
+                        }
+                      />
+                      <DataRow
+                        label="Agência"
+                        value={
+                          bankData?.agencyDigit
+                            ? `${bankData.agency}-${bankData.agencyDigit}`
+                            : bankData?.agency
+                        }
+                        mono
+                      />
+                      <DataRow
+                        label="Conta"
+                        value={
+                          bankData?.accountDigit
+                            ? `${bankData.account}-${bankData.accountDigit}`
+                            : bankData?.account
+                        }
+                        mono
+                      />
+                      <DataRow
+                        label="Chave PIX"
+                        value={bankData?.pixKey}
+                        mono
+                      />
+                      <DataRow
+                        label="Tipo de chave PIX"
+                        value={bankData?.pixKeyType?.toUpperCase()}
+                      />
+                    </div>
+                  </div>
+                )}
+              </>
             )}
-
-            <button
-              onClick={openBankAdd}
-              className="mt-6 w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-dashed border-border/40 text-muted-foreground/60 hover:border-primary/30 hover:text-primary hover:bg-primary/[0.02] transition-all duration-200 text-xs"
-            >
-              <Plus size={14} />
-              Adicionar nova conta bancária
-            </button>
           </div>
         )}
       </div>

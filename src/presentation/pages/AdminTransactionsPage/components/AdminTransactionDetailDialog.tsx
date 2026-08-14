@@ -11,6 +11,7 @@ import {
   TabsTrigger,
 } from "@/presentation/components/ui/tabs";
 import { cn } from "@/presentation/utils/cn";
+import useAdminSellersByAccountIdsQuery from "@/presentation/hooks/use-admin-sellers-by-account-ids-query";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import {
@@ -64,7 +65,7 @@ function SectionCard({
   children: ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-border/60 bg-card p-4 md:p-5">
+    <div className="min-w-0 overflow-hidden rounded-2xl border border-border/60 bg-card p-4 md:p-5">
       <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
         {title}
       </p>
@@ -84,6 +85,39 @@ function MetaItem({
     <div>
       <p className="text-sm text-muted-foreground">{label}</p>
       <p className="mt-0.5 text-sm font-medium text-foreground">{value}</p>
+    </div>
+  );
+}
+
+function SplitPartyRow({
+  title,
+  email,
+  accountId,
+  percentage,
+  amount,
+}: {
+  title: string;
+  email: string | null | undefined;
+  accountId: string | null | undefined;
+  percentage: number | null;
+  amount: number | null;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-3 rounded-xl border border-border/50 px-3 py-2.5">
+      <div className="min-w-0">
+        <p className="truncate text-sm font-medium text-foreground">{title}</p>
+        {email && (
+          <p className="break-all text-sm text-foreground/80">{email}</p>
+        )}
+        <p className="truncate text-xs text-muted-foreground">
+          {[accountId, percentage != null ? `${percentage}%` : null]
+            .filter(Boolean)
+            .join(" · ")}
+        </p>
+      </div>
+      <span className="shrink-0 text-sm font-bold tabular-nums text-foreground">
+        {amount != null ? formatCurrency(amount) : "—"}
+      </span>
     </div>
   );
 }
@@ -114,6 +148,17 @@ export default function AdminTransactionDetailDialog({
     () => getSaleSplitDetails(selectedTx?.metadata),
     [selectedTx?.metadata],
   );
+  const partnerAccountIds = useMemo(
+    () => splitDetails?.breakdown.map((item) => item.accountId) ?? [],
+    [splitDetails],
+  );
+  const { data: partnerSellers } =
+    useAdminSellersByAccountIdsQuery(partnerAccountIds);
+  const partnerByAccountId = useMemo(
+    () => new Map(partnerSellers.map((seller) => [seller.accountId, seller])),
+    [partnerSellers],
+  );
+  const sellerEmail = sellerInfo?.email || sellerKyc?.email;
   const splitSourceLabel =
     splitDetails?.source === "request"
       ? "Definido na API"
@@ -128,7 +173,7 @@ export default function AdminTransactionDetailDialog({
         if (!open) onClose();
       }}
     >
-      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto border-border/60 bg-background">
+      <DialogContent className="max-h-[90vh] w-[calc(100%-2rem)] max-w-2xl min-w-0 overflow-x-hidden overflow-y-auto border-border/60 bg-background">
         <DialogHeader>
           <DialogTitle className="flex flex-wrap items-center gap-2 text-xl font-bold tracking-tight">
             Detalhes da Transação
@@ -153,7 +198,7 @@ export default function AdminTransactionDetailDialog({
         </DialogHeader>
 
         {selectedTx && (
-          <Tabs defaultValue="venda" className="mt-2">
+          <Tabs defaultValue="venda" className="mt-2 min-w-0">
             <TabsList className="liquid-glass-control h-auto w-full gap-0.5 rounded-2xl p-1">
               <TabsTrigger
                 value="venda"
@@ -169,7 +214,7 @@ export default function AdminTransactionDetailDialog({
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="venda" className="mt-5 space-y-4">
+            <TabsContent value="venda" className="mt-5 min-w-0 space-y-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
@@ -342,45 +387,31 @@ export default function AdminTransactionDetailDialog({
                   </div>
 
                   <div className="space-y-2.5">
-                    <div className="flex items-center justify-between gap-3 rounded-xl bg-muted/40 px-3 py-2.5">
-                      <div className="min-w-0">
-                        <p className="text-sm font-medium text-foreground">
-                          Seller / Produtor
-                        </p>
-                        {splitDetails.sellerPercentage != null && (
-                          <p className="text-xs text-muted-foreground">
-                            {splitDetails.sellerPercentage}%
-                          </p>
-                        )}
-                      </div>
-                      <span className="shrink-0 text-sm font-bold tabular-nums text-foreground">
-                        {splitDetails.sellerAmount != null
-                          ? formatCurrency(splitDetails.sellerAmount)
-                          : "—"}
-                      </span>
-                    </div>
+                    <SplitPartyRow
+                      title={sellerInfo?.full_name || "Seller / Produtor"}
+                      email={sellerEmail}
+                      accountId={sellerInfo?.account_id}
+                      percentage={splitDetails.sellerPercentage}
+                      amount={splitDetails.sellerAmount}
+                    />
 
-                    {splitDetails.breakdown.map((item) => (
-                      <div
-                        key={item.accountId}
-                        className="flex items-center justify-between gap-3 rounded-xl border border-border/50 px-3 py-2.5"
-                      >
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-medium text-foreground">
-                            {item.description || item.accountId}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {item.accountId}
-                            {item.percentage != null
-                              ? ` · ${item.percentage}%`
-                              : ""}
-                          </p>
-                        </div>
-                        <span className="shrink-0 text-sm font-bold tabular-nums text-foreground">
-                          {formatCurrency(item.amount)}
-                        </span>
-                      </div>
-                    ))}
+                    {splitDetails.breakdown.map((item) => {
+                      const partner = partnerByAccountId.get(item.accountId);
+                      return (
+                        <SplitPartyRow
+                          key={item.accountId}
+                          title={
+                            partner?.fullName ||
+                            item.description ||
+                            "Sócio"
+                          }
+                          email={partner?.email}
+                          accountId={item.accountId}
+                          percentage={item.percentage}
+                          amount={item.amount}
+                        />
+                      );
+                    })}
                   </div>
 
                   {splitDetails.skipped.length > 0 && (
@@ -402,7 +433,7 @@ export default function AdminTransactionDetailDialog({
               )}
             </TabsContent>
 
-            <TabsContent value="mais" className="mt-5 space-y-4">
+            <TabsContent value="mais" className="mt-5 min-w-0 space-y-4">
               {selectedTx.lock_reason && (
                 <div className="rounded-2xl border border-destructive/25 bg-destructive/10 p-4">
                   <p className="mb-1 text-xs font-semibold uppercase tracking-[0.18em] text-destructive">
@@ -441,11 +472,11 @@ export default function AdminTransactionDetailDialog({
                   />
                 </div>
                 {selectedTx.metadata && (
-                  <div className="mt-4">
+                  <div className="mt-4 min-w-0 overflow-hidden">
                     <p className="mb-1.5 text-sm text-muted-foreground">
                       Payload
                     </p>
-                    <pre className="overflow-x-auto rounded-xl border border-border/50 bg-muted/40 p-3 font-mono text-xs text-foreground">
+                    <pre className="max-w-full min-w-0 overflow-x-auto whitespace-pre-wrap break-all rounded-xl border border-border/50 bg-muted/40 p-3 font-mono text-xs text-foreground">
                       {JSON.stringify(selectedTx.metadata, null, 2)}
                     </pre>
                   </div>

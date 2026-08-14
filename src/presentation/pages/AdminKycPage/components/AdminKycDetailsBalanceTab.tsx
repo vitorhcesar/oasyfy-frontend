@@ -1,4 +1,7 @@
-import { AddBalanceCreditModal } from "@/presentation/components/admin/AddBalanceCreditModal";
+import {
+  AdminBalanceAdjustmentModal,
+  type TAdminBalanceAdjustmentMode,
+} from "@/presentation/components/admin/AdminBalanceAdjustmentModal";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import type { IAdminBalanceAdjustmentDto } from "@/infra/http/services/api/modules/types/admin-sellers.types";
 import {
@@ -8,6 +11,7 @@ import {
   Loader2,
   Lock,
   Plus,
+  Minus,
   RotateCcw,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -24,26 +28,39 @@ function formatCurrencyAdmin(cents: number) {
 interface IAvailableBalanceCardProps {
   available: number;
   onAddCredit: () => void;
+  onRemoveBalance: () => void;
 }
 
 function AvailableBalanceCard({
   available,
   onAddCredit,
+  onRemoveBalance,
 }: IAvailableBalanceCardProps) {
   return (
     <div className="admin-surface admin-surface-featured p-5 md:p-6">
-      <div className="mb-1 flex items-center justify-between">
+      <div className="mb-1 flex items-center justify-between gap-3">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Disponível para saque
         </p>
-        <button
-          type="button"
-          onClick={onAddCredit}
-          className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary/10"
-        >
-          <Plus size={14} />
-          Adicionar saldo
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={onAddCredit}
+            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary/10"
+          >
+            <Plus size={14} />
+            Adicionar saldo
+          </button>
+          <button
+            type="button"
+            onClick={onRemoveBalance}
+            disabled={available <= 0}
+            className="inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-destructive transition-colors hover:bg-destructive/10 disabled:pointer-events-none disabled:opacity-40"
+          >
+            <Minus size={14} />
+            Remover saldo
+          </button>
+        </div>
       </div>
       <p className="text-2xl font-bold text-foreground tabular-nums">
         {formatCurrencyAdmin(available)}
@@ -223,7 +240,8 @@ export function AdminKycDetailsBalanceTab({
     isLoading: balanceLoading,
     invalidateQuery: invalidateBalanceQuery,
   } = useAdminSellerBalancerQuery(seller.user_id);
-  const [showCreditModal, setShowCreditModal] = useState(false);
+  const [balanceModal, setBalanceModal] =
+    useState<TAdminBalanceAdjustmentMode | null>(null);
   const [adjustments, setAdjustments] = useState<IAdminBalanceAdjustmentDto[]>(
     [],
   );
@@ -258,7 +276,8 @@ export function AdminKycDetailsBalanceTab({
         <div className="space-y-4">
           <AvailableBalanceCard
             available={balanceData.available}
-            onAddCredit={() => setShowCreditModal(true)}
+            onAddCredit={() => setBalanceModal("credit")}
+            onRemoveBalance={() => setBalanceModal("debit")}
           />
 
           <div className="grid grid-cols-2 gap-3">
@@ -284,11 +303,11 @@ export function AdminKycDetailsBalanceTab({
 
           <div className="admin-surface p-4">
             <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Histórico de créditos administrativos
+              Ajustes administrativos
             </p>
             {adjustments.length === 0 ? (
               <p className="text-sm text-muted-foreground">
-                Nenhum crédito administrativo registrado.
+                Nenhum ajuste administrativo registrado.
               </p>
             ) : (
               <ul className="space-y-2">
@@ -298,7 +317,14 @@ export function AdminKycDetailsBalanceTab({
                     className="flex flex-wrap items-center justify-between gap-2 border-b border-border/30 pb-2 text-sm last:border-0"
                   >
                     <div>
-                      <p className="font-medium text-foreground">
+                      <p
+                        className={
+                          item.amount < 0
+                            ? "font-medium text-destructive"
+                            : "font-medium text-foreground"
+                        }
+                      >
+                        {item.amount > 0 ? "+" : ""}
                         {formatCurrencyAdmin(item.amount)}
                       </p>
                       <p className="text-xs text-muted-foreground">
@@ -316,14 +342,16 @@ export function AdminKycDetailsBalanceTab({
         </div>
       )}
 
-      {showCreditModal && balanceData ? (
-        <AddBalanceCreditModal
-          sellerId={Number(seller.user_id)}
-          availableCents={balanceData.available}
-          onClose={() => setShowCreditModal(false)}
-          onSuccess={handleCreditSuccess}
-        />
-      ) : null}
+      <AdminBalanceAdjustmentModal
+        sellerId={Number(seller.user_id)}
+        availableCents={balanceData?.available ?? 0}
+        mode={balanceModal ?? "credit"}
+        open={balanceModal !== null}
+        onOpenChange={(open) => {
+          if (!open) setBalanceModal(null);
+        }}
+        onSuccess={handleCreditSuccess}
+      />
     </div>
   );
 }
