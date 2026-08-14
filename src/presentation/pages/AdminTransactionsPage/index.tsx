@@ -23,6 +23,7 @@ import AdminTransactionsTable from "./components/AdminTransactionsTable";
 import useFilterTransactions from "./hooks/use-filter-transactions";
 import useTransactionStats from "./hooks/use-transaction-stats";
 import type { Transaction } from "./types/admin-transaction.type";
+import { isAdminBalanceAdjustment } from "./utils/is-admin-balance-adjustment";
 import { isSplitCreditMetadata } from "./utils/transaction-split";
 
 const PER_PAGE = 20;
@@ -161,7 +162,7 @@ export default function AdminTransactionsPage() {
   };
 
   const handleRefund = async (fake: boolean) => {
-    if (!selectedTx) return;
+    if (!selectedTx || isAdminBalanceAdjustment(selectedTx)) return;
     setActionLoading(true);
     try {
       const updated = await apiService.modules.adminFinance.refundTransaction(

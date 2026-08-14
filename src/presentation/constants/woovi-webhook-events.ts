@@ -4,6 +4,10 @@ export const WOOVI_WEBHOOK_EVENTS = [
     description: "Cobrança PIX paga",
   },
   {
+    event: "OPENPIX:CHARGE_COMPLETED_NOT_SAME_CUSTOMER_PAYER",
+    description: "PIX pago por outro pagador",
+  },
+  {
     event: "OPENPIX:TRANSACTION_RECEIVED",
     description: "PIX recebido",
   },
@@ -22,5 +26,13 @@ export const WOOVI_WEBHOOK_EVENTS = [
   {
     event: "OPENPIX:CHARGE_EXPIRED",
     description: "Cobrança expirada",
+  },
+  {
+    event: "OPENPIX:TRANSACTION_REFUND_RECEIVED",
+    description: "Reembolso PIX recebido",
+  },
+  {
+    event: "PIX_TRANSACTION_REFUND_RECEIVED_CONFIRMED",
+    description: "Reembolso PIX confirmado",
   },
 ] as const;

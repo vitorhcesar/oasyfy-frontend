@@ -32,6 +32,7 @@ import type {
 import { formatCurrency } from "../utils/format-currency";
 import { methodLabel } from "../utils/method-label";
 import { statusBadge } from "../utils/status-config";
+import { isAdminBalanceAdjustment } from "../utils/is-admin-balance-adjustment";
 import { getSaleSplitDetails } from "../utils/transaction-split";
 
 interface IAdminTransactionDetailDialogProps {
@@ -489,6 +490,8 @@ export default function AdminTransactionDetailDialog({
                     Ações
                   </p>
                   <div className="flex flex-wrap gap-2">
+                    {!isAdminBalanceAdjustment(selectedTx) && (
+                      <>
                     <button
                       onClick={onShowRefundForm}
                       className="inline-flex h-10 items-center gap-2 rounded-xl border border-warning/30 bg-warning/10 px-4 text-sm font-semibold text-warning transition-colors hover:bg-warning hover:text-warning-foreground"
@@ -501,6 +504,8 @@ export default function AdminTransactionDetailDialog({
                     >
                       <AlertTriangle size={14} /> Reembolso Fake
                     </button>
+                      </>
+                    )}
                     <button
                       onClick={() => {
                         if (selectedTx.is_locked) {
@@ -530,7 +535,7 @@ export default function AdminTransactionDetailDialog({
                 </div>
               )}
 
-              {showRefundForm && (
+              {showRefundForm && !isAdminBalanceAdjustment(selectedTx) && (
                 <div className="animate-fade-in space-y-3 rounded-2xl border border-warning/25 bg-warning/10 p-4">
                   <p className="text-base font-semibold text-warning">
                     Reembolsar Venda
@@ -564,7 +569,7 @@ export default function AdminTransactionDetailDialog({
                 </div>
               )}
 
-              {showFakeRefundForm && (
+              {showFakeRefundForm && !isAdminBalanceAdjustment(selectedTx) && (
                 <div className="animate-fade-in space-y-3 rounded-2xl border border-primary/25 bg-primary/10 p-4">
                   <p className="text-base font-semibold text-primary">
                     Reembolso Fake
