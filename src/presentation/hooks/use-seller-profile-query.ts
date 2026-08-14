@@ -22,7 +22,7 @@ export default function useSellerProfileQuery() {
     });
   };
 
-  const setAvatarUrl = (avatarUrl: string) => {
+  const setAvatarUrl = (avatarUrl: string | null) => {
     queryClient.setQueryData<ISellerProfileDto>(
       SELLER_PROFILE_QUERY_KEY,
       (current) => (current ? { ...current, avatarUrl } : current),

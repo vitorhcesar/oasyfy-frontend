@@ -28,8 +28,8 @@ function mockAuthContext(overrides: Partial<IAuthContext>): IAuthContext {
   };
 }
 
-function renderLogin(ui?: React.ReactNode) {
-  render(
+function LoginTree({ ui }: { ui?: React.ReactNode }) {
+  return (
     <MemoryRouter initialEntries={["/login"]}>
       <Routes>
         <Route
@@ -39,8 +39,12 @@ function renderLogin(ui?: React.ReactNode) {
         <Route path="/admin" element={<div>admin-home</div>} />
         <Route path="/seller" element={<div>seller-home</div>} />
       </Routes>
-    </MemoryRouter>,
+    </MemoryRouter>
   );
+}
+
+function renderLogin(ui?: React.ReactNode) {
+  return render(<LoginTree ui={ui} />);
 }
 
 describe("PublicRoute", () => {
@@ -133,5 +137,23 @@ describe("PublicRoute", () => {
     renderLogin();
 
     expect(screen.getByText("seller-home")).toBeInTheDocument();
+  });
+
+  it("does not unmount the login form on a later session refetch", () => {
+    mockedUseAuthContext.mockReturnValue(
+      mockAuthContext({ isLoading: false, isAuthenticated: false }),
+    );
+
+    const { rerender } = renderLogin();
+
+    expect(screen.getByText("login-form")).toBeInTheDocument();
+
+    mockedUseAuthContext.mockReturnValue(
+      mockAuthContext({ isLoading: true, isAuthenticated: false }),
+    );
+    rerender(<LoginTree />);
+
+    expect(screen.getByText("login-form")).toBeInTheDocument();
+    expect(screen.queryByText("Carregando...")).not.toBeInTheDocument();
   });
 });

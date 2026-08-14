@@ -157,6 +157,7 @@ export interface ISellerPortalModule {
     phone?: string;
   }) => Promise<ISellerProfileDto>;
   uploadAvatar: (file: File) => Promise<{ avatarUrl: string }>;
+  deleteAvatar: () => Promise<{ avatarUrl: null }>;
   getRevenueRanking: (
     query?: ISellerRevenueRankingQueryDto,
   ) => Promise<ISellerRevenueRankingDto>;
@@ -257,6 +258,13 @@ export class SellerPortalModule
     });
 
     return response.data.data;
+  }
+
+  async deleteAvatar(): Promise<{ avatarUrl: null }> {
+    const response = await this.getClient().delete<
+      IApiEnvelope<{ avatarUrl: null }>
+    >(`${this.baseUrl}/profile/avatar`);
+    return response.data;
   }
 
   async getWithdrawalContext(): Promise<ISellerWithdrawalContextDto> {

@@ -15,7 +15,16 @@ export function ProtectedRoute({
 }: ProtectedRouteProps) {
   const { user, role, isLoading, isBanned, signOut } = useAuthContext();
 
+  const canKeepProtectedTree =
+    !!user &&
+    !!role &&
+    (!requiredRole || role === requiredRole) &&
+    !(isBanned && role === "seller");
+
   if (isLoading) {
+    if (canKeepProtectedTree && user) {
+      return <UserContextProvider user={user}>{children}</UserContextProvider>;
+    }
     return <AuthLoadingScreen />;
   }
 

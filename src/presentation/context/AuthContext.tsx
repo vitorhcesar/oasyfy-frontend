@@ -1,5 +1,10 @@
 import { authClient } from "@/infra/auth/auth-client";
 import { fetchSessionContext } from "@/infra/auth/session-context-api";
+import {
+  isSameSessionIdentity,
+  isSameUserIdentity,
+  useStableValue,
+} from "@/presentation/context/auth-session-identity";
 import { isAuthSessionLoading } from "@/presentation/context/auth-session-loading";
 import type { Session, User } from "better-auth/types";
 import {
@@ -8,6 +13,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -41,10 +47,17 @@ export function AuthContextProvider({ children }: PropsWithChildren) {
   const [roleResolvedForUserId, setRoleResolvedForUserId] = useState<
     string | null
   >(null);
+  const sessionHasResolvedRef = useRef(false);
 
-  const user = sessionQuery.data?.user ?? null;
-  const session = (sessionQuery.data?.session as Session) ?? null;
+  const rawUser = sessionQuery.data?.user ?? null;
+  const rawSession = (sessionQuery.data?.session as Session) ?? null;
+  const user = useStableValue(rawUser, isSameUserIdentity);
+  const session = useStableValue(rawSession, isSameSessionIdentity);
   const userId = user?.id;
+
+  if (!sessionQuery.isPending) {
+    sessionHasResolvedRef.current = true;
+  }
 
   const userIdRef = useRef(userId);
   userIdRef.current = userId;
@@ -90,7 +103,7 @@ export function AuthContextProvider({ children }: PropsWithChildren) {
   }, []);
 
   useEffect(() => {
-    if (sessionQuery.isPending) return;
+    if (sessionQuery.isPending || sessionQuery.isRefetching) return;
 
     if (!userId) {
       resetRoleState();
@@ -102,6 +115,7 @@ export function AuthContextProvider({ children }: PropsWithChildren) {
     void fetchRole();
   }, [
     sessionQuery.isPending,
+    sessionQuery.isRefetching,
     userId,
     roleResolvedForUserId,
     fetchRole,
@@ -117,24 +131,24 @@ export function AuthContextProvider({ children }: PropsWithChildren) {
     sessionQuery.isPending,
     userId,
     roleResolvedForUserId,
+    sessionHasResolvedRef.current,
   );
 
-  return (
-    <AuthContext.Provider
-      value={{
-        isAuthenticated: !!user,
-        isLoading,
-        user,
-        session,
-        role,
-        isBanned,
-        apiAccessEnabled,
-        signOut,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+  const value = useMemo<IAuthContext>(
+    () => ({
+      isAuthenticated: !!user,
+      isLoading,
+      user,
+      session,
+      role,
+      isBanned,
+      apiAccessEnabled,
+      signOut,
+    }),
+    [user, isLoading, session, role, isBanned, apiAccessEnabled, signOut],
   );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuthContext(): IAuthContext {

@@ -113,4 +113,21 @@ describe("ProtectedRoute", () => {
 
     expect(screen.getByText("protected-content")).toBeInTheDocument();
   });
+
+  it("keeps protected content mounted when a resolved session refetches", () => {
+    mockedUseAuthContext.mockReturnValue(
+      mockAuthContext({
+        isLoading: true,
+        user: adminUser,
+        role: "admin",
+        isAuthenticated: true,
+      }),
+    );
+
+    renderProtectedRoute("admin");
+
+    expect(screen.getByText("protected-content")).toBeInTheDocument();
+    expect(screen.queryByText("Carregando...")).not.toBeInTheDocument();
+    expect(screen.queryByText("login")).not.toBeInTheDocument();
+  });
 });

@@ -21,11 +21,19 @@ import {
   Receipt,
   Shield,
   Smartphone,
+  Trash2,
   Upload,
   User,
   Wallet,
 } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type DragEvent,
+  type MouseEvent,
+} from "react";
 import { toast } from "sonner";
 import { SellerAcquirersTab } from "@/presentation/components/seller/SellerAcquirersTab";
 
@@ -453,6 +461,7 @@ export default function SellerSettings() {
   >("perfil");
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [removingAvatar, setRemovingAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [fullName, setFullName] = useState("");
@@ -483,17 +492,22 @@ export default function SellerSettings() {
     setPhone(profile.phone || "");
   }, [profile, user.name]);
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !user) return;
+  const resetAvatarInput = () => {
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const processAvatarFile = async (file: File) => {
+    if (!user) return;
 
     const validTypes = ["image/png", "image/jpeg", "image/jpg", "image/webp"];
     if (!validTypes.includes(file.type)) {
       toast.error("Apenas arquivos png, jpeg, jpg e webp são aceitos");
+      resetAvatarInput();
       return;
     }
     if (file.size > 30 * 1024 * 1024) {
       toast.error("O tamanho máximo é 30MB");
+      resetAvatarInput();
       return;
     }
 
@@ -503,10 +517,42 @@ export default function SellerSettings() {
         await apiService.modules.sellerPortal.uploadAvatar(file);
       setCachedAvatarUrl(url);
       toast.success("Foto atualizada!");
-    } catch (err: any) {
-      toast.error("Erro ao enviar foto: " + (err.message || ""));
+    } catch (err: unknown) {
+      toast.error(getErrorMessageOrDefault(err, "Erro ao enviar foto"));
     } finally {
       setUploading(false);
+      resetAvatarInput();
+    }
+  };
+
+  const handleAvatarUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) void processAvatarFile(file);
+  };
+
+  const handleAvatarDrop = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (uploading || removingAvatar) return;
+    const file = e.dataTransfer.files?.[0];
+    if (file) void processAvatarFile(file);
+  };
+
+  const handleAvatarRemove = async (e: MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!user || removingAvatar) return;
+
+    setRemovingAvatar(true);
+    try {
+      await apiService.modules.sellerPortal.deleteAvatar();
+      setCachedAvatarUrl(null);
+      toast.success("Foto removida!");
+    } catch (err: unknown) {
+      toast.error(getErrorMessageOrDefault(err, "Erro ao remover foto"));
+    } finally {
+      setRemovingAvatar(false);
+      resetAvatarInput();
     }
   };
 
@@ -703,10 +749,18 @@ export default function SellerSettings() {
                       Foto de perfil
                     </label>
                     <div
-                      onClick={() => fileInputRef.current?.click()}
+                      onClick={() => {
+                        if (uploading || removingAvatar) return;
+                        fileInputRef.current?.click();
+                      }}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
+                      onDrop={handleAvatarDrop}
                       className="mt-1 relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-border bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer p-8 min-h-[220px]"
                     >
-                      {uploading ? (
+                      {uploading || removingAvatar ? (
                         <Loader2 size={24} className="animate-spin text-primary" />
                       ) : avatarUrl ? (
                         <img
@@ -719,7 +773,9 @@ export default function SellerSettings() {
                       )}
                       <p className="text-sm text-muted-foreground mt-2">
                         <span className="text-primary font-medium">
-                          Clique para enviar
+                          {avatarUrl
+                            ? "Clique para alterar"
+                            : "Clique para enviar"}
                         </span>{" "}
                         ou arraste até aqui
                       </p>
@@ -737,6 +793,21 @@ export default function SellerSettings() {
                         className="hidden"
                       />
                     </div>
+                    {avatarUrl && (
+                      <button
+                        type="button"
+                        onClick={handleAvatarRemove}
+                        disabled={uploading || removingAvatar}
+                        className="mt-3 w-full py-2.5 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:text-destructive hover:border-destructive/40 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                      >
+                        {removingAvatar ? (
+                          <Loader2 size={14} className="animate-spin" />
+                        ) : (
+                          <Trash2 size={14} />
+                        )}
+                        Remover foto
+                      </button>
+                    )}
                   </div>
                 </div>
 

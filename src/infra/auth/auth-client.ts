@@ -13,6 +13,9 @@ export const authClient = createAuthClient({
   fetchOptions: {
     credentials: "include",
   },
+  sessionOptions: {
+    refetchOnWindowFocus: false,
+  },
   plugins: [
     twoFactorClient({
       onTwoFactorRedirect() {
