@@ -8,7 +8,13 @@ import { useUserContext } from "@/presentation/context/UserContext";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import { useSellerKycSubmissionQuery } from "@/presentation/hooks/use-seller-kyc-submission-query";
 import useSellerProfileQuery from "@/presentation/hooks/use-seller-profile-query";
+import usePixAmountLimitsQuery from "@/presentation/hooks/use-pix-amount-limits-query";
 import { cn } from "@/presentation/utils/cn";
+import { getErrorMessageOrDefault } from "@/presentation/utils/get-error-message-or-default";
+import {
+  describePixAmountLimits,
+  getPixAmountLimitError,
+} from "@/presentation/utils/pix-amount-limits.util";
 import { normalizePixChargeResponse } from "@/presentation/utils/normalize-pix-charge-response.util";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -119,6 +125,7 @@ export default function SellerDeposit() {
   const user = useUserContext();
   const { data: profile, isLoading: profileLoading } = useSellerProfileQuery();
   const { submission, isLoading: kycLoading } = useSellerKycSubmissionQuery();
+  const { data: pixLimits } = usePixAmountLimitsQuery();
 
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
@@ -208,8 +215,13 @@ export default function SellerDeposit() {
 
   const handleGenerate = async () => {
     const amountCents = parseInt(amount || "0", 10);
-    if (amountCents < 100) {
-      toast.error("Valor mínimo: R$ 1,00");
+    const limitError = getPixAmountLimitError(
+      amountCents,
+      pixLimits?.pixMinAmount,
+      pixLimits?.pixMaxAmount,
+    );
+    if (limitError) {
+      toast.error(limitError);
       return;
     }
     if (!depositorName) {
@@ -250,7 +262,7 @@ export default function SellerDeposit() {
         toast.success("PIX gerado com sucesso!");
       }
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Erro de conexão";
+      const message = getErrorMessageOrDefault(err, "Erro de conexão");
       setError(message);
       toast.error(message);
     } finally {
@@ -306,7 +318,10 @@ export default function SellerDeposit() {
                 Valor do depósito
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Informe o valor para gerar o PIX.
+                {describePixAmountLimits(
+                  pixLimits?.pixMinAmount,
+                  pixLimits?.pixMaxAmount,
+                )}
               </p>
             </div>
 

@@ -1,6 +1,13 @@
 import { Transaction } from "@/domain/entities/transaction.entity";
 import PageHeader from "@/presentation/components/PageHeader";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/presentation/components/Select";
+import {
   isApprovedTransactionStatus,
   isExpiredUnpaidTransaction,
   matchesTransactionStatusFilter,
@@ -170,6 +177,60 @@ const methodLabels: Record<string, string> = {
   withdrawal: "Saque",
 };
 
+const saleSplitBadgeClass =
+  "inline-flex items-center rounded px-1 py-px text-[9px] font-semibold uppercase leading-tight tracking-wide bg-primary/10 text-primary";
+
+const filterSelectTriggerClass =
+  "h-auto w-auto min-w-[9.5rem] cursor-pointer rounded-xl border-border/60 px-3.5 py-2.5 text-sm focus:border-primary/40 focus:ring-2 focus:ring-primary/20 focus:ring-offset-0";
+
+const statusFilterOptions: { value: StatusFilter; label: string }[] = [
+  { value: "all", label: "Todos status" },
+  { value: "pending", label: "Pendente" },
+  { value: "completed", label: "Aprovada" },
+  { value: "failed", label: "Falhou" },
+  { value: "refunded", label: "Estornada" },
+  { value: "cancelled", label: "Cancelada" },
+];
+
+const methodFilterOptions: { value: MethodFilter; label: string }[] = [
+  { value: "all", label: "Todos métodos" },
+  { value: "pix", label: "Pix" },
+  { value: "card", label: "Cartão" },
+  { value: "boleto", label: "Boleto" },
+  { value: "crypto", label: "Crypto" },
+];
+
+const splitFilterOptions: { value: SplitFilter; label: string }[] = [
+  { value: "all", label: "Todos splits" },
+  { value: "with_split", label: "Venda com split" },
+  { value: "split_credit", label: "Split recebido" },
+];
+
+function FilterSelect<T extends string>({
+  value,
+  onValueChange,
+  options,
+}: {
+  value: T;
+  onValueChange: (value: T) => void;
+  options: { value: T; label: string }[];
+}) {
+  return (
+    <Select value={value} onValueChange={(next) => onValueChange(next as T)}>
+      <SelectTrigger className={filterSelectTriggerClass}>
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        {options.map((option) => (
+          <SelectItem key={option.value} value={option.value}>
+            {option.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
 function MethodLabel({
   method,
   className,
@@ -314,38 +375,21 @@ export default function SellerTransactions() {
                 className="w-full rounded-xl border border-border/60 bg-background py-2.5 pl-10 pr-3.5 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
               />
             </div>
-            <select
+            <FilterSelect
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-              className="appearance-none rounded-xl border border-border/60 bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
-            >
-              <option value="all">Todos status</option>
-              <option value="pending">Pendente</option>
-              <option value="completed">Aprovada</option>
-              <option value="failed">Falhou</option>
-              <option value="refunded">Estornada</option>
-              <option value="cancelled">Cancelada</option>
-            </select>
-            <select
+              onValueChange={setStatusFilter}
+              options={statusFilterOptions}
+            />
+            <FilterSelect
               value={methodFilter}
-              onChange={(e) => setMethodFilter(e.target.value as MethodFilter)}
-              className="appearance-none rounded-xl border border-border/60 bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
-            >
-              <option value="all">Todos métodos</option>
-              <option value="pix">Pix</option>
-              <option value="card">Cartão</option>
-              <option value="boleto">Boleto</option>
-              <option value="crypto">Crypto</option>
-            </select>
-            <select
+              onValueChange={setMethodFilter}
+              options={methodFilterOptions}
+            />
+            <FilterSelect
               value={splitFilter}
-              onChange={(e) => setSplitFilter(e.target.value as SplitFilter)}
-              className="appearance-none rounded-xl border border-border/60 bg-background px-3.5 py-2.5 text-sm text-foreground focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all cursor-pointer"
-            >
-              <option value="all">Todos splits</option>
-              <option value="with_split">Venda com split</option>
-              <option value="split_credit">Split recebido</option>
-            </select>
+              onValueChange={setSplitFilter}
+              options={splitFilterOptions}
+            />
           </div>
         </div>
 
@@ -422,7 +466,7 @@ export default function SellerTransactions() {
                               </span>
                             )}
                             {saleSplit && (
-                              <span className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                              <span className={saleSplitBadgeClass}>
                                 Com split
                               </span>
                             )}
@@ -498,7 +542,7 @@ export default function SellerTransactions() {
                               </span>
                             )}
                             {saleSplit && (
-                              <span className="rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                              <span className={saleSplitBadgeClass}>
                                 Com split
                               </span>
                             )}

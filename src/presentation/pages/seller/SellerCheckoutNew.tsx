@@ -8,6 +8,7 @@ import { Textarea } from "@/presentation/components/ui/textarea";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import { useSellerKycSubmissionQuery } from "@/presentation/hooks/use-seller-kyc-submission-query";
 import useSellerCheckoutsQuery from "@/presentation/hooks/use-seller-checkouts-query";
+import usePixAmountLimitsQuery from "@/presentation/hooks/use-pix-amount-limits-query";
 import {
   CheckoutPreview,
   formatCheckoutAmount,
@@ -17,12 +18,17 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { getErrorMessageOrDefault } from "@/presentation/utils/get-error-message-or-default";
+import {
+  describePixAmountLimits,
+  getPixAmountLimitError,
+} from "@/presentation/utils/pix-amount-limits.util";
 
 export default function SellerCheckoutNew() {
   const navigate = useNavigate();
   const apiService = useApiService();
   const { canSell, isLoading: kycLoading } = useSellerKycSubmissionQuery();
   const { createMutation } = useSellerCheckoutsQuery();
+  const { data: pixLimits } = usePixAmountLimitsQuery();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -76,8 +82,13 @@ export default function SellerCheckoutNew() {
       toast.error("Título deve ter pelo menos 3 caracteres");
       return;
     }
-    if (amountCents < 100) {
-      toast.error("Valor mínimo: R$ 1,00");
+    const limitError = getPixAmountLimitError(
+      amountCents,
+      pixLimits?.pixMinAmount,
+      pixLimits?.pixMaxAmount,
+    );
+    if (limitError) {
+      toast.error(limitError);
       return;
     }
 
@@ -140,6 +151,12 @@ export default function SellerCheckoutNew() {
                   setAmount(e.target.value.replace(/\D/g, ""))
                 }
               />
+              <p className="text-xs text-muted-foreground">
+                {describePixAmountLimits(
+                  pixLimits?.pixMinAmount,
+                  pixLimits?.pixMaxAmount,
+                )}
+              </p>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">

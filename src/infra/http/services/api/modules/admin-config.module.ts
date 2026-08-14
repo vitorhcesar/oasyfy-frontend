@@ -32,10 +32,14 @@ export interface IAdminCheckoutTestResultDto {
 
 export interface IAdminFinancialSettingsDto {
   autoWithdrawalEnabled: boolean;
+  pixMinAmount: number;
+  pixMaxAmount: number;
 }
 
 export interface IAdminFinancialSettingsUpdateBody {
   autoWithdrawalEnabled: boolean;
+  pixMinAmount: number;
+  pixMaxAmount: number;
 }
 
 function toGlobalFeeBody(fees: Record<string, number>) {

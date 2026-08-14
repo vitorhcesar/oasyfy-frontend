@@ -7,8 +7,14 @@ import type {
   TPixSearchTransactionRow,
 } from "./types/pix.types";
 
+export interface IPixAmountLimitsDto {
+  pixMinAmount: number;
+  pixMaxAmount: number;
+}
+
 export interface IPixModule {
   searchTransactions: (pixCode: string) => Promise<TPixSearchTransactionRow[]>;
+  getAmountLimits: () => Promise<IPixAmountLimitsDto>;
   /** Failover Woovi/Cartwave via roteamento admin (POST /pix/woovi/create). */
   createPixCharge: (body: ICreatePixChargeBody) => Promise<IPixChargeResponse>;
   /** @deprecated Prefer createPixCharge */
@@ -27,6 +33,13 @@ export class PixModule extends BaseApiModule implements IPixModule {
       params: { pix_code: pixCode.trim() },
     });
     return response.data.transactions;
+  }
+
+  async getAmountLimits(): Promise<IPixAmountLimitsDto> {
+    const response = await this.getClient().get<
+      IApiEnvelope<IPixAmountLimitsDto>
+    >(`${this.baseUrl}/amount-limits`);
+    return response.data;
   }
 
   async createPixCharge(body: ICreatePixChargeBody): Promise<IPixChargeResponse> {

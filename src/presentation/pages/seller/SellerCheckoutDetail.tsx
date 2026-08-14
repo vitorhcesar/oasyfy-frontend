@@ -8,6 +8,7 @@ import { Label } from "@/presentation/components/ui/label";
 import { Textarea } from "@/presentation/components/ui/textarea";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import { useSellerCheckoutDetailQuery } from "@/presentation/hooks/use-seller-checkouts-query";
+import usePixAmountLimitsQuery from "@/presentation/hooks/use-pix-amount-limits-query";
 import {
   CHECKOUT_STATUS_LABEL,
   CheckoutPreview,
@@ -18,6 +19,10 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { getErrorMessageOrDefault } from "@/presentation/utils/get-error-message-or-default";
+import {
+  describePixAmountLimits,
+  getPixAmountLimitError,
+} from "@/presentation/utils/pix-amount-limits.util";
 
 export default function SellerCheckoutDetail() {
   const { id } = useParams();
@@ -27,6 +32,7 @@ export default function SellerCheckoutDetail() {
     useSellerCheckoutDetailQuery(
       checkoutId && Number.isFinite(checkoutId) ? checkoutId : null,
     );
+  const { data: pixLimits } = usePixAmountLimitsQuery();
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -107,6 +113,18 @@ export default function SellerCheckoutDetail() {
   };
 
   const handleSave = async () => {
+    if (canEditAmount) {
+      const limitError = getPixAmountLimitError(
+        amountCents,
+        pixLimits?.pixMinAmount,
+        pixLimits?.pixMaxAmount,
+      );
+      if (limitError) {
+        toast.error(limitError);
+        return;
+      }
+    }
+
     try {
       await updateMutation.mutateAsync({
         title: title.trim(),
@@ -235,7 +253,14 @@ export default function SellerCheckoutDetail() {
                 <p className="text-xs text-muted-foreground">
                   Valor bloqueado após o primeiro pagamento confirmado.
                 </p>
-              ) : null}
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  {describePixAmountLimits(
+                    pixLimits?.pixMinAmount,
+                    pixLimits?.pixMaxAmount,
+                  )}
+                </p>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
