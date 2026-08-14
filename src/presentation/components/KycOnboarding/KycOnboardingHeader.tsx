@@ -24,7 +24,7 @@ export default function KycOnboardingHeader({
 
   const handleSignOut = async () => {
     await signOut();
-    navigate("/login/seller");
+    navigate("/login");
   };
 
   return (

@@ -2,6 +2,7 @@ import { Transaction } from "@/domain/entities/transaction.entity";
 import { useHideBalance } from "@/presentation/hooks/use-hide-balance";
 import { cn } from "@/presentation/utils/cn";
 import { useMemo } from "react";
+import { buildSellerRevenueChartData } from "../utils/build-seller-revenue-chart-data";
 import {
   Area,
   AreaChart,
@@ -25,29 +26,10 @@ export default function RevenueChart({
 }: IRevenueChartProps) {
   const { hideBalance } = useHideBalance();
 
-  const chartData = useMemo(() => {
-    const paidTransactions = transactions.filter((t) => t.isPaid());
-
-    const diffMs = rangeEnd.getTime() - rangeStart.getTime();
-    const days = Math.max(1, Math.ceil(diffMs / 86400000));
-    const data: { date: string; amount: number; count: number }[] = [];
-    for (let i = 0; i < days; i++) {
-      const d = new Date(rangeStart.getTime() + i * 86400000);
-      const dayStr = d.toLocaleDateString("pt-BR", {
-        day: "2-digit",
-        month: "2-digit",
-      });
-      const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate());
-      const dayEnd = new Date(dayStart.getTime() + 86400000);
-      const dayTx = paidTransactions.filter((t) => {
-        const td = new Date(t.createdAt);
-        return td >= dayStart && td < dayEnd;
-      });
-      const dayTotal = dayTx.reduce((s, t) => s + t.amount, 0);
-      data.push({ date: dayStr, amount: dayTotal / 100, count: dayTx.length });
-    }
-    return data;
-  }, [rangeStart, rangeEnd, transactions]);
+  const chartData = useMemo(
+    () => buildSellerRevenueChartData(transactions, rangeStart, rangeEnd),
+    [rangeStart, rangeEnd, transactions],
+  );
 
   const chartTotal = useMemo(
     () => chartData.reduce((s, d) => s + d.amount, 0),
@@ -66,7 +48,7 @@ export default function RevenueChart({
             Faturamento
           </h3>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            Histórico de transações aprovadas
+            Vendas e depósitos aprovados, sem descontar taxas
           </p>
         </div>
         <div className="text-left sm:text-right">

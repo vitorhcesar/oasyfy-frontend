@@ -1,8 +1,8 @@
 export { authClient } from "./auth-client";
 export {
-  ensureSellerPortalAccess,
-  type TEnsureSellerPortalAccessResult,
-} from "./ensure-seller-portal-access";
+  resolvePortalLogin,
+  type TResolvePortalLoginResult,
+} from "./resolve-portal-login";
 export {
   fetchSessionContext,
   type ISessionContextDto,

@@ -101,7 +101,7 @@ function SecurityTab() {
       setSessions((prev) => prev.filter((s) => s.id !== sessionId));
       if (active) {
         await authClient.signOut();
-        window.location.href = "/login/seller";
+        window.location.href = "/login";
         return;
       }
       toast.success("Sessão encerrada");
@@ -112,7 +112,7 @@ function SecurityTab() {
 
   const handleEndAll = async () => {
     await authClient.revokeSessions();
-        window.location.href = "/login/seller";
+        window.location.href = "/login";
   };
 
   const isActive = (createdAt: string) => {
@@ -327,7 +327,7 @@ function SecurityTab() {
                     } else {
                       toast.success("Senha alterada com sucesso");
                       if (logoutAll) {
-                        window.location.href = "/login/seller";
+                        window.location.href = "/login";
                         return;
                       }
                       setShowPasswordModal(false);

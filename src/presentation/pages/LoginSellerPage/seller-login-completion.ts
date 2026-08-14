@@ -1,5 +1,6 @@
-import { authClient, ensureSellerPortalAccess } from "@/infra/auth";
-import { setPortalLoginInFlight } from "@/presentation/components/auth/portal-login-lock";
+import { authClient, resolvePortalLogin } from "@/infra/auth";
+import { homePathForRole } from "@/presentation/components/auth/auth-paths";
+import { setLoginInFlight } from "@/presentation/components/auth/portal-login-lock";
 import type { NavigateFunction } from "react-router-dom";
 import { saveSellerLoginError } from "./seller-login-error-storage";
 import { clearPendingTwoFactor } from "./seller-login-two-factor-storage";
@@ -8,13 +9,13 @@ import {
   savePendingVerification,
 } from "./seller-login-verification-storage";
 
-export async function completeSellerPortalLogin(options: {
+export async function completePortalLogin(options: {
   email: string;
   navigate: NavigateFunction;
   openSignupVerification: () => Promise<void>;
   onError: (message: string) => void;
 }): Promise<void> {
-  const gate = await ensureSellerPortalAccess();
+  const gate = await resolvePortalLogin();
 
   if (gate.kind === "error") {
     clearPendingVerification();
@@ -34,6 +35,6 @@ export async function completeSellerPortalLogin(options: {
 
   clearPendingVerification();
   clearPendingTwoFactor();
-  setPortalLoginInFlight("seller", false);
-  options.navigate("/seller");
+  setLoginInFlight(false);
+  options.navigate(homePathForRole(gate.kind));
 }

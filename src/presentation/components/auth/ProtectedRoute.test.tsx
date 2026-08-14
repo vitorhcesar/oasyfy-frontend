@@ -53,7 +53,7 @@ function renderProtectedRoute(requiredRole?: "admin" | "seller") {
             </ProtectedRoute>
           }
         />
-        <Route path="/login/seller" element={<div>seller-login</div>} />
+        <Route path="/login" element={<div>login</div>} />
         <Route path="/admin" element={<div>admin-home</div>} />
         <Route path="/seller" element={<div>seller-home</div>} />
       </Routes>
@@ -76,12 +76,28 @@ describe("ProtectedRoute", () => {
     expect(screen.getByText("Carregando...")).toBeInTheDocument();
   });
 
-  it("redirects unauthenticated users to seller login", () => {
+  it("does not flash login while an authenticated session waits for the role", () => {
+    mockedUseAuthContext.mockReturnValue(
+      mockAuthContext({
+        isLoading: true,
+        user: adminUser,
+        isAuthenticated: true,
+        role: null,
+      }),
+    );
+
+    renderProtectedRoute("admin");
+
+    expect(screen.getByText("Carregando...")).toBeInTheDocument();
+    expect(screen.queryByText("login")).not.toBeInTheDocument();
+  });
+
+  it("redirects unauthenticated users to login", () => {
     mockedUseAuthContext.mockReturnValue(mockAuthContext({}));
 
     renderProtectedRoute("admin");
 
-    expect(screen.getByText("seller-login")).toBeInTheDocument();
+    expect(screen.getByText("login")).toBeInTheDocument();
   });
 
   it("renders children for authenticated users with the required role", () => {

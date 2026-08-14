@@ -1,16 +1,17 @@
 import { authClient } from "./auth-client";
 import { fetchSessionContext } from "./session-context-api";
 
-export type TEnsureSellerPortalAccessResult =
-  | { kind: "ok" }
+export type TResolvePortalLoginResult =
+  | { kind: "admin" }
+  | { kind: "seller" }
   | { kind: "error"; message: string }
   | { kind: "needs_verification" };
 
 /**
- * Valida papel seller, banimento implícito no backend e e-mail após `signIn.email`.
- * Mantém paridade entre login direto e fluxo pós-verificação por OTP.
+ * Após `signIn.email` (ou 2FA), decide o destino: admin, seller,
+ * verificação de e-mail ou erro. Não desloga admin.
  */
-export async function ensureSellerPortalAccess(): Promise<TEnsureSellerPortalAccessResult> {
+export async function resolvePortalLogin(): Promise<TResolvePortalLoginResult> {
   const session = await authClient.getSession();
   const baUser = session.data?.user;
 
@@ -26,26 +27,20 @@ export async function ensureSellerPortalAccess(): Promise<TEnsureSellerPortalAcc
   }
 
   if (ctx.role === "admin") {
-    await authClient.signOut();
-    return {
-      kind: "error",
-      message: "Esta conta é de administrador. Use o login de admin.",
-    };
+    return { kind: "admin" };
   }
 
   if (ctx.role !== "seller") {
     await authClient.signOut();
     return {
       kind: "error",
-      message: "Esta conta não possui permissão de vendedor.",
+      message: "Esta conta não possui permissão de acesso.",
     };
   }
 
   if (!baUser?.emailVerified && !ctx.emailManuallyApproved) {
-    // O caller persiste o e-mail e faz signOut em seguida, para o OTP
-    // sobreviver caso a tela de login remonte.
     return { kind: "needs_verification" };
   }
 
-  return { kind: "ok" };
+  return { kind: "seller" };
 }

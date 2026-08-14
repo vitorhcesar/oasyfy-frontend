@@ -3,17 +3,12 @@
  * formulário de login no meio do gate de papel. Deve ser setada para true
  * ANTES do primeiro await do submit.
  */
-export type TPortalLogin = "admin" | "seller";
+let inFlight = false;
 
-const inFlight: Record<TPortalLogin, boolean> = {
-  admin: false,
-  seller: false,
-};
-
-export function setPortalLoginInFlight(portal: TPortalLogin, value: boolean) {
-  inFlight[portal] = value;
+export function setLoginInFlight(value: boolean) {
+  inFlight = value;
 }
 
-export function isPortalLoginInFlight(portal: TPortalLogin): boolean {
-  return inFlight[portal];
+export function isLoginInFlight(): boolean {
+  return inFlight;
 }

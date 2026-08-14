@@ -407,7 +407,6 @@
   position: absolute;
   border-radius: 50%;
   filter: blur(90px);
-  will-change: transform, opacity;
 }
 
 .auth-ambient-blob--a {
@@ -620,3 +619,26 @@
 }
 
 /* Auth panel usa .liquid-glass — uma placa só (design.md §5) */
+
+@media (max-width: 767px) {
+  .auth-ambient-blob,
+  .auth-ambient-grid,
+  .auth-glass-glow {
+    display: none;
+  }
+
+  .auth-ambient-veil {
+    animation: none;
+  }
+
+  .auth-skin .liquid-glass {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(20, 20, 22, 0.96);
+  }
+
+  .auth-skin .liquid-glass::before,
+  .auth-skin .liquid-glass::after {
+    display: none;
+  }
+}

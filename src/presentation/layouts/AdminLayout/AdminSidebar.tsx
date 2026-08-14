@@ -174,7 +174,7 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate("/login/admin");
+    navigate("/login");
   };
 
   const logoVariant = theme === "dark" ? "white" : "black";

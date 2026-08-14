@@ -10,11 +10,11 @@ test.describe("Authenticated admin", () => {
   );
 
   test("admin can sign in and reach dashboard", async ({ page }) => {
-    await page.goto("/login/admin");
+    await page.goto("/login");
 
     await page.getByRole("textbox", { name: "Email" }).fill(adminEmail!);
     await page.getByRole("textbox", { name: "Senha" }).fill(adminPassword!);
-    await page.getByRole("button", { name: /Entrar como Admin/i }).click();
+    await page.getByRole("button", { name: /^Entrar$/ }).click();
 
     await expect(page).toHaveURL(/\/admin(?:\/|$)/, { timeout: 15_000 });
   });

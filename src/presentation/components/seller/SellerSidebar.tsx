@@ -190,7 +190,7 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
 
   const handleSignOut = async () => {
     await signOut();
-    navigate("/login/seller");
+    navigate("/login");
   };
 
   const logoVariant = theme === "dark" ? "white" : "black";

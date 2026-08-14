@@ -1,46 +1,77 @@
-import { completeSellerPortalLogin } from "@/presentation/pages/LoginSellerPage/seller-login-completion";
+import { completePortalLogin } from "@/presentation/pages/LoginSellerPage/seller-login-completion";
 import { consumeSellerLoginError } from "@/presentation/pages/LoginSellerPage/seller-login-error-storage";
 import { loadPendingVerification } from "@/presentation/pages/LoginSellerPage/seller-login-verification-storage";
-import { setPortalLoginInFlight } from "@/presentation/components/auth/portal-login-lock";
+import { setLoginInFlight } from "@/presentation/components/auth/portal-login-lock";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const ensureSellerPortalAccess = vi.hoisted(() => vi.fn());
+const resolvePortalLogin = vi.hoisted(() => vi.fn());
 const signOut = vi.hoisted(() => vi.fn());
 
 vi.mock("@/infra/auth", () => ({
-  ensureSellerPortalAccess,
+  resolvePortalLogin,
   authClient: { signOut },
 }));
 
-describe("completeSellerPortalLogin", () => {
+describe("completePortalLogin", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     sessionStorage.clear();
-    setPortalLoginInFlight("seller", false);
+    setLoginInFlight(false);
   });
 
-  it("shows a persisted error and does not open OTP when the account is admin", async () => {
-    ensureSellerPortalAccess.mockResolvedValue({
+  it("redirects an admin to /admin", async () => {
+    resolvePortalLogin.mockResolvedValue({ kind: "admin" });
+
+    const navigate = vi.fn();
+
+    await completePortalLogin({
+      email: "admin@test.com",
+      navigate,
+      openSignupVerification: vi.fn(),
+      onError: vi.fn(),
+    });
+
+    expect(navigate).toHaveBeenCalledWith("/admin");
+    expect(loadPendingVerification()).toBeNull();
+  });
+
+  it("redirects a seller to /seller", async () => {
+    resolvePortalLogin.mockResolvedValue({ kind: "seller" });
+
+    const navigate = vi.fn();
+
+    await completePortalLogin({
+      email: "seller@test.com",
+      navigate,
+      openSignupVerification: vi.fn(),
+      onError: vi.fn(),
+    });
+
+    expect(navigate).toHaveBeenCalledWith("/seller");
+  });
+
+  it("shows a persisted error when access is denied", async () => {
+    resolvePortalLogin.mockResolvedValue({
       kind: "error",
-      message: "Esta conta é de administrador. Use o login de admin.",
+      message: "Esta conta não possui permissão de acesso.",
     });
 
     const onError = vi.fn();
     const navigate = vi.fn();
     const openSignupVerification = vi.fn();
 
-    await completeSellerPortalLogin({
-      email: "admin@test.com",
+    await completePortalLogin({
+      email: "nobody@test.com",
       navigate,
       openSignupVerification,
       onError,
     });
 
     expect(onError).toHaveBeenCalledWith(
-      "Esta conta é de administrador. Use o login de admin.",
+      "Esta conta não possui permissão de acesso.",
     );
     expect(consumeSellerLoginError()).toBe(
-      "Esta conta é de administrador. Use o login de admin.",
+      "Esta conta não possui permissão de acesso.",
     );
     expect(loadPendingVerification()).toBeNull();
     expect(openSignupVerification).not.toHaveBeenCalled();
@@ -48,14 +79,14 @@ describe("completeSellerPortalLogin", () => {
   });
 
   it("saves the email then signs out when verification is required", async () => {
-    ensureSellerPortalAccess.mockResolvedValue({
+    resolvePortalLogin.mockResolvedValue({
       kind: "needs_verification",
     });
     signOut.mockResolvedValue(undefined);
 
     const openSignupVerification = vi.fn().mockResolvedValue(undefined);
 
-    await completeSellerPortalLogin({
+    await completePortalLogin({
       email: "seller@test.com",
       navigate: vi.fn(),
       openSignupVerification,

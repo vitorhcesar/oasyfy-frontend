@@ -105,6 +105,9 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function asString(value: unknown): string | null {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return String(value);
+  }
   if (typeof value !== "string") return null;
   const trimmed = value.trim();
   return trimmed && trimmed !== "-" ? trimmed : null;
@@ -261,19 +264,24 @@ function extractDetailFields(tx: ISellerTransactionDetail) {
     : isRecord(meta.cartwave_last_webhook)
       ? meta.cartwave_last_webhook
       : null;
-  const charge = isRecord(webhook?.charge)
-    ? webhook.charge
-    : isRecord(meta.charge)
-      ? meta.charge
-      : null;
   const pix = isRecord(webhook?.pix)
     ? webhook.pix
-    : isRecord(meta.pix)
-      ? meta.pix
-      : asString(meta.status) === "CONFIRMED" ||
-          asString(meta.subType) === "CHARGE_PAYMENT"
-        ? meta
-        : findRecordWithKeys(meta, ["debitParty", "endToEndId"]);
+    : isRecord(webhook?.transaction)
+      ? webhook.transaction
+      : isRecord(meta.pix)
+        ? meta.pix
+        : asString(meta.status) === "CONFIRMED" ||
+            asString(meta.subType) === "CHARGE_PAYMENT"
+          ? meta
+          : findRecordWithKeys(meta, ["debitParty"]);
+  const pixCharge = isRecord(pix?.charge) ? pix.charge : null;
+  const charge = isRecord(webhook?.charge)
+    ? webhook.charge
+    : pixCharge
+      ? pixCharge
+      : isRecord(meta.charge)
+        ? meta.charge
+        : null;
   const payment = isRecord(webhook?.payment) ? webhook.payment : null;
   const debitParty = isRecord(pix?.debitParty)
     ? pix.debitParty
@@ -282,8 +290,14 @@ function extractDetailFields(tx: ISellerTransactionDetail) {
       : isRecord(charge?.debitParty)
         ? charge.debitParty
         : null;
+  const creditParty = isRecord(pix?.creditParty)
+    ? pix.creditParty
+    : isRecord(pix?.credit_party)
+      ? pix.credit_party
+      : null;
 
   const fromCharge = readCustomerFromRecord(charge);
+  const fromPixCharge = readCustomerFromRecord(pixCharge);
   const fromPix = readCustomerFromRecord(pix);
   const fromMeta = readCustomerFromRecord(meta);
 
@@ -296,27 +310,39 @@ function extractDetailFields(tx: ISellerTransactionDetail) {
     charge?.paidAt,
     charge?.paid_at,
     pix?.time,
-    pix?.createdAt,
+    pixCharge?.paidAt,
     approved ? tx.updated_at : null,
   );
 
-  const youReceive =
-    split.sellerAmount ??
-    (tx.net_amount || Math.abs(tx.amount) - tx.fee_amount);
+  const netFromTx =
+    typeof tx.net_amount === "number" && tx.net_amount !== 0
+      ? tx.net_amount
+      : Math.abs(tx.amount) - tx.fee_amount;
 
   return {
-    customerName: pickString(fromCharge.name, fromPix.name, fromMeta.name) ??
-      tx.customer_name,
+    customerName:
+      pickString(
+        fromCharge.name,
+        fromPixCharge.name,
+        fromPix.name,
+        fromMeta.name,
+      ) ?? tx.customer_name,
     customerEmail:
-      pickString(fromCharge.email, fromPix.email, fromMeta.email) ??
-      tx.customer_email,
+      pickString(
+        fromCharge.email,
+        fromPixCharge.email,
+        fromPix.email,
+        fromMeta.email,
+      ) ?? tx.customer_email,
     customerPhone: pickString(
       fromCharge.phone,
+      fromPixCharge.phone,
       fromPix.phone,
       fromMeta.phone,
     ),
     customerDocument: pickString(
       fromCharge.taxId,
+      fromPixCharge.taxId,
       fromPix.taxId,
       fromMeta.taxId,
     ),
@@ -324,6 +350,7 @@ function extractDetailFields(tx: ISellerTransactionDetail) {
       woovi?.correlation_id,
       charge?.correlationID,
       charge?.correlationId,
+      pixCharge?.correlationID,
       pix?.correlationID,
       meta.correlation_id,
     ),
@@ -331,8 +358,16 @@ function extractDetailFields(tx: ISellerTransactionDetail) {
       woovi?.transaction_id,
       woovi?.charge_id,
       charge?.transactionID,
-      charge?.identifier,
+      pixCharge?.transactionID,
       pix?.transactionID,
+      charge?.identifier,
+      pix?.identifier,
+    ),
+    globalId: pickString(
+      woovi?.global_id,
+      charge?.globalID,
+      pixCharge?.globalID,
+      pix?.globalID,
     ),
     endToEndId: pickString(
       woovi?.end_to_end_id,
@@ -340,14 +375,16 @@ function extractDetailFields(tx: ISellerTransactionDetail) {
       pix?.endToEndID,
       charge?.endToEndId,
       payment?.endToEndId,
+      isRecord(webhook?.transaction) ? webhook.transaction.endToEndId : null,
     ),
-    payerBank: pickString(debitParty?.bank, debitParty?.psp, debitParty?.name),
+    payerBank: pickString(debitParty?.bank, debitParty?.psp),
     payerName: pickString(debitParty?.name),
+    receiverName: pickString(creditParty?.name, creditParty?.psp),
     paidAt: approved ? paidAt : null,
     rejectedAt: rejected ? tx.updated_at : null,
     split,
     splitCredit,
-    youReceive,
+    youReceive: split.sellerAmount ?? netFromTx,
     parentId:
       typeof meta.parent_transaction_id === "number"
         ? String(meta.parent_transaction_id)
@@ -380,20 +417,47 @@ function CopyableValue({ value }: { value: string }) {
         toast.success("Copiado!");
         window.setTimeout(() => setCopied(false), 1600);
       }}
-      className="group flex max-w-[62%] items-center justify-end gap-1.5 text-right"
+      className="group flex w-full min-w-0 items-start gap-2 text-left"
       title="Copiar"
     >
-      <span className="truncate font-mono text-xs font-medium text-foreground">
+      <span className="min-w-0 flex-1 break-all font-mono text-xs font-medium leading-snug text-foreground">
         {value}
       </span>
       <Copy
         size={12}
         className={cn(
-          "shrink-0 text-muted-foreground transition-colors group-hover:text-foreground",
+          "mt-0.5 shrink-0 text-muted-foreground transition-colors group-hover:text-foreground",
           copied && "text-success",
         )}
       />
     </button>
+  );
+}
+
+function TechnicalRow({
+  label,
+  value,
+  copy,
+}: {
+  label: string;
+  value: string | null;
+  copy?: boolean;
+}) {
+  return (
+    <div className="min-w-0">
+      <p className="text-xs text-muted-foreground">{label}</p>
+      {value ? (
+        copy ? (
+          <CopyableValue value={value} />
+        ) : (
+          <p className="break-words text-xs font-medium leading-snug text-foreground">
+            {value}
+          </p>
+        )
+      ) : (
+        <p className="text-xs text-muted-foreground">—</p>
+      )}
+    </div>
   );
 }
 
@@ -421,9 +485,14 @@ function TimelineRow({
         />
         {!last && <span className="mt-1 w-px flex-1 bg-border" />}
       </div>
-      <div className={cn("flex min-w-0 flex-1 justify-between gap-3 pb-4", last && "pb-0")}>
+      <div
+        className={cn(
+          "flex min-w-0 flex-1 flex-wrap items-baseline justify-between gap-x-3 gap-y-0.5 pb-4",
+          last && "pb-0",
+        )}
+      >
         <span className="text-xs text-muted-foreground">{label}</span>
-        <span className="text-xs font-medium tabular-nums text-foreground">
+        <span className="text-right text-xs font-medium tabular-nums text-foreground">
           {value}
         </span>
       </div>
@@ -467,14 +536,14 @@ export default function SellerTransactionDetailDialog({
       }}
     >
       {tx && detail && status ? (
-        <DialogContent className="max-h-[90vh] gap-0 overflow-y-auto border-border/60 p-0 sm:max-w-[420px]">
+        <DialogContent className="flex max-h-[90vh] w-[calc(100%-1.5rem)] min-w-0 max-w-[420px] flex-col gap-0 overflow-x-hidden overflow-y-auto border-border/60 p-0 sm:rounded-2xl">
         <DialogHeader className="px-5 pb-3 pt-5 pr-12 text-left">
           <DialogTitle className="text-base font-semibold tracking-tight">
             Detalhes da transação
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-3 px-5 pb-5">
+        <div className="min-w-0 space-y-3 overflow-x-hidden px-5 pb-5">
           {tx.refund_reason && (
             <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-3.5 py-3">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-destructive">
@@ -496,7 +565,7 @@ export default function SellerTransactionDetailDialog({
             <p className="mb-3 text-[11px] font-medium text-muted-foreground">
               {amountLabel}
             </p>
-            <div className="flex items-start gap-3">
+            <div className="flex min-w-0 items-start gap-3">
               <div
                 className={cn(
                   "flex h-11 w-11 shrink-0 items-center justify-center rounded-full",
@@ -506,12 +575,12 @@ export default function SellerTransactionDetailDialog({
                 <StatusIcon kind={status.icon} size={22} />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-2xl font-bold tabular-nums tracking-tight text-foreground">
+                <p className="break-words text-2xl font-bold tabular-nums tracking-tight text-foreground">
                   {isWithdrawal ? "- " : ""}
                   {formatCurrency(Math.abs(tx.amount))}
                 </p>
               </div>
-              <div className="flex shrink-0 flex-col items-end gap-1">
+              <div className="flex min-w-0 max-w-[42%] shrink flex-col items-end gap-1">
                 <span
                   className={cn(
                     "rounded-md px-2 py-0.5 text-[11px] font-semibold",
@@ -520,7 +589,7 @@ export default function SellerTransactionDetailDialog({
                 >
                   {status.label}
                 </span>
-                <span className="text-[11px] tabular-nums text-muted-foreground">
+                <span className="text-right text-[11px] leading-snug tabular-nums text-muted-foreground">
                   {formatModalDate(tx.created_at)}
                 </span>
                 {(detail.splitCredit || detail.split.hasSplit) && (
@@ -556,59 +625,59 @@ export default function SellerTransactionDetailDialog({
             <p className="mb-3 text-[11px] font-medium text-muted-foreground">
               Informações do cliente
             </p>
-            <div className="mb-3 flex items-center gap-3">
+            <div className="mb-3 flex min-w-0 items-start gap-3">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-semibold text-primary-foreground">
                 {initial}
               </span>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold capitalize text-foreground">
+                <p className="break-words text-sm font-semibold capitalize text-foreground">
                   {detail.customerName}
                 </p>
                 {detail.customerEmail && (
-                  <p className="truncate text-xs text-muted-foreground">
+                  <p className="break-all text-xs text-muted-foreground">
                     {detail.customerEmail}
                   </p>
                 )}
+                {detail.customerPhone && (
+                  <a
+                    href={toWhatsAppLink(detail.customerPhone)}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-2 inline-flex items-center gap-1.5 rounded-lg border border-success/40 px-2.5 py-1.5 text-[11px] font-semibold text-success transition-colors hover:bg-success/10"
+                  >
+                    <MessageCircle size={13} />
+                    Entrar em contato
+                  </a>
+                )}
               </div>
-              {detail.customerPhone && (
-                <a
-                  href={toWhatsAppLink(detail.customerPhone)}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-success/40 px-2.5 py-1.5 text-[11px] font-semibold text-success transition-colors hover:bg-success/10"
-                >
-                  <MessageCircle size={13} />
-                  Entrar em contato
-                </a>
-              )}
             </div>
-            <div className="space-y-2.5 border-t border-border/50 pt-3">
+            <div className="min-w-0 space-y-2.5 border-t border-border/50 pt-3">
               {detail.customerEmail && (
-                <div className="flex items-center gap-2.5 text-xs">
-                  <Mail size={14} className="shrink-0 text-muted-foreground" />
-                  <span className="w-20 text-muted-foreground">E-mail</span>
-                  <span className="min-w-0 truncate font-medium text-foreground">
+                <div className="flex min-w-0 items-start gap-2.5 text-xs">
+                  <Mail size={14} className="mt-0.5 shrink-0 text-muted-foreground" />
+                  <span className="w-20 shrink-0 text-muted-foreground">E-mail</span>
+                  <span className="min-w-0 flex-1 break-all font-medium text-foreground">
                     {detail.customerEmail}
                   </span>
                 </div>
               )}
               {detail.customerDocument && (
-                <div className="flex items-center gap-2.5 text-xs">
+                <div className="flex min-w-0 items-start gap-2.5 text-xs">
                   <FileText
                     size={14}
-                    className="shrink-0 text-muted-foreground"
+                    className="mt-0.5 shrink-0 text-muted-foreground"
                   />
-                  <span className="w-20 text-muted-foreground">Documento</span>
-                  <span className="font-medium tabular-nums text-foreground">
+                  <span className="w-20 shrink-0 text-muted-foreground">Documento</span>
+                  <span className="min-w-0 flex-1 break-all font-medium tabular-nums text-foreground">
                     {maskDocument(detail.customerDocument)}
                   </span>
                 </div>
               )}
               {detail.customerPhone && (
-                <div className="flex items-center gap-2.5 text-xs">
-                  <Phone size={14} className="shrink-0 text-muted-foreground" />
-                  <span className="w-20 text-muted-foreground">Telefone</span>
-                  <span className="font-medium tabular-nums text-foreground">
+                <div className="flex min-w-0 items-start gap-2.5 text-xs">
+                  <Phone size={14} className="mt-0.5 shrink-0 text-muted-foreground" />
+                  <span className="w-20 shrink-0 text-muted-foreground">Telefone</span>
+                  <span className="min-w-0 flex-1 break-all font-medium tabular-nums text-foreground">
                     {formatPhone(detail.customerPhone)}
                   </span>
                 </div>
@@ -626,13 +695,13 @@ export default function SellerTransactionDetailDialog({
           <Accordion
             type="multiple"
             defaultValue={["financial"]}
-            className="space-y-2"
+            className="min-w-0 space-y-2"
           >
             <AccordionItem
               value="financial"
-              className="overflow-hidden rounded-xl border border-border/60 bg-card px-3.5"
+              className="min-w-0 overflow-hidden rounded-xl border border-border/60 bg-card px-3.5"
             >
-              <AccordionTrigger className="py-3 text-sm font-semibold hover:no-underline">
+              <AccordionTrigger className="py-3 text-left text-sm font-semibold hover:no-underline">
                 Resumo Financeiro
               </AccordionTrigger>
               <AccordionContent className="pb-3.5">
@@ -659,7 +728,7 @@ export default function SellerTransactionDetailDialog({
                       </span>
                     </div>
                   )}
-                  <div className="-mx-1.5 flex items-center justify-between rounded-lg bg-primary/10 px-1.5 py-2">
+                  <div className="flex items-center justify-between rounded-lg bg-primary/10 px-2 py-2">
                     <span className="text-xs font-semibold text-foreground">
                       Você recebe
                     </span>
@@ -673,9 +742,9 @@ export default function SellerTransactionDetailDialog({
 
             <AccordionItem
               value="dates"
-              className="overflow-hidden rounded-xl border border-border/60 bg-card px-3.5"
+              className="min-w-0 overflow-hidden rounded-xl border border-border/60 bg-card px-3.5"
             >
-              <AccordionTrigger className="py-3 text-sm font-semibold hover:no-underline">
+              <AccordionTrigger className="py-3 text-left text-sm font-semibold hover:no-underline">
                 Datas da transação
               </AccordionTrigger>
               <AccordionContent className="pb-3.5">
@@ -700,70 +769,62 @@ export default function SellerTransactionDetailDialog({
 
             <AccordionItem
               value="technical"
-              className="overflow-hidden rounded-xl border border-border/60 bg-card px-3.5"
+              className="min-w-0 overflow-hidden rounded-xl border border-border/60 bg-card px-3.5"
             >
-              <AccordionTrigger className="py-3 text-sm font-semibold hover:no-underline">
+              <AccordionTrigger className="py-3 text-left text-sm font-semibold hover:no-underline">
                 Informações técnicas
               </AccordionTrigger>
               <AccordionContent className="pb-3.5">
-                <div className="space-y-2.5">
-                  <div className="flex items-center justify-between gap-3 text-xs">
-                    <span className="text-muted-foreground">ID interno</span>
-                    <CopyableValue value={tx.id} />
-                  </div>
-                  <div className="flex items-center justify-between gap-3 text-xs">
-                    <span className="text-muted-foreground">Reference ID</span>
-                    {detail.referenceId ? (
-                      <CopyableValue value={detail.referenceId} />
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between gap-3 text-xs">
-                    <span className="text-muted-foreground">External ID</span>
-                    {detail.externalId ? (
-                      <CopyableValue value={detail.externalId} />
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </div>
-                  <div className="flex items-center justify-between gap-3 text-xs">
-                    <span className="text-muted-foreground">End to end</span>
-                    {detail.endToEndId ? (
-                      <CopyableValue value={detail.endToEndId} />
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </div>
+                <div className="min-w-0 space-y-3">
+                  <TechnicalRow label="ID interno" value={tx.id} copy />
+                  <TechnicalRow
+                    label="Reference ID"
+                    value={detail.referenceId}
+                    copy
+                  />
+                  <TechnicalRow
+                    label="External ID"
+                    value={detail.externalId}
+                    copy
+                  />
+                  <TechnicalRow
+                    label="End to end"
+                    value={detail.endToEndId}
+                    copy
+                  />
+                  {detail.globalId && (
+                    <TechnicalRow
+                      label="Global ID"
+                      value={detail.globalId}
+                      copy
+                    />
+                  )}
                   {detail.parentId && (
-                    <div className="flex items-center justify-between gap-3 text-xs">
-                      <span className="text-muted-foreground">Venda origem</span>
-                      <CopyableValue value={detail.parentId} />
-                    </div>
+                    <TechnicalRow
+                      label="Venda origem"
+                      value={detail.parentId}
+                      copy
+                    />
                   )}
                   {tx.acquirer && (
-                    <div className="flex items-center justify-between gap-3 text-xs">
-                      <span className="text-muted-foreground">Adquirente</span>
-                      <span className="font-medium capitalize text-foreground">
-                        {tx.acquirer}
-                      </span>
-                    </div>
+                    <TechnicalRow label="Adquirente" value={tx.acquirer} />
                   )}
                   {detail.payerBank && (
-                    <div className="flex items-center justify-between gap-3 text-xs">
-                      <span className="text-muted-foreground">Banco de origem</span>
-                      <span className="max-w-[62%] text-right font-medium text-foreground">
-                        {detail.payerBank}
-                      </span>
-                    </div>
+                    <TechnicalRow
+                      label="Banco de origem"
+                      value={detail.payerBank}
+                    />
                   )}
-                  {detail.payerName && detail.payerName !== detail.customerName && (
-                    <div className="flex items-center justify-between gap-3 text-xs">
-                      <span className="text-muted-foreground">Pagador</span>
-                      <span className="max-w-[62%] text-right font-medium capitalize text-foreground">
-                        {detail.payerName}
-                      </span>
-                    </div>
+                  {detail.payerName &&
+                    detail.payerName.toLowerCase() !==
+                      detail.customerName.toLowerCase() && (
+                      <TechnicalRow label="Pagador" value={detail.payerName} />
+                    )}
+                  {detail.receiverName && (
+                    <TechnicalRow
+                      label="Instituição recebedora"
+                      value={detail.receiverName}
+                    />
                   )}
                 </div>
               </AccordionContent>

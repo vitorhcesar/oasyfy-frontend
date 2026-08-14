@@ -74,7 +74,7 @@ export default function NewPasswordStep() {
           new_password: password,
         });
         setSuccess(true);
-        setTimeout(() => navigate("/login/seller"), 2500);
+        setTimeout(() => navigate("/login"), 2500);
       },
       {
         defaultErrorMessage: "Erro ao atualizar senha",
@@ -163,7 +163,7 @@ export default function NewPasswordStep() {
           <Button
             variant="ghost"
             type="button"
-            onClick={() => navigate("/login/seller")}
+            onClick={() => navigate("/login")}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors w-full"
           >
             ← Voltar ao login

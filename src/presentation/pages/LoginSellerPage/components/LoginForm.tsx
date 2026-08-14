@@ -1,25 +1,22 @@
-import { ClientIpService } from "@/app/modules/client/services/client-ip.service";
 import { AppError } from "@/domain/errors/app.error";
 import { authClient } from "@/infra/auth";
 import { isTwoFactorRedirect } from "@/infra/auth/two-factor-utils";
 import { Input } from "@/presentation/components/Input";
 import { Label } from "@/presentation/components/Label";
 import { PasswordInput } from "@/presentation/components/PasswordInput";
-import { setPortalLoginInFlight } from "@/presentation/components/auth/portal-login-lock";
+import { setLoginInFlight } from "@/presentation/components/auth/portal-login-lock";
 import { Button } from "@/presentation/components/ui/button";
 import { translateError } from "@/presentation/utils/translate-error";
 import { tryOrToastError } from "@/presentation/utils/try-or-toast-error";
 import { ArrowRight, Mail, X } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { completeSellerPortalLogin } from "../seller-login-completion";
+import { completePortalLogin } from "../seller-login-completion";
 import {
   clearSellerLoginError,
   consumeSellerLoginError,
 } from "../seller-login-error-storage";
 import { savePendingTwoFactor } from "../seller-login-two-factor-storage";
-
-const clientIpService = new ClientIpService();
 
 interface ILoginFormProps {
   email: string;
@@ -53,27 +50,17 @@ export default function LoginForm({
     setError("");
 
     setLoading(true);
-    setPortalLoginInFlight("seller", true);
+    setLoginInFlight(true);
 
     tryOrToastError(
       async () => {
-        const ip = await clientIpService.getClientIp();
-        if (!ip) {
-          setPortalLoginInFlight("seller", false);
-          throw new AppError(
-            "Erro ao identificar seu IP. Verifique sua conexão e tente novamente.",
-            400
-          );
-        }
-        void ip;
-
         const signInResult = await authClient.signIn.email({
           email,
           password,
         });
 
         if (signInResult.error) {
-          setPortalLoginInFlight("seller", false);
+          setLoginInFlight(false);
           const raw =
             signInResult.error.message || signInResult.error.code || "";
           if (
@@ -96,7 +83,7 @@ export default function LoginForm({
           return;
         }
 
-        await completeSellerPortalLogin({
+        await completePortalLogin({
           email,
           navigate,
           openSignupVerification,
@@ -145,14 +132,6 @@ export default function LoginForm({
               <X size={15} className="flex-shrink-0" />
               <span>{error}</span>
             </div>
-            {error.includes("login de admin") && (
-              <a
-                href="/login/admin"
-                className="mt-2 inline-block font-semibold text-primary hover:text-primary/80"
-              >
-                Ir para o login de admin
-              </a>
-            )}
           </div>
         )}
 

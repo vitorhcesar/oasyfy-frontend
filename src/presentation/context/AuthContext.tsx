@@ -1,5 +1,6 @@
 import { authClient } from "@/infra/auth/auth-client";
 import { fetchSessionContext } from "@/infra/auth/session-context-api";
+import { isAuthSessionLoading } from "@/presentation/context/auth-session-loading";
 import type { Session, User } from "better-auth/types";
 import {
   createContext,
@@ -33,15 +34,13 @@ export function AuthContextProvider({ children }: PropsWithChildren) {
   const [isBanned, setIsBanned] = useState(false);
   const [apiAccessEnabled, setApiAccessEnabled] = useState(false);
   /**
-   * true enquanto o GET /session/context está em voo.
-   * Usado para manter isLoading = true durante a busca de role.
+   * userId para o qual GET /session/context já terminou (sucesso ou falha).
+   * Comparar com o userId atual evita o frame em que a sessão hidrata
+   * e o papel ainda é o estado residual — o flash da tela de login.
    */
-  const [roleFetching, setRoleFetching] = useState(false);
-  /**
-   * true depois que a primeira busca de role foi concluída (sucesso ou falha).
-   * Garante que isLoading permaneça true até sabermos o papel do usuário.
-   */
-  const [roleFetched, setRoleFetched] = useState(false);
+  const [roleResolvedForUserId, setRoleResolvedForUserId] = useState<
+    string | null
+  >(null);
 
   const user = sessionQuery.data?.user ?? null;
   const session = (sessionQuery.data?.session as Session) ?? null;
@@ -56,28 +55,29 @@ export function AuthContextProvider({ children }: PropsWithChildren) {
     if (!forUserId) return;
 
     const requestId = ++roleRequestIdRef.current;
-    setRoleFetching(true);
-    setRoleFetched(false);
     try {
       const ctx = await fetchSessionContext();
-      if (roleRequestIdRef.current !== requestId || userIdRef.current !== forUserId) {
+      if (
+        roleRequestIdRef.current !== requestId ||
+        userIdRef.current !== forUserId
+      ) {
         return;
       }
       setRole(ctx.role);
       setIsBanned(ctx.isBanned);
       setApiAccessEnabled(ctx.apiAccessEnabled ?? false);
+      setRoleResolvedForUserId(forUserId);
     } catch {
-      if (roleRequestIdRef.current !== requestId || userIdRef.current !== forUserId) {
+      if (
+        roleRequestIdRef.current !== requestId ||
+        userIdRef.current !== forUserId
+      ) {
         return;
       }
       setRole(null);
       setIsBanned(false);
       setApiAccessEnabled(false);
-    } finally {
-      if (roleRequestIdRef.current === requestId && userIdRef.current === forUserId) {
-        setRoleFetching(false);
-        setRoleFetched(true);
-      }
+      setRoleResolvedForUserId(forUserId);
     }
   }, []);
 
@@ -86,30 +86,38 @@ export function AuthContextProvider({ children }: PropsWithChildren) {
     setRole(null);
     setIsBanned(false);
     setApiAccessEnabled(false);
-    setRoleFetching(false);
-    setRoleFetched(true);
+    setRoleResolvedForUserId(null);
   }, []);
 
   useEffect(() => {
+    if (sessionQuery.isPending) return;
+
     if (!userId) {
       resetRoleState();
       return;
     }
 
-    if (sessionQuery.isPending) return;
+    if (roleResolvedForUserId === userId) return;
 
     void fetchRole();
-  }, [sessionQuery.isPending, userId, fetchRole, resetRoleState]);
+  }, [
+    sessionQuery.isPending,
+    userId,
+    roleResolvedForUserId,
+    fetchRole,
+    resetRoleState,
+  ]);
 
   const signOut = useCallback(async () => {
     await authClient.signOut();
     resetRoleState();
   }, [resetRoleState]);
 
-  // Está carregando enquanto a sessão do Better Auth não resolveu
-  // OU enquanto o usuário existe mas o papel ainda não foi buscado.
-  const isLoading =
-    sessionQuery.isPending || (!!userId && (!roleFetched || roleFetching));
+  const isLoading = isAuthSessionLoading(
+    sessionQuery.isPending,
+    userId,
+    roleResolvedForUserId,
+  );
 
   return (
     <AuthContext.Provider

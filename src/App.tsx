@@ -15,7 +15,6 @@ import AdminGeneralPage from "./presentation/pages/AdminGeneralPage";
 import AdminKycPage from "./presentation/pages/AdminKycPage";
 import AdminSellersPage from "./presentation/pages/AdminSellersPage";
 import AdminSellerProfilePage from "./presentation/pages/AdminSellerProfilePage";
-import LoginAdmin from "./presentation/pages/LoginAdminPage";
 import LoginSellerPage from "./presentation/pages/LoginSellerPage";
 import ResetPasswordPage from "./presentation/pages/ResetPasswordPage";
 import TermsOfUsePage from "./presentation/pages/TermsOfUsePage";
@@ -78,20 +77,20 @@ export default function App() {
             <AuthContextProvider>
               <Routes>
                 <Route
-                  path="/login/admin"
+                  path="/login"
                   element={
-                    <PublicRoute portal="admin">
-                      <LoginAdmin />
+                    <PublicRoute>
+                      <LoginSellerPage />
                     </PublicRoute>
                   }
                 />
                 <Route
+                  path="/login/admin"
+                  element={<Navigate to="/login" replace />}
+                />
+                <Route
                   path="/login/seller"
-                  element={
-                    <PublicRoute portal="seller">
-                      <LoginSellerPage />
-                    </PublicRoute>
-                  }
+                  element={<Navigate to="/login" replace />}
                 />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/termos" element={<TermsOfUsePage />} />
@@ -395,7 +394,7 @@ export default function App() {
                 />
                 <Route
                   path="*"
-                  element={<Navigate to="/login/seller" replace />}
+                  element={<Navigate to="/login" replace />}
                 />
               </Routes>
             </AuthContextProvider>

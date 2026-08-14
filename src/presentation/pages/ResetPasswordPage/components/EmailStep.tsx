@@ -103,7 +103,7 @@ export default function EmailStep() {
           <Button
             variant="ghost"
             type="button"
-            onClick={() => navigate("/login/seller")}
+            onClick={() => navigate("/login")}
             className="text-sm text-muted-foreground hover:text-foreground transition-colors w-full"
           >
             ← Voltar ao login

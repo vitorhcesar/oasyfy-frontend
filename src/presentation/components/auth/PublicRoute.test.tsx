@@ -1,5 +1,5 @@
 import { PublicRoute } from "@/presentation/components/auth/PublicRoute";
-import { setPortalLoginInFlight } from "@/presentation/components/auth/portal-login-lock";
+import { setLoginInFlight } from "@/presentation/components/auth/portal-login-lock";
 import {
   useAuthContext,
   type IAuthContext,
@@ -28,15 +28,13 @@ function mockAuthContext(overrides: Partial<IAuthContext>): IAuthContext {
   };
 }
 
-function renderSellerLogin(ui?: React.ReactNode) {
+function renderLogin(ui?: React.ReactNode) {
   render(
-    <MemoryRouter initialEntries={["/login/seller"]}>
+    <MemoryRouter initialEntries={["/login"]}>
       <Routes>
         <Route
-          path="/login/seller"
-          element={
-            <PublicRoute portal="seller">{ui ?? <div>seller-login</div>}</PublicRoute>
-          }
+          path="/login"
+          element={<PublicRoute>{ui ?? <div>login-form</div>}</PublicRoute>}
         />
         <Route path="/admin" element={<div>admin-home</div>} />
         <Route path="/seller" element={<div>seller-home</div>} />
@@ -48,8 +46,7 @@ function renderSellerLogin(ui?: React.ReactNode) {
 describe("PublicRoute", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    setPortalLoginInFlight("seller", false);
-    setPortalLoginInFlight("admin", false);
+    setLoginInFlight(false);
   });
 
   it("shows loading while the initial session is resolving", () => {
@@ -57,13 +54,28 @@ describe("PublicRoute", () => {
       mockAuthContext({ isLoading: true, isAuthenticated: false }),
     );
 
-    renderSellerLogin();
+    renderLogin();
 
     expect(screen.getByText("Carregando...")).toBeInTheDocument();
   });
 
-  it("keeps the seller login form visible while a portal login is in flight", () => {
-    setPortalLoginInFlight("seller", true);
+  it("shows loading while an authenticated session waits for the role", () => {
+    mockedUseAuthContext.mockReturnValue(
+      mockAuthContext({
+        isLoading: true,
+        isAuthenticated: true,
+        role: null,
+      }),
+    );
+
+    renderLogin();
+
+    expect(screen.getByText("Carregando...")).toBeInTheDocument();
+    expect(screen.queryByText("login-form")).not.toBeInTheDocument();
+  });
+
+  it("keeps the login form visible while a login is in flight", () => {
+    setLoginInFlight(true);
     mockedUseAuthContext.mockReturnValue(
       mockAuthContext({
         isLoading: true,
@@ -72,15 +84,15 @@ describe("PublicRoute", () => {
       }),
     );
 
-    renderSellerLogin();
+    renderLogin();
 
-    expect(screen.getByText("seller-login")).toBeInTheDocument();
+    expect(screen.getByText("login-form")).toBeInTheDocument();
     expect(screen.queryByText("admin-home")).not.toBeInTheDocument();
     expect(screen.queryByText("Carregando...")).not.toBeInTheDocument();
   });
 
-  it("does not redirect an admin to /admin while seller login is in flight", () => {
-    setPortalLoginInFlight("seller", true);
+  it("does not redirect while login is in flight", () => {
+    setLoginInFlight(true);
     mockedUseAuthContext.mockReturnValue(
       mockAuthContext({
         isLoading: false,
@@ -89,13 +101,13 @@ describe("PublicRoute", () => {
       }),
     );
 
-    renderSellerLogin();
+    renderLogin();
 
-    expect(screen.getByText("seller-login")).toBeInTheDocument();
+    expect(screen.getByText("login-form")).toBeInTheDocument();
     expect(screen.queryByText("admin-home")).not.toBeInTheDocument();
   });
 
-  it("redirects an already authenticated admin visiting seller login", () => {
+  it("redirects an already authenticated admin visiting login", () => {
     mockedUseAuthContext.mockReturnValue(
       mockAuthContext({
         isLoading: false,
@@ -104,7 +116,7 @@ describe("PublicRoute", () => {
       }),
     );
 
-    renderSellerLogin();
+    renderLogin();
 
     expect(screen.getByText("admin-home")).toBeInTheDocument();
   });
@@ -118,7 +130,7 @@ describe("PublicRoute", () => {
       }),
     );
 
-    renderSellerLogin();
+    renderLogin();
 
     expect(screen.getByText("seller-home")).toBeInTheDocument();
   });
