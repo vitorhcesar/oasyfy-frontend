@@ -9,13 +9,16 @@ import {
   Lock,
   Mail,
   Phone,
+  Send,
   Shield,
+  ShieldAlert,
   ShieldCheck,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useAdminKycDetailsStore } from "../stores/admin-kyc-details.store";
 import { IKycSubmissionView } from "../types/kyc-submission-view.type";
+import { isPendingEmailVerification } from "../utils/is-pending-email-verification.util";
 import { statusDot } from "../utils/status-dot.util";
 import { statusText } from "../utils/status-text.util";
 
@@ -49,6 +52,7 @@ export function AdminKycDetailsHeader({
 
   const [manualEmailApprovalLoading, setManualEmailApprovalLoading] =
     useState(false);
+  const [sendVerificationLoading, setSendVerificationLoading] = useState(false);
   const [banLoading, setBanLoading] = useState(false);
   const [withdrawalsLoading, setWithdrawalsLoading] = useState(false);
   const [apiAccessLoading, setApiAccessLoading] = useState(false);
@@ -63,6 +67,8 @@ export function AdminKycDetailsHeader({
       : submission.status === "rejected"
         ? "rejected"
         : "pending";
+
+  const pendingEmailVerification = isPendingEmailVerification(submission);
 
   const copyToClipboard = (text: string | null, label: string) => {
     if (!text) return;
@@ -94,6 +100,31 @@ export function AdminKycDetailsHeader({
         defaultErrorMessage: "Erro ao aprovar e-mail",
         finallyFn: () => {
           setManualEmailApprovalLoading(false);
+        },
+      },
+    );
+  };
+
+  const handleSendSignupVerification = async () => {
+    if (!submission.email) {
+      toast.error("Seller sem e-mail cadastrado");
+      return;
+    }
+
+    setSendVerificationLoading(true);
+
+    await tryOrToastError(
+      async () => {
+        await apiService.modules.email.sendSignupVerificationCode(
+          submission.email!,
+        );
+        toast.success("Código de confirmação enviado");
+        setActionsOpen(false);
+      },
+      {
+        defaultErrorMessage: "Erro ao enviar código de confirmação",
+        finallyFn: () => {
+          setSendVerificationLoading(false);
         },
       },
     );
@@ -186,6 +217,7 @@ export function AdminKycDetailsHeader({
   };
 
   return (
+    <>
     <header className="admin-surface relative z-20 mb-6 overflow-visible p-5 md:p-6">
       <div className="mb-1 flex flex-wrap items-center gap-3">
         <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-[1.75rem]">
@@ -223,7 +255,7 @@ export function AdminKycDetailsHeader({
                 className="fixed inset-0 z-40"
                 onClick={() => setActionsOpen(false)}
               />
-              <div className="absolute right-0 z-50 mt-1.5 w-52 overflow-hidden rounded-2xl border border-[color:var(--glass-border)] bg-[color-mix(in_srgb,var(--glass-bg-tint)_50%,var(--glass-bg))] py-1.5 shadow-lg backdrop-blur-[22px] backdrop-saturate-150">
+              <div className="absolute right-0 z-50 mt-1.5 w-60 overflow-hidden rounded-2xl border border-[color:var(--glass-border)] bg-[color-mix(in_srgb,var(--glass-bg-tint)_50%,var(--glass-bg))] py-1.5 shadow-lg backdrop-blur-[22px] backdrop-saturate-150">
                 <button
                   onClick={handleToggleBan}
                   disabled={banLoading}
@@ -287,6 +319,18 @@ export function AdminKycDetailsHeader({
                     ? "E-mail aprovado"
                     : "Aprovar e-mail"}
                 </button>
+                <button
+                  onClick={handleSendSignupVerification}
+                  disabled={sendVerificationLoading || !submission.email}
+                  className="flex w-full items-center gap-2 px-3.5 py-2.5 text-sm text-foreground transition-colors hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {sendVerificationLoading ? (
+                    <Loader2 size={15} className="animate-spin" />
+                  ) : (
+                    <Send size={15} />
+                  )}
+                  Enviar código OTP
+                </button>
               </div>
             </>
           )}
@@ -312,6 +356,8 @@ export function AdminKycDetailsHeader({
             {submission.email}
             {submission.email_manually_approved ? (
               <ShieldCheck size={14} className="text-success" />
+            ) : pendingEmailVerification ? (
+              <ShieldAlert size={14} className="text-warning" />
             ) : (
               <Shield size={14} className="text-muted-foreground" />
             )}
@@ -326,7 +372,40 @@ export function AdminKycDetailsHeader({
             API liberada
           </span>
         )}
+        {pendingEmailVerification && (
+          <span className="inline-flex items-center gap-1.5 rounded-lg border border-warning/25 bg-warning/10 px-2 py-0.5 text-xs font-semibold text-warning">
+            <ShieldAlert size={12} />
+            Aguardando OTP
+          </span>
+        )}
       </div>
     </header>
+    {pendingEmailVerification && (
+      <div className="admin-surface mb-6 flex flex-col gap-3 p-5 md:flex-row md:items-center md:justify-between md:p-6">
+        <div>
+          <p className="text-sm font-semibold text-foreground">
+            E-mail pendente de confirmação
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Este seller ainda está na etapa de OTP e não consegue acessar o
+            painel até confirmar o código enviado por e-mail.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={handleSendSignupVerification}
+          disabled={sendVerificationLoading || !submission.email}
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          {sendVerificationLoading ? (
+            <Loader2 size={15} className="animate-spin" />
+          ) : (
+            <Send size={15} />
+          )}
+          Enviar e-mail de confirmação
+        </button>
+      </div>
+    )}
+    </>
   );
 }

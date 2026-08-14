@@ -4,6 +4,7 @@ import { BaseApiModule } from "./base-api.module";
 export interface IEmailModule {
   sendApprovalEmail: (sellerEmail: string, sellerName: string) => Promise<void>;
   testConnection: (to: string) => Promise<void>;
+  sendSignupVerificationCode: (email: string) => Promise<void>;
 }
 
 export class EmailModule extends BaseApiModule implements IEmailModule {
@@ -26,6 +27,13 @@ export class EmailModule extends BaseApiModule implements IEmailModule {
     await this.getClient().post<IApiEnvelope<{ sent: boolean; to: string }>>(
       `${this.baseUrl}/connection/test`,
       { to },
+    );
+  }
+
+  async sendSignupVerificationCode(email: string): Promise<void> {
+    await this.getClient().post<IApiEnvelope<{ sent: boolean; to: string }>>(
+      `${this.baseUrl}/signup-verification`,
+      { email },
     );
   }
 }

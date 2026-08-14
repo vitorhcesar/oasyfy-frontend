@@ -1,6 +1,7 @@
-import { ChevronRight, User } from "lucide-react";
+import { ChevronRight, MailWarning, User } from "lucide-react";
 import { useAdminKycPageStore } from "../stores/admin-kyc-page.store";
 import { IRegisteredSellerView } from "../types/kyc-submission-view.type";
+import { isPendingEmailVerification } from "../utils/is-pending-email-verification.util";
 import { mapRegisteredSellerToKycView } from "../utils/map-admin-kyc-submissions-to-view.util";
 
 interface IRegisteredListProps {
@@ -42,6 +43,12 @@ export default function RegisteredList({
             <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground" />
             Sem documentos
           </span>
+          {isPendingEmailVerification(seller) && (
+            <span className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg border border-warning/25 bg-warning/10 px-2.5 py-1 text-xs font-semibold text-warning">
+              <MailWarning size={12} />
+              Aguardando OTP
+            </span>
+          )}
           <span className="w-12 flex-shrink-0 text-right text-sm text-muted-foreground">
             {timeAgo(seller.created_at)}
           </span>

@@ -1,6 +1,7 @@
-import { Building2, ChevronRight, User } from "lucide-react";
+import { Building2, ChevronRight, MailWarning, User } from "lucide-react";
 import { useAdminKycPageStore } from "../stores/admin-kyc-page.store";
 import { IKycSubmissionView } from "../types/kyc-submission-view.type";
+import { isPendingEmailVerification } from "../utils/is-pending-email-verification.util";
 
 interface ISubmissionsListProps {
   filteredSubmissions: IKycSubmissionView[];
@@ -75,6 +76,12 @@ export default function SubmissionsList({
               <span className={`h-1.5 w-1.5 rounded-full ${badge.dot}`} />
               {badge.label}
             </span>
+            {isPendingEmailVerification(submission) && (
+              <span className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg border border-warning/25 bg-warning/10 px-2.5 py-1 text-xs font-semibold text-warning">
+                <MailWarning size={12} />
+                Aguardando OTP
+              </span>
+            )}
             <span className="w-12 flex-shrink-0 text-right text-sm text-muted-foreground">
               {timeAgo(submission.created_at)}
             </span>

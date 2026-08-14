@@ -3,6 +3,7 @@ import { OtpInput } from "@/presentation/components/OtpInput";
 import { Button } from "@/presentation/components/ui/button";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import { toast } from "@/presentation/hooks/use-toast";
+import { getErrorMessageOrDefault } from "@/presentation/utils/get-error-message-or-default";
 import { tryOrToastError } from "@/presentation/utils/try-or-toast-error";
 import { ArrowLeft, Loader2, Mail, X } from "lucide-react";
 import { useState } from "react";
@@ -74,6 +75,11 @@ export default function OtpCodeForm({
       {
         defaultErrorTitle: "Erro ao verificar código",
         defaultErrorMessage: "Erro ao verificar código",
+        errorFn: (error) => {
+          setError(
+            getErrorMessageOrDefault(error, "Erro ao verificar código"),
+          );
+        },
         finallyFn: () => {
           setLoading(false);
         },
@@ -110,6 +116,11 @@ export default function OtpCodeForm({
       {
         defaultErrorMessage: "Erro ao reenviar código",
         defaultErrorTitle: "Erro ao reenviar código",
+        errorFn: (error) => {
+          setError(
+            getErrorMessageOrDefault(error, "Erro ao reenviar código"),
+          );
+        },
         finallyFn: () => {
           setLoading(false);
         },

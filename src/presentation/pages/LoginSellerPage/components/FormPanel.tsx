@@ -2,7 +2,6 @@ import { TwoFactorLoginStep } from "@/presentation/components/auth/TwoFactorLogi
 import { setPortalLoginInFlight } from "@/presentation/components/auth/portal-login-lock";
 import { useAuthContext } from "@/presentation/context/AuthContext";
 import { useApiService } from "@/presentation/hooks/use-api-service";
-import { tryOrToastError } from "@/presentation/utils/try-or-toast-error";
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { completeSellerPortalLogin } from "../seller-login-completion";
@@ -57,21 +56,13 @@ export default function LoginSellerFormPanel() {
   }, [isAuthenticated, isLoading]);
 
   const sendSignUpVerificationCodeAndOpenCodeFormView = async () => {
-    await tryOrToastError(
-      async () => {
-        await apiService.modules.account.sendSignupVerificationCode(email);
+    await apiService.modules.account.sendSignupVerificationCode(email);
 
-        savePendingVerification(email);
+    savePendingVerification(email);
 
-        if (formView !== "code") {
-          setFormView("code");
-        }
-      },
-      {
-        defaultErrorMessage: "Erro ao enviar código de verificação",
-        defaultErrorTitle: "Erro ao enviar código de verificação",
-      }
-    );
+    if (formView !== "code") {
+      setFormView("code");
+    }
   };
 
   const handleTwoFactorVerified = async () => {

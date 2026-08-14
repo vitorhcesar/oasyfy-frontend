@@ -40,6 +40,7 @@ export interface IKycSubmissionView {
   withdrawal_block_reason: string | null;
   api_access_enabled: boolean;
   email_manually_approved?: boolean;
+  email_verified?: boolean;
 }
 
 export interface IRegisteredSellerView {
@@ -49,4 +50,5 @@ export interface IRegisteredSellerView {
   account_id?: string;
   created_at: string;
   email_manually_approved?: boolean;
+  email_verified?: boolean;
 }

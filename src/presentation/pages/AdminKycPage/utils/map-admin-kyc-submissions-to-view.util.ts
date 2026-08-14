@@ -48,6 +48,7 @@ export function mapAdminKycSubmissionToView(
     withdrawal_block_reason: submission.withdrawalBlockReason,
     api_access_enabled: submission.apiAccessEnabled ?? false,
     email_manually_approved: submission.emailManuallyApproved,
+    email_verified: submission.emailVerified,
   };
 }
 
@@ -61,6 +62,7 @@ export function mapRegisteredSellerToView(
     account_id: seller.accountId ?? undefined,
     created_at: seller.createdAt,
     email_manually_approved: seller.emailManuallyApproved,
+    email_verified: seller.emailVerified,
   };
 }
 
@@ -104,5 +106,6 @@ export function mapRegisteredSellerToKycView(
     withdrawal_block_reason: null,
     api_access_enabled: false,
     email_manually_approved: seller.email_manually_approved,
+    email_verified: seller.email_verified,
   };
 }
