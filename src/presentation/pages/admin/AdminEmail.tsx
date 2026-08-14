@@ -31,6 +31,7 @@ interface SmtpSettings {
   port: number;
   username: string;
   password: string;
+  has_password?: boolean;
   from_email: string;
   from_name: string;
   encryption: string;
@@ -65,10 +66,14 @@ export default function AdminEmail() {
 
   useEffect(() => {
     if (!smtpData) return;
-    setSettings({ ...(smtpData as unknown as SmtpSettings), is_active: true });
-    // Só mascara quando há registro persistido no banco (tem `id`).
-    // Defaults do .env vêm sem `id` e ficam editáveis.
-    setIsMasked(Boolean(smtpData.id));
+    const next = smtpData as unknown as SmtpSettings;
+    setSettings({ ...next, password: "", is_active: true });
+    setShowPassword(false);
+    setIsMasked(
+      Boolean(
+        next.id || next.host || next.from_email || next.has_password,
+      ),
+    );
   }, [smtpData]);
 
   const handleSave = async () => {
@@ -85,7 +90,10 @@ export default function AdminEmail() {
         is_active: true,
       };
       const saved = await apiService.modules.adminConfig.updateSmtpSettings(payload);
-      setSettings(saved as unknown as SmtpSettings);
+      setSettings({
+        ...(saved as unknown as SmtpSettings),
+        password: "",
+      });
       toast.success("Configurações SMTP salvas com sucesso");
       setIsMasked(true);
       setShowPassword(false);
@@ -340,8 +348,13 @@ export default function AdminEmail() {
                       onChange={(e) =>
                         setSettings({ ...settings, password: e.target.value })
                       }
+                      autoComplete="new-password"
                       className={cn(inputClass, "pr-11")}
-                      placeholder="••••••••"
+                      placeholder={
+                        settings.has_password || settings.id
+                          ? "Deixe em branco para manter"
+                          : "••••••••"
+                      }
                     />
                     <button
                       type="button"

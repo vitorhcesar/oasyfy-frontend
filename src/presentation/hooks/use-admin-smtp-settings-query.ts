@@ -7,6 +7,7 @@ export type TSmtpSettingsView = {
   port: number;
   username: string;
   password: string;
+  has_password?: boolean;
   from_email: string;
   from_name: string;
   encryption: string;
