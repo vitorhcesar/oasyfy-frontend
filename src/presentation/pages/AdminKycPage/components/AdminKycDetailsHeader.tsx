@@ -19,23 +19,15 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { useAdminKycDetailsStore } from "../stores/admin-kyc-details.store";
 import { IKycSubmissionView } from "../types/kyc-submission-view.type";
+import { effectiveKycStatus } from "../utils/effective-kyc-status.util";
 import { isPendingEmailVerification } from "../utils/is-pending-email-verification.util";
+import { statusBadgeClasses } from "../utils/status-badge-classes.util";
 import { statusDot } from "../utils/status-dot.util";
 import { statusText } from "../utils/status-text.util";
 
 interface IAdminKycDetailsHeaderProps {
   submission: IKycSubmissionView;
   onUpdate: () => void;
-}
-
-function statusBadgeClasses(status: string) {
-  if (status === "approved") {
-    return "border-success/25 bg-success/10 text-success";
-  }
-  if (status === "rejected") {
-    return "border-destructive/25 bg-destructive/10 text-destructive";
-  }
-  return "border-warning/25 bg-warning/10 text-warning";
 }
 
 export function AdminKycDetailsHeader({
@@ -58,16 +50,7 @@ export function AdminKycDetailsHeader({
   const [withdrawalsLoading, setWithdrawalsLoading] = useState(false);
   const [apiAccessLoading, setApiAccessLoading] = useState(false);
 
-  const allApproved =
-    submission.documents_status === "approved" &&
-    submission.bank_status === "approved" &&
-    submission.address_status === "approved";
-  const effectiveStatus =
-    allApproved && submission.status === "approved"
-      ? "approved"
-      : submission.status === "rejected"
-        ? "rejected"
-        : "pending";
+  const overallStatus = effectiveKycStatus(submission);
 
   const pendingEmailVerification = isPendingEmailVerification(submission);
 
@@ -229,12 +212,12 @@ export function AdminKycDetailsHeader({
           {submission.person_type === "pj" ? "PJ" : "PF"}
         </span>
         <span
-          className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold ${statusBadgeClasses(effectiveStatus)}`}
+          className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold ${statusBadgeClasses(overallStatus)}`}
         >
           <span
-            className={`h-1.5 w-1.5 rounded-full ${statusDot(effectiveStatus)}`}
+            className={`h-1.5 w-1.5 rounded-full ${statusDot(overallStatus)}`}
           />
-          {statusText(effectiveStatus)}
+          {statusText(overallStatus)}
         </span>
 
         <div className="relative z-10 ml-auto">

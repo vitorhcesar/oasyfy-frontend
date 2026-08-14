@@ -971,6 +971,7 @@ const SPLIT_RULES = [
   "O account_id deve ser o ID de uma conta ativa na plataforma (validado)",
   "Se charge_processing_fee for true, a taxa de processamento é descontada daquele split",
   "Sem split[] na request, o gateway aplica automaticamente os sócios ativos configurados em /seller/partners (adição direta, sem aceite)",
+  "O percentual incide sobre o valor líquido (após a taxa da plataforma), inclusive em depósitos do portal",
   "No pagamento (paid), o split é liquidado: o sócio recebe crédito no saldo (split_credit)",
 ];
 

@@ -516,7 +516,7 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
           className={cn(
             "liquid-glass hidden h-full shrink-0 flex-col transition-all duration-300 ease-in-out md:flex",
             "rounded-2xl",
-            collapsed ? "w-[76px]" : "w-[280px]",
+            collapsed ? "w-[76px]" : "w-[248px]",
           )}
         >
           {renderSidebarContent(collapsed)}

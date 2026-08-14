@@ -39,8 +39,8 @@ export function AdminLayout({ children }: PropsWithChildren) {
           className="relative z-10 flex h-full min-w-0 flex-1 flex-col overflow-y-auto md:rounded-[22px] md:border md:border-white/10 md:bg-background/55 md:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] md:backdrop-blur-2xl md:backdrop-saturate-150"
         >
           <OfflineBanner />
-          <div className="sticky top-3 z-30 mx-3 mt-3 shrink-0 md:hidden">
-            <header className="liquid-glass flex h-12 min-h-12 items-center justify-between rounded-full py-1 pl-1.5 pr-2">
+          <div className="sticky top-0 z-30 shrink-0 bg-background px-3 pb-2 pt-3 md:hidden">
+            <header className="flex h-12 min-h-12 items-center justify-between rounded-full border border-border bg-card py-1 pl-1.5 pr-2">
               <button
                 type="button"
                 onClick={() => setSidebarOpen(true)}

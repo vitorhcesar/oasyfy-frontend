@@ -54,11 +54,14 @@ export class Transaction {
       !Array.isArray(split) &&
       typeof (split as { seller_amount?: unknown }).seller_amount === "number"
     ) {
-      return Math.max(
-        0,
-        (split as { seller_amount: number }).seller_amount -
-          this.props.feeAmount,
-      );
+      const sellerAmount = (split as { seller_amount: number }).seller_amount;
+      const isNetBased =
+        meta.split_base === "net" ||
+        (split as { base?: unknown }).base === "net";
+      if (isNetBased) {
+        return Math.max(0, sellerAmount);
+      }
+      return Math.max(0, sellerAmount - this.props.feeAmount);
     }
 
     return Math.max(0, this.props.amount - this.props.feeAmount);

@@ -2,33 +2,14 @@ import { Building2, ChevronRight, MailWarning, User } from "lucide-react";
 import { useAdminKycPageStore } from "../stores/admin-kyc-page.store";
 import { IKycSubmissionView } from "../types/kyc-submission-view.type";
 import { isPendingEmailVerification } from "../utils/is-pending-email-verification.util";
+import { statusBadgeClasses } from "../utils/status-badge-classes.util";
+import { statusDot } from "../utils/status-dot.util";
+import { statusText } from "../utils/status-text.util";
 
 interface ISubmissionsListProps {
   filteredSubmissions: IKycSubmissionView[];
   timeAgo: (date: string) => string;
   effectiveStatus: (submission: IKycSubmissionView) => string;
-}
-
-function statusBadge(status: string) {
-  if (status === "approved") {
-    return {
-      label: "Aprovado",
-      cls: "border-success/25 bg-success/10 text-success",
-      dot: "bg-success",
-    };
-  }
-  if (status === "rejected") {
-    return {
-      label: "Recusado",
-      cls: "border-destructive/25 bg-destructive/10 text-destructive",
-      dot: "bg-destructive",
-    };
-  }
-  return {
-    label: "Pendente",
-    cls: "border-warning/25 bg-warning/10 text-warning",
-    dot: "bg-warning",
-  };
 }
 
 export default function SubmissionsList({
@@ -42,7 +23,6 @@ export default function SubmissionsList({
     <div className="admin-surface overflow-hidden divide-y divide-border/50">
       {filteredSubmissions.map((submission) => {
         const status = effectiveStatus(submission);
-        const badge = statusBadge(status);
 
         return (
           <button
@@ -71,10 +51,10 @@ export default function SubmissionsList({
               </p>
             </div>
             <span
-              className={`inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold ${badge.cls}`}
+              className={`inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold ${statusBadgeClasses(status)}`}
             >
-              <span className={`h-1.5 w-1.5 rounded-full ${badge.dot}`} />
-              {badge.label}
+              <span className={`h-1.5 w-1.5 rounded-full ${statusDot(status)}`} />
+              {statusText(status)}
             </span>
             {isPendingEmailVerification(submission) && (
               <span className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-lg border border-warning/25 bg-warning/10 px-2.5 py-1 text-xs font-semibold text-warning">

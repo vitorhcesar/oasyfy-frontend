@@ -3,23 +3,10 @@ import {
   IKycSubmissionView,
   IRegisteredSellerView,
 } from "../types/kyc-submission-view.type";
+import { effectiveKycStatus } from "../utils/effective-kyc-status.util";
 import EmptyState from "./EmptyState";
 import RegisteredList from "./RegisteredList";
 import SubmissionsList from "./SubmissionsList";
-
-const effectiveStatus = (submission: IKycSubmissionView) => {
-  const allApproved =
-    submission.status === "approved" &&
-    submission.documents_status === "approved" &&
-    submission.bank_status === "approved" &&
-    submission.address_status === "approved";
-
-  return allApproved
-    ? "approved"
-    : submission.status === "rejected"
-      ? "rejected"
-      : "pending";
-};
 
 const timeAgo = (date: string) => {
   if (!date) return "—";
@@ -62,7 +49,7 @@ export default function AdminKycPageContent({
           <SubmissionsList
             filteredSubmissions={filteredSubmissions}
             timeAgo={timeAgo}
-            effectiveStatus={effectiveStatus}
+            effectiveStatus={effectiveKycStatus}
           />
           <RegisteredList
             filteredRegistered={filteredRegistered}
@@ -76,7 +63,7 @@ export default function AdminKycPageContent({
         <SubmissionsList
           filteredSubmissions={filteredSubmissions}
           timeAgo={timeAgo}
-          effectiveStatus={effectiveStatus}
+            effectiveStatus={effectiveKycStatus}
         />
       );
   }

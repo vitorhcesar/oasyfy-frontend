@@ -48,6 +48,7 @@ export interface IAdminSellersModule {
   updatePlatformDefaultAcquirer(
     defaultAcquirerId: number | null,
   ): Promise<IAdminAcquirerPreferenceDto>;
+  deleteSeller(sellerId: number): Promise<{ sellerId: number }>;
 }
 
 export class AdminSellersModule
@@ -145,6 +146,13 @@ export class AdminSellersModule
     const response = await this.getClient().put<
       IApiEnvelope<IAdminAcquirerPreferenceDto>
     >(`${this.preferenceUrl}/default`, { defaultAcquirerId });
+    return response.data;
+  }
+
+  async deleteSeller(sellerId: number): Promise<{ sellerId: number }> {
+    const response = await this.getClient().delete<
+      IApiEnvelope<{ sellerId: number }>
+    >(`${this.baseUrl}/${sellerId}`);
     return response.data;
   }
 }

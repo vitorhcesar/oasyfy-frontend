@@ -1,15 +1,18 @@
 import type { IAdminSellerProfileDto } from "@/infra/http/services/api/modules/types/admin-sellers.types";
 import { AddBalanceCreditModal } from "@/presentation/components/admin/AddBalanceCreditModal";
+import DeleteSellerAccountModal from "@/presentation/components/admin/DeleteSellerAccountModal";
 import { Button } from "@/presentation/components/ui/button";
 import { AdminLayout } from "@/presentation/layouts/AdminLayout";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import { getErrorMessageOrDefault } from "@/presentation/utils/get-error-message-or-default";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
   Loader2,
   Lock,
   Plus,
   Shield,
+  Trash2,
   Unlock,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
@@ -30,12 +33,14 @@ export default function AdminSellerProfilePage() {
   const sellerId = Number(sellerIdParam);
   const navigate = useNavigate();
   const apiService = useApiService();
+  const queryClient = useQueryClient();
   const { setShowBlockReasonModal, setBlockReason, showBlockReasonModal } =
     useAdminKycDetailsStore();
 
   const [profile, setProfile] = useState<IAdminSellerProfileDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [showCreditModal, setShowCreditModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
   const loadProfile = useCallback(async () => {
@@ -315,6 +320,24 @@ export default function AdminSellerProfilePage() {
         </div>
       </section>
 
+      <section className="admin-surface space-y-3 border-destructive/30 p-5">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-destructive">
+          Zona de perigo
+        </h2>
+        <p className="text-sm text-muted-foreground">
+          Exclui a conta, o KYC, transações, arquivos e todos os dados atrelados.
+          O usuário precisará se cadastrar novamente.
+        </p>
+        <Button
+          type="button"
+          variant="destructive"
+          onClick={() => setShowDeleteModal(true)}
+        >
+          <Trash2 size={14} className="mr-2" />
+          Excluir seller
+        </Button>
+      </section>
+
       {showCreditModal ? (
         <AddBalanceCreditModal
           sellerId={seller.id}
@@ -327,6 +350,20 @@ export default function AdminSellerProfilePage() {
       {showBlockReasonModal ? (
         <BlockReasonModal sellerId={seller.id} onUpdate={loadProfile} />
       ) : null}
+
+      <DeleteSellerAccountModal
+        seller={{
+          userId: seller.id,
+          fullName: seller.fullName,
+          email: seller.email,
+        }}
+        open={showDeleteModal}
+        onOpenChange={setShowDeleteModal}
+        onDeleted={() => {
+          void queryClient.invalidateQueries({ queryKey: ["admin", "sellers"] });
+          navigate("/admin/sellers");
+        }}
+      />
     </div>
     </AdminLayout>
   );

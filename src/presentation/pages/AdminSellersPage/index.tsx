@@ -11,7 +11,7 @@ import useSellerCounts from "./hooks/use-seller-counts";
 import { useAdminSellersPageStore } from "./stores/admin-sellers-page.store";
 
 export default function AdminSellersPage() {
-  const { data: sellers, isLoading } = useAdminSellersQuery();
+  const { data: sellers, isLoading, invalidateQuery } = useAdminSellersQuery();
   const { filter, setFilter } = useAdminSellersPageStore();
   const [search, setSearch] = useState("");
 
@@ -38,7 +38,12 @@ export default function AdminSellersPage() {
         ) : filteredSellers.length === 0 ? (
           <AdminSellersEmptyState />
         ) : (
-          <AdminSellersTable sellers={filteredSellers} />
+          <AdminSellersTable
+            sellers={filteredSellers}
+            onSellerDeleted={() => {
+              void invalidateQuery();
+            }}
+          />
         )}
       </div>
     </AdminLayout>

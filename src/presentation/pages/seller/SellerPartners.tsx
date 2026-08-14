@@ -10,6 +10,8 @@ import type {
   ISellerPartnerDto,
   TSellerPartnerSearchDto,
 } from "@/infra/http/services/api/modules/seller-portal.module";
+import { cn } from "@/presentation/utils/cn";
+import { getErrorMessageOrDefault } from "@/presentation/utils/get-error-message-or-default";
 import { Loader2, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -22,6 +24,9 @@ const STATUS_LABEL: Record<string, string> = {
   revoked: "Removido",
   expired: "Expirado",
 };
+
+const ACTIVE_STATUSES = new Set(["active", "paused", "pending"]);
+const REMOVED_STATUSES = new Set(["revoked", "rejected", "expired"]);
 
 function formatCurrency(cents: number) {
   return (cents / 100).toLocaleString("pt-BR", {
@@ -205,8 +210,13 @@ export default function SellerPartners() {
     useState<TSellerPartnerSearchDto | null>(null);
   const [searching, setSearching] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [listTab, setListTab] = useState<"active" | "removed">("active");
 
   const owned = data?.owned ?? [];
+  const activePartners = owned.filter((p) => ACTIVE_STATUSES.has(p.status));
+  const removedPartners = owned.filter((p) => REMOVED_STATUSES.has(p.status));
+  const visiblePartners =
+    listTab === "active" ? activePartners : removedPartners;
 
   const preview = useMemo(() => {
     const pct = Number(percentage.replace(",", "."));
@@ -234,10 +244,16 @@ export default function SellerPartners() {
     setSearchResult(null);
     try {
       const result = await searchPartnerByEmail(email.trim());
+      if (!result || typeof result.found !== "boolean") {
+        toast.error("Falha na busca");
+        return;
+      }
       setSearchResult(result);
-      if (!result.found) toast.error("Conta não encontrada");
+      if (!result.found) {
+        toast.error("Conta seller não encontrada para este e-mail");
+      }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Falha na busca");
+      toast.error(getErrorMessageOrDefault(err, "Falha na busca"));
     } finally {
       setSearching(false);
     }
@@ -262,9 +278,10 @@ export default function SellerPartners() {
       setEmail("");
       setSearchResult(null);
       setAcceptedTerms(false);
+      setListTab("active");
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : "Não foi possível adicionar",
+        getErrorMessageOrDefault(err, "Não foi possível adicionar"),
       );
     }
   };
@@ -277,7 +294,7 @@ export default function SellerPartners() {
         <PageHeader
           eyebrow="Financeiro"
           title="Sócios"
-          description="Divida automaticamente o valor das vendas com outro seller da Oasyfy."
+          description="Divida automaticamente o valor líquido das vendas e depósitos com outro seller da Oasyfy."
         />
 
         <section className="mt-8 space-y-4 rounded-2xl border border-border/70 bg-background/40 p-5">
@@ -287,8 +304,9 @@ export default function SellerPartners() {
           </div>
           <p className="text-sm text-muted-foreground">
             Busque pela conta pelo e-mail, defina a porcentagem e adicione. As
-            vendas sem <code>split[]</code> na API já passam a dividir
-            automaticamente. A parceria fica ativa na hora — não há convite.
+            vendas e depósitos sem <code>split[]</code> na API já passam a
+            dividir automaticamente o valor líquido (após taxas). A parceria
+            fica ativa na hora — não há convite.
           </p>
 
           <div className="grid gap-4 sm:grid-cols-[1fr_auto]">
@@ -299,7 +317,16 @@ export default function SellerPartners() {
                 type="email"
                 placeholder="socio@empresa.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setSearchResult(null);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    void handleSearch();
+                  }
+                }}
               />
             </div>
             <div className="space-y-2">
@@ -315,8 +342,8 @@ export default function SellerPartners() {
 
           {preview && (
             <p className="text-sm text-muted-foreground">
-              Em uma venda de R$ 100,00: você fica com {preview.you} e o sócio
-              com {preview.partner}.
+              Em uma venda de R$ 100,00 (valor líquido após taxas): você fica
+              com {preview.you} e o sócio com {preview.partner}.
             </p>
           )}
 
@@ -375,22 +402,63 @@ export default function SellerPartners() {
         </section>
 
         <section className="mt-8">
-          <h2 className="mb-2 text-lg font-semibold text-foreground">
+          <h2 className="mb-3 text-lg font-semibold text-foreground">
             Seus sócios
           </h2>
+          <div className="liquid-glass-control mb-4 flex w-fit flex-wrap items-center gap-0.5 rounded-2xl p-1">
+            {(
+              [
+                {
+                  id: "active" as const,
+                  label: "Ativo",
+                  count: activePartners.length,
+                },
+                {
+                  id: "removed" as const,
+                  label: "Removido",
+                  count: removedPartners.length,
+                },
+              ]
+            ).map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setListTab(tab.id)}
+                className={cn(
+                  "inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-semibold transition-all",
+                  listTab === tab.id
+                    ? "bg-white text-[#111827] shadow-sm"
+                    : "text-muted-foreground hover:bg-white/10 hover:text-foreground",
+                )}
+              >
+                {tab.label}
+                <span
+                  className={cn(
+                    "inline-flex h-5 min-w-5 items-center justify-center rounded-md px-1 text-xs font-bold leading-none",
+                    listTab === tab.id
+                      ? "bg-[#0F0F10]/12 text-[#111827]"
+                      : "bg-muted text-muted-foreground",
+                  )}
+                >
+                  {tab.count}
+                </span>
+              </button>
+            ))}
+          </div>
           <div className="rounded-2xl border border-border/70 px-5">
             {isLoading ? (
               <div className="flex items-center gap-2 py-8 text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Carregando…
               </div>
-            ) : owned.length === 0 ? (
+            ) : visiblePartners.length === 0 ? (
               <p className="py-8 text-sm text-muted-foreground">
-                Nenhum sócio ainda. Adicione alguém para começar a dividir
-                vendas.
+                {listTab === "active"
+                  ? "Nenhum sócio ativo. Adicione alguém para começar a dividir vendas."
+                  : "Nenhum sócio removido."}
               </p>
             ) : (
-              owned.map((p) => (
+              visiblePartners.map((p) => (
                 <PartnerRow
                   key={p.id}
                   partner={p}
@@ -410,7 +478,7 @@ export default function SellerPartners() {
                       toast.success("Parceria pausada");
                     } catch (err) {
                       toast.error(
-                        err instanceof Error ? err.message : "Falha ao pausar",
+                        getErrorMessageOrDefault(err, "Falha ao pausar"),
                       );
                     }
                   }}
@@ -423,7 +491,7 @@ export default function SellerPartners() {
                       toast.success("Parceria retomada");
                     } catch (err) {
                       toast.error(
-                        err instanceof Error ? err.message : "Falha ao retomar",
+                        getErrorMessageOrDefault(err, "Falha ao retomar"),
                       );
                     }
                   }}
@@ -434,9 +502,10 @@ export default function SellerPartners() {
                         body: { action: "revoke" },
                       });
                       toast.success("Sócio removido");
+                      setListTab("removed");
                     } catch (err) {
                       toast.error(
-                        err instanceof Error ? err.message : "Falha ao remover",
+                        getErrorMessageOrDefault(err, "Falha ao remover"),
                       );
                     }
                   }}

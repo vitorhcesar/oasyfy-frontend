@@ -150,14 +150,15 @@ export function SellerAcquirersTab() {
 
       <Button
         type="button"
+        size="sm"
         onClick={handleSave}
         disabled={saving}
-        className="gap-2"
+        className="h-8 gap-1.5 px-3 text-xs [&_svg]:size-3.5"
       >
         {saving ? (
-          <Loader2 size={16} className="animate-spin" />
+          <Loader2 className="animate-spin" />
         ) : (
-          <Save size={16} />
+          <Save />
         )}
         Salvar preferência
       </Button>

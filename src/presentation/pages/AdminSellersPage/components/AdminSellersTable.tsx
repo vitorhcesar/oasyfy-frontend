@@ -7,6 +7,7 @@ import {
   type IAcquirerPreferenceResponseDto,
 } from "@/infra/http/services/api/modules/types/acquirer-preference.types";
 import { AcquirerBrandLogo } from "@/presentation/components/admin/AcquirerBrandLogo";
+import DeleteSellerAccountModal from "@/presentation/components/admin/DeleteSellerAccountModal";
 import { Button } from "@/presentation/components/ui/button";
 import {
   Select,
@@ -17,7 +18,7 @@ import {
 } from "@/presentation/components/ui/select";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import { getErrorMessageOrDefault } from "@/presentation/utils/get-error-message-or-default";
-import { Loader2, Settings2, UserRound, X } from "lucide-react";
+import { Loader2, Settings2, Trash2, UserRound, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -28,6 +29,7 @@ const PLATFORM_DEFAULT_VALUE = "__platform_default__";
 interface IAdminSellersTableProps {
   sellers: IAdminSellerDto[];
   onSellerUpdated?: (seller: IAdminSellerDto) => void;
+  onSellerDeleted?: (sellerId: number) => void;
 }
 
 function SellerStatusBadge({ status }: { status: TAdminSellerKycStatus }) {
@@ -258,6 +260,7 @@ interface ITableRowProps {
   index: number;
   onEditAcquirer: (seller: IAdminSellerDto) => void;
   onOpenProfile: (seller: IAdminSellerDto) => void;
+  onDelete: (seller: IAdminSellerDto) => void;
 }
 
 function TableRow({
@@ -265,6 +268,7 @@ function TableRow({
   index,
   onEditAcquirer,
   onOpenProfile,
+  onDelete,
 }: ITableRowProps) {
   const acquirer = seller.acquirer;
 
@@ -351,6 +355,19 @@ function TableRow({
             <Settings2 size={14} />
             Adquirente
           </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="gap-1.5 text-destructive hover:text-destructive"
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(seller);
+            }}
+          >
+            <Trash2 size={14} />
+            Excluir
+          </Button>
         </div>
       </td>
     </tr>
@@ -360,9 +377,13 @@ function TableRow({
 export default function AdminSellersTable({
   sellers,
   onSellerUpdated,
+  onSellerDeleted,
 }: IAdminSellersTableProps) {
   const navigate = useNavigate();
   const [editingSeller, setEditingSeller] = useState<IAdminSellerDto | null>(
+    null,
+  );
+  const [deletingSeller, setDeletingSeller] = useState<IAdminSellerDto | null>(
     null,
   );
   const [rows, setRows] = useState(sellers);
@@ -376,6 +397,11 @@ export default function AdminSellersTable({
       prev.map((row) => (row.userId === updated.userId ? updated : row)),
     );
     onSellerUpdated?.(updated);
+  };
+
+  const handleSellerDeleted = (sellerId: number) => {
+    setRows((prev) => prev.filter((row) => row.userId !== sellerId));
+    onSellerDeleted?.(sellerId);
   };
 
   return (
@@ -392,6 +418,7 @@ export default function AdminSellersTable({
                 index={index}
                 onEditAcquirer={setEditingSeller}
                 onOpenProfile={(s) => navigate(`/admin/sellers/${s.userId}`)}
+                onDelete={setDeletingSeller}
               />
             ))}
           </tbody>
@@ -405,6 +432,22 @@ export default function AdminSellersTable({
           onSaved={handleSellerUpdated}
         />
       ) : null}
+
+      <DeleteSellerAccountModal
+        seller={
+          deletingSeller
+            ? {
+                userId: deletingSeller.userId,
+                fullName: deletingSeller.fullName,
+              }
+            : null
+        }
+        open={deletingSeller != null}
+        onOpenChange={(open) => {
+          if (!open) setDeletingSeller(null);
+        }}
+        onDeleted={handleSellerDeleted}
+      />
     </>
   );
 }
