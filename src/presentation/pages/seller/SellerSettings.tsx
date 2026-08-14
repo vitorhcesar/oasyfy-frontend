@@ -803,24 +803,7 @@ export default function SellerSettings() {
                           variable: sellerFee.pixVariableFee,
                           min: sellerFee.pixMinFee,
                         },
-                        {
-                          label: "Cartão de Crédito",
-                          fixed: sellerFee.cardFixedFee,
-                          variable: sellerFee.cardVariableFee,
-                          min: sellerFee.cardMinFee,
-                        },
-                        {
-                          label: "Boleto",
-                          fixed: sellerFee.boletoFixedFee,
-                          variable: sellerFee.boletoVariableFee,
-                          min: sellerFee.boletoMinFee,
-                        },
-                        {
-                          label: "Cripto",
-                          fixed: sellerFee.cryptoFixedFee,
-                          variable: sellerFee.cryptoVariableFee,
-                          min: sellerFee.cryptoMinFee,
-                        },
+                        // Cartão, boleto e cripto ocultos até a integração desses métodos.
                         {
                           label: "Saque",
                           fixed: sellerFee.withdrawalFixedFee,

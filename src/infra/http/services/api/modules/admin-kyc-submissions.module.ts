@@ -68,6 +68,9 @@ export interface IAdminKycSubmissionsModule {
     submissionId: number,
     body: ISetKycSubmissionApiAccessBodyDto,
   ): Promise<ISetKycSubmissionApiAccessResponseDto>;
+  approveAllDocuments(
+    submissionId: number,
+  ): Promise<{ documentsStatus: string }>;
   approveDocument(
     submissionId: number,
     documentKey: string,
@@ -178,6 +181,15 @@ export class AdminKycSubmissionsModule
     const response = await this.getClient().post<
       IApiEnvelope<ISetKycSubmissionApiAccessResponseDto>
     >(`${this.baseUrl}/${submissionId}/api-access`, body);
+    return response.data;
+  }
+
+  async approveAllDocuments(
+    submissionId: number,
+  ): Promise<{ documentsStatus: string }> {
+    const response = await this.getClient().post<
+      IApiEnvelope<{ documentsStatus: string }>
+    >(`${this.baseUrl}/${submissionId}/documents/approve-all`);
     return response.data;
   }
 

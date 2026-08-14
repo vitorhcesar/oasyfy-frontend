@@ -24,8 +24,8 @@ export default function BankStep() {
       <div className="flex items-center gap-3 p-4 rounded-lg bg-primary/5 border border-primary/10">
         <Landmark size={18} className="text-primary flex-shrink-0" />
         <p className="text-xs text-foreground/80 leading-relaxed">
-          Informe os dados bancários para recebimento. Certifique-se de que a
-          conta está no seu nome ou da sua empresa.
+          Informe os dados bancários para recebimento. Confira com atenção:
+          saques serão enviados para esta conta sem nova análise.
         </p>
       </div>
 

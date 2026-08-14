@@ -5,6 +5,8 @@ export interface INormalizedPixChargeResponse {
   acquirer?: string;
   provider?: string;
   failoverAttempts?: number;
+  transactionId?: number;
+  expiresAt?: string;
   raw: Record<string, unknown>;
 }
 
@@ -80,6 +82,11 @@ export function normalizePixChargeResponse(
       typeof routing?.failover_attempts === "number"
         ? routing.failover_attempts
         : undefined,
+    transactionId:
+      typeof root.transaction_id === "number"
+        ? root.transaction_id
+        : Number.parseInt(readString(root.transaction_id), 10) || undefined,
+    expiresAt: readString(root.expires_at) || undefined,
     raw: root,
   };
 }

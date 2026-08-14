@@ -1,5 +1,6 @@
 import KycDocumentPreviewModal from "@/presentation/components/KycDocumentPreviewModal";
 import { useApiService } from "@/presentation/hooks/use-api-service";
+import { tryOrToastError } from "@/presentation/utils/try-or-toast-error";
 import { ArrowLeft, CheckCircle, Eye, XCircle } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -8,6 +9,7 @@ import type { TKycDocumentKey } from "../types/kyc-documents-review.type";
 import { IKycSubmissionView } from "../types/kyc-submission-view.type";
 import { statusDot } from "../utils/status-dot.util";
 import { statusText } from "../utils/status-text.util";
+import { ActionButton } from "./ActionButton";
 import { AdminKycDetailsBalanceTab } from "./AdminKycDetailsBalanceTab";
 import AdminKycDetailsBankTab from "./AdminKycDetailsBankTab";
 import { AdminKycDetailsFeesTab } from "./AdminKycDetailsFeesTab";
@@ -35,6 +37,7 @@ export function AdminKycDetails({
 
   const [docRejectingKey, setDocRejectingKey] = useState<string | null>(null);
   const [docRejectReason, setDocRejectReason] = useState("");
+  const [approveAllLoading, setApproveAllLoading] = useState(false);
   const [previewDoc, setPreviewDoc] = useState<{
     key: TKycDocumentKey;
     label: string;
@@ -77,6 +80,30 @@ export function AdminKycDetails({
     setDocRejectingKey(null);
     setDocRejectReason("");
     onUpdate();
+  };
+
+  const handleApproveAllDocuments = async () => {
+    setApproveAllLoading(true);
+
+    await tryOrToastError(
+      async () => {
+        const result =
+          await apiService.modules.adminKycSubmissions.approveAllDocuments(
+            Number(submission.id),
+          );
+
+        if (result.documentsStatus === "approved") {
+          await autoApproveIfComplete();
+        }
+
+        toast.success("Todos os documentos foram aprovados");
+        onUpdate();
+      },
+      {
+        defaultErrorMessage: "Erro ao aprovar documentos",
+        finallyFn: () => setApproveAllLoading(false),
+      },
+    );
   };
 
   const kycDocuments: {
@@ -129,9 +156,24 @@ export function AdminKycDetails({
 
       {tab === "documents" && (
         <div className="admin-surface animate-fade-in p-5 md:p-6">
-          <div className="mb-5 flex items-center gap-2">
-            <SectionLabel text="Documentos (libera vendas)" />
-            <StatusPill status={submission.documents_status} />
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <SectionLabel text="Documentos (libera vendas)" />
+              <StatusPill status={submission.documents_status} />
+            </div>
+            {kycDocuments.every((doc) => doc.url) &&
+              kycDocuments.some(
+                (doc) =>
+                  (documentsReview[doc.key]?.status ?? "pending") !==
+                  "approved",
+              ) && (
+                <ActionButton
+                  onClick={() => void handleApproveAllDocuments()}
+                  loading={approveAllLoading}
+                  variant="approve"
+                  label="Aprovar tudo"
+                />
+              )}
           </div>
           <p className="mb-4 text-xs text-muted-foreground">
             Ao aprovar todos os documentos, as vendas do seller são liberadas.

@@ -4,6 +4,7 @@ export interface ICreatePixChargeBody {
   customer_email?: string;
   customer_tax_id?: string;
   comment?: string;
+  expires_in?: number;
 }
 
 /** Resposta bruta do failover PIX (Woovi/Cartwave). */

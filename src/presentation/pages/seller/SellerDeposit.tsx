@@ -4,33 +4,157 @@ import { Badge } from "@/presentation/components/ui/badge";
 import { Button } from "@/presentation/components/ui/button";
 import { Input } from "@/presentation/components/ui/input";
 import { Label } from "@/presentation/components/ui/label";
+import { useUserContext } from "@/presentation/context/UserContext";
 import { useApiService } from "@/presentation/hooks/use-api-service";
+import { useSellerKycSubmissionQuery } from "@/presentation/hooks/use-seller-kyc-submission-query";
+import useSellerProfileQuery from "@/presentation/hooks/use-seller-profile-query";
 import { cn } from "@/presentation/utils/cn";
 import { normalizePixChargeResponse } from "@/presentation/utils/normalize-pix-charge-response.util";
-import { AlertCircle, CheckCircle2, Copy, Loader2, QrCode } from "lucide-react";
-import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  Copy,
+  Loader2,
+  QrCode,
+} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+
+const DEPOSIT_EXPIRES_IN_SECONDS = 5 * 60;
+const POLL_INTERVAL_MS = 2500;
+/** CPF válido usado quando o seller não cadastrou documento. */
+const DEFAULT_DEPOSIT_CPF = "52998224725";
+
+type TDepositStep = "form" | "pix" | "success" | "expired";
+
+function formatCurrencyFromCents(cents: string) {
+  const value = parseInt(cents || "0", 10);
+  return (value / 100).toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
+}
+
+function formatCountdown(totalSeconds: number) {
+  const clamped = Math.max(0, totalSeconds);
+  const minutes = Math.floor(clamped / 60);
+  const seconds = clamped % 60;
+  return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+}
+
+function digitsOnly(value: string | null | undefined) {
+  return (value ?? "").replace(/\D/g, "");
+}
+
+function DepositConfirmedAnimation() {
+  return (
+    <div className="relative mx-auto flex h-28 w-28 items-center justify-center">
+      <span className="absolute inset-0 rounded-full bg-emerald-500/35 animate-deposit-ring" />
+      <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-emerald-500 shadow-[0_12px_40px_rgba(16,185,129,0.45)] animate-deposit-confirm-pop">
+        <svg viewBox="0 0 52 52" className="h-12 w-12" aria-hidden>
+          <path
+            d="M14 27 l8 8 16-18"
+            fill="none"
+            stroke="white"
+            strokeWidth="5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeDasharray="48"
+            className="animate-deposit-check-draw"
+          />
+        </svg>
+      </div>
+    </div>
+  );
+}
 
 export default function SellerDeposit() {
   const apiService = useApiService();
+  const queryClient = useQueryClient();
+  const user = useUserContext();
+  const { data: profile, isLoading: profileLoading } = useSellerProfileQuery();
+  const { submission, isLoading: kycLoading } = useSellerKycSubmissionQuery();
+
   const [amount, setAmount] = useState("");
-  const [name, setName] = useState("");
-  const [document, setDocument] = useState("");
   const [loading, setLoading] = useState(false);
+  const [step, setStep] = useState<TDepositStep>("form");
   const [pixData, setPixData] = useState<ReturnType<
     typeof normalizePixChargeResponse
   > | null>(null);
+  const [expiresAtMs, setExpiresAtMs] = useState<number | null>(null);
+  const [remainingSeconds, setRemainingSeconds] = useState(DEPOSIT_EXPIRES_IN_SECONDS);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
 
-  const formatCurrency = (value: string) => {
-    const nums = value.replace(/\D/g, "");
-    const cents = parseInt(nums || "0");
-    return (cents / 100).toLocaleString("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    });
-  };
+  const depositorName = useMemo(() => {
+    return (
+      profile?.fullName?.trim() ||
+      submission?.fullName?.trim() ||
+      user.name?.trim() ||
+      profile?.displayName?.trim() ||
+      ""
+    );
+  }, [profile, submission, user.name]);
+
+  const depositorCpf = useMemo(() => {
+    const registered = digitsOnly(submission?.cpf);
+    return registered.length === 11 ? registered : DEFAULT_DEPOSIT_CPF;
+  }, [submission?.cpf]);
+
+  const identityReady = !profileLoading && !kycLoading;
+
+  useEffect(() => {
+    if (step !== "pix" || expiresAtMs == null) return;
+
+    const tick = () => {
+      const remaining = Math.ceil((expiresAtMs - Date.now()) / 1000);
+      setRemainingSeconds(remaining);
+      if (remaining <= 0) {
+        setStep("expired");
+      }
+    };
+
+    tick();
+    const timer = window.setInterval(tick, 250);
+    return () => window.clearInterval(timer);
+  }, [expiresAtMs, step]);
+
+  useEffect(() => {
+    if (step !== "pix" || !pixData) return;
+
+    const transactionId = pixData.transactionId;
+    const amountCents = parseInt(amount || "0", 10);
+
+    const poll = async () => {
+      try {
+        const transactions =
+          await apiService.modules.transaction.listSellerTransactions();
+        const matched = transactionId
+          ? transactions.find((tx) => tx.id === transactionId)
+          : transactions.find(
+              (tx) =>
+                tx.metadata?.origin === "seller_deposit" &&
+                tx.amount === amountCents,
+            );
+        if (matched?.isPaid()) {
+          setStep("success");
+          await queryClient.invalidateQueries({
+            queryKey: ["seller-transactions"],
+          });
+        }
+      } catch {
+        // ignore transient polling errors
+      }
+    };
+
+    void poll();
+    const timer = window.setInterval(() => {
+      void poll();
+    }, POLL_INTERVAL_MS);
+    return () => window.clearInterval(timer);
+  }, [amount, apiService, pixData, queryClient, step]);
 
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.replace(/\D/g, "");
@@ -38,13 +162,13 @@ export default function SellerDeposit() {
   };
 
   const handleGenerate = async () => {
-    const amountCents = parseInt(amount || "0");
+    const amountCents = parseInt(amount || "0", 10);
     if (amountCents < 100) {
       toast.error("Valor mínimo: R$ 1,00");
       return;
     }
-    if (!name.trim()) {
-      toast.error("Nome do depositante é obrigatório");
+    if (!depositorName) {
+      toast.error("Não encontramos o nome da sua conta.");
       return;
     }
 
@@ -55,13 +179,10 @@ export default function SellerDeposit() {
     try {
       const data = await apiService.modules.pix.createPixCharge({
         amount: amountCents,
-        customer_name: name.trim(),
-        ...(document.replace(/\D/g, "")
-          ? { customer_tax_id: document.replace(/\D/g, "") }
-          : {}),
-        comment: document.trim()
-          ? `Doc: ${document.replace(/\D/g, "")}`
-          : "Depósito via portal",
+        customer_name: depositorName,
+        customer_tax_id: depositorCpf,
+        comment: "Depósito via portal",
+        expires_in: DEPOSIT_EXPIRES_IN_SECONDS,
       });
 
       const normalized = normalizePixChargeResponse(data);
@@ -72,7 +193,15 @@ export default function SellerDeposit() {
         setError(message);
         toast.error(message);
       } else {
+        const expiresAt = normalized.expiresAt
+          ? new Date(normalized.expiresAt).getTime()
+          : Date.now() + DEPOSIT_EXPIRES_IN_SECONDS * 1000;
         setPixData(normalized);
+        setExpiresAtMs(expiresAt);
+        setRemainingSeconds(
+          Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000)),
+        );
+        setStep("pix");
         toast.success("PIX gerado com sucesso!");
       }
     } catch (err) {
@@ -98,8 +227,9 @@ export default function SellerDeposit() {
     setPixData(null);
     setError("");
     setAmount("");
-    setName("");
-    setDocument("");
+    setExpiresAtMs(null);
+    setRemainingSeconds(DEPOSIT_EXPIRES_IN_SECONDS);
+    setStep("form");
   };
 
   return (
@@ -108,54 +238,28 @@ export default function SellerDeposit() {
         <PageHeader
           eyebrow="Financeiro"
           title="Depósito via PIX"
-          description="Gere um QR Code PIX para depositar na sua conta (roteamento Woovi/Cartwave)."
+          description="Gere um QR Code PIX para depositar na sua conta. O código expira em 5 minutos."
         />
 
-        {!pixData ? (
+        {step === "form" ? (
           <div className="admin-surface space-y-5 p-5 md:p-6">
             <div>
               <h2 className="text-sm font-semibold text-foreground">
-                Dados do depósito
+                Valor do depósito
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Preencha os dados para gerar o PIX.
+                Informe o valor para gerar o PIX.
               </p>
             </div>
 
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <Label className="text-xs">Valor do depósito</Label>
+                <Label className="text-xs">Valor</Label>
                 <Input
                   placeholder="R$ 0,00"
-                  value={amount ? formatCurrency(amount) : ""}
+                  value={amount ? formatCurrencyFromCents(amount) : ""}
                   onChange={handleAmountChange}
                   className="rounded-xl border-border/60 text-sm font-mono"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label className="text-xs">Nome do depositante</Label>
-                <Input
-                  placeholder="Nome completo"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="rounded-xl border-border/60 text-sm"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <Label className="text-xs">CPF/CNPJ do depositante</Label>
-                  <span className="text-xs italic text-muted-foreground/60">
-                    Opcional
-                  </span>
-                </div>
-                <Input
-                  placeholder="000.000.000-00"
-                  value={document}
-                  onChange={(e) => setDocument(e.target.value)}
-                  className="rounded-xl border-border/60 text-sm font-mono"
-                  maxLength={18}
                 />
               </div>
 
@@ -168,7 +272,7 @@ export default function SellerDeposit() {
 
               <Button
                 onClick={handleGenerate}
-                disabled={loading}
+                disabled={loading || !identityReady}
                 className="w-full gap-2 !mt-2"
               >
                 {loading ? (
@@ -180,13 +284,15 @@ export default function SellerDeposit() {
               </Button>
             </div>
           </div>
-        ) : (
+        ) : null}
+
+        {step === "pix" && pixData ? (
           <div className="admin-surface space-y-5 p-5 md:p-6">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
                   <CheckCircle2 size={16} className="text-primary" />
-                  PIX gerado com sucesso
+                  PIX gerado
                 </h2>
                 <p className="mt-1 text-sm text-muted-foreground">
                   Escaneie o QR Code ou copie o código para pagar.
@@ -200,10 +306,20 @@ export default function SellerDeposit() {
             </div>
 
             <div className="text-center">
-              <p className="mb-1 text-3xl font-bold tabular-nums text-foreground">
-                {formatCurrency(amount)}
+              <p className="mb-3 text-3xl font-bold tabular-nums text-foreground">
+                {formatCurrencyFromCents(amount)}
               </p>
-              <p className="text-sm text-muted-foreground">{name}</p>
+              <div
+                className={cn(
+                  "inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-sm font-semibold tabular-nums",
+                  remainingSeconds <= 60
+                    ? "bg-destructive/10 text-destructive"
+                    : "bg-warning/10 text-warning",
+                )}
+              >
+                <Clock size={14} />
+                Expira em {formatCountdown(remainingSeconds)}
+              </div>
             </div>
 
             {qrCodeImage && (
@@ -250,22 +366,59 @@ export default function SellerDeposit() {
               </div>
             )}
 
-            {(pixData.failoverAttempts ?? 0) > 0 && (
-              <p className="text-center text-xs text-muted-foreground">
-                Failover: {pixData.failoverAttempts} tentativa(s) antes do
-                sucesso
-              </p>
-            )}
+            <p className="text-center text-xs text-muted-foreground">
+              Aguardando confirmação do pagamento…
+            </p>
 
             <Button
               variant="outline"
               onClick={reset}
               className="w-full text-xs"
             >
+              Cancelar e gerar outro
+            </Button>
+          </div>
+        ) : null}
+
+        {step === "success" ? (
+          <div className="admin-surface space-y-5 p-8 text-center md:p-10">
+            <DepositConfirmedAnimation />
+            <div className="space-y-1.5 animate-fade-in">
+              <h2 className="text-xl font-semibold text-foreground">
+                Depósito confirmado
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                O PIX foi pago e o valor já entra no seu extrato.
+              </p>
+              <p className="pt-2 text-2xl font-bold tabular-nums text-foreground">
+                {formatCurrencyFromCents(amount)}
+              </p>
+            </div>
+            <Button onClick={reset} className="w-full sm:w-auto">
+              Fazer outro depósito
+            </Button>
+          </div>
+        ) : null}
+
+        {step === "expired" ? (
+          <div className="admin-surface space-y-5 p-8 text-center md:p-10">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
+              <Clock className="text-destructive" size={28} />
+            </div>
+            <div className="space-y-1.5">
+              <h2 className="text-xl font-semibold text-foreground">
+                PIX expirado
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Este código valia por 5 minutos. Gere um novo depósito para
+                continuar.
+              </p>
+            </div>
+            <Button onClick={reset} className="w-full sm:w-auto">
               Gerar novo depósito
             </Button>
           </div>
-        )}
+        ) : null}
       </div>
     </SellerLayout>
   );

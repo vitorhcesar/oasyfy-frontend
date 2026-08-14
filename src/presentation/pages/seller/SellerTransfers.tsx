@@ -225,7 +225,7 @@ export default function SellerTransfers() {
     }
     if (!canWithdraw) {
       toast.info(
-        "Aguarde a aprovação do endereço e dos dados bancários para sacar.",
+        "Confirme endereço e dados bancários para sacar.",
       );
       return;
     }
@@ -461,8 +461,8 @@ export default function SellerTransfers() {
                 Complete endereço e dados bancários
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                As vendas já podem estar liberadas. Para sacar, envie endereço e
-                conta/PIX para análise.
+                As vendas já podem estar liberadas. Para sacar, informe
+                endereço e conta/PIX e confirme que os dados estão corretos.
               </p>
             </div>
           </div>

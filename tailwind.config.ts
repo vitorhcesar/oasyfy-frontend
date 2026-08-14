@@ -119,6 +119,19 @@ export default {
           "0%": { opacity: "0", transform: "scale(0.97)" },
           "100%": { opacity: "1", transform: "scale(1)" },
         },
+        "deposit-confirm-pop": {
+          "0%": { transform: "scale(0)", opacity: "0" },
+          "55%": { transform: "scale(1.12)", opacity: "1" },
+          "100%": { transform: "scale(1)", opacity: "1" },
+        },
+        "deposit-check-draw": {
+          "0%": { strokeDashoffset: "48" },
+          "100%": { strokeDashoffset: "0" },
+        },
+        "deposit-ring": {
+          "0%": { transform: "scale(0.7)", opacity: "0.55" },
+          "100%": { transform: "scale(1.45)", opacity: "0" },
+        },
         "slide-in-left": {
           "0%": { opacity: "0", transform: "translateX(-12px)" },
           "100%": { opacity: "1", transform: "translateX(0)" },
@@ -132,6 +145,10 @@ export default {
         "fade-in": "fade-in 0.35s ease-out both",
         "fade-in-scale": "fade-in-scale 0.3s ease-out both",
         "slide-in-left": "slide-in-left 0.3s ease-out both",
+        "deposit-confirm-pop":
+          "deposit-confirm-pop 0.55s cubic-bezier(0.16, 1, 0.3, 1) both",
+        "deposit-check-draw": "deposit-check-draw 0.4s 0.28s ease-out both",
+        "deposit-ring": "deposit-ring 0.85s ease-out both",
       },
     },
   },

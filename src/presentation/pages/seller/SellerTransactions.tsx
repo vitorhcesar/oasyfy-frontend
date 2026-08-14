@@ -5,23 +5,20 @@ import {
   matchesTransactionStatusFilter,
 } from "@/presentation/utils/transaction-status";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
-import { Dialog, DialogContent } from "@/presentation/components/ui/dialog";
+import SellerTransactionDetailDialog from "@/presentation/pages/seller/components/SellerTransactionDetailDialog";
 import useSellerTransactionsQuery from "@/presentation/hooks/use-seller-transactions-query";
 import { cn } from "@/presentation/utils/cn";
 import {
   ArrowDownLeft,
   ArrowUpRight,
-  CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  Copy,
   Eye,
   Loader2,
   Receipt,
   Search,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { toast } from "sonner";
 
 interface TransactionView {
   id: string;
@@ -101,27 +98,6 @@ function hasSaleSplit(meta: Record<string, unknown> | null): boolean {
     !Array.isArray(split) &&
     Array.isArray((split as { breakdown?: unknown }).breakdown)
   );
-}
-
-function formatSplitBreakdown(meta: Record<string, unknown> | null): string | null {
-  if (!hasSaleSplit(meta) || !meta) return null;
-  const split = meta.split as {
-    seller_amount?: number;
-    breakdown?: Array<{ amount?: number; percentage?: number }>;
-  };
-  const you =
-    typeof split.seller_amount === "number"
-      ? formatCurrency(split.seller_amount)
-      : null;
-  const partners = (split.breakdown ?? [])
-    .filter((b) => typeof b.amount === "number" && (b.amount ?? 0) > 0)
-    .map((b) => formatCurrency(b.amount as number));
-  if (!you && partners.length === 0) return null;
-  const parts = [
-    you ? `Você ${you}` : null,
-    partners.length ? `Sócio(s) ${partners.join(" · ")}` : null,
-  ].filter(Boolean);
-  return parts.join(" · ");
 }
 
 function formatDateTime(date: string) {
@@ -206,7 +182,6 @@ export default function SellerTransactions() {
   const [splitFilter, setSplitFilter] = useState<SplitFilter>("all");
   const [page, setPage] = useState(1);
   const [selectedTx, setSelectedTx] = useState<TransactionView | null>(null);
-  const [copied, setCopied] = useState(false);
 
   const filtered = useMemo(() => {
     return transactions.filter((t) => {
@@ -591,290 +566,10 @@ export default function SellerTransactions() {
         )}
       </div>
 
-      {/* Transaction Detail Modal */}
-      <Dialog open={!!selectedTx} onOpenChange={() => setSelectedTx(null)}>
-        <DialogContent className="sm:max-w-lg p-0 gap-0 overflow-hidden border-border/60">
-          {selectedTx &&
-            (() => {
-              const tx = selectedTx;
-              const isWithdrawal = tx.method === "withdrawal";
-              const meta = tx.metadata || {};
-              const pixKey = tx.pix_code || (meta.pix_key as string) || null;
-              const pixKeyType = (meta.pix_key_type as string) || null;
-              const bankName = (meta.bank_name as string) || null;
-              const balanceSource = (meta.balance_source as string) || null;
-              const splitCredit = isSplitCredit(meta);
-              const splitSummary = formatSplitBreakdown(meta);
-              const parentId =
-                typeof meta.parent_transaction_id === "number"
-                  ? String(meta.parent_transaction_id)
-                  : null;
-
-              const copyToClipboard = (text: string) => {
-                navigator.clipboard.writeText(text);
-                setCopied(true);
-                toast.success("Copiado!");
-                setTimeout(() => setCopied(false), 2000);
-              };
-
-              const DetailRow = ({
-                label,
-                value,
-                mono,
-              }: {
-                label: string;
-                value: string | null | undefined;
-                mono?: boolean;
-              }) => {
-                if (!value) return null;
-                return (
-                  <div className="flex justify-between items-start px-4 py-2.5">
-                    <span className="text-xs text-muted-foreground shrink-0">
-                      {label}
-                    </span>
-                    <span
-                      className={cn(
-                        "text-xs font-medium text-foreground text-right max-w-[60%] break-all",
-                        mono && "font-mono text-sm"
-                      )}
-                    >
-                      {value}
-                    </span>
-                  </div>
-                );
-              };
-
-              return (
-                <div>
-                  {/* Header */}
-                  <div
-                    className={cn(
-                      "px-6 pt-6 pb-4",
-                      isApprovedTransactionStatus(tx.status)
-                        ? "bg-primary/5"
-                        : tx.status === "failed" || tx.status === "cancelled"
-                        ? "bg-destructive/5"
-                        : tx.status === "pending"
-                        ? "bg-warning/5"
-                        : "bg-muted/20"
-                    )}
-                  >
-                    <div className="flex items-center justify-between mb-3">
-                      <StatusBadge status={tx.status} />
-                      <span className="text-sm text-muted-foreground tabular-nums">
-                        {formatDateTime(tx.created_at)}
-                      </span>
-                    </div>
-                    <p className="text-2xl font-bold text-foreground tabular-nums">
-                      {isWithdrawal ? "- " : ""}
-                      {formatCurrency(Math.abs(tx.amount))}
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {tx.customer_name}
-                    </p>
-                    {tx.customer_email && (
-                      <p className="text-xs text-muted-foreground">
-                        {tx.customer_email}
-                      </p>
-                    )}
-                    {(splitCredit || splitSummary) && (
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {splitCredit && (
-                          <span className="rounded-md bg-primary/10 px-2 py-1 text-[10px] font-medium uppercase tracking-wide text-primary">
-                            Split recebido
-                          </span>
-                        )}
-                        {splitSummary && (
-                          <span className="rounded-md bg-muted px-2 py-1 text-[10px] font-medium text-muted-foreground">
-                            {splitSummary}
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Details */}
-                  <div className="p-4 space-y-3">
-                    {/* Pix destination */}
-                    {pixKey && (
-                      <div className="rounded-xl bg-primary/5 border border-primary/10 p-3">
-                        <p className="text-sm font-medium text-primary uppercase tracking-wider mb-2">
-                          Chave Pix
-                        </p>
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="text-xs font-mono text-foreground break-all">
-                            {pixKey}
-                          </span>
-                          <button
-                            onClick={() => copyToClipboard(pixKey)}
-                            className="shrink-0 w-6 h-6 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-colors"
-                          >
-                            {copied ? (
-                              <CheckCircle2
-                                size={12}
-                                className="text-primary"
-                              />
-                            ) : (
-                              <Copy size={12} />
-                            )}
-                          </button>
-                        </div>
-                        {pixKeyType && (
-                          <p className="text-sm text-muted-foreground mt-1">
-                            Tipo: {pixKeyType}
-                          </p>
-                        )}
-                        {bankName && (
-                          <p className="text-sm text-muted-foreground capitalize">
-                            Banco: {bankName}
-                          </p>
-                        )}
-                      </div>
-                    )}
-
-                    {/* Info rows */}
-                    <div className="rounded-xl bg-muted/20 border border-border/40 divide-y divide-border/30">
-                      <DetailRow label="ID" value={tx.id} mono />
-                      {parentId && (
-                        <DetailRow label="Venda origem" value={parentId} mono />
-                      )}
-                      <DetailRow
-                        label="Método"
-                        value={methodLabels[tx.method] || tx.method}
-                      />
-                      <DetailRow label="Descrição" value={tx.description} />
-                      {splitSummary && (
-                        <DetailRow label="Split" value={splitSummary} />
-                      )}
-                      <DetailRow label="Adquirente" value={tx.acquirer} />
-                      {balanceSource && (
-                        <DetailRow
-                          label="Origem"
-                          value={
-                            balanceSource === "card"
-                              ? "Vendas Cartão"
-                              : "Vendas PIX/Boleto"
-                          }
-                        />
-                      )}
-                      <DetailRow label="Moeda" value={tx.currency} />
-                      <DetailRow
-                        label="Atualizado em"
-                        value={formatDateTime(tx.updated_at)}
-                      />
-                    </div>
-
-                    {/* Financial summary */}
-                    {(tx.fee_amount > 0 || tx.net_amount !== 0) && (
-                      <div className="rounded-xl bg-muted/20 border border-border/40 divide-y divide-border/30">
-                        <div className="flex justify-between px-4 py-2.5">
-                          <span className="text-xs text-muted-foreground">
-                            Valor bruto
-                          </span>
-                          <span className="text-xs font-semibold text-foreground tabular-nums">
-                            {formatCurrency(Math.abs(tx.amount))}
-                          </span>
-                        </div>
-                        {tx.fee_amount > 0 && (
-                          <div className="flex justify-between px-4 py-2.5">
-                            <span className="text-xs text-muted-foreground">
-                              Taxa
-                            </span>
-                            <span className="text-xs font-semibold text-destructive tabular-nums">
-                              - {formatCurrency(tx.fee_amount)}
-                            </span>
-                          </div>
-                        )}
-                        <div className="flex justify-between px-4 py-2.5">
-                          <span className="text-xs text-muted-foreground">
-                            Valor líquido
-                          </span>
-                          <span className="text-xs font-bold text-primary tabular-nums">
-                            {formatCurrency(
-                              Math.abs(
-                                tx.net_amount ||
-                                  Math.abs(tx.amount) - tx.fee_amount
-                              )
-                            )}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Refund/lock reasons */}
-                    {tx.refund_reason && (
-                      <div className="rounded-xl bg-destructive/5 border border-destructive/10 p-3">
-                        <p className="text-sm font-medium text-destructive uppercase tracking-wider mb-1">
-                          Motivo do estorno
-                        </p>
-                        <p className="text-xs text-foreground">
-                          {tx.refund_reason}
-                        </p>
-                      </div>
-                    )}
-
-                    {tx.lock_reason && (
-                      <div className="rounded-xl bg-warning/5 border border-warning/10 p-3">
-                        <p className="mb-1 text-sm font-medium uppercase tracking-wider text-warning">
-                          Motivo do bloqueio
-                        </p>
-                        <p className="text-xs text-foreground">
-                          {tx.lock_reason}
-                        </p>
-                      </div>
-                    )}
-
-                    {/* Metadata */}
-                    {meta && Object.keys(meta).length > 0 && (
-                      <div className="rounded-xl bg-muted/20 border border-border/40 p-3">
-                        <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-2">
-                          Metadados
-                        </p>
-                        <div className="space-y-1.5">
-                          {Object.entries(meta)
-                            .filter(
-                              ([k]) =>
-                                ![
-                                  "pix_key",
-                                  "pix_key_type",
-                                  "bank_name",
-                                  "balance_source",
-                                  "approval_log",
-                                ].includes(k)
-                            )
-                            .map(([key, val]) => (
-                              <div
-                                key={key}
-                                className="flex justify-between items-start gap-3"
-                              >
-                                <span className="text-sm text-muted-foreground font-mono shrink-0">
-                                  {key}
-                                </span>
-                                <span className="text-sm text-foreground text-right break-all font-mono">
-                                  {typeof val === "object"
-                                    ? JSON.stringify(val)
-                                    : String(val)}
-                                </span>
-                              </div>
-                            ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Copy ID button */}
-                    <button
-                      onClick={() => copyToClipboard(tx.id)}
-                      className="w-full py-2 rounded-lg bg-muted/30 border border-border/40 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center justify-center gap-1.5"
-                    >
-                      <Copy size={11} />
-                      Copiar ID da transação
-                    </button>
-                  </div>
-                </div>
-              );
-            })()}
-        </DialogContent>
-      </Dialog>
+      <SellerTransactionDetailDialog
+        transaction={selectedTx}
+        onClose={() => setSelectedTx(null)}
+      />
     </SellerLayout>
   );
 }

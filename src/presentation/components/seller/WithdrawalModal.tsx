@@ -92,6 +92,9 @@ interface IWithdrawalLimits {
 
 const DEFAULT_MIN = 200; // R$ 2,00
 
+const fmt = (cents: number) =>
+  `R$ ${(cents / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
+
 export function WithdrawalModal({
   open,
   onOpenChange,
@@ -147,9 +150,6 @@ export function WithdrawalModal({
   const isValid =
     amountCents >= minAmount && amountCents <= effectiveMax && !validationError;
   const hasBalance = currentBalance >= minAmount;
-
-  const fmt = (cents: number) =>
-    `R$ ${(cents / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}`;
 
   const getAccountLabel = (b: IBankData) => {
     const bank = b.bankName

@@ -1,3 +1,4 @@
+import ModalPortal from "@/presentation/components/ModalPortal";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import { tryOrToastError } from "@/presentation/utils/try-or-toast-error";
 import { useState } from "react";
@@ -20,7 +21,27 @@ export default function AdminKycDetailsBankTab({
 }: IAdminKycDetailsBankTabProps) {
   const apiService = useApiService();
   const [loading, setLoading] = useState(false);
+  const [showApproveConfirm, setShowApproveConfirm] = useState(false);
   const bankData = submission.bank_data;
+
+  const handleApproveBank = async () => {
+    setLoading(true);
+
+    await tryOrToastError(
+      async () => {
+        await apiService.modules.adminKycSubmissions.approveBank(
+          Number(submission.id),
+        );
+        await autoApproveIfComplete();
+        setShowApproveConfirm(false);
+        onUpdate();
+      },
+      {
+        defaultErrorMessage: "Erro ao aprovar banco",
+        finallyFn: () => setLoading(false),
+      },
+    );
+  };
 
   return (
     <div className="animate-fade-in">
@@ -81,22 +102,7 @@ export default function AdminKycDetailsBankTab({
                 label="Recusar"
               />
               <ActionButton
-                onClick={() => {
-                  setLoading(true);
-                  void tryOrToastError(
-                    async () => {
-                      await apiService.modules.adminKycSubmissions.approveBank(
-                        Number(submission.id),
-                      );
-                      await autoApproveIfComplete();
-                      onUpdate();
-                    },
-                    {
-                      defaultErrorMessage: "Erro ao aprovar banco",
-                      finallyFn: () => setLoading(false),
-                    },
-                  );
-                }}
+                onClick={() => setShowApproveConfirm(true)}
                 loading={loading}
                 variant="approve"
                 label="Aprovar"
@@ -110,6 +116,57 @@ export default function AdminKycDetailsBankTab({
             Nenhuma conta bancária cadastrada (necessário apenas para saques).
           </p>
         </div>
+      )}
+
+      {showApproveConfirm && (
+        <ModalPortal>
+          <div
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4"
+            onClick={() => !loading && setShowApproveConfirm(false)}
+          >
+            <div
+              className="w-full max-w-md rounded-[22px] border border-border/60 bg-card p-6 shadow-xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="mb-1 text-base font-semibold text-foreground">
+                Confirmar dados bancários
+              </h3>
+              <p className="mb-4 text-sm text-muted-foreground">
+                Os saques deste seller serão enviados para esta conta. Confirme
+                que as informações estão corretas.
+              </p>
+              {bankData && (
+                <div className="mb-5 space-y-1.5 rounded-xl border border-border/50 bg-muted/30 px-3.5 py-3 text-sm">
+                  <p className="font-medium text-foreground">
+                    {bankData.bankName}
+                  </p>
+                  <p className="text-muted-foreground">
+                    Ag. {bankData.agency}
+                    {bankData.agencyDigit ? `-${bankData.agencyDigit}` : ""}{" "}
+                    · Conta {bankData.account}-{bankData.accountDigit || ""}
+                  </p>
+                  <p className="font-mono text-xs text-muted-foreground">
+                    PIX: {bankData.pixKey}
+                  </p>
+                </div>
+              )}
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => setShowApproveConfirm(false)}
+                  className="h-10 rounded-xl bg-muted px-4 text-sm font-semibold text-muted-foreground transition-colors hover:bg-muted/80 hover:text-foreground"
+                >
+                  Cancelar
+                </button>
+                <ActionButton
+                  onClick={() => void handleApproveBank()}
+                  loading={loading}
+                  variant="approve"
+                  label="Sim, estão corretos"
+                />
+              </div>
+            </div>
+          </div>
+        </ModalPortal>
       )}
     </div>
   );

@@ -186,7 +186,7 @@ export function AdminKycDetailsHeader({
   };
 
   return (
-    <header className="admin-surface mb-6 p-5 md:p-6">
+    <header className="admin-surface relative z-20 mb-6 overflow-visible p-5 md:p-6">
       <div className="mb-1 flex flex-wrap items-center gap-3">
         <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-[1.75rem]">
           {submission.full_name}
@@ -203,7 +203,7 @@ export function AdminKycDetailsHeader({
           {statusText(effectiveStatus)}
         </span>
 
-        <div className="relative ml-auto">
+        <div className="relative z-10 ml-auto">
           <button
             onClick={() => setActionsOpen(!actionsOpen)}
             className="liquid-glass-control flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-white/10"
@@ -223,7 +223,7 @@ export function AdminKycDetailsHeader({
                 className="fixed inset-0 z-40"
                 onClick={() => setActionsOpen(false)}
               />
-              <div className="liquid-glass-control absolute right-0 z-50 mt-1.5 w-52 rounded-2xl py-1.5 shadow-lg">
+              <div className="absolute right-0 z-50 mt-1.5 w-52 overflow-hidden rounded-2xl border border-[color:var(--glass-border)] bg-[color-mix(in_srgb,var(--glass-bg-tint)_50%,var(--glass-bg))] py-1.5 shadow-lg backdrop-blur-[22px] backdrop-saturate-150">
                 <button
                   onClick={handleToggleBan}
                   disabled={banLoading}
