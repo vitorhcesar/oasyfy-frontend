@@ -23,6 +23,7 @@ import AdminTransactionsTable from "./components/AdminTransactionsTable";
 import useFilterTransactions from "./hooks/use-filter-transactions";
 import useTransactionStats from "./hooks/use-transaction-stats";
 import type { Transaction } from "./types/admin-transaction.type";
+import { isSplitCreditMetadata } from "./utils/transaction-split";
 
 const PER_PAGE = 20;
 type TTimeRange = "7d" | "30d" | "90d" | "custom";
@@ -109,8 +110,9 @@ export default function AdminTransactionsPage() {
   const stats = useTransactionStats(filteredWithoutStatus);
 
   const displayFiltered = useMemo(() => {
-    const source =
-      pixSearchResults !== null ? pixSearchResults : filteredWithoutStatus;
+    const source = (
+      pixSearchResults !== null ? pixSearchResults : filteredWithoutStatus
+    ).filter((t) => !isSplitCreditMetadata(t.metadata));
 
     if (!filterStatus) return source;
 

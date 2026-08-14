@@ -21,7 +21,7 @@ import {
   RotateCcw,
   Unlock,
 } from "lucide-react";
-import type { ReactNode } from "react";
+import { type ReactNode, useMemo } from "react";
 import { toast } from "sonner";
 import type {
   SellerInfo,
@@ -31,6 +31,7 @@ import type {
 import { formatCurrency } from "../utils/format-currency";
 import { methodLabel } from "../utils/method-label";
 import { statusBadge } from "../utils/status-config";
+import { getSaleSplitDetails } from "../utils/transaction-split";
 
 interface IAdminTransactionDetailDialogProps {
   selectedTx: Transaction | null;
@@ -109,6 +110,17 @@ export default function AdminTransactionDetailDialog({
   onRefund,
   onLockToggle,
 }: IAdminTransactionDetailDialogProps) {
+  const splitDetails = useMemo(
+    () => getSaleSplitDetails(selectedTx?.metadata),
+    [selectedTx?.metadata],
+  );
+  const splitSourceLabel =
+    splitDetails?.source === "request"
+      ? "Definido na API"
+      : splitDetails?.source === "partners"
+        ? "Sócios da conta"
+        : null;
+
   return (
     <Dialog
       open={!!selectedTx}
@@ -120,6 +132,11 @@ export default function AdminTransactionDetailDialog({
         <DialogHeader>
           <DialogTitle className="flex flex-wrap items-center gap-2 text-xl font-bold tracking-tight">
             Detalhes da Transação
+            {splitDetails && (
+              <span className="inline-flex items-center rounded-lg border border-primary/25 bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
+                Split
+              </span>
+            )}
             {selectedTx?.is_locked && (
               <span className="inline-flex items-center gap-1.5 rounded-lg border border-destructive/25 bg-destructive/10 px-2.5 py-1 text-xs font-semibold text-destructive">
                 <Lock size={12} />
@@ -293,6 +310,96 @@ export default function AdminTransactionDetailDialog({
                   </div>
                 </div>
               </SectionCard>
+
+              {splitDetails && (
+                <SectionCard title="Split">
+                  <div className="mb-4 flex flex-wrap gap-x-6 gap-y-3">
+                    <MetaItem
+                      label="Status"
+                      value={
+                        splitDetails.settledAt
+                          ? `Liquidado em ${format(
+                              new Date(splitDetails.settledAt),
+                              "dd/MM/yyyy 'às' HH:mm",
+                              { locale: ptBR },
+                            )}`
+                          : "Aguardando pagamento"
+                      }
+                    />
+                    {splitSourceLabel && (
+                      <MetaItem label="Origem" value={splitSourceLabel} />
+                    )}
+                    {splitDetails.baseAmount != null && (
+                      <MetaItem
+                        label={
+                          splitDetails.base === "net"
+                            ? "Base (líquido)"
+                            : "Base"
+                        }
+                        value={formatCurrency(splitDetails.baseAmount)}
+                      />
+                    )}
+                  </div>
+
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between gap-3 rounded-xl bg-muted/40 px-3 py-2.5">
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-foreground">
+                          Seller / Produtor
+                        </p>
+                        {splitDetails.sellerPercentage != null && (
+                          <p className="text-xs text-muted-foreground">
+                            {splitDetails.sellerPercentage}%
+                          </p>
+                        )}
+                      </div>
+                      <span className="shrink-0 text-sm font-bold tabular-nums text-foreground">
+                        {splitDetails.sellerAmount != null
+                          ? formatCurrency(splitDetails.sellerAmount)
+                          : "—"}
+                      </span>
+                    </div>
+
+                    {splitDetails.breakdown.map((item) => (
+                      <div
+                        key={item.accountId}
+                        className="flex items-center justify-between gap-3 rounded-xl border border-border/50 px-3 py-2.5"
+                      >
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium text-foreground">
+                            {item.description || item.accountId}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {item.accountId}
+                            {item.percentage != null
+                              ? ` · ${item.percentage}%`
+                              : ""}
+                          </p>
+                        </div>
+                        <span className="shrink-0 text-sm font-bold tabular-nums text-foreground">
+                          {formatCurrency(item.amount)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {splitDetails.skipped.length > 0 && (
+                    <div className="mt-3 space-y-1.5">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-warning">
+                        Não liquidados
+                      </p>
+                      {splitDetails.skipped.map((item) => (
+                        <p
+                          key={item.accountId}
+                          className="text-sm text-muted-foreground"
+                        >
+                          {item.accountId}: {item.reason}
+                        </p>
+                      ))}
+                    </div>
+                  )}
+                </SectionCard>
+              )}
             </TabsContent>
 
             <TabsContent value="mais" className="mt-5 space-y-4">

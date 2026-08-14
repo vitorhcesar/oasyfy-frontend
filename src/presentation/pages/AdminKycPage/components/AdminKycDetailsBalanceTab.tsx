@@ -302,7 +302,7 @@ export function AdminKycDetailsBalanceTab({
                         {formatCurrencyAdmin(item.amount)}
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        {item.reason}
+                        {item.reason || "—"}
                       </p>
                     </div>
                     <p className="text-xs text-muted-foreground">

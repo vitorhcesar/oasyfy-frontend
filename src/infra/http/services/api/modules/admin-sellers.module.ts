@@ -29,7 +29,7 @@ export interface IAdminSellersModule {
   ): Promise<IAdminBalanceAdjustmentDto[]>;
   addBalanceCredit(
     sellerId: number,
-    body: { amount: number; reason: string; idempotencyKey?: string },
+    body: { amount: number; reason?: string; idempotencyKey?: string },
   ): Promise<IAdminBalanceCreditResultDto>;
   blockWithdrawals(
     sellerId: number,
@@ -83,7 +83,7 @@ export class AdminSellersModule
 
   async addBalanceCredit(
     sellerId: number,
-    body: { amount: number; reason: string; idempotencyKey?: string },
+    body: { amount: number; reason?: string; idempotencyKey?: string },
   ): Promise<IAdminBalanceCreditResultDto> {
     const response = await this.getClient().post<
       IApiEnvelope<IAdminBalanceCreditResultDto>

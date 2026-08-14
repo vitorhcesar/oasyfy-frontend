@@ -44,7 +44,7 @@ export function AddBalanceCreditModal({
 
   const amountCents = useMemo(() => parseBrlToCents(amountInput), [amountInput]);
   const balanceAfter = availableCents + amountCents;
-  const reasonOk = reason.trim().length >= 5 && reason.trim().length <= 500;
+  const reasonOk = reason.trim().length <= 500;
   const amountOk = amountCents > 0;
   const canSubmit = amountOk && reasonOk && !saving;
 
@@ -92,7 +92,7 @@ export function AddBalanceCreditModal({
             Adicionar saldo
           </h3>
           <p className="mb-4 text-sm text-muted-foreground">
-            Crédito administrativo positivo. Informe valor e motivo.
+            Crédito administrativo positivo. Informe o valor. O motivo é opcional.
           </p>
 
           <label className="mb-1 block text-xs font-semibold text-muted-foreground">
@@ -121,7 +121,7 @@ export function AddBalanceCreditModal({
           </div>
 
           <label className="mb-1 block text-xs font-semibold text-muted-foreground">
-            Motivo (obrigatório)
+            Motivo (opcional)
           </label>
           <textarea
             value={reason}

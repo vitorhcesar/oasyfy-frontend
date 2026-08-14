@@ -308,7 +308,9 @@ export default function AdminSellerProfilePage() {
                     <p className="font-medium text-foreground">
                       {formatCurrency(item.amount)}
                     </p>
-                    <p className="text-xs text-muted-foreground">{item.reason}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {item.reason || "—"}
+                    </p>
                   </div>
                   <p className="text-xs text-muted-foreground">
                     {new Date(item.createdAt).toLocaleString("pt-BR")}

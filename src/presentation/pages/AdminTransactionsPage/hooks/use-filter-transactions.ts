@@ -2,6 +2,7 @@ import { matchesTransactionStatusFilter } from "@/presentation/utils/transaction
 import { useMemo } from "react";
 import { type DateRange } from "react-day-picker";
 import type { Transaction } from "../types/admin-transaction.type";
+import { isSplitCreditMetadata } from "../utils/transaction-split";
 
 interface IUseFilterTransactionsParams {
   transactions: Transaction[];
@@ -37,6 +38,7 @@ export default function useFilterTransactions({
     }
 
     return transactions.filter((t) => {
+      if (isSplitCreditMetadata(t.metadata)) return false;
       if (filterId && !t.id.toLowerCase().includes(filterId.toLowerCase()))
         return false;
       if (

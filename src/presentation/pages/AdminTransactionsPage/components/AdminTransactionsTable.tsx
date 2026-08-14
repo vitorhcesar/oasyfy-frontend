@@ -11,6 +11,7 @@ import {
 import type { Transaction } from "../types/admin-transaction.type";
 import { formatCurrency } from "../utils/format-currency";
 import { statusConfig } from "../utils/status-config";
+import { hasSaleSplitMetadata } from "../utils/transaction-split";
 
 interface IAdminTransactionsTableProps {
   loading: boolean;
@@ -89,9 +90,16 @@ export default function AdminTransactionsTable({
                 onClick={() => onOpenDetail(tx)}
               >
                 <td className="px-5 py-3.5">
-                  <p className="text-sm font-semibold text-foreground">
-                    {tx.customer_name || "Cliente padrão"}
-                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-sm font-semibold text-foreground">
+                      {tx.customer_name || "Cliente padrão"}
+                    </p>
+                    {hasSaleSplitMetadata(tx.metadata) && (
+                      <span className="inline-flex items-center rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                        Split
+                      </span>
+                    )}
+                  </div>
                   {tx.customer_email && (
                     <p className="mt-0.5 max-w-[180px] truncate text-sm text-muted-foreground">
                       {tx.customer_email}
