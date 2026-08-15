@@ -36,6 +36,7 @@ function mockAuthContext(overrides: Partial<IAuthContext>): IAuthContext {
     role: null,
     isBanned: false,
     apiAccessEnabled: false,
+    pracaAccessEnabled: false,
     signOut: vi.fn(),
     ...overrides,
   };

@@ -6,6 +6,7 @@ export interface ISessionContextDto {
   isBanned: boolean;
   emailManuallyApproved: boolean;
   apiAccessEnabled: boolean;
+  pracaAccessEnabled: boolean;
 }
 
 export interface ISessionModule {

@@ -41,6 +41,7 @@ import {
   Home,
   Lock,
   LogOut,
+  MessagesSquare,
   Settings,
   ShieldCheck,
   User,
@@ -121,6 +122,12 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
       url: "/seller/transactions",
       icon: ArrowLeftRight,
       locked: isKycLocked,
+    },
+    {
+      title: "A Praça",
+      url: "/seller/praca",
+      icon: MessagesSquare,
+      locked: false,
     },
   ];
 

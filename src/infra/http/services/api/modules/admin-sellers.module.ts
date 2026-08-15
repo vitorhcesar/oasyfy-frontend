@@ -7,6 +7,7 @@ import type {
   IAdminSellerProfileDto,
   IAdminWithdrawalControlDto,
 } from "./types/admin-sellers.types";
+import type { ISetPracaAccessResultDto } from "./types/praca.types";
 import type {
   IAcquirerPreferenceResponseDto,
   IAdminAcquirerPreferenceDto,
@@ -40,6 +41,10 @@ export interface IAdminSellersModule {
     body: { reason: string },
   ): Promise<IAdminWithdrawalControlDto>;
   unblockWithdrawals(sellerId: number): Promise<IAdminWithdrawalControlDto>;
+  setPracaAccess(
+    sellerId: number,
+    enabled: boolean,
+  ): Promise<ISetPracaAccessResultDto>;
   getSellerAcquirerPreference(
     sellerId: number,
   ): Promise<IAcquirerPreferenceResponseDto>;
@@ -121,6 +126,16 @@ export class AdminSellersModule
     const response = await this.getClient().post<
       IApiEnvelope<IAdminWithdrawalControlDto>
     >(`${this.baseUrl}/${sellerId}/withdrawals/unblock`, {});
+    return response.data;
+  }
+
+  async setPracaAccess(
+    sellerId: number,
+    enabled: boolean,
+  ): Promise<ISetPracaAccessResultDto> {
+    const response = await this.getClient().post<
+      IApiEnvelope<ISetPracaAccessResultDto>
+    >(`${this.baseUrl}/${sellerId}/praca-access`, { enabled });
     return response.data;
   }
 

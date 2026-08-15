@@ -28,6 +28,7 @@ export interface IAuthContext {
   role: TAppRole | null;
   isBanned: boolean;
   apiAccessEnabled: boolean;
+  pracaAccessEnabled: boolean;
   signOut: () => Promise<void>;
 }
 
@@ -39,6 +40,7 @@ export function AuthContextProvider({ children }: PropsWithChildren) {
   const [role, setRole] = useState<TAppRole | null>(null);
   const [isBanned, setIsBanned] = useState(false);
   const [apiAccessEnabled, setApiAccessEnabled] = useState(false);
+  const [pracaAccessEnabled, setPracaAccessEnabled] = useState(false);
   /**
    * userId para o qual GET /session/context já terminou (sucesso ou falha).
    * Comparar com o userId atual evita o frame em que a sessão hidrata
@@ -79,6 +81,7 @@ export function AuthContextProvider({ children }: PropsWithChildren) {
       setRole(ctx.role);
       setIsBanned(ctx.isBanned);
       setApiAccessEnabled(ctx.apiAccessEnabled ?? false);
+      setPracaAccessEnabled(ctx.pracaAccessEnabled ?? false);
       setRoleResolvedForUserId(forUserId);
     } catch {
       if (
@@ -90,6 +93,7 @@ export function AuthContextProvider({ children }: PropsWithChildren) {
       setRole(null);
       setIsBanned(false);
       setApiAccessEnabled(false);
+      setPracaAccessEnabled(false);
       setRoleResolvedForUserId(forUserId);
     }
   }, []);
@@ -99,6 +103,7 @@ export function AuthContextProvider({ children }: PropsWithChildren) {
     setRole(null);
     setIsBanned(false);
     setApiAccessEnabled(false);
+    setPracaAccessEnabled(false);
     setRoleResolvedForUserId(null);
   }, []);
 
@@ -143,9 +148,10 @@ export function AuthContextProvider({ children }: PropsWithChildren) {
       role,
       isBanned,
       apiAccessEnabled,
+      pracaAccessEnabled,
       signOut,
     }),
-    [user, isLoading, session, role, isBanned, apiAccessEnabled, signOut],
+    [user, isLoading, session, role, isBanned, apiAccessEnabled, pracaAccessEnabled, signOut],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

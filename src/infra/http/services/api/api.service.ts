@@ -54,6 +54,14 @@ import {
   SellerNotificationsModule,
 } from "./modules/seller-notifications.module";
 import {
+  ISellerPracaModule,
+  SellerPracaModule,
+} from "./modules/seller-praca.module";
+import {
+  IAdminPracaModule,
+  AdminPracaModule,
+} from "./modules/admin-praca.module";
+import {
   ISellerAcquirerModule,
   SellerAcquirerModule,
 } from "./modules/seller-acquirer.module";
@@ -78,6 +86,7 @@ export interface IApiServiceModules {
   adminBanners: IAdminBannerModule;
   adminFinance: IAdminFinanceModule;
   adminConfig: IAdminConfigModule;
+  adminPraca: IAdminPracaModule;
 
   account: IAccountModule;
   balance: IBalanceModule;
@@ -91,6 +100,7 @@ export interface IApiServiceModules {
   seller: ISellerModule;
   sellerPortal: ISellerPortalModule;
   sellerNotifications: ISellerNotificationsModule;
+  sellerPraca: ISellerPracaModule;
   sellerAcquirer: ISellerAcquirerModule;
   sellerCheckouts: ISellerCheckoutModule;
   publicCheckouts: IPublicCheckoutModule;
@@ -110,6 +120,7 @@ function attachModules(httpClient: IHttpClient): IApiServiceModules {
     adminBanners: new AdminBannerModule(httpClient),
     adminFinance: new AdminFinanceModule(httpClient),
     adminConfig: new AdminConfigModule(httpClient),
+    adminPraca: new AdminPracaModule(httpClient),
 
     account: new AccountModule(httpClient),
     balance: new BalanceModule(httpClient),
@@ -124,6 +135,7 @@ function attachModules(httpClient: IHttpClient): IApiServiceModules {
     seller: new SellerModule(httpClient),
     sellerPortal: new SellerPortalModule(httpClient),
     sellerNotifications: new SellerNotificationsModule(httpClient),
+    sellerPraca: new SellerPracaModule(httpClient),
     sellerAcquirer: new SellerAcquirerModule(httpClient),
     sellerCheckouts: new SellerCheckoutModule(httpClient),
     publicCheckouts: new PublicCheckoutModule(httpClient),

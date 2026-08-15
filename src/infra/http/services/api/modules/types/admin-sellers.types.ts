@@ -57,6 +57,9 @@ export interface IAdminSellerProfileDto {
     blockedAt: string | null;
     blockedBy: { id: number; name: string | null } | null;
   };
+  praca: {
+    enabled: boolean;
+  };
   recentAdjustments: Array<{
     id: number;
     amount: number;

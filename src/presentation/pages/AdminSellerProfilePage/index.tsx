@@ -18,6 +18,7 @@ import {
   Shield,
   Trash2,
   Unlock,
+  MessagesSquare,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -74,6 +75,29 @@ export default function AdminSellerProfilePage() {
     void loadProfile();
   }, [loadProfile]);
 
+  const handleTogglePraca = async () => {
+    const enabled = profile?.praca.enabled === true;
+    if (enabled) {
+      if (
+        !window.confirm(
+          "Revogar A Praça para este seller? Todas as mensagens dele no canal serão apagadas.",
+        )
+      ) {
+        return;
+      }
+    }
+    setActionLoading(true);
+    try {
+      await apiService.modules.adminSellers.setPracaAccess(sellerId, !enabled);
+      toast.success(enabled ? "A Praça revogada" : "A Praça liberada");
+      await loadProfile();
+    } catch (error) {
+      toast.error(getErrorMessageOrDefault(error, "Erro ao atualizar A Praça"));
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const handleUnblock = async () => {
     if (
       !window.confirm(
@@ -118,7 +142,7 @@ export default function AdminSellerProfilePage() {
     );
   }
 
-  const { seller, kyc, balance, withdrawal, recentAdjustments } = profile;
+  const { seller, kyc, balance, withdrawal, recentAdjustments, praca } = profile;
 
   return (
     <AdminLayout>
@@ -241,6 +265,44 @@ export default function AdminSellerProfilePage() {
               </Button>
             )}
           </div>
+        </div>
+      </section>
+
+      <section className="admin-surface space-y-4 p-5">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              A Praça
+            </h2>
+            <p className="mt-1 text-sm text-foreground">
+              Status:{" "}
+              <span
+                className={
+                  praca.enabled
+                    ? "font-semibold text-success"
+                    : "font-semibold text-muted-foreground"
+                }
+              >
+                {praca.enabled ? "Liberada" : "Não liberada"}
+              </span>
+            </p>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Revogar apaga todas as mensagens deste seller no canal.
+            </p>
+          </div>
+          <Button
+            type="button"
+            variant={praca.enabled ? "destructive" : "outline"}
+            disabled={actionLoading}
+            onClick={() => void handleTogglePraca()}
+          >
+            {actionLoading ? (
+              <Loader2 size={14} className="mr-2 animate-spin" />
+            ) : (
+              <MessagesSquare size={14} className="mr-2" />
+            )}
+            {praca.enabled ? "Revogar A Praça" : "Liberar A Praça"}
+          </Button>
         </div>
       </section>
 

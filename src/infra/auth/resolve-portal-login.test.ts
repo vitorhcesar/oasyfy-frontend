@@ -27,6 +27,7 @@ describe("resolvePortalLogin", () => {
       isBanned: false,
       emailManuallyApproved: false,
       apiAccessEnabled: true,
+      pracaAccessEnabled: false,
     });
 
     await expect(resolvePortalLogin()).resolves.toEqual({ kind: "admin" });
@@ -39,6 +40,7 @@ describe("resolvePortalLogin", () => {
       isBanned: false,
       emailManuallyApproved: false,
       apiAccessEnabled: false,
+      pracaAccessEnabled: false,
     });
 
     await expect(resolvePortalLogin()).resolves.toEqual({ kind: "seller" });
@@ -54,6 +56,7 @@ describe("resolvePortalLogin", () => {
       isBanned: false,
       emailManuallyApproved: false,
       apiAccessEnabled: false,
+      pracaAccessEnabled: false,
     });
 
     await expect(resolvePortalLogin()).resolves.toEqual({
@@ -67,6 +70,7 @@ describe("resolvePortalLogin", () => {
       isBanned: false,
       emailManuallyApproved: false,
       apiAccessEnabled: false,
+      pracaAccessEnabled: false,
     });
     signOut.mockResolvedValue(undefined);
 

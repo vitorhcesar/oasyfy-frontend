@@ -14,8 +14,9 @@ import {
   Shield,
   ShieldAlert,
   ShieldCheck,
+  MessagesSquare,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useAdminKycDetailsStore } from "../stores/admin-kyc-details.store";
 import { IKycSubmissionView } from "../types/kyc-submission-view.type";
@@ -49,6 +50,8 @@ export function AdminKycDetailsHeader({
   const [banLoading, setBanLoading] = useState(false);
   const [withdrawalsLoading, setWithdrawalsLoading] = useState(false);
   const [apiAccessLoading, setApiAccessLoading] = useState(false);
+  const [pracaAccessEnabled, setPracaAccessEnabled] = useState(false);
+  const [pracaAccessLoading, setPracaAccessLoading] = useState(false);
 
   const overallStatus = effectiveKycStatus(submission);
 
@@ -201,6 +204,62 @@ export function AdminKycDetailsHeader({
     );
   };
 
+  useEffect(() => {
+    const sellerId = Number(submission.user_id);
+    if (!Number.isFinite(sellerId) || sellerId <= 0) return;
+    let cancelled = false;
+    void apiService.modules.adminSellers
+      .getSellerProfile(sellerId)
+      .then((profile) => {
+        if (!cancelled) {
+          setPracaAccessEnabled(profile.praca?.enabled === true);
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [apiService, submission.user_id]);
+
+  const handleTogglePracaAccess = async () => {
+    const sellerId = Number(submission.user_id);
+    if (!Number.isFinite(sellerId) || sellerId <= 0) {
+      toast.error("Seller inválido");
+      return;
+    }
+
+    const nextEnabled = !pracaAccessEnabled;
+    if (
+      !nextEnabled &&
+      !window.confirm(
+        "Revogar A Praça? Todas as mensagens deste seller no canal serão apagadas.",
+      )
+    ) {
+      setActionsOpen(false);
+      return;
+    }
+
+    setActionsOpen(false);
+    setPracaAccessLoading(true);
+
+    await tryOrToastError(
+      async () => {
+        const result = await apiService.modules.adminSellers.setPracaAccess(
+          sellerId,
+          nextEnabled,
+        );
+        setPracaAccessEnabled(result.enabled);
+        toast.success(
+          nextEnabled ? "A Praça liberada" : "A Praça revogada",
+        );
+      },
+      {
+        defaultErrorMessage: "Erro ao atualizar A Praça",
+        finallyFn: () => setPracaAccessLoading(false),
+      },
+    );
+  };
+
   return (
     <>
     <header className="admin-surface relative z-20 mb-6 overflow-visible p-5 md:p-6">
@@ -282,6 +341,18 @@ export function AdminKycDetailsHeader({
                     : "Liberar API"}
                 </button>
                 <button
+                  onClick={() => void handleTogglePracaAccess()}
+                  disabled={pracaAccessLoading || !submission.user_id}
+                  className="flex w-full items-center gap-2 px-3.5 py-2.5 text-sm text-foreground transition-colors hover:bg-white/10 disabled:opacity-50"
+                >
+                  {pracaAccessLoading ? (
+                    <Loader2 size={15} className="animate-spin" />
+                  ) : (
+                    <MessagesSquare size={15} />
+                  )}
+                  {pracaAccessEnabled ? "Revogar A Praça" : "Liberar A Praça"}
+                </button>
+                <button
                   onClick={handleManualEmailApproval}
                   disabled={
                     manualEmailApprovalLoading ||
@@ -355,6 +426,12 @@ export function AdminKycDetailsHeader({
           <span className="inline-flex items-center gap-1.5 rounded-lg border border-success/25 bg-success/10 px-2 py-0.5 text-xs font-semibold text-success">
             <Code2 size={12} />
             API liberada
+          </span>
+        )}
+        {pracaAccessEnabled && (
+          <span className="inline-flex items-center gap-1.5 rounded-lg border border-success/25 bg-success/10 px-2 py-0.5 text-xs font-semibold text-success">
+            <MessagesSquare size={12} />
+            Praça liberada
           </span>
         )}
         {pendingEmailVerification && (

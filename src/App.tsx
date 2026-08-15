@@ -44,9 +44,11 @@ import SellerCheckoutDetail from "./presentation/pages/seller/SellerCheckoutDeta
 import PublicCheckoutEntry from "./presentation/pages/PublicCheckoutEntry";
 import CheckoutHealthPage from "./presentation/pages/CheckoutHealthPage";
 import AdminCheckout from "./presentation/pages/admin/AdminCheckout";
+import AdminPracaPage from "./presentation/pages/admin/AdminPraca";
 import SellerKyc from "./presentation/pages/seller/SellerKyc";
 import SellerSettings from "./presentation/pages/seller/SellerSettings";
 import SellerNotifications from "./presentation/pages/seller/SellerNotifications";
+import SellerPraca from "./presentation/pages/seller/SellerPraca";
 import SellerTransactions from "./presentation/pages/seller/SellerTransactions";
 import SellerTransfers from "./presentation/pages/seller/SellerTransfers";
 
@@ -124,6 +126,14 @@ export default function App() {
                   element={
                     <ProtectedRoute requiredRole="seller">
                       <SellerNotifications />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/seller/praca"
+                  element={
+                    <ProtectedRoute requiredRole="seller">
+                      <SellerPraca />
                     </ProtectedRoute>
                   }
                 />
@@ -244,6 +254,14 @@ export default function App() {
                   element={
                     <ProtectedRoute requiredRole="admin">
                       <AdminSellerProfilePage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/praca"
+                  element={
+                    <ProtectedRoute requiredRole="admin">
+                      <AdminPracaPage />
                     </ProtectedRoute>
                   }
                 />
