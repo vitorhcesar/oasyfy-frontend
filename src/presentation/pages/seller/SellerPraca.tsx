@@ -101,10 +101,13 @@ export default function SellerPraca() {
     }
   };
 
-  const handleSend = async (body: string) => {
+  const handleSend = async (body: string, quotedMessageId?: number | null) => {
     setSending(true);
     try {
-      const created = await apiService.modules.sellerPraca.sendMessage(body);
+      const created = await apiService.modules.sellerPraca.sendMessage(
+        body,
+        quotedMessageId,
+      );
       setMessages((current) =>
         current.some((item) => item.id === created.id)
           ? current
@@ -145,8 +148,9 @@ export default function SellerPraca() {
 
   return (
     <SellerLayout>
-      <div className="flex h-full min-h-0 flex-col px-5 py-6 md:px-8">
+      <div className="flex h-full min-h-0 flex-col overflow-hidden px-5 py-6 md:px-8">
         <PageHeader
+          className="mb-4 shrink-0"
           eyebrow="Comunidade"
           title="A Praça"
           description="Canal único de networking entre sellers da plataforma."

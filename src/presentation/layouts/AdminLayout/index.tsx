@@ -36,7 +36,7 @@ export function AdminLayout({ children }: PropsWithChildren) {
         />
         <main
           id="layout-main-scroll"
-          className="relative z-10 flex h-full min-w-0 flex-1 flex-col overflow-y-auto md:rounded-[22px] md:border md:border-white/10 md:bg-background/55 md:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] md:backdrop-blur-2xl md:backdrop-saturate-150"
+          className="relative z-10 flex h-full min-w-0 flex-1 flex-col overflow-hidden md:rounded-[22px] md:border md:border-white/10 md:bg-background/55 md:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] md:backdrop-blur-2xl md:backdrop-saturate-150"
         >
           <OfflineBanner />
           <div className="sticky top-0 z-30 shrink-0 bg-background px-3 pb-2 pt-3 md:hidden">
@@ -56,7 +56,9 @@ export function AdminLayout({ children }: PropsWithChildren) {
               />
             </header>
           </div>
-          <div className="flex-1">{children}</div>
+          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+            {children}
+          </div>
         </main>
       </div>
     </div>

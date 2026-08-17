@@ -31,11 +31,13 @@ export function SellerLayout({ children }: PropsWithChildren) {
         />
         <main
           id="layout-main-scroll"
-          className="relative z-10 flex h-full min-w-0 flex-1 flex-col overflow-y-auto md:rounded-[22px] md:border md:border-white/10 md:bg-background/55 md:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] md:backdrop-blur-2xl md:backdrop-saturate-150"
+          className="relative z-10 flex h-full min-w-0 flex-1 flex-col overflow-hidden md:rounded-[22px] md:border md:border-white/10 md:bg-background/55 md:shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] md:backdrop-blur-2xl md:backdrop-saturate-150"
         >
           <OfflineBanner />
           <SellerTopbar onMenuToggle={() => setSidebarOpen(!sidebarOpen)} />
-          <div className="flex-1">{children}</div>
+          <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+            {children}
+          </div>
         </main>
       </div>
     </div>

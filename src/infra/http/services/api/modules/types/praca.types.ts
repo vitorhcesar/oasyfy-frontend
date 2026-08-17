@@ -12,6 +12,17 @@ export interface IPracaAccessDto {
   reviewedAt: string | null;
 }
 
+export interface IPracaQuotedMessageDto {
+  id: number;
+  body: string;
+  author: {
+    id: number;
+    displayName: string;
+    role: TPracaAuthorRole;
+    avatarUrl: string | null;
+  };
+}
+
 export interface IPracaMessageDto {
   id: number;
   body: string;
@@ -20,7 +31,9 @@ export interface IPracaMessageDto {
     id: number;
     displayName: string;
     role: TPracaAuthorRole;
+    avatarUrl: string | null;
   };
+  quotedMessage: IPracaQuotedMessageDto | null;
 }
 
 export interface IPracaMessagesPageDto {

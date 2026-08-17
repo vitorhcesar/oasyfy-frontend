@@ -11,7 +11,10 @@ export interface IAdminPracaModule {
     cursor?: number;
     limit?: number;
   }): Promise<IPracaMessagesPageDto>;
-  sendMessage(body: string): Promise<IPracaMessageDto>;
+  sendMessage(
+    body: string,
+    quotedMessageId?: number | null,
+  ): Promise<IPracaMessageDto>;
   deleteMessage(messageId: number): Promise<{ ok: true }>;
   listAccessRequests(
     status?: "pending" | "approved" | "rejected",
@@ -38,10 +41,16 @@ export class AdminPracaModule
     return response.data;
   }
 
-  async sendMessage(body: string): Promise<IPracaMessageDto> {
+  async sendMessage(
+    body: string,
+    quotedMessageId?: number | null,
+  ): Promise<IPracaMessageDto> {
     const response = await this.getClient().post<IApiEnvelope<IPracaMessageDto>>(
       `${this.baseUrl}/messages`,
-      { body },
+      {
+        body,
+        ...(quotedMessageId != null ? { quotedMessageId } : {}),
+      },
     );
     return response.data;
   }

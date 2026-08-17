@@ -93,10 +93,13 @@ export default function AdminPracaPage() {
     };
   }, [loadRequests, mergeLatest]);
 
-  const handleSend = async (body: string) => {
+  const handleSend = async (body: string, quotedMessageId?: number | null) => {
     setSending(true);
     try {
-      const created = await apiService.modules.adminPraca.sendMessage(body);
+      const created = await apiService.modules.adminPraca.sendMessage(
+        body,
+        quotedMessageId,
+      );
       setMessages((current) =>
         current.some((item) => item.id === created.id)
           ? current
@@ -177,8 +180,8 @@ export default function AdminPracaPage() {
 
   return (
     <AdminLayout>
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-5 py-6 md:px-8 md:py-9">
-        <div>
+      <div className="mx-auto flex h-full min-h-0 w-full max-w-6xl flex-col overflow-hidden px-5 py-6 md:px-8 md:py-9">
+        <div className="shrink-0">
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
             Comunidade
           </p>
@@ -192,19 +195,25 @@ export default function AdminPracaPage() {
         </div>
 
         {loading ? (
-          <div className="flex min-h-[40vh] items-center justify-center">
+          <div className="flex min-h-0 flex-1 items-center justify-center">
             <Loader2 className="animate-spin text-primary" size={28} />
           </div>
         ) : (
-          <Tabs defaultValue="canal">
-            <TabsList>
+          <Tabs
+            defaultValue="canal"
+            className="mt-6 flex min-h-0 flex-1 flex-col overflow-hidden"
+          >
+            <TabsList className="shrink-0">
               <TabsTrigger value="canal">Canal</TabsTrigger>
               <TabsTrigger value="solicitacoes">
                 Solicitações
                 {requests.length > 0 ? ` (${requests.length})` : ""}
               </TabsTrigger>
             </TabsList>
-            <TabsContent value="canal" className="mt-4">
+            <TabsContent
+              value="canal"
+              className="mt-4 flex min-h-0 flex-1 flex-col overflow-hidden data-[state=inactive]:hidden"
+            >
               <PracaChat
                 currentUserId={Number.isFinite(currentUserId) ? currentUserId : 0}
                 messages={messages}
@@ -216,7 +225,10 @@ export default function AdminPracaPage() {
                 onDelete={handleDelete}
               />
             </TabsContent>
-            <TabsContent value="solicitacoes" className="mt-4">
+            <TabsContent
+              value="solicitacoes"
+              className="mt-4 min-h-0 flex-1 overflow-y-auto data-[state=inactive]:hidden"
+            >
               <div className="admin-surface overflow-hidden">
                 {requests.length === 0 ? (
                   <p className="p-5 text-sm text-muted-foreground">
