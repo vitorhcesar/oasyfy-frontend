@@ -12,7 +12,7 @@ function apiRoot(): string {
 
 function Code({ children }: { children: string }) {
   return (
-    <pre className="overflow-x-auto rounded-xl border border-white/10 bg-white/5 p-4 text-xs leading-relaxed text-zinc-200">
+    <pre className="overflow-x-auto rounded-xl border border-white/10 bg-[#11151c] p-4 font-['IBM_Plex_Mono',ui-monospace,SFMono-Regular,Menlo,monospace] text-[13px] font-medium leading-[1.7] tracking-tight text-[#d7e7f4]">
       <code>{children}</code>
     </pre>
   );

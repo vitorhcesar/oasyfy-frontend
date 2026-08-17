@@ -47,9 +47,9 @@ export function DocsChrome({
   };
 
   return (
-    <div className="dark min-h-screen bg-[#0b0d12] text-zinc-100">
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-[#0b0d12]/90 backdrop-blur">
-        <div className="mx-auto flex h-14 max-w-7xl items-center gap-4 px-4">
+    <div className="dark flex h-svh flex-col overflow-hidden bg-[#0b0d12] text-zinc-100">
+      <header className="z-40 shrink-0 border-b border-white/10 bg-[#0b0d12]/90 backdrop-blur">
+        <div className="mx-auto flex h-14 w-full max-w-7xl items-center gap-4 px-4">
           <Link to="/docs" className="shrink-0">
             <AuthBrandMark size="sm" variant="white" mark="horizontal" />
           </Link>
@@ -88,9 +88,9 @@ export function DocsChrome({
         </div>
       </header>
 
-      <div className="mx-auto flex max-w-7xl gap-8 px-4 py-8">
-        <nav className="hidden w-56 shrink-0 md:block">
-          <div className="sticky top-24 space-y-6">
+      <div className="mx-auto flex min-h-0 w-full max-w-7xl flex-1 gap-8 px-4">
+        <nav className="hidden w-56 shrink-0 overflow-y-auto overscroll-contain py-8 [scrollbar-color:rgba(255,255,255,0.18)_transparent] [scrollbar-width:thin] md:block">
+          <div className="space-y-6">
             {DOCS_NAV.map((section) => (
               <div key={section.id}>
                 <p className="mb-2 px-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
@@ -121,7 +121,11 @@ export function DocsChrome({
           </div>
         </nav>
 
-        <main className="min-w-0 flex-1">
+        <main
+          key={slug}
+          id="layout-main-scroll"
+          className="min-w-0 flex-1 overflow-y-auto overscroll-contain py-8 [scrollbar-color:rgba(255,255,255,0.18)_transparent] [scrollbar-width:thin] [&_p_code]:rounded [&_p_code]:bg-white/[0.06] [&_p_code]:px-1 [&_p_code]:py-0.5 [&_p_code]:font-['IBM_Plex_Mono',ui-monospace,monospace] [&_p_code]:text-[13px] [&_p_code]:text-[#d7e7f4]"
+        >
           {group && (
             <p className="mb-2 text-xs font-semibold uppercase tracking-wider text-emerald-400">
               {group.title}
@@ -134,27 +138,25 @@ export function DocsChrome({
           {children}
         </main>
 
-        <aside className="hidden w-48 shrink-0 lg:block">
-          <div className="sticky top-24">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">
-              Nesta página
-            </p>
-            <div className="space-y-1">
-              {page.toc.map((entry, index) => (
-                <a
-                  key={entry.id}
-                  href={`#${entry.id}`}
-                  className={cn(
-                    "block text-sm",
-                    index === 0
-                      ? "text-emerald-400"
-                      : "text-zinc-500 hover:text-zinc-200",
-                  )}
-                >
-                  {entry.label}
-                </a>
-              ))}
-            </div>
+        <aside className="hidden w-48 shrink-0 overflow-y-auto overscroll-contain py-8 [scrollbar-color:rgba(255,255,255,0.18)_transparent] [scrollbar-width:thin] lg:block">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+            Nesta página
+          </p>
+          <div className="space-y-1">
+            {page.toc.map((entry, index) => (
+              <a
+                key={entry.id}
+                href={`#${entry.id}`}
+                className={cn(
+                  "block text-sm",
+                  index === 0
+                    ? "text-emerald-400"
+                    : "text-zinc-500 hover:text-zinc-200",
+                )}
+              >
+                {entry.label}
+              </a>
+            ))}
           </div>
         </aside>
       </div>
