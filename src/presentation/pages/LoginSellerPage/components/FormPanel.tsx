@@ -19,6 +19,7 @@ import LoginForm from "./LoginForm";
 import LoginSellerMobileLogo from "./MobileLogo";
 import OtpCodeForm from "./OtpCodeForm";
 import SignUpForm from "./SignUpForm";
+import SignUpStepper, { type TSignUpStep } from "./SignUpStepper";
 
 type TFormView = "login" | "signup" | "forgotPassword" | "code" | "twoFactor";
 
@@ -31,6 +32,7 @@ export default function LoginSellerFormPanel() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [signUpStep, setSignUpStep] = useState<TSignUpStep>(1);
   const [twoFactorError, setTwoFactorError] = useState("");
 
   useEffect(() => {
@@ -54,6 +56,10 @@ export default function LoginSellerFormPanel() {
     if (loadPendingTwoFactor() || loadPendingVerification()) return;
     setLoginInFlight(false);
   }, [isAuthenticated, isLoading]);
+
+  useEffect(() => {
+    if (formView !== "signup") setSignUpStep(1);
+  }, [formView]);
 
   const sendSignUpVerificationCodeAndOpenCodeFormView = async () => {
     await apiService.modules.account.sendSignupVerificationCode(email);
@@ -79,6 +85,8 @@ export default function LoginSellerFormPanel() {
     <div className="relative flex flex-1 items-center justify-center px-6 py-10">
       <div className="relative w-full max-w-[460px]">
         <LoginSellerMobileLogo />
+
+        {formView === "signup" && <SignUpStepper step={signUpStep} />}
 
         <div className="relative">
           <div className="auth-glass-glow" aria-hidden />
@@ -147,6 +155,8 @@ export default function LoginSellerFormPanel() {
                 setView={setFormView}
                 setPassword={setPassword}
                 onSuccess={sendSignUpVerificationCodeAndOpenCodeFormView}
+                step={signUpStep}
+                setStep={setSignUpStep}
               />
             )}
 
