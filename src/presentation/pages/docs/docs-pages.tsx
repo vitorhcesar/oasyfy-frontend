@@ -1,6 +1,7 @@
 import { getApiBaseUrl } from "@/infra/http/services/api/api-env";
 import { Link } from "react-router-dom";
 import type { ReactNode } from "react";
+import { DocsFullAiPrompt } from "./DocsFullAiPrompt";
 
 function apiRoot(): string {
   try {
@@ -146,8 +147,24 @@ export const DOCS_PAGES: Record<string, IDocsPage> = {
           <code>/seller/api</code> e só então as chamadas autenticam. Sem
           liberação o gateway responde <code>api_access_denied</code>.
         </p>
+        <p>
+          Para implementar tudo de uma vez com Claude, ChatGPT ou Lovable, use{" "}
+          <Link
+            className="text-emerald-400 hover:underline"
+            to="/docs/integrar-com-ia"
+          >
+            Integrar com IA
+          </Link>
+          .
+        </p>
       </div>
     ),
+  },
+  "integrar-com-ia": {
+    title: "Integrar com IA",
+    summary: "Documentação completa para colar no Claude, ChatGPT, Lovable ou Cursor",
+    toc: [{ id: "documento", label: "Documento para a IA" }],
+    body: <DocsFullAiPrompt />,
   },
   autenticacao: {
     title: "Autenticação",

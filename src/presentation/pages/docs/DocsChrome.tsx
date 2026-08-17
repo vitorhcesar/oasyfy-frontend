@@ -1,12 +1,18 @@
-import { AuthBrandMark } from "@/presentation/components/auth/AuthBrandMark";
 import { homePathForRole } from "@/presentation/components/auth/auth-paths";
+import { AuthBrandMark } from "@/presentation/components/auth/AuthBrandMark";
 import { useAuthContext } from "@/presentation/context/AuthContext";
 import { cn } from "@/presentation/utils/cn";
-import { Search, Settings } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { ChevronLeft, ChevronRight, Search, Settings } from "lucide-react";
 import type { ReactNode } from "react";
-import { DOCS_NAV, docsHref, findDocsGroup } from "./docs-nav";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  DOCS_NAV,
+  docsHref,
+  findDocsGroup,
+  findDocsNeighbors,
+} from "./docs-nav";
 import type { IDocsPage } from "./docs-pages";
+import { DocsIntegrateAiButton } from "./DocsIntegrateAiButton";
 
 function MethodBadge({ method }: { method: "GET" | "POST" }) {
   return (
@@ -37,6 +43,7 @@ export function DocsChrome({
   const { isAuthenticated, role } = useAuthContext();
   const navigate = useNavigate();
   const group = findDocsGroup(slug);
+  const { previous, next } = findDocsNeighbors(slug);
 
   const goDashboard = () => {
     if (isAuthenticated && role) {
@@ -122,9 +129,7 @@ export function DocsChrome({
                           )}
                         >
                           <span className="min-w-0 truncate">{item.title}</span>
-                          {item.method && (
-                            <MethodBadge method={item.method} />
-                          )}
+                          {item.method && <MethodBadge method={item.method} />}
                         </Link>
                       );
                     })}
@@ -148,8 +153,37 @@ export function DocsChrome({
           <h1 className="mb-2 text-3xl font-semibold tracking-tight text-white">
             {page.title}
           </h1>
-          <p className="mb-8 text-zinc-400">{page.summary}</p>
+          <p className="mb-4 text-zinc-400">{page.summary}</p>
+          <div className="mb-8">
+            <DocsIntegrateAiButton slug={slug} />
+          </div>
           {children}
+          {(previous || next) && (
+            <nav className="mt-16 flex items-center justify-between gap-4 border-t border-white/10 pt-6 px-6">
+              {previous ? (
+                <Link
+                  to={docsHref(previous.slug)}
+                  className="inline-flex min-w-0 items-center gap-1.5 text-sm text-zinc-400 transition-colors hover:text-white"
+                >
+                  <ChevronLeft size={16} className="shrink-0" />
+                  <span className="truncate">{previous.title}</span>
+                </Link>
+              ) : (
+                <span />
+              )}
+              {next ? (
+                <Link
+                  to={docsHref(next.slug)}
+                  className="inline-flex min-w-0 items-center justify-end gap-1.5 text-sm text-zinc-400 transition-colors hover:text-white"
+                >
+                  <span className="truncate">{next.title}</span>
+                  <ChevronRight size={16} className="shrink-0" />
+                </Link>
+              ) : (
+                <span />
+              )}
+            </nav>
+          )}
         </main>
 
         <aside className="hidden w-48 shrink-0 overflow-y-auto overscroll-contain py-8 [scrollbar-color:rgba(255,255,255,0.18)_transparent] [scrollbar-width:thin] lg:block">

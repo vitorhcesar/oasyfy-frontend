@@ -23,6 +23,12 @@ export const DOCS_NAV: IDocsNavGroup[] = [
         title: "Introdução",
         keywords: "introdução comece api rest https",
       },
+      {
+        slug: "integrar-com-ia",
+        title: "Integrar com IA",
+        keywords:
+          "ia ai prompt claude chatgpt lovable cursor copiar documentação completa",
+      },
     ],
   },
   {
@@ -211,4 +217,24 @@ export function findDocsGroup(slug: string): IDocsNavGroup | undefined {
 
 export function docsHref(slug: string): string {
   return slug ? `/docs/${slug}` : "/docs";
+}
+
+export function listDocsNavItems(): IDocsNavItem[] {
+  return DOCS_NAV.flatMap((group) => group.items);
+}
+
+export function findDocsNeighbors(slug: string): {
+  previous: IDocsNavItem | null;
+  next: IDocsNavItem | null;
+} {
+  const items = listDocsNavItems();
+  const normalized = slug === "introducao" ? "" : slug;
+  const index = items.findIndex((item) => item.slug === normalized);
+  if (index < 0) {
+    return { previous: null, next: null };
+  }
+  return {
+    previous: items[index - 1] ?? null,
+    next: items[index + 1] ?? null,
+  };
 }
