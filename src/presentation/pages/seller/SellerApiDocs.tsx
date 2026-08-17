@@ -339,6 +339,13 @@ const SECTIONS: EndpointSection[] = [
             description: "Email do cliente",
           },
           {
+            name: "customer_document",
+            type: "string",
+            required: false,
+            description:
+              "CPF (11 dígitos) ou CNPJ (14). Também aceita os aliases cpf e cnpj.",
+          },
+          {
             name: "amount",
             type: "integer",
             required: true,
@@ -414,6 +421,13 @@ const SECTIONS: EndpointSection[] = [
             description: "Email do pagador",
           },
           {
+            name: "customer_document",
+            type: "string",
+            required: false,
+            description:
+              "CPF (11 dígitos) ou CNPJ (14). Também aceita os aliases cpf e cnpj.",
+          },
+          {
             name: "amount",
             type: "integer",
             required: true,
@@ -440,6 +454,8 @@ const SECTIONS: EndpointSection[] = [
         ],
         requestExample: `{
   "customer_name": "Maria Santos",
+  "customer_email": "maria@email.com",
+  "customer_document": "52998224725",
   "amount": 5990,
   "description": "Assinatura mensal"
 }`,

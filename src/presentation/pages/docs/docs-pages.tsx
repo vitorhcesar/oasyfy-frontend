@@ -29,6 +29,62 @@ function H({ id, children }: { id: string; children: ReactNode }) {
   );
 }
 
+function Note({ children }: { children: ReactNode }) {
+  return (
+    <p className="rounded-xl border border-amber-500/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+      {children}
+    </p>
+  );
+}
+
+function ParamTable({
+  title,
+  params,
+}: {
+  title: string;
+  params: { name: string; type: string; required: boolean; description: string }[];
+}) {
+  return (
+    <div>
+      <h3 className="mb-2 text-sm font-semibold text-white">{title}</h3>
+      <div className="overflow-hidden rounded-xl border border-white/10">
+        <table className="w-full text-left text-xs">
+          <thead className="bg-white/5 text-zinc-400">
+            <tr>
+              <th className="px-3 py-2 font-medium">Campo</th>
+              <th className="hidden px-3 py-2 font-medium sm:table-cell">Tipo</th>
+              <th className="px-3 py-2 font-medium">Descrição</th>
+            </tr>
+          </thead>
+          <tbody>
+            {params.map((param) => (
+              <tr key={param.name} className="border-t border-white/5">
+                <td className="px-3 py-2.5 align-top">
+                  <code className="text-zinc-100">{param.name}</code>
+                  {param.required && (
+                    <span className="ml-1.5 text-[10px] font-bold uppercase tracking-wide text-rose-400">
+                      req
+                    </span>
+                  )}
+                  <div className="mt-0.5 font-mono text-[10px] text-zinc-500 sm:hidden">
+                    {param.type}
+                  </div>
+                </td>
+                <td className="hidden px-3 py-2.5 align-top font-mono text-zinc-500 sm:table-cell">
+                  {param.type}
+                </td>
+                <td className="px-3 py-2.5 align-top text-zinc-400">
+                  {param.description}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 export interface IDocsPage {
   title: string;
   summary: string;
@@ -203,6 +259,7 @@ Content-Type: application/json`}</Code>
     toc: [
       { id: "how", label: "Como funciona" },
       { id: "setup", label: "Cadastro" },
+      { id: "headers", label: "Headers" },
       { id: "not", label: "O que não é" },
     ],
     body: (
@@ -211,13 +268,63 @@ Content-Type: application/json`}</Code>
         <p>
           Depois que o pagamento é confirmado (ou expirado, reembolsado, etc.),
           a Oasyfy faz <code>POST</code> HTTPS na URL cadastrada com o evento{" "}
-          <code>sale.status_changed</code>.
+          <code>sale.status_changed</code>. O body é JSON. Responda{" "}
+          <code>2xx</code> em até 5 segundos.
+        </p>
+        <p>
+          Na v1 o único evento é{" "}
+          <Link
+            className="text-emerald-400 hover:underline"
+            to="/docs/webhooks/status-da-venda"
+          >
+            status da venda
+          </Link>
+          . Cadastro, secret e teste ficam no portal — não há CRUD de webhook
+          no gateway com <code>x-api-key</code>.
         </p>
         <H id="setup">Cadastro</H>
         <p>
-          No portal, em API → Webhooks (conta com API liberada). Até 3 URLs
-          HTTPS. O signing secret aparece só na criação.
+          Portal: API → Webhooks (conta com API liberada). Até 3 URLs HTTPS. O
+          signing secret (<code>whsec_...</code>) aparece só na criação; copie
+          na hora. Use o botão Testar para receber um payload com{" "}
+          <code>test: true</code>.
         </p>
+        <H id="headers">Headers enviados</H>
+        <ParamTable
+          title="Cada POST inclui"
+          params={[
+            {
+              name: "Content-Type",
+              type: "string",
+              required: true,
+              description: "application/json",
+            },
+            {
+              name: "User-Agent",
+              type: "string",
+              required: true,
+              description: "Oasyfy-Webhooks/1.0",
+            },
+            {
+              name: "X-Oasyfy-Event",
+              type: "string",
+              required: true,
+              description: "sale.status_changed",
+            },
+            {
+              name: "X-Oasyfy-Delivery-Id",
+              type: "string",
+              required: true,
+              description: "UUID da tentativa de entrega",
+            },
+            {
+              name: "X-Oasyfy-Signature",
+              type: "string",
+              required: true,
+              description: "sha256=<hex> do corpo bruto. Ver Segurança.",
+            },
+          ]}
+        />
         <H id="not">O que não é</H>
         <p>
           URLs como <code>/api/v1/webhooks/woovi/pix</code> são da adquirente
@@ -231,17 +338,51 @@ Content-Type: application/json`}</Code>
     summary: "Evento sale.status_changed",
     toc: [
       { id: "when", label: "Quando dispara" },
+      { id: "transitions", label: "Transições" },
       { id: "payload", label: "Payload" },
     ],
     body: (
       <div className="space-y-8">
         <H id="when">Quando dispara</H>
         <p>
-          Sempre que o <code>status</code> persistido de uma venda muda:
-          pending→paid, pending→failed (PIX expirado), paid→refunded/chargeback.
-          Não dispara na criação em pending, nem em saque, depósito interno,
-          split_credit ou ajuste admin. Vendas de checkout público entram.
+          Sempre que o <code>status</code> persistido de uma venda muda. Vendas
+          criadas via <code>POST /gateway/pix</code>,{" "}
+          <code>POST /gateway/sales</code> e checkout público entram.
         </p>
+        <p>
+          Não dispara na criação em <code>pending</code>, nem em saque,
+          depósito interno, split_credit ou ajuste admin.
+        </p>
+        <H id="transitions">Transições típicas</H>
+        <ParamTable
+          title="De → para"
+          params={[
+            {
+              name: "pending → paid",
+              type: "evento",
+              required: false,
+              description: "PIX pago (webhook da adquirente confirmado)",
+            },
+            {
+              name: "pending → failed",
+              type: "evento",
+              required: false,
+              description: "PIX expirado sem pagamento",
+            },
+            {
+              name: "paid → refunded",
+              type: "evento",
+              required: false,
+              description: "Reembolso concluído",
+            },
+            {
+              name: "paid → chargeback",
+              type: "evento",
+              required: false,
+              description: "Chargeback",
+            },
+          ]}
+        />
         <H id="payload">Payload</H>
         <Code>{`{
   "id": "evt_1042_paid",
@@ -257,12 +398,57 @@ Content-Type: application/json`}</Code>
     "method": "pix",
     "customer_name": "João Silva",
     "customer_email": "joao@email.com",
+    "customer_document": "52998224725",
     "description": "Pedido #1234",
     "metadata": { "order_id": "1234" },
     "created_at": "2026-08-17T14:20:00.000Z",
     "updated_at": "2026-08-17T14:22:01.000Z"
   }
 }`}</Code>
+        <ParamTable
+          title="Campos de data"
+          params={[
+            {
+              name: "id",
+              type: "string",
+              required: true,
+              description:
+                "evt_<transactionId>_<status> — use para idempotência",
+            },
+            {
+              name: "type",
+              type: "string",
+              required: true,
+              description: "Sempre sale.status_changed",
+            },
+            {
+              name: "test",
+              type: "boolean",
+              required: true,
+              description:
+                "true só no botão Testar do portal — ignore no pedido real",
+            },
+            {
+              name: "data.transaction_id",
+              type: "integer",
+              required: true,
+              description: "ID numérico da transação (não é UUID)",
+            },
+            {
+              name: "data.amount",
+              type: "integer",
+              required: true,
+              description: "Valor em centavos",
+            },
+            {
+              name: "data.customer_document",
+              type: "string | null",
+              required: false,
+              description:
+                "CPF (11) ou CNPJ (14), só dígitos, se enviado na venda",
+            },
+          ]}
+        />
       </div>
     ),
   },
@@ -279,24 +465,33 @@ Content-Type: application/json`}</Code>
         <H id="hmac">Assinatura</H>
         <p>
           Header <code>X-Oasyfy-Signature: sha256=&lt;hex&gt;</code> — HMAC-SHA256
-          do corpo bruto com o secret. Compare em tempo constante.
+          do corpo bruto (bytes recebidos, sem re-serializar) com o secret.
+          Compare em tempo constante.
         </p>
         <Code>{`const crypto = require("crypto");
 const expected = "sha256=" + crypto
   .createHmac("sha256", secret)
   .update(rawBody)
-  .digest("hex");`}</Code>
+  .digest("hex");
+const ok = crypto.timingSafeEqual(
+  Buffer.from(expected),
+  Buffer.from(req.headers["x-oasyfy-signature"] || "")
+);`}</Code>
+        <Code>{`<?php
+$expected = 'sha256=' . hash_hmac('sha256', $rawBody, $secret);
+$hashEquals = hash_equals($expected, $_SERVER['HTTP_X_OASYFY_SIGNATURE'] ?? '');`}</Code>
         <H id="retry">Retries</H>
         <p>
-          Timeout 5s. Sucesso = HTTP 2xx. Até 5 tentativas com backoff (10s, 40s,
-          2m, 10m). Eventos de teste vêm com <code>test: true</code> — ignore na
-          lógica de pedido real.
+          Timeout 5s. Sucesso = HTTP 2xx. Até 5 tentativas com backoff: 10s,
+          40s, 2 min, 10 min. Eventos de teste vêm com <code>test: true</code> —
+          ignore na lógica de pedido real.
         </p>
         <H id="idemp">Idempotência</H>
         <p>
-          Use o campo <code>id</code> (<code>evt_&lt;transactionId&gt;_&lt;status&gt;</code>
+          Use o campo <code>id</code> (
+          <code>evt_&lt;transactionId&gt;_&lt;status&gt;</code>
           ). Reprocessar o webhook da adquirente não gera um segundo POST se o
-          status não mudou.
+          status não mudou. Guarde os IDs já processados.
         </p>
       </div>
     ),
@@ -378,58 +573,258 @@ const expected = "sha256=" + crypto
   "consultas/buscar-transacao": {
     title: "Buscar transação",
     summary: "GET /gateway/transactions",
-    toc: [{ id: "req", label: "Request" }],
+    toc: [
+      { id: "req", label: "Request" },
+      { id: "params", label: "Query" },
+    ],
     body: (
       <div className="space-y-8">
         <H id="req">Request</H>
         <p>
-          Permissão <code>consulta</code>. Query:{" "}
-          <code>transaction_id</code> (int), <code>status</code>,{" "}
-          <code>method</code>, <code>limit</code>, <code>offset</code>.
+          Permissão <code>consulta</code>. Sem <code>transaction_id</code>,
+          lista as transações da conta.
         </p>
-        <Code>{`GET ${apiRoot()}/gateway/transactions?status=paid&limit=50`}</Code>
+        <Code>{`GET ${apiRoot()}/gateway/transactions?status=paid&limit=50
+x-api-key: sk_live_OAS_...`}</Code>
+        <H id="params">Query</H>
+        <ParamTable
+          title="Parâmetros"
+          params={[
+            {
+              name: "transaction_id",
+              type: "integer",
+              required: false,
+              description: "ID numérico. Também aceito como string na query.",
+            },
+            {
+              name: "status",
+              type: "enum",
+              required: false,
+              description:
+                "pending | paid | completed | failed | refunded | cancelled | chargeback",
+            },
+            {
+              name: "method",
+              type: "enum",
+              required: false,
+              description: "pix | card | boleto | crypto | withdrawal",
+            },
+            {
+              name: "limit",
+              type: "integer",
+              required: false,
+              description: "1–500. Default 50.",
+            },
+            {
+              name: "offset",
+              type: "integer",
+              required: false,
+              description: "Default 0.",
+            },
+          ]}
+        />
       </div>
     ),
   },
   "venda/criar": {
     title: "Criar venda",
     summary: "POST /gateway/sales",
-    toc: [{ id: "req", label: "Request" }],
+    toc: [
+      { id: "req", label: "Request" },
+      { id: "body", label: "Body" },
+    ],
     body: (
       <div className="space-y-8">
         <H id="req">Request</H>
         <p>
           Permissão <code>venda</code>. Cria transação <code>pending</code>.
+          Para gerar QR Code PIX, use{" "}
+          <Link className="text-emerald-400 hover:underline" to="/docs/venda/pix">
+            Gerar PIX
+          </Link>
+          .
         </p>
         <Code>{`POST ${apiRoot()}/gateway/sales
+x-api-key: sk_live_OAS_...
+Content-Type: application/json
 
 {
   "customer_name": "João Silva",
   "customer_email": "joao@email.com",
+  "customer_document": "52998224725",
   "amount": 15000,
   "method": "pix",
   "description": "Pedido #1234",
   "metadata": { "order_id": "1234" }
 }`}</Code>
+        <H id="body">Body</H>
+        <ParamTable
+          title="Campos"
+          params={[
+            {
+              name: "customer_name",
+              type: "string",
+              required: true,
+              description: "Nome do pagador",
+            },
+            {
+              name: "customer_email",
+              type: "string",
+              required: false,
+              description: "E-mail válido",
+            },
+            {
+              name: "customer_document",
+              type: "string",
+              required: false,
+              description:
+                "CPF (11) ou CNPJ (14). Também aceita os aliases cpf e cnpj.",
+            },
+            {
+              name: "amount",
+              type: "integer",
+              required: true,
+              description: "Centavos. 15000 = R$ 150,00. Número, não string.",
+            },
+            {
+              name: "method",
+              type: "enum",
+              required: true,
+              description: "pix | card | boleto | crypto. Liquidação atual: PIX.",
+            },
+            {
+              name: "description",
+              type: "string",
+              required: false,
+              description: "Descrição da venda",
+            },
+            {
+              name: "metadata",
+              type: "object",
+              required: false,
+              description: "JSON livre (order_id, etc.)",
+            },
+            {
+              name: "split",
+              type: "array",
+              required: false,
+              description: "Ver Split de pagamento",
+            },
+          ]}
+        />
       </div>
     ),
   },
   "venda/pix": {
     title: "Gerar PIX",
     summary: "POST /gateway/pix",
-    toc: [{ id: "req", label: "Request" }],
+    toc: [
+      { id: "req", label: "Request" },
+      { id: "body", label: "Body" },
+      { id: "res", label: "Resposta" },
+    ],
     body: (
       <div className="space-y-8">
         <H id="req">Request</H>
         <p>
-          Permissão <code>venda</code>. Gera cobrança PIX com QR e expiração.
+          Permissão <code>venda</code>. Cria a transação, gera a cobrança na
+          adquirente e devolve o código copia-e-cola. Header{" "}
+          <code>Content-Type: application/json</code> é obrigatório — body
+          vazio ou campos com nomes diferentes geram 400.
         </p>
+        <Note>
+          Os campos obrigatórios são customer_name (string) e amount (número em
+          centavos). Sem eles a API responde 400 com expected string / expected
+          number received undefined. Envie também customer_document (CPF ou
+          CNPJ) para identificar o pagador na adquirente.
+        </Note>
         <Code>{`POST ${apiRoot()}/gateway/pix
+x-api-key: sk_live_OAS_...
+Content-Type: application/json
 
 {
   "customer_name": "Maria Santos",
+  "customer_email": "maria@email.com",
+  "customer_document": "52998224725",
   "amount": 5990,
-  "description": "Assinatura mensal"
+  "description": "Assinatura mensal",
+  "metadata": { "order_id": "A-100" }
+}`}</Code>
+        <H id="body">Body</H>
+        <ParamTable
+          title="Campos"
+          params={[
+            {
+              name: "customer_name",
+              type: "string",
+              required: true,
+              description: "Nome do pagador (debtor_name na adquirente)",
+            },
+            {
+              name: "customer_email",
+              type: "string",
+              required: false,
+              description: "E-mail válido",
+            },
+            {
+              name: "customer_document",
+              type: "string",
+              required: false,
+              description:
+                "CPF ou CNPJ do pagador. Dígitos ou formatado. Aliases: cpf, cnpj.",
+            },
+            {
+              name: "amount",
+              type: "integer",
+              required: true,
+              description:
+                "Centavos. 5990 = R$ 59,90. JSON number; string numérica também é aceita.",
+            },
+            {
+              name: "description",
+              type: "string",
+              required: false,
+              description: "Descrição / comment da cobrança",
+            },
+            {
+              name: "metadata",
+              type: "object",
+              required: false,
+              description: "JSON livre. customer_document também é gravado aqui.",
+            },
+            {
+              name: "split",
+              type: "array",
+              required: false,
+              description: "Ver Split de pagamento",
+            },
+            {
+              name: "pix_code",
+              type: "string",
+              required: false,
+              description:
+                "Avançado: informa um EMV já gerado e pula a chamada à adquirente.",
+            },
+          ]}
+        />
+        <H id="res">Resposta 201</H>
+        <Code>{`{
+  "message": "PIX gerado com sucesso",
+  "transaction": {
+    "id": 1042,
+    "amount": 5990,
+    "method": "pix",
+    "status": "pending",
+    "customer_name": "Maria Santos",
+    "pix_code": "00020126..."
+  },
+  "pix": {
+    "transaction_id": 1042,
+    "amount": 5990,
+    "pix_code": "00020126...",
+    "expiration": "2026-08-17T15:00:00.000Z",
+    "status": "awaiting_payment"
+  }
 }`}</Code>
       </div>
     ),
@@ -455,17 +850,65 @@ const expected = "sha256=" + crypto
   saque: {
     title: "Solicitar saque",
     summary: "POST /gateway/withdrawals",
-    toc: [{ id: "req", label: "Request" }],
+    toc: [
+      { id: "req", label: "Request" },
+      { id: "body", label: "Body" },
+    ],
     body: (
       <div className="space-y-8">
         <H id="req">Request</H>
         <p>
-          Permissão <code>saque</code>. Requer KYC e IP autorizado quando a
-          conta usa allowlist.
+          Permissão <code>saque</code>. Requer KYC completo (documentos,
+          endereço e banco) e IP autorizado quando a conta usa allowlist. Sem{" "}
+          <code>pix_key</code>, usa a chave PIX do KYC.
         </p>
         <Code>{`POST ${apiRoot()}/gateway/withdrawals
+x-api-key: sk_live_OAS_...
+Content-Type: application/json
 
-{ "amount": 50000, "description": "Saque semanal" }`}</Code>
+{
+  "amount": 50000,
+  "description": "Saque semanal"
+}`}</Code>
+        <H id="body">Body</H>
+        <ParamTable
+          title="Campos"
+          params={[
+            {
+              name: "amount",
+              type: "integer",
+              required: true,
+              description: "Centavos. Número inteiro positivo.",
+            },
+            {
+              name: "description",
+              type: "string",
+              required: false,
+              description: "Descrição do saque",
+            },
+            {
+              name: "pix_key",
+              type: "string",
+              required: false,
+              description:
+                "Chave de destino. Se omitida, usa a chave PIX cadastrada no KYC.",
+            },
+            {
+              name: "pix_key_type",
+              type: "enum",
+              required: false,
+              description:
+                "cpf | cnpj | email | phone — junto com pix_key, se não usar a chave do KYC",
+            },
+            {
+              name: "auto_execute",
+              type: "boolean",
+              required: false,
+              description:
+                "Default true. Só executa se o saque automático da plataforma estiver ligado.",
+            },
+          ]}
+        />
       </div>
     ),
   },
@@ -478,16 +921,20 @@ const expected = "sha256=" + crypto
         <H id="req">Request</H>
         <p>
           Permissão <code>rastreio</code>. Query obrigatória{" "}
-          <code>transaction_id</code> (inteiro).
+          <code>transaction_id</code> (inteiro, não UUID).
         </p>
-        <Code>{`GET ${apiRoot()}/gateway/tracking?transaction_id=1042`}</Code>
+        <Code>{`GET ${apiRoot()}/gateway/tracking?transaction_id=1042
+x-api-key: sk_live_OAS_...`}</Code>
       </div>
     ),
   },
   reembolso: {
     title: "Reembolsar",
     summary: "POST /gateway/refunds",
-    toc: [{ id: "req", label: "Request" }],
+    toc: [
+      { id: "req", label: "Request" },
+      { id: "body", label: "Body" },
+    ],
     body: (
       <div className="space-y-8">
         <H id="req">Request</H>
@@ -495,8 +942,35 @@ const expected = "sha256=" + crypto
           Permissão <code>venda</code>.
         </p>
         <Code>{`POST ${apiRoot()}/gateway/refunds
+x-api-key: sk_live_OAS_...
+Content-Type: application/json
 
 { "transaction_id": 1042, "reason": "Desistência" }`}</Code>
+        <H id="body">Body</H>
+        <ParamTable
+          title="Campos"
+          params={[
+            {
+              name: "transaction_id",
+              type: "integer",
+              required: true,
+              description: "ID numérico da transação",
+            },
+            {
+              name: "reason",
+              type: "string",
+              required: false,
+              description: "Motivo do reembolso",
+            },
+            {
+              name: "fake",
+              type: "boolean",
+              required: false,
+              description:
+                "Default false. true marca reembolso interno sem chamar a adquirente.",
+            },
+          ]}
+        />
       </div>
     ),
   },

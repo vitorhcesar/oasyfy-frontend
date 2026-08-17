@@ -64,7 +64,7 @@ export const DOCS_NAV: IDocsNavGroup[] = [
       {
         slug: "webhooks",
         title: "Visão geral",
-        keywords: "webhook outbound https portal",
+        keywords: "webhook outbound https portal hmac x-oasyfy-signature",
       },
       {
         slug: "webhooks/status-da-venda",
@@ -134,13 +134,13 @@ export const DOCS_NAV: IDocsNavGroup[] = [
         slug: "venda/criar",
         title: "Criar venda",
         method: "POST",
-        keywords: "gateway sales venda",
+        keywords: "gateway sales venda customer_document cpf cnpj amount",
       },
       {
         slug: "venda/pix",
         title: "Gerar PIX",
         method: "POST",
-        keywords: "gateway pix qr code",
+        keywords: "gateway pix qr code customer_document cpf cnpj amount centavos",
       },
     ],
   },
