@@ -1,9 +1,12 @@
 import PageHeader from "@/presentation/components/PageHeader";
 import { PracaChat } from "@/presentation/components/praca/PracaChat";
+import { applyPracaRealtimeEvent } from "@/presentation/components/praca/praca-realtime";
+import { mergePracaLivePage } from "@/presentation/components/praca/merge-praca-messages";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import { Button } from "@/presentation/components/ui/button";
 import { useAuthContext } from "@/presentation/context/AuthContext";
 import { useApiService } from "@/presentation/hooks/use-api-service";
+import { usePracaLiveSocket } from "@/presentation/hooks/use-praca-live-socket";
 import { getErrorMessageOrDefault } from "@/presentation/utils/get-error-message-or-default";
 import type {
   IPracaAccessDto,
@@ -12,8 +15,6 @@ import type {
 import { Loader2, MessagesSquare } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-
-const POLL_MS = 3000;
 
 export default function SellerPraca() {
   const apiService = useApiService();
@@ -37,13 +38,7 @@ export default function SellerPraca() {
     const page = await apiService.modules.sellerPraca.listMessages({
       limit: 50,
     });
-    setMessages((current) => {
-      const byId = new Map(current.map((item) => [item.id, item]));
-      for (const item of page.messages) {
-        byId.set(item.id, item);
-      }
-      return [...byId.values()].sort((a, b) => a.id - b.id);
-    });
+    setMessages((current) => mergePracaLivePage(current, page.messages));
     setNextCursor((cursor) => cursor ?? page.nextCursor);
   }, [apiService]);
 
@@ -71,20 +66,15 @@ export default function SellerPraca() {
     };
   }, [loadAccess, mergeLatest]);
 
-  useEffect(() => {
-    if (access?.status !== "enabled") return;
-
-    const tick = () => {
-      if (document.visibilityState !== "visible") return;
+  usePracaLiveSocket({
+    enabled: access?.status === "enabled",
+    onEvent: (event) => {
+      setMessages((current) => applyPracaRealtimeEvent(current, event));
+    },
+    onReconnect: () => {
       void mergeLatest().catch(() => undefined);
-    };
-    const timer = window.setInterval(tick, POLL_MS);
-    document.addEventListener("visibilitychange", tick);
-    return () => {
-      window.clearInterval(timer);
-      document.removeEventListener("visibilitychange", tick);
-    };
-  }, [access?.status, mergeLatest]);
+    },
+  });
 
   const handleRequest = async () => {
     setRequesting(true);

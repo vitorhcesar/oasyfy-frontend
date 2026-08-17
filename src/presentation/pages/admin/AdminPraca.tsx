@@ -1,5 +1,19 @@
+import { ConfirmationModal } from "@/presentation/components/ConfirmationModal";
 import { PracaChat } from "@/presentation/components/praca/PracaChat";
+import { applyPracaRealtimeEvent } from "@/presentation/components/praca/praca-realtime";
+import { mergePracaLivePage } from "@/presentation/components/praca/merge-praca-messages";
 import { Button } from "@/presentation/components/ui/button";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/presentation/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/presentation/components/ui/dropdown-menu";
 import {
   Tabs,
   TabsContent,
@@ -8,17 +22,18 @@ import {
 } from "@/presentation/components/ui/tabs";
 import { useAuthContext } from "@/presentation/context/AuthContext";
 import { useApiService } from "@/presentation/hooks/use-api-service";
+import { usePracaLiveSocket } from "@/presentation/hooks/use-praca-live-socket";
 import { AdminLayout } from "@/presentation/layouts/AdminLayout";
 import { getErrorMessageOrDefault } from "@/presentation/utils/get-error-message-or-default";
 import type {
   IPracaAccessRequestDto,
+  IPracaEnabledMemberDto,
   IPracaMessageDto,
 } from "@/infra/http/services/api/modules/types/praca.types";
-import { Loader2 } from "lucide-react";
+import { ChevronDown, Loader2, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
-const CHANNEL_POLL_MS = 3000;
 const QUEUE_POLL_MS = 10000;
 
 export default function AdminPracaPage() {
@@ -31,19 +46,17 @@ export default function AdminPracaPage() {
   const [loadingOlder, setLoadingOlder] = useState(false);
   const [loading, setLoading] = useState(true);
   const [requests, setRequests] = useState<IPracaAccessRequestDto[]>([]);
+  const [users, setUsers] = useState<IPracaEnabledMemberDto[]>([]);
   const [actingId, setActingId] = useState<number | null>(null);
+  const [purgingId, setPurgingId] = useState<number | null>(null);
+  const [pendingPurgeUser, setPendingPurgeUser] =
+    useState<IPracaEnabledMemberDto | null>(null);
 
   const mergeLatest = useCallback(async () => {
     const page = await apiService.modules.adminPraca.listMessages({
       limit: 50,
     });
-    setMessages((current) => {
-      const byId = new Map(current.map((item) => [item.id, item]));
-      for (const item of page.messages) {
-        byId.set(item.id, item);
-      }
-      return [...byId.values()].sort((a, b) => a.id - b.id);
-    });
+    setMessages((current) => mergePracaLivePage(current, page.messages));
     setNextCursor((cursor) => cursor ?? page.nextCursor);
   }, [apiService]);
 
@@ -54,11 +67,16 @@ export default function AdminPracaPage() {
     setRequests(data);
   }, [apiService]);
 
+  const loadUsers = useCallback(async () => {
+    const data = await apiService.modules.adminPraca.listEnabledUsers();
+    setUsers(data);
+  }, [apiService]);
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        await Promise.all([mergeLatest(), loadRequests()]);
+        await Promise.all([mergeLatest(), loadRequests(), loadUsers()]);
       } catch (error) {
         if (!cancelled) {
           toast.error(
@@ -72,26 +90,29 @@ export default function AdminPracaPage() {
     return () => {
       cancelled = true;
     };
-  }, [loadRequests, mergeLatest]);
+  }, [loadRequests, loadUsers, mergeLatest]);
+
+  usePracaLiveSocket({
+    enabled: !loading,
+    onEvent: (event) => {
+      setMessages((current) => applyPracaRealtimeEvent(current, event));
+    },
+    onReconnect: () => {
+      void mergeLatest().catch(() => undefined);
+    },
+  });
 
   useEffect(() => {
-    const tickChannel = () => {
-      if (document.visibilityState !== "visible") return;
-      void mergeLatest().catch(() => undefined);
-    };
     const tickQueue = () => {
       if (document.visibilityState !== "visible") return;
       void loadRequests().catch(() => undefined);
+      void loadUsers().catch(() => undefined);
     };
-    const channelTimer = window.setInterval(tickChannel, CHANNEL_POLL_MS);
     const queueTimer = window.setInterval(tickQueue, QUEUE_POLL_MS);
-    document.addEventListener("visibilitychange", tickChannel);
     return () => {
-      window.clearInterval(channelTimer);
       window.clearInterval(queueTimer);
-      document.removeEventListener("visibilitychange", tickChannel);
     };
-  }, [loadRequests, mergeLatest]);
+  }, [loadRequests, loadUsers]);
 
   const handleSend = async (body: string, quotedMessageId?: number | null) => {
     setSending(true);
@@ -158,8 +179,7 @@ export default function AdminPracaPage() {
           : "Acesso liberado",
       );
       await loadRequests();
-    } catch (error) {
-      toast.error(getErrorMessageOrDefault(error, "Não foi possível aprovar"));
+      await loadUsers();
     } finally {
       setActingId(null);
     }
@@ -178,9 +198,34 @@ export default function AdminPracaPage() {
     }
   };
 
+  const handlePurgeUser = async (member: IPracaEnabledMemberDto) => {
+    setPurgingId(member.sellerId);
+    try {
+      const result = await apiService.modules.adminPraca.purgeUserMessages(
+        member.sellerId,
+      );
+      setMessages((current) =>
+        current.filter((item) => item.author.id !== member.sellerId),
+      );
+      toast.success(
+        result.purged === 1
+          ? "1 mensagem apagada"
+          : `${result.purged} mensagens apagadas`,
+      );
+      await loadUsers();
+    } catch (error) {
+      toast.error(
+        getErrorMessageOrDefault(error, "Não foi possível apagar as mensagens"),
+      );
+      throw error;
+    } finally {
+      setPurgingId(null);
+    }
+  };
+
   return (
     <AdminLayout>
-      <div className="mx-auto flex h-full min-h-0 w-full max-w-6xl flex-col overflow-hidden px-5 py-6 md:px-8 md:py-9">
+      <div className="flex h-full min-h-0 w-full flex-col overflow-hidden px-5 py-6 md:px-8">
         <div className="shrink-0">
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
             Comunidade
@@ -208,6 +253,10 @@ export default function AdminPracaPage() {
               <TabsTrigger value="solicitacoes">
                 Solicitações
                 {requests.length > 0 ? ` (${requests.length})` : ""}
+              </TabsTrigger>
+              <TabsTrigger value="usuarios">
+                Usuários
+                {users.length > 0 ? ` (${users.length})` : ""}
               </TabsTrigger>
             </TabsList>
             <TabsContent
@@ -277,9 +326,107 @@ export default function AdminPracaPage() {
                 )}
               </div>
             </TabsContent>
+            <TabsContent
+              value="usuarios"
+              className="mt-4 min-h-0 flex-1 overflow-y-auto data-[state=inactive]:hidden"
+            >
+              <div className="admin-surface overflow-hidden">
+                {users.length === 0 ? (
+                  <p className="p-5 text-sm text-muted-foreground">
+                    Nenhum usuário liberado para a Praça.
+                  </p>
+                ) : (
+                  <ul className="divide-y divide-border/40">
+                    {users.map((member) => {
+                      const initials = member.displayName
+                        .split(" ")
+                        .map((part) => part[0])
+                        .join("")
+                        .slice(0, 2)
+                        .toUpperCase();
+                      return (
+                        <li
+                          key={member.sellerId}
+                          className="flex flex-wrap items-center justify-between gap-3 p-4"
+                        >
+                          <div className="flex min-w-0 items-center gap-3">
+                            <Avatar className="h-11 w-11">
+                              {member.avatarUrl ? (
+                                <AvatarImage
+                                  src={member.avatarUrl}
+                                  alt={member.displayName}
+                                />
+                              ) : null}
+                              <AvatarFallback className="bg-muted text-xs font-semibold text-primary">
+                                {initials || "?"}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-semibold text-foreground">
+                                {member.displayName || "Sem nome"}
+                              </p>
+                              <p className="truncate text-xs text-muted-foreground">
+                                {member.email} · #{member.sellerId} ·{" "}
+                                {member.messageCount === 1
+                                  ? "1 mensagem"
+                                  : `${member.messageCount} mensagens`}
+                              </p>
+                            </div>
+                          </div>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                disabled={purgingId === member.sellerId}
+                              >
+                                {purgingId === member.sellerId ? (
+                                  <Loader2
+                                    size={14}
+                                    className="mr-2 animate-spin"
+                                  />
+                                ) : null}
+                                Ações
+                                <ChevronDown size={14} className="ml-1" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-64">
+                              <DropdownMenuItem
+                                className="cursor-pointer text-destructive focus:text-destructive"
+                                onSelect={() => setPendingPurgeUser(member)}
+                              >
+                                <Trash2 size={14} className="mr-2" />
+                                Excluir todas as mensagens na Praça
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </div>
+            </TabsContent>
           </Tabs>
         )}
       </div>
+      <ConfirmationModal
+        open={pendingPurgeUser != null}
+        onOpenChange={(open) => {
+          if (!open) setPendingPurgeUser(null);
+        }}
+        title="Apagar mensagens"
+        description={
+          pendingPurgeUser
+            ? `Apagar todas as mensagens de ${pendingPurgeUser.displayName} na Praça? Esta ação não pode ser desfeita.`
+            : ""
+        }
+        confirmLabel="Apagar todas"
+        onConfirm={async () => {
+          if (!pendingPurgeUser) return;
+          await handlePurgeUser(pendingPurgeUser);
+        }}
+      />
     </AdminLayout>
   );
 }

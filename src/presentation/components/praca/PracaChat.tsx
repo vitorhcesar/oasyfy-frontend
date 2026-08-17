@@ -1,3 +1,4 @@
+import { ConfirmationModal } from "@/presentation/components/ConfirmationModal";
 import { Badge } from "@/presentation/components/ui/badge";
 import { Button } from "@/presentation/components/ui/button";
 import {
@@ -40,8 +41,12 @@ function authorColor(userId: number) {
   return NAME_PALETTE[Math.abs(userId) % NAME_PALETTE.length] ?? NAME_PALETTE[0];
 }
 
+function shortDisplayName(name: string) {
+  return name.trim().split(/\s+/).filter(Boolean).slice(0, 2).join(" ");
+}
+
 function initialsFromName(name: string) {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
+  const parts = shortDisplayName(name).split(/\s+/).filter(Boolean);
   if (parts.length === 0) return "?";
   if (parts.length === 1) return (parts[0]?.slice(0, 2) ?? "?").toUpperCase();
   return `${parts[0]?.[0] ?? ""}${parts[1]?.[0] ?? ""}`.toUpperCase();
@@ -61,35 +66,92 @@ function messageDomId(id: number) {
 function QuotedPreview({
   quoted,
   className,
+  onDismiss,
+  embedded = false,
 }: {
   quoted: IPracaQuotedMessageDto;
   className?: string;
+  onDismiss?: () => void;
+  embedded?: boolean;
 }) {
   const color = authorColor(quoted.author.id);
   return (
-    <button
-      type="button"
-      onClick={(event) => {
-        event.stopPropagation();
-        document
-          .getElementById(messageDomId(quoted.id))
-          ?.scrollIntoView({ behavior: "smooth", block: "center" });
-      }}
+    <div
       className={cn(
-        "mb-1.5 flex w-full overflow-hidden rounded-md bg-black/20 text-left",
+        "flex overflow-hidden rounded-[6px]",
+        embedded
+          ? "bg-black/[0.06] dark:bg-black/25"
+          : "bg-muted/80",
         className,
       )}
     >
-      <span className={cn("w-1 shrink-0", color.bar)} />
-      <span className="min-w-0 flex-1 px-2 py-1.5">
-        <span className={cn("block truncate text-[11px] font-semibold", color.text)}>
-          {quoted.author.displayName}
+      <button
+        type="button"
+        onClick={(event) => {
+          event.stopPropagation();
+          document
+            .getElementById(messageDomId(quoted.id))
+            ?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }}
+        className="flex min-w-0 flex-1 text-left"
+      >
+        <span className={cn("w-[3px] shrink-0 self-stretch", color.bar)} />
+        <span className="min-w-0 flex-1 px-2 py-1">
+          <span
+            className={cn(
+              "block truncate text-[13px] font-semibold leading-tight",
+              color.text,
+            )}
+          >
+            {shortDisplayName(quoted.author.displayName)}
+          </span>
+          <span
+            className={cn(
+              "mt-0.5 block truncate leading-snug",
+              embedded
+                ? "text-[12.5px] text-foreground/80 dark:text-foreground/70"
+                : "text-[13px] text-muted-foreground",
+            )}
+          >
+            {quoted.body}
+          </span>
         </span>
-        <span className="block truncate text-[11px] text-muted-foreground">
-          {quoted.body}
-        </span>
-      </span>
-    </button>
+      </button>
+      {onDismiss ? (
+        <button
+          type="button"
+          className="shrink-0 px-2 text-muted-foreground hover:text-foreground"
+          aria-label="Cancelar resposta"
+          onClick={onDismiss}
+        >
+          <X size={16} />
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+function MessageAvatar({
+  name,
+  avatarUrl,
+  mine,
+}: {
+  name: string;
+  avatarUrl: string | null;
+  mine?: boolean;
+}) {
+  return (
+    <Avatar className="mb-0.5 h-8 w-8">
+      {avatarUrl ? <AvatarImage src={avatarUrl} alt={name} /> : null}
+      <AvatarFallback
+        className={cn(
+          "text-[10px] font-semibold text-primary",
+          mine ? "bg-primary/20" : "bg-muted",
+        )}
+      >
+        {initialsFromName(name)}
+      </AvatarFallback>
+    </Avatar>
   );
 }
 
@@ -105,6 +167,7 @@ export function PracaChat({
 }: IPracaChatProps) {
   const [draft, setDraft] = useState("");
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
   const [replyTo, setReplyTo] = useState<IPracaMessageDto | null>(null);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const lastMessageId = messages[messages.length - 1]?.id;
@@ -176,17 +239,10 @@ export function PracaChat({
                   )}
                 >
                   {!mine ? (
-                    <Avatar className="mb-0.5 h-8 w-8">
-                      {message.author.avatarUrl ? (
-                        <AvatarImage
-                          src={message.author.avatarUrl}
-                          alt={message.author.displayName}
-                        />
-                      ) : null}
-                      <AvatarFallback className="bg-muted text-[10px] font-semibold text-primary">
-                        {initialsFromName(message.author.displayName)}
-                      </AvatarFallback>
-                    </Avatar>
+                    <MessageAvatar
+                      name={message.author.displayName}
+                      avatarUrl={message.author.avatarUrl}
+                    />
                   ) : null}
 
                   {mine ? (
@@ -196,32 +252,32 @@ export function PracaChat({
                       aria-label="Responder"
                       onClick={() => setReplyTo(message)}
                     >
-                      <Reply size={14} />
+                      <Reply size={16} />
                     </button>
                   ) : null}
 
                   <div
                     className={cn(
-                      "max-w-[min(85%,28rem)] rounded-2xl px-2.5 pb-1.5 pt-1.5 shadow-sm",
+                      "max-w-[min(88%,36rem)] px-2 pb-1.5 pt-1.5 shadow-sm",
                       mine
-                        ? "rounded-br-md bg-primary/20"
-                        : "rounded-bl-md bg-card",
+                        ? "rounded-2xl rounded-br-sm bg-primary/25"
+                        : "rounded-2xl rounded-bl-sm bg-card",
                     )}
                   >
                     {!mine ? (
-                      <div className="mb-0.5 flex items-center gap-1.5 px-0.5">
+                      <div className="mb-1 flex items-center gap-1.5 px-1">
                         <span
                           className={cn(
-                            "truncate text-[12px] font-semibold",
+                            "truncate text-sm font-semibold",
                             color.text,
                           )}
                         >
-                          {message.author.displayName}
+                          {shortDisplayName(message.author.displayName)}
                         </span>
                         {message.author.role === "admin" ? (
                           <Badge
                             variant="secondary"
-                            className="h-4 px-1 text-[9px]"
+                            className="h-5 px-1.5 text-[10px]"
                           >
                             Admin
                           </Badge>
@@ -230,14 +286,18 @@ export function PracaChat({
                     ) : null}
 
                     {message.quotedMessage ? (
-                      <QuotedPreview quoted={message.quotedMessage} />
+                      <QuotedPreview
+                        quoted={message.quotedMessage}
+                        className="mb-1"
+                        embedded
+                      />
                     ) : null}
 
-                    <div className="flex items-end gap-2">
-                      <p className="min-w-0 flex-1 whitespace-pre-wrap break-words px-0.5 text-[13.5px] leading-snug text-foreground">
+                    <div className="flex items-end gap-2 px-1">
+                      <p className="min-w-0 flex-1 whitespace-pre-wrap break-words text-[15px] leading-snug text-foreground">
                         {message.body}
                       </p>
-                      <span className="mb-px shrink-0 text-[10px] leading-none text-muted-foreground">
+                      <span className="mb-px shrink-0 text-xs leading-none text-muted-foreground">
                         {formatTime(message.createdAt)}
                       </span>
                       {onDelete ? (
@@ -245,27 +305,13 @@ export function PracaChat({
                           type="button"
                           className="mb-px shrink-0 text-muted-foreground opacity-0 transition-opacity hover:text-destructive group-hover:opacity-100"
                           disabled={deletingId === message.id}
-                          onClick={async () => {
-                            if (
-                              !window.confirm(
-                                "Apagar esta mensagem para todos na Praça?",
-                              )
-                            ) {
-                              return;
-                            }
-                            setDeletingId(message.id);
-                            try {
-                              await onDelete(message.id);
-                            } finally {
-                              setDeletingId(null);
-                            }
-                          }}
+                          onClick={() => setPendingDeleteId(message.id)}
                           aria-label="Apagar mensagem"
                         >
                           {deletingId === message.id ? (
-                            <Loader2 size={12} className="animate-spin" />
+                            <Loader2 size={14} className="animate-spin" />
                           ) : (
-                            <Trash2 size={12} />
+                            <Trash2 size={14} />
                           )}
                         </button>
                       ) : null}
@@ -273,17 +319,11 @@ export function PracaChat({
                   </div>
 
                   {mine ? (
-                    <Avatar className="mb-0.5 h-8 w-8">
-                      {message.author.avatarUrl ? (
-                        <AvatarImage
-                          src={message.author.avatarUrl}
-                          alt={message.author.displayName}
-                        />
-                      ) : null}
-                      <AvatarFallback className="bg-primary/20 text-[10px] font-semibold text-primary">
-                        {initialsFromName(message.author.displayName)}
-                      </AvatarFallback>
-                    </Avatar>
+                    <MessageAvatar
+                      name={message.author.displayName}
+                      avatarUrl={message.author.avatarUrl}
+                      mine
+                    />
                   ) : (
                     <button
                       type="button"
@@ -291,7 +331,7 @@ export function PracaChat({
                       aria-label="Responder"
                       onClick={() => setReplyTo(message)}
                     >
-                      <Reply size={14} />
+                      <Reply size={16} />
                     </button>
                   )}
                 </div>
@@ -303,46 +343,34 @@ export function PracaChat({
       </div>
 
       <div className="shrink-0 border-t border-white/10 bg-background/80 p-2.5 sm:p-3">
-        {replyPreview ? (
-          <div className="mb-2 flex items-stretch overflow-hidden rounded-lg bg-muted/50">
-            <QuotedPreview
-              quoted={replyPreview}
-              className="mb-0 min-w-0 flex-1"
-            />
-            <button
-              type="button"
-              className="shrink-0 px-2 text-muted-foreground hover:text-foreground"
-              aria-label="Cancelar resposta"
-              onClick={() => setReplyTo(null)}
-            >
-              <X size={16} />
-            </button>
-          </div>
-        ) : null}
-
         <div className="flex items-end gap-2">
-          <Textarea
-            value={draft}
-            maxLength={1000}
-            placeholder={
-              replyTo
-                ? `Responder a ${replyTo.author.displayName}…`
-                : "Mensagem"
-            }
-            className="min-h-[44px] max-h-32 flex-1 resize-none rounded-2xl border-white/10 bg-card px-3.5 py-2.5"
-            rows={1}
-            onChange={(event) => setDraft(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" && !event.shiftKey) {
-                event.preventDefault();
-                void submit();
-              }
-            }}
-          />
+          <div className="flex min-h-[48px] min-w-0 flex-1 flex-col rounded-[1.35rem] border border-white/10 bg-card px-2 py-1.5">
+            {replyPreview ? (
+              <QuotedPreview
+                quoted={replyPreview}
+                className="mb-1.5"
+                onDismiss={() => setReplyTo(null)}
+              />
+            ) : null}
+            <Textarea
+              value={draft}
+              maxLength={1000}
+              placeholder="Mensagem"
+              className="min-h-[36px] max-h-32 flex-1 resize-none border-0 bg-transparent px-2.5 py-1.5 text-base shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+              rows={1}
+              onChange={(event) => setDraft(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" && !event.shiftKey) {
+                  event.preventDefault();
+                  void submit();
+                }
+              }}
+            />
+          </div>
           <Button
             type="button"
             size="icon"
-            className="h-11 w-11 shrink-0 rounded-full"
+            className="h-12 w-12 shrink-0 rounded-full"
             disabled={sending || draft.trim().length === 0}
             onClick={() => void submit()}
             aria-label="Enviar"
@@ -355,6 +383,27 @@ export function PracaChat({
           </Button>
         </div>
       </div>
+
+      {onDelete ? (
+        <ConfirmationModal
+          open={pendingDeleteId != null}
+          onOpenChange={(open) => {
+            if (!open) setPendingDeleteId(null);
+          }}
+          title="Apagar mensagem"
+          description="Apagar esta mensagem para todos na Praça? Esta ação não pode ser desfeita."
+          confirmLabel="Apagar"
+          onConfirm={async () => {
+            if (pendingDeleteId == null) return;
+            setDeletingId(pendingDeleteId);
+            try {
+              await onDelete(pendingDeleteId);
+            } finally {
+              setDeletingId(null);
+            }
+          }}
+        />
+      ) : null}
     </div>
   );
 }

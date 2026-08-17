@@ -56,3 +56,12 @@ export interface ISetPracaAccessResultDto {
   emailSent: boolean;
   purged: number;
 }
+
+export interface IPracaEnabledMemberDto {
+  sellerId: number;
+  displayName: string;
+  email: string;
+  avatarUrl: string | null;
+  enabledAt: string | null;
+  messageCount: number;
+}

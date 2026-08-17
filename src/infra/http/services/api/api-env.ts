@@ -7,3 +7,9 @@ export function getApiBaseUrl(): string {
   }
   return baseUrl.trim();
 }
+
+export function getPracaLiveWsUrl(): string {
+  const url = new URL("/api/v1/praca/live", `${getApiBaseUrl()}/`);
+  url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
+  return url.toString();
+}
