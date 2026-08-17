@@ -89,7 +89,8 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
   const { signOut } = useAuthContext();
   const { theme } = useThemeContext();
   const { data: profile } = useSellerProfileQuery();
-  const { canSell, isLoading: kycLoading } = useSellerKycSubmissionQuery();
+  const { canSell, documentsApproved, isLoading: kycLoading } =
+    useSellerKycSubmissionQuery();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -103,6 +104,7 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
   const [settingsOpen, setSettingsOpen] = useState(isOnSettingsPage);
 
   const isKycLocked = kycLoading || !canSell;
+  const isPracaLocked = kycLoading || !documentsApproved;
   const isWithdrawLocked = kycLoading || !canSell;
 
   const name =
@@ -127,7 +129,7 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
       title: "A Praça",
       url: "/seller/praca",
       icon: MessagesSquare,
-      locked: isKycLocked,
+      locked: isPracaLocked,
     },
   ];
 

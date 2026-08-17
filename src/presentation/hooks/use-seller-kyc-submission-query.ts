@@ -36,7 +36,9 @@ export function useSellerKycSubmissionQuery(): IUseSellerKycSubmissionResult {
   });
 
   const submission = query.data?.submission ?? null;
-  const documentsApproved = query.data?.documentsApproved ?? false;
+  const documentsApproved =
+    query.data?.documentsApproved === true ||
+    query.data?.submission?.documentsStatus === "approved";
   const canSell = query.data?.canSell ?? false;
   const canWithdraw = query.data?.canWithdraw ?? false;
   const fullyApproved = query.data?.fullyApproved ?? false;

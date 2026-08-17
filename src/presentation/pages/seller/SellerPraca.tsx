@@ -21,7 +21,8 @@ import { toast } from "sonner";
 export default function SellerPraca() {
   const apiService = useApiService();
   const { user } = useAuthContext();
-  const { canSell, isLoading: kycLoading } = useSellerKycSubmissionQuery();
+  const { documentsApproved, isLoading: kycLoading } =
+    useSellerKycSubmissionQuery();
   const currentUserId = Number(user?.id);
   const [access, setAccess] = useState<IPracaAccessDto | null>(null);
   const [loading, setLoading] = useState(true);
@@ -46,7 +47,7 @@ export default function SellerPraca() {
   }, [apiService]);
 
   useEffect(() => {
-    if (kycLoading || !canSell) return;
+    if (kycLoading || !documentsApproved) return;
     let cancelled = false;
     (async () => {
       try {
@@ -68,10 +69,10 @@ export default function SellerPraca() {
     return () => {
       cancelled = true;
     };
-  }, [canSell, kycLoading, loadAccess, mergeLatest]);
+  }, [documentsApproved, kycLoading, loadAccess, mergeLatest]);
 
   usePracaLiveSocket({
-    enabled: canSell && access?.status === "enabled",
+    enabled: documentsApproved && access?.status === "enabled",
     onEvent: (event) => {
       setMessages((current) => applyPracaRealtimeEvent(current, event));
     },
@@ -140,33 +141,9 @@ export default function SellerPraca() {
     }
   };
 
-  if (kycLoading) {
-    return (
-      <SellerLayout>
-        <div className="flex h-full min-h-0 flex-col overflow-hidden px-5 py-6 md:px-8">
-          <div className="flex flex-1 items-center justify-center">
-            <Loader2 className="animate-spin text-primary" size={28} />
-          </div>
-        </div>
-      </SellerLayout>
-    );
-  }
-
-  if (!canSell) {
-    return (
-      <SellerLayout>
-        <div className="mx-auto w-full max-w-3xl px-5 py-20 text-center md:px-8">
-          <h2 className="text-xl font-semibold">KYC pendente</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Complete ou aguarde a aprovação dos documentos para acessar A Praça.
-          </p>
-          <Button asChild className="mt-6">
-            <Link to="/seller/kyc">Ir para documentos</Link>
-          </Button>
-        </div>
-      </SellerLayout>
-    );
-  }
+  const showKycGate = !kycLoading && !documentsApproved;
+  const showAccessLoading =
+    !showKycGate && (kycLoading || loading || !access);
 
   return (
     <SellerLayout>
@@ -178,11 +155,24 @@ export default function SellerPraca() {
           description="Canal único de networking entre sellers da plataforma."
         />
 
-        {loading || !access ? (
+        {showKycGate ? (
+          <div className="rounded-2xl border border-white/10 bg-background/40 p-6 backdrop-blur-md md:p-8">
+            <h2 className="text-lg font-semibold text-foreground">
+              Documentos pendentes
+            </h2>
+            <p className="mt-2 max-w-prose text-sm leading-relaxed text-muted-foreground">
+              A Praça fica disponível depois que os documentos do KYC forem
+              aprovados.
+            </p>
+            <Button asChild className="mt-5">
+              <Link to="/seller/kyc">Ir para documentos</Link>
+            </Button>
+          </div>
+        ) : showAccessLoading ? (
           <div className="flex flex-1 items-center justify-center">
             <Loader2 className="animate-spin text-primary" size={28} />
           </div>
-        ) : access.status === "enabled" ? (
+        ) : access?.status === "enabled" ? (
           <PracaChat
             currentUserId={Number.isFinite(currentUserId) ? currentUserId : 0}
             messages={messages}
@@ -204,27 +194,27 @@ export default function SellerPraca() {
               A Praça é um canal único onde sellers conversam entre si. O acesso
               é liberado pela administração.
             </p>
-            {access.status === "pending" ? (
+            {access?.status === "pending" ? (
               <p className="mt-4 text-sm text-foreground">
                 Solicitação enviada. Avisaremos por e-mail quando liberarmos.
               </p>
             ) : null}
-            {access.status === "rejected" ? (
+            {access?.status === "rejected" ? (
               <p className="mt-4 text-sm text-muted-foreground">
                 Ainda não foi possível liberar. Você pode solicitar novamente.
               </p>
             ) : null}
             <Button
               className="mt-5"
-              disabled={requesting || access.status === "pending"}
+              disabled={requesting || access?.status === "pending"}
               onClick={() => void handleRequest()}
             >
               {requesting ? (
                 <Loader2 size={16} className="mr-2 animate-spin" />
               ) : null}
-              {access.status === "pending"
+              {access?.status === "pending"
                 ? "Solicitação enviada"
-                : access.status === "rejected"
+                : access?.status === "rejected"
                   ? "Solicitar novamente"
                   : "Solicitar abertura"}
             </Button>
