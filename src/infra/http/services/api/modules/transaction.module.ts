@@ -3,6 +3,7 @@ import {
   compactQueryParams,
   IApiEnvelope,
   IListSellerTransactionsDto,
+  unwrapSellerTransactionList,
 } from "../api-types";
 import { BaseApiModule } from "./base-api.module";
 
@@ -122,10 +123,9 @@ export class TransactionModule
         to: params.to,
       }),
     });
-    const payload = response.data;
-    const rows = Array.isArray(payload.items) ? payload.items : [];
+    const payload = unwrapSellerTransactionList(response.data);
     return {
-      items: rows.map(TransactionMapper.toDomain),
+      items: payload.items.map(TransactionMapper.toDomain),
       page: payload.page,
       limit: payload.limit,
       total: payload.total,

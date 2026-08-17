@@ -44,3 +44,76 @@ export function compactQueryParams(
   );
 }
 
+const EMPTY_SELLER_EXTRAS = {
+  approvedCount: 0,
+  approvedAmount: 0,
+  pendingWithdrawalAmount: 0,
+  completedWithdrawalAmount: 0,
+};
+
+const EMPTY_ADMIN_STATS: IAdminTransactionListStatsDto = {
+  paid: { count: 0, amount: 0 },
+  pending: { count: 0, amount: 0 },
+  failed: { count: 0, amount: 0 },
+  chargeback: { count: 0, amount: 0 },
+  refunded: { count: 0, amount: 0 },
+};
+
+export function unwrapPaginatedList<T>(
+  payload: IPaginatedListDto<T> | T[] | null | undefined,
+): IPaginatedListDto<T> {
+  if (Array.isArray(payload)) {
+    return {
+      items: payload,
+      page: 1,
+      limit: Math.max(payload.length, 1),
+      total: payload.length,
+      totalPages: 1,
+    };
+  }
+  if (payload && Array.isArray(payload.items)) {
+    return payload;
+  }
+  return {
+    items: [],
+    page: 1,
+    limit: 20,
+    total: 0,
+    totalPages: 1,
+  };
+}
+
+export function unwrapSellerTransactionList<T>(
+  payload: IListSellerTransactionsDto<T> | T[] | null | undefined,
+): IListSellerTransactionsDto<T> {
+  const base = unwrapPaginatedList(payload);
+  if (payload && !Array.isArray(payload)) {
+    return {
+      ...base,
+      approvedCount: payload.approvedCount ?? 0,
+      approvedAmount: payload.approvedAmount ?? 0,
+      pendingWithdrawalAmount: payload.pendingWithdrawalAmount ?? 0,
+      completedWithdrawalAmount: payload.completedWithdrawalAmount ?? 0,
+    };
+  }
+  return { ...base, ...EMPTY_SELLER_EXTRAS };
+}
+
+export function unwrapAdminTransactionList<T>(
+  payload: IListAdminTransactionsDto<T> | T[] | null | undefined,
+): IListAdminTransactionsDto<T> {
+  const base = unwrapPaginatedList(payload);
+  if (payload && !Array.isArray(payload)) {
+    return {
+      ...base,
+      stats: payload.stats ?? EMPTY_ADMIN_STATS,
+      statsTotal: payload.statsTotal ?? base.total,
+    };
+  }
+  return {
+    ...base,
+    stats: EMPTY_ADMIN_STATS,
+    statsTotal: base.total,
+  };
+}
+

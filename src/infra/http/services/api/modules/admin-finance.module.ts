@@ -3,6 +3,7 @@ import {
   type IAdminTransactionListStatsDto,
   type IApiEnvelope,
   type IListAdminTransactionsDto,
+  unwrapAdminTransactionList,
 } from "../api-types";
 import { BaseApiModule } from "./base-api.module";
 
@@ -236,7 +237,7 @@ export class AdminFinanceModule
         to: params.to,
       }),
     });
-    const payload = response.data;
+    const payload = unwrapAdminTransactionList(response.data);
     return {
       items: payload.items.map(mapAdminTransactionToView),
       page: payload.page,
