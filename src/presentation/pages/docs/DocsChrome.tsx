@@ -12,10 +12,10 @@ function MethodBadge({ method }: { method: "GET" | "POST" }) {
   return (
     <span
       className={cn(
-        "rounded px-1.5 py-0.5 text-[10px] font-bold tracking-wide",
+        "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase leading-none tracking-wide",
         method === "GET"
-          ? "bg-emerald-500/15 text-emerald-400"
-          : "bg-sky-500/15 text-sky-400",
+          ? "bg-[#142b1b] text-[#4ade80]"
+          : "bg-[#2d1d14] text-[#f97316]",
       )}
     >
       {method}
@@ -89,35 +89,49 @@ export function DocsChrome({
       </header>
 
       <div className="mx-auto flex min-h-0 w-full max-w-7xl flex-1 gap-8 px-4">
-        <nav className="hidden w-56 shrink-0 overflow-y-auto overscroll-contain py-8 [scrollbar-color:rgba(255,255,255,0.18)_transparent] [scrollbar-width:thin] md:block">
+        <nav className="hidden w-60 shrink-0 overflow-y-auto overscroll-contain py-8 [scrollbar-color:rgba(255,255,255,0.18)_transparent] [scrollbar-width:thin] md:block">
           <div className="space-y-6">
-            {DOCS_NAV.map((section) => (
-              <div key={section.id}>
-                <p className="mb-2 px-2 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
-                  {section.title}
-                </p>
-                <div className="space-y-0.5">
-                  {section.items.map((item) => {
-                    const active = item.slug === slug;
-                    return (
-                      <Link
-                        key={item.slug || "intro"}
-                        to={docsHref(item.slug)}
-                        className={cn(
-                          "flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm",
-                          active
-                            ? "bg-emerald-500/15 font-medium text-emerald-400"
-                            : "text-zinc-400 hover:bg-white/5 hover:text-zinc-100",
-                        )}
-                      >
-                        {item.method && <MethodBadge method={item.method} />}
-                        <span className="truncate">{item.title}</span>
-                      </Link>
-                    );
-                  })}
+            {DOCS_NAV.map((section) => {
+              const hasEndpoints = section.items.some((item) => item.method);
+              return (
+                <div key={section.id}>
+                  <p
+                    className={cn(
+                      "mb-2 px-2 font-semibold",
+                      hasEndpoints
+                        ? "text-sm text-white"
+                        : "text-[11px] uppercase tracking-wider text-zinc-500",
+                    )}
+                  >
+                    {section.title}
+                  </p>
+                  <div className="space-y-0.5">
+                    {section.items.map((item) => {
+                      const active = item.slug === slug;
+                      const isEndpoint = Boolean(item.method);
+                      return (
+                        <Link
+                          key={item.slug || "intro"}
+                          to={docsHref(item.slug)}
+                          className={cn(
+                            "flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm",
+                            isEndpoint && "justify-between",
+                            active
+                              ? "bg-emerald-500/15 font-medium text-emerald-400"
+                              : "text-zinc-400 hover:bg-white/5 hover:text-zinc-200",
+                          )}
+                        >
+                          <span className="min-w-0 truncate">{item.title}</span>
+                          {item.method && (
+                            <MethodBadge method={item.method} />
+                          )}
+                        </Link>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </nav>
 
