@@ -1,13 +1,7 @@
-import { cn } from "@/presentation/utils/cn";
+import ListPagination from "@/presentation/components/ListPagination";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import {
-  ChevronLeft,
-  ChevronRight,
-  CreditCard,
-  Eye,
-  Lock,
-} from "lucide-react";
+import { CreditCard, Eye, Lock } from "lucide-react";
 import type { Transaction } from "../types/admin-transaction.type";
 import { formatCurrency } from "../utils/format-currency";
 import { statusConfig } from "../utils/status-config";
@@ -15,8 +9,8 @@ import { hasSaleSplitMetadata } from "../utils/transaction-split";
 
 interface IAdminTransactionsTableProps {
   loading: boolean;
-  displayFiltered: Transaction[];
-  paginatedData: Transaction[];
+  rows: Transaction[];
+  total: number;
   currentPage: number;
   totalPages: number;
   perPage: number;
@@ -26,8 +20,8 @@ interface IAdminTransactionsTableProps {
 
 export default function AdminTransactionsTable({
   loading,
-  displayFiltered,
-  paginatedData,
+  rows,
+  total,
   currentPage,
   totalPages,
   perPage,
@@ -38,7 +32,7 @@ export default function AdminTransactionsTable({
     return null;
   }
 
-  if (displayFiltered.length === 0) {
+  if (total === 0) {
     return (
       <div className="admin-surface px-6 py-16 text-center">
         <CreditCard className="mx-auto mb-3 text-muted-foreground" size={24} />
@@ -76,7 +70,7 @@ export default function AdminTransactionsTable({
           </tr>
         </thead>
         <tbody>
-          {paginatedData.map((tx) => {
+          {rows.map((tx) => {
             const s = statusConfig[tx.status] || {
               label: tx.status,
               cls: "border-border bg-muted text-muted-foreground",
@@ -152,55 +146,14 @@ export default function AdminTransactionsTable({
         </tbody>
       </table>
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between border-t border-border/50 px-5 py-3">
-          <p className="text-sm text-muted-foreground">
-            {(currentPage - 1) * perPage + 1}–
-            {Math.min(currentPage * perPage, displayFiltered.length)} de{" "}
-            {displayFiltered.length}
-          </p>
-          <div className="flex items-center gap-1">
-            <button
-              onClick={() => onPageChange(Math.max(1, currentPage - 1))}
-              disabled={currentPage === 1}
-              className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-30"
-            >
-              <ChevronLeft size={16} />
-            </button>
-            {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-              let page: number;
-              if (totalPages <= 5) page = i + 1;
-              else if (currentPage <= 3) page = i + 1;
-              else if (currentPage >= totalPages - 2)
-                page = totalPages - 4 + i;
-              else page = currentPage - 2 + i;
-              return (
-                <button
-                  key={page}
-                  onClick={() => onPageChange(page)}
-                  className={cn(
-                    "flex h-8 w-8 items-center justify-center rounded-lg text-sm font-semibold transition-all",
-                    currentPage === page
-                      ? "bg-white text-[#111827] shadow-sm"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                  )}
-                >
-                  {page}
-                </button>
-              );
-            })}
-            <button
-              onClick={() =>
-                onPageChange(Math.min(totalPages, currentPage + 1))
-              }
-              disabled={currentPage === totalPages}
-              className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground disabled:opacity-30"
-            >
-              <ChevronRight size={16} />
-            </button>
-          </div>
-        </div>
-      )}
+      <ListPagination
+        page={currentPage}
+        totalPages={totalPages}
+        total={total}
+        perPage={perPage}
+        onPageChange={onPageChange}
+        variant="table"
+      />
     </div>
   );
 }

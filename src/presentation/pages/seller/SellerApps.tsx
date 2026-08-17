@@ -93,7 +93,7 @@ export default function SellerApps() {
             </Link>
 
             <Link
-              to="/seller/api-docs"
+              to="/docs"
               className="group rounded-2xl border border-border/60 bg-muted/20 p-5 transition-colors hover:bg-muted/40"
             >
               <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -134,7 +134,7 @@ export default function SellerApps() {
                 Falar com o suporte
               </button>
               <Link
-                to="/seller/api-docs"
+                to="/docs"
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:bg-muted/40"
               >
                 <BookOpen size={16} />

@@ -1,4 +1,5 @@
 import { isApprovedTransactionStatus } from "@/presentation/utils/transaction-status";
+import type { IAdminTransactionListStatsDto } from "@/infra/http/services/api/api-types";
 import {
   Clock,
   DollarSign,
@@ -19,6 +20,65 @@ export type TransactionStat = {
   bg: string;
   border: string;
 };
+
+const STAT_META = [
+  {
+    key: "paid",
+    label: "Pago",
+    icon: DollarSign,
+    color: "text-success",
+    bg: "bg-success/10",
+    border: "border-success/30",
+  },
+  {
+    key: "pending",
+    label: "Pendente",
+    icon: Clock,
+    color: "text-warning",
+    bg: "bg-warning/10",
+    border: "border-warning/30",
+  },
+  {
+    key: "failed",
+    label: "Falhou",
+    icon: XCircle,
+    color: "text-destructive",
+    bg: "bg-destructive/10",
+    border: "border-destructive/30",
+  },
+  {
+    key: "chargeback",
+    label: "Chargeback",
+    icon: XCircle,
+    color: "text-destructive",
+    bg: "bg-destructive/10",
+    border: "border-destructive/30",
+  },
+  {
+    key: "refunded",
+    label: "Reembolsado",
+    icon: RotateCcw,
+    color: "text-warning",
+    bg: "bg-warning/10",
+    border: "border-warning/30",
+  },
+] as const;
+
+export function transactionStatsFromSummary(
+  stats: IAdminTransactionListStatsDto,
+  total: number,
+): TransactionStat[] {
+  return STAT_META.map((meta) => ({
+    label: meta.label,
+    value: stats[meta.key].amount,
+    count: stats[meta.key].count,
+    total,
+    icon: meta.icon,
+    color: meta.color,
+    bg: meta.bg,
+    border: meta.border,
+  }));
+}
 
 export default function useTransactionStats(filtered: Transaction[]) {
   return useMemo(() => {

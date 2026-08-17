@@ -1,5 +1,6 @@
 import { Transaction } from "@/domain/entities/transaction.entity";
 import PageHeader from "@/presentation/components/PageHeader";
+import ListPagination from "@/presentation/components/ListPagination";
 import {
   Select,
   SelectContent,
@@ -8,9 +9,7 @@ import {
   SelectValue,
 } from "@/presentation/components/Select";
 import {
-  isApprovedTransactionStatus,
   isExpiredUnpaidTransaction,
-  matchesTransactionStatusFilter,
 } from "@/presentation/utils/transaction-status";
 import { PixIcon } from "@/presentation/components/PixIcon";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
@@ -20,8 +19,6 @@ import { cn } from "@/presentation/utils/cn";
 import {
   ArrowDownLeft,
   ArrowUpRight,
-  ChevronLeft,
-  ChevronRight,
   Eye,
   Loader2,
   Receipt,
@@ -252,59 +249,59 @@ function MethodLabel({
 }
 
 export default function SellerTransactions() {
-  const { data: rawTransactions, isPending: loading } =
-    useSellerTransactionsQuery();
-  const transactions = useMemo(
-    () =>
-      rawTransactions
-        .filter(
-          (tx) =>
-            tx.method !== "withdrawal" &&
-            tx.customerName !== "Ajuste administrativo",
-        )
-        .map(toTransactionView),
-    [rawTransactions],
-  );
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const [methodFilter, setMethodFilter] = useState<MethodFilter>("all");
   const [splitFilter, setSplitFilter] = useState<SplitFilter>("all");
   const [page, setPage] = useState(1);
   const [selectedTx, setSelectedTx] = useState<TransactionView | null>(null);
 
-  const filtered = useMemo(() => {
-    return transactions.filter((t) => {
-      if (!matchesTransactionStatusFilter(t.status, statusFilter)) return false;
-      if (methodFilter !== "all" && t.method !== methodFilter) return false;
-      if (splitFilter === "with_split" && !hasSaleSplit(t.metadata)) return false;
-      if (splitFilter === "split_credit" && !isSplitCredit(t.metadata))
-        return false;
-      if (search) {
-        const q = search.toLowerCase();
-        return (
-          t.customer_name.toLowerCase().includes(q) ||
-          t.id.includes(q) ||
-          (t.customer_email || "").toLowerCase().includes(q)
-        );
-      }
-      return true;
-    });
-  }, [transactions, search, statusFilter, methodFilter, splitFilter]);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebouncedSearch(search), 300);
+    return () => window.clearTimeout(timer);
+  }, [search]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
-  const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
+  const {
+    data: rawTransactions,
+    isPending: loading,
+    total,
+    totalPages,
+    approvedCount,
+    approvedAmount,
+  } = useSellerTransactionsQuery({
+    page,
+    limit: PER_PAGE,
+    kind: "sales",
+    q: debouncedSearch || undefined,
+    status: statusFilter === "all" ? undefined : statusFilter,
+    method: methodFilter === "all" ? undefined : methodFilter,
+  });
+
+  const transactions = useMemo(
+    () => rawTransactions.map(toTransactionView),
+    [rawTransactions],
+  );
+
+  const filtered = useMemo(() => {
+    if (splitFilter === "all") return transactions;
+    return transactions.filter((t) => {
+      if (splitFilter === "with_split") return hasSaleSplit(t.metadata);
+      return isSplitCredit(t.metadata);
+    });
+  }, [transactions, splitFilter]);
 
   useEffect(() => {
     setPage(1);
-  }, [search, statusFilter, methodFilter, splitFilter]);
+  }, [debouncedSearch, statusFilter, methodFilter, splitFilter]);
 
-  const totalAmount = filtered
-    .filter((t) => isApprovedTransactionStatus(t.status))
-    .reduce((s, t) => s + t.amount, 0);
-  const totalCount = filtered.length;
-  const paidCount = filtered.filter((t) =>
-    isApprovedTransactionStatus(t.status),
-  ).length;
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
+
+  const totalAmount = approvedAmount;
+  const totalCount = total;
+  const paidCount = approvedCount;
 
   const StatusBadge = ({ tx }: { tx: TransactionView }) => {
     const s = isExpiredUnpaidTransaction(tx)
@@ -397,7 +394,7 @@ export default function SellerTransactions() {
           <div className="flex justify-center py-24">
             <Loader2 size={24} className="animate-spin text-muted-foreground" />
           </div>
-        ) : filtered.length === 0 ? (
+        ) : (splitFilter === "all" ? total === 0 : filtered.length === 0) ? (
           <div className="admin-surface px-6 py-16 text-center">
             <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-muted/50">
               <Receipt className="text-muted-foreground/40" size={18} />
@@ -431,7 +428,7 @@ export default function SellerTransactions() {
                 <span className="w-7" />
               </div>
               <div className="divide-y divide-border/40">
-                {paginated.map((tx) => {
+                {filtered.map((tx) => {
                   const isWithdrawal = tx.method === "withdrawal";
                   const splitCredit = isSplitCredit(tx.metadata);
                   const saleSplit = hasSaleSplit(tx.metadata);
@@ -509,7 +506,7 @@ export default function SellerTransactions() {
             </div>
 
             <div className="space-y-3 md:hidden">
-              {paginated.map((tx) => {
+              {filtered.map((tx) => {
                 const isWithdrawal = tx.method === "withdrawal";
                 const splitCredit = isSplitCredit(tx.metadata);
                 const saleSplit = hasSaleSplit(tx.metadata);
@@ -586,54 +583,13 @@ export default function SellerTransactions() {
               })}
             </div>
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between mt-3">
-                <p className="text-xs text-muted-foreground">
-                  {(page - 1) * PER_PAGE + 1}–
-                  {Math.min(page * PER_PAGE, filtered.length)} de{" "}
-                  {filtered.length}
-                </p>
-                <div className="flex items-center gap-0.5">
-                  <button
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    disabled={page === 1}
-                    className="p-1.5 rounded-md hover:bg-muted/30 disabled:opacity-20 transition-colors"
-                  >
-                    <ChevronLeft size={14} />
-                  </button>
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    let pageNum: number;
-                    if (totalPages <= 5) pageNum = i + 1;
-                    else if (page <= 3) pageNum = i + 1;
-                    else if (page >= totalPages - 2)
-                      pageNum = totalPages - 4 + i;
-                    else pageNum = page - 2 + i;
-                    return (
-                      <button
-                        key={pageNum}
-                        onClick={() => setPage(pageNum)}
-                        className={cn(
-                          "w-7 h-7 rounded-md text-xs font-medium transition-colors",
-                          page === pageNum
-                            ? "bg-primary text-primary-foreground"
-                            : "hover:bg-muted/30 text-muted-foreground"
-                        )}
-                      >
-                        {pageNum}
-                      </button>
-                    );
-                  })}
-                  <button
-                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                    disabled={page === totalPages}
-                    className="p-1.5 rounded-md hover:bg-muted/30 disabled:opacity-20 transition-colors"
-                  >
-                    <ChevronRight size={14} />
-                  </button>
-                </div>
-              </div>
-            )}
+            <ListPagination
+              page={page}
+              totalPages={totalPages}
+              total={splitFilter === "all" ? total : filtered.length}
+              perPage={PER_PAGE}
+              onPageChange={setPage}
+            />
           </>
         )}
       </div>

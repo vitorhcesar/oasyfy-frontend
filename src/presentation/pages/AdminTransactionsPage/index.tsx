@@ -20,8 +20,9 @@ import AdminTransactionDetailDialog from "./components/AdminTransactionDetailDia
 import AdminTransactionsFilters from "./components/AdminTransactionsFilters";
 import AdminTransactionsStats from "./components/AdminTransactionsStats";
 import AdminTransactionsTable from "./components/AdminTransactionsTable";
-import useFilterTransactions from "./hooks/use-filter-transactions";
-import useTransactionStats from "./hooks/use-transaction-stats";
+import useTransactionStats, {
+  transactionStatsFromSummary,
+} from "./hooks/use-transaction-stats";
 import type { Transaction } from "./types/admin-transaction.type";
 import { isAdminBalanceAdjustment } from "./utils/is-admin-balance-adjustment";
 import { isSplitCreditMetadata } from "./utils/transaction-split";
@@ -29,13 +30,31 @@ import { isSplitCreditMetadata } from "./utils/transaction-split";
 const PER_PAGE = 20;
 type TTimeRange = "7d" | "30d" | "90d" | "custom";
 
+function endOfDay(date: Date) {
+  const end = new Date(date);
+  end.setHours(23, 59, 59, 999);
+  return end;
+}
+
+function resolveAdminListRange(
+  filterTimeRange: TTimeRange,
+  dateRange: DateRange | undefined,
+): { from?: string; to?: string } {
+  if (filterTimeRange === "custom" && dateRange?.from) {
+    return {
+      from: dateRange.from.toISOString(),
+      to: dateRange.to ? endOfDay(dateRange.to).toISOString() : undefined,
+    };
+  }
+  const days =
+    filterTimeRange === "30d" ? 30 : filterTimeRange === "90d" ? 90 : 7;
+  return {
+    from: new Date(Date.now() - days * 86400000).toISOString(),
+  };
+}
+
 export default function AdminTransactionsPage() {
   const apiService = useApiService();
-  const {
-    data: transactions,
-    isLoading: loading,
-    invalidateQuery,
-  } = useAdminTransactionsQuery();
 
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
@@ -58,6 +77,46 @@ export default function AdminTransactionsPage() {
   >(null);
   const [pixSearchLoading, setPixSearchLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [debouncedId, setDebouncedId] = useState("");
+  const [debouncedCustomer, setDebouncedCustomer] = useState("");
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebouncedId(filterId), 300);
+    return () => window.clearTimeout(timer);
+  }, [filterId]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(
+      () => setDebouncedCustomer(filterCustomer),
+      300,
+    );
+    return () => window.clearTimeout(timer);
+  }, [filterCustomer]);
+
+  const listRange = useMemo(
+    () => resolveAdminListRange(filterTimeRange, dateRange),
+    [filterTimeRange, dateRange],
+  );
+
+  const {
+    data: transactions,
+    isLoading: loading,
+    total,
+    totalPages,
+    stats: apiStats,
+    statsTotal,
+    invalidateQuery,
+  } = useAdminTransactionsQuery({
+    page: currentPage,
+    limit: PER_PAGE,
+    id: debouncedId,
+    customer: debouncedCustomer,
+    method: filterMethod || undefined,
+    acquirer: filterAcquirer || undefined,
+    status: filterStatus || undefined,
+    from: listRange.from,
+    to: listRange.to,
+  });
 
   const sellerId = selectedTx?.seller_id
     ? Number(selectedTx.seller_id)
@@ -97,26 +156,12 @@ export default function AdminTransactionsPage() {
     setPixSearchLoading(false);
   };
 
-  const filteredWithoutStatus = useFilterTransactions({
-    transactions,
-    filterId,
-    filterCustomer,
-    filterMethod,
-    filterAcquirer,
-    filterStatus: "",
-    filterTimeRange,
-    dateRange,
-  });
-
-  const stats = useTransactionStats(filteredWithoutStatus);
-
-  const displayFiltered = useMemo(() => {
-    const source = (
-      pixSearchResults !== null ? pixSearchResults : filteredWithoutStatus
-    ).filter((t) => !isSplitCreditMetadata(t.metadata));
-
+  const pixFiltered = useMemo(() => {
+    if (pixSearchResults === null) return null;
+    const source = pixSearchResults.filter(
+      (t) => !isSplitCreditMetadata(t.metadata),
+    );
     if (!filterStatus) return source;
-
     if (filterStatus === "completed") {
       return source.filter(
         (t) =>
@@ -124,19 +169,43 @@ export default function AdminTransactionsPage() {
           t.method !== "withdrawal",
       );
     }
-
     return source.filter((t) => t.status === filterStatus);
-  }, [filteredWithoutStatus, filterStatus, pixSearchResults]);
+  }, [pixSearchResults, filterStatus]);
 
-  const totalPages = Math.max(1, Math.ceil(displayFiltered.length / PER_PAGE));
-  const paginatedData = displayFiltered.slice(
-    (currentPage - 1) * PER_PAGE,
-    currentPage * PER_PAGE,
+  const pixStats = useTransactionStats(pixFiltered ?? []);
+  const apiMappedStats = useMemo(
+    () => transactionStatsFromSummary(apiStats, statsTotal),
+    [apiStats, statsTotal],
   );
+  const stats = pixFiltered !== null ? pixStats : apiMappedStats;
+
+  const tableRows = pixFiltered ?? transactions;
+  const tableTotal = pixFiltered !== null ? pixFiltered.length : total;
+  const tableTotalPages =
+    pixFiltered !== null
+      ? Math.max(1, Math.ceil(pixFiltered.length / PER_PAGE))
+      : totalPages;
+  const paginatedRows =
+    pixFiltered !== null
+      ? pixFiltered.slice((currentPage - 1) * PER_PAGE, currentPage * PER_PAGE)
+      : tableRows;
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [filteredWithoutStatus, filterStatus, pixSearchResults]);
+  }, [
+    debouncedId,
+    debouncedCustomer,
+    filterMethod,
+    filterAcquirer,
+    filterStatus,
+    filterTimeRange,
+    dateRange,
+    pixSearchResults,
+  ]);
+
+  useEffect(() => {
+    if (currentPage > tableTotalPages) setCurrentPage(tableTotalPages);
+  }, [currentPage, tableTotalPages]);
 
   const handleStatFilterChange = (statusKey: string | null) => {
     setFilterStatus(statusKey ?? "");
@@ -327,10 +396,10 @@ export default function AdminTransactionsPage() {
 
             <AdminTransactionsTable
               loading={false}
-              displayFiltered={displayFiltered}
-              paginatedData={paginatedData}
+              rows={paginatedRows}
+              total={tableTotal}
               currentPage={currentPage}
-              totalPages={totalPages}
+              totalPages={tableTotalPages}
               perPage={PER_PAGE}
               onPageChange={setCurrentPage}
               onOpenDetail={openDetail}

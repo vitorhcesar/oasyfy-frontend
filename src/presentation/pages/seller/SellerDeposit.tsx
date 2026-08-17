@@ -181,8 +181,13 @@ export default function SellerDeposit() {
 
     const poll = async () => {
       try {
-        const transactions =
-          await apiService.modules.transaction.listSellerTransactions();
+        const result =
+          await apiService.modules.transaction.listSellerTransactions({
+            page: 1,
+            limit: 50,
+            kind: "all",
+          });
+        const transactions = result.items;
         const matched = transactionId
           ? transactions.find((tx) => tx.id === transactionId)
           : transactions.find(

@@ -25,9 +25,11 @@ import {
   SearchCheck,
   Shield,
   Trash2,
+  Webhook,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { SellerWebhooksTab } from "./SellerWebhooksTab";
 
 const GATEWAY_BASE = `${getApiBaseUrl()}/api/v1/gateway`;
 
@@ -72,7 +74,9 @@ function generateKey() {
 }
 
 export default function SellerApi() {
-  const [activeTab, setActiveTab] = useState<"keys" | "ips">("keys");
+  const [activeTab, setActiveTab] = useState<"keys" | "ips" | "webhooks">(
+    "keys",
+  );
   const { user } = useAuthContext();
   const { kycApproved, loading: kycLoading } = useKycStatus();
   const { apiAccessEnabled, isLoading: kycQueryLoading } =
@@ -81,6 +85,7 @@ export default function SellerApi() {
 
   const tabs = [
     { id: "keys" as const, label: "Chaves API", icon: Key },
+    { id: "webhooks" as const, label: "Webhooks", icon: Webhook },
     { id: "ips" as const, label: "IPs Autorizados a Sacar", icon: Shield },
   ];
 
@@ -154,7 +159,7 @@ export default function SellerApi() {
         <PageHeader
           eyebrow="Integração"
           title="API"
-          description="Gerencie suas chaves de acesso e restrições de IP"
+          description="Gerencie chaves, webhooks e restrições de IP"
         />
 
         <div className="liquid-glass-control mb-6 flex flex-wrap items-center gap-0.5 rounded-2xl p-1">
@@ -177,6 +182,7 @@ export default function SellerApi() {
         </div>
 
         {activeTab === "keys" && <ApiKeysTab />}
+        {activeTab === "webhooks" && <SellerWebhooksTab />}
         {activeTab === "ips" && <AuthorizedIpsTab />}
       </div>
     </SellerLayout>

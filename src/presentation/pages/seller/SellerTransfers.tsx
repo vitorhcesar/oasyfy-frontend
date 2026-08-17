@@ -1,6 +1,7 @@
 import { Transaction } from "@/domain/entities/transaction.entity";
 import KycWithdrawalDetails from "@/presentation/components/KycOnboarding/KycWithdrawalDetails";
 import PageHeader from "@/presentation/components/PageHeader";
+import ListPagination from "@/presentation/components/ListPagination";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import { WithdrawalModal } from "@/presentation/components/seller/WithdrawalModal";
 import { Calendar } from "@/presentation/components/ui/calendar";
@@ -31,7 +32,7 @@ import {
   Search,
   XCircle,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { toast } from "sonner";
 
 function isPaid(status: string) {
@@ -135,6 +136,14 @@ function formatDateTime(date: string) {
   return format(d, "dd/MM/yy, HH:mm", { locale: ptBR });
 }
 
+const PER_PAGE = 15;
+
+function endOfDay(date: Date) {
+  const end = new Date(date);
+  end.setHours(23, 59, 59, 999);
+  return end;
+}
+
 function StatusBadge({ status }: { status: string }) {
   const map: Record<
     string,
@@ -193,11 +202,54 @@ function StatusBadge({ status }: { status: string }) {
 
 export default function SellerTransfers() {
   const user = useUserContext();
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [dateFrom, setDateFrom] = useState<Date | undefined>();
+  const [dateTo, setDateTo] = useState<Date | undefined>();
+  const [page, setPage] = useState(1);
+  const [withdrawalOpen, setWithdrawalOpen] = useState(false);
+  const [withdrawalDetailsOpen, setWithdrawalDetailsOpen] = useState(false);
+  const [detailW, setDetailW] = useState<Withdrawal | null>(null);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setDebouncedSearch(search), 300);
+    return () => window.clearTimeout(timer);
+  }, [search]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch, statusFilter, dateFrom, dateTo]);
+
   const {
-    data: transactions,
+    data: withdrawalTransactions,
     isLoading: txLoading,
+    total,
+    totalPages,
+    pendingWithdrawalAmount,
+    completedWithdrawalAmount,
     invalidateQuery: invalidateTransactions,
-  } = useSellerTransactionsQuery();
+  } = useSellerTransactionsQuery({
+    page,
+    limit: PER_PAGE,
+    kind: "withdrawals",
+    q: debouncedSearch || undefined,
+    status: statusFilter === "all" ? undefined : statusFilter,
+    from: dateFrom?.toISOString(),
+    to: dateTo ? endOfDay(dateTo).toISOString() : undefined,
+  });
+
+  useEffect(() => {
+    if (page > totalPages) setPage(totalPages);
+  }, [page, totalPages]);
+
+  const { data: saleTransactions } = useSellerTransactionsQuery({
+    page: 1,
+    limit: 1000,
+    kind: "sales",
+  });
+
   const {
     data: balance,
     isLoading: balanceLoading,
@@ -211,39 +263,26 @@ export default function SellerTransfers() {
     isLoading: kycLoading,
     invalidateQuery: invalidateKyc,
   } = useSellerKycSubmissionQuery();
-  const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [dateFrom, setDateFrom] = useState<Date | undefined>();
-  const [dateTo, setDateTo] = useState<Date | undefined>();
-  const [withdrawalOpen, setWithdrawalOpen] = useState(false);
-  const [withdrawalDetailsOpen, setWithdrawalDetailsOpen] = useState(false);
-  const [detailW, setDetailW] = useState<Withdrawal | null>(null);
-  const [copiedField, setCopiedField] = useState<string | null>(null);
 
   const loading = txLoading || feeLoading || kycLoading || balanceLoading;
 
   const withdrawals = useMemo(
-    () =>
-      transactions
-        .filter((t) => t.method === "withdrawal")
-        .map(mapTransactionToWithdrawal),
-    [transactions],
+    () => withdrawalTransactions.map(mapTransactionToWithdrawal),
+    [withdrawalTransactions],
   );
 
   const allTx = useMemo(
     () =>
-      transactions
-        .filter((t) => t.method !== "withdrawal")
-        .map((t) => ({
-          amount: t.getCreditedAmount(),
-          method: t.method,
-          status: t.status,
-          created_at:
-            t.createdAt instanceof Date
-              ? t.createdAt.toISOString()
-              : String(t.createdAt),
-        })),
-    [transactions],
+      saleTransactions.map((t) => ({
+        amount: t.getCreditedAmount(),
+        method: t.method,
+        status: t.status,
+        created_at:
+          t.createdAt instanceof Date
+            ? t.createdAt.toISOString()
+            : String(t.createdAt),
+      })),
+    [saleTransactions],
   );
 
   const fees = useMemo<SellerFee | null>(() => {
@@ -356,51 +395,10 @@ export default function SellerTransfers() {
   const pixBoletoBalance = grossTotal > 0 ? availableBalance - cardBalance : 0;
 
   // Summary stats
-  const totalPending = useMemo(
-    () =>
-      withdrawals
-        .filter((w) => w.status === "pending")
-        .reduce((s, w) => s + Math.abs(w.amount), 0),
-    [withdrawals],
-  );
-  const totalCompleted = useMemo(
-    () =>
-      withdrawals
-        .filter((w) => isPaid(w.status))
-        .reduce((s, w) => s + Math.abs(w.amount), 0),
-    [withdrawals],
-  );
+  const totalPending = pendingWithdrawalAmount;
+  const totalCompleted = completedWithdrawalAmount;
 
-  // Filtered list
-  const filtered = useMemo(() => {
-    let list = withdrawals;
-    if (statusFilter !== "all") {
-      if (statusFilter === "paid") {
-        list = list.filter((w) => isPaid(w.status));
-      } else if (statusFilter === "failed") {
-        list = list.filter((w) => w.status === "failed");
-      } else if (statusFilter === "rejected") {
-        list = list.filter(
-          (w) => w.status === "rejected" || w.status === "cancelled",
-        );
-      } else {
-        list = list.filter((w) => w.status === statusFilter);
-      }
-    }
-    if (search.trim())
-      list = list.filter(
-        (w) =>
-          w.description?.toLowerCase().includes(search.toLowerCase()) ||
-          w.id.includes(search),
-      );
-    if (dateFrom) list = list.filter((w) => new Date(w.created_at) >= dateFrom);
-    if (dateTo) {
-      const end = new Date(dateTo);
-      end.setHours(23, 59, 59, 999);
-      list = list.filter((w) => new Date(w.created_at) <= end);
-    }
-    return list;
-  }, [withdrawals, statusFilter, search, dateFrom, dateTo]);
+  const filtered = withdrawals;
 
   const statCards = [
     {
@@ -619,7 +617,7 @@ export default function SellerTransfers() {
           <div className="flex justify-center py-24">
             <Loader2 size={24} className="animate-spin text-muted-foreground" />
           </div>
-        ) : filtered.length === 0 ? (
+        ) : total === 0 ? (
           <div className="admin-surface px-6 py-16 text-center">
             <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-muted/50">
               <ArrowUpRight className="text-muted-foreground/40" size={18} />
@@ -734,6 +732,13 @@ export default function SellerTransfers() {
                 </div>
               ))}
             </div>
+            <ListPagination
+              page={page}
+              totalPages={totalPages}
+              total={total}
+              perPage={PER_PAGE}
+              onPageChange={setPage}
+            />
           </>
         )}
       </div>

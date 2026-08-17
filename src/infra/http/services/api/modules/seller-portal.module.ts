@@ -92,6 +92,17 @@ export interface ISellerWithdrawalResultDto {
   createdAt: string;
 }
 
+export interface ISellerWebhookEndpointDto {
+  id: number;
+  url: string;
+  events: string[];
+  is_active: boolean;
+  secret?: string;
+  created_at: string;
+  last_delivery_status: "pending" | "success" | "failed" | null;
+  last_delivery_at: string | null;
+}
+
 export interface ISellerApiKeyDto {
   id: number;
   name: string;
@@ -172,6 +183,14 @@ export interface ISellerPortalModule {
     permissions: string[];
   }) => Promise<ISellerApiKeyDto>;
   deleteApiKey: (id: number) => Promise<void>;
+  listWebhooks: () => Promise<ISellerWebhookEndpointDto[]>;
+  createWebhook: (url: string) => Promise<ISellerWebhookEndpointDto>;
+  updateWebhook: (
+    id: number,
+    body: { url?: string; is_active?: boolean },
+  ) => Promise<ISellerWebhookEndpointDto>;
+  deleteWebhook: (id: number) => Promise<void>;
+  testWebhook: (id: number) => Promise<{ delivery_id: string }>;
   listAuthorizedIps: () => Promise<ISellerAuthorizedIpDto[]>;
   createAuthorizedIp: (ipAddress: string) => Promise<ISellerAuthorizedIpDto>;
   deleteAuthorizedIp: (id: number) => Promise<void>;
@@ -303,6 +322,41 @@ export class SellerPortalModule
 
   async deleteApiKey(id: number): Promise<void> {
     await this.getClient().delete(`${this.baseUrl}/api-keys/${id}`);
+  }
+
+  async listWebhooks(): Promise<ISellerWebhookEndpointDto[]> {
+    const response = await this.getClient().get<
+      IApiEnvelope<ISellerWebhookEndpointDto[]>
+    >(`${this.baseUrl}/webhooks`);
+    return response.data;
+  }
+
+  async createWebhook(url: string): Promise<ISellerWebhookEndpointDto> {
+    const response = await this.getClient().post<
+      IApiEnvelope<ISellerWebhookEndpointDto>
+    >(`${this.baseUrl}/webhooks`, { url });
+    return response.data;
+  }
+
+  async updateWebhook(
+    id: number,
+    body: { url?: string; is_active?: boolean },
+  ): Promise<ISellerWebhookEndpointDto> {
+    const response = await this.getClient().patch<
+      IApiEnvelope<ISellerWebhookEndpointDto>
+    >(`${this.baseUrl}/webhooks/${id}`, body);
+    return response.data;
+  }
+
+  async deleteWebhook(id: number): Promise<void> {
+    await this.getClient().delete(`${this.baseUrl}/webhooks/${id}`);
+  }
+
+  async testWebhook(id: number): Promise<{ delivery_id: string }> {
+    const response = await this.getClient().post<
+      IApiEnvelope<{ delivery_id: string }>
+    >(`${this.baseUrl}/webhooks/${id}/test`, {});
+    return response.data;
   }
 
   async listAuthorizedIps(): Promise<ISellerAuthorizedIpDto[]> {

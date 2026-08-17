@@ -1,3 +1,4 @@
+import { acquirerSourceLabel } from "@/infra/http/services/api/modules/types/acquirer-preference.types";
 import { AcquirerBrandLogo } from "@/presentation/components/admin/AcquirerBrandLogo";
 import { Button } from "@/presentation/components/ui/button";
 import {
@@ -7,9 +8,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/presentation/components/ui/select";
-import useSellerAcquirerPreferenceQuery from "@/presentation/hooks/use-seller-acquirer-preference-query";
 import { useApiService } from "@/presentation/hooks/use-api-service";
-import { acquirerSourceLabel } from "@/infra/http/services/api/modules/types/acquirer-preference.types";
+import useSellerAcquirerPreferenceQuery from "@/presentation/hooks/use-seller-acquirer-preference-query";
 import { getErrorMessageOrDefault } from "@/presentation/utils/get-error-message-or-default";
 import { translateError } from "@/presentation/utils/translate-error";
 import { AlertTriangle, Loader2, Save } from "lucide-react";
@@ -153,13 +153,9 @@ export function SellerAcquirersTab() {
         size="sm"
         onClick={handleSave}
         disabled={saving}
-        className="h-8 gap-1.5 px-3 text-xs [&_svg]:size-3.5"
+        className="h-8 gap-1.5 px-3 text-xs [&_svg]:size-3.5 !mt-2"
       >
-        {saving ? (
-          <Loader2 className="animate-spin" />
-        ) : (
-          <Save />
-        )}
+        {saving ? <Loader2 className="animate-spin" /> : <Save />}
         Salvar preferência
       </Button>
     </div>

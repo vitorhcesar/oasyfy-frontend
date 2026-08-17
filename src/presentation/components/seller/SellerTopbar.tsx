@@ -155,7 +155,7 @@ export function SellerTopbar({ onMenuToggle }: ISellerTopbarProps) {
     {
       label: "Documentação API",
       icon: BookOpen,
-      action: () => navigate("/seller/api-docs"),
+      action: () => window.open("/docs", "_blank", "noopener,noreferrer"),
     },
   ];
 

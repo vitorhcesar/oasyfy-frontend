@@ -20,8 +20,13 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import {
+  resolveWithdrawalModalBalance,
+  type TWithdrawalBalanceTab,
+} from "./resolve-withdrawal-modal-balance.util";
 
-/** Cartão permanece no backend; a aba fica oculta até a integração. */
+/** Cartão permanece no backend; a aba fica oculta até a integração.
+ *  Enquanto a aba estiver oculta, o modal usa o saldo total disponível. */
 const SHOW_CARD_BALANCE_TAB = false;
 
 function useCountUp(target: number, duration = 800) {
@@ -93,7 +98,7 @@ interface IWithdrawalModalProps {
 }
 
 type TStep = "amount" | "confirm" | "success";
-type TBalanceTab = "card" | "pix_boleto";
+type TBalanceTab = TWithdrawalBalanceTab;
 
 interface IWithdrawalLimits {
   min: number; // cents
@@ -157,6 +162,7 @@ function getPixDestinationLabel(account: IBankData | null): string {
 export function WithdrawalModal({
   open,
   onOpenChange,
+  availableBalance,
   cardBalance,
   pixBoletoBalance,
   onSuccess,
@@ -180,7 +186,13 @@ export function WithdrawalModal({
   const [dailyLimitOpen, setDailyLimitOpen] = useState(false);
 
   const selectedAccount = bankAccounts[selectedAccountIdx] || null;
-  const currentBalance = tab === "card" ? cardBalance : pixBoletoBalance;
+  const currentBalance = resolveWithdrawalModalBalance({
+    showCardBalanceTab: SHOW_CARD_BALANCE_TAB,
+    tab,
+    availableBalance,
+    cardBalance,
+    pixBoletoBalance,
+  });
   const amountCents = Math.round(
     parseFloat(rawValue.replace(/\./g, "").replace(",", ".") || "0") * 100
   );

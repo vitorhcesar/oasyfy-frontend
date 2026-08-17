@@ -1,5 +1,9 @@
 import { Transaction } from "@/domain/entities/transaction.entity";
-import { IApiEnvelope } from "../api-types";
+import {
+  compactQueryParams,
+  IApiEnvelope,
+  IListSellerTransactionsDto,
+} from "../api-types";
 import { BaseApiModule } from "./base-api.module";
 
 export interface ITransactionDto {
@@ -29,6 +33,11 @@ function toDate(value: Date | string): Date {
   return value instanceof Date ? value : new Date(value);
 }
 
+interface IInsertAdjustmentTransactionBody {
+  sellerId: number;
+  amount: number;
+}
+
 export class TransactionMapper {
   static toDomain(dto: ITransactionDto): Transaction {
     return Transaction.restore({
@@ -56,13 +65,35 @@ export class TransactionMapper {
   }
 }
 
-interface IInsertAdjustmentTransactionBody {
-  sellerId: number;
-  amount: number;
+export type TSellerTransactionListKind = "sales" | "withdrawals" | "all";
+
+export interface IListSellerTransactionsParams {
+  page?: number;
+  limit?: number;
+  kind?: TSellerTransactionListKind;
+  q?: string;
+  status?: string;
+  method?: string;
+  from?: string;
+  to?: string;
+}
+
+export interface IListSellerTransactionsResult {
+  items: Transaction[];
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  approvedCount: number;
+  approvedAmount: number;
+  pendingWithdrawalAmount: number;
+  completedWithdrawalAmount: number;
 }
 
 export interface ITransactionModule {
-  listSellerTransactions: () => Promise<Transaction[]>;
+  listSellerTransactions: (
+    params?: IListSellerTransactionsParams,
+  ) => Promise<IListSellerTransactionsResult>;
   insertAdjustmentTransaction: (
     data: IInsertAdjustmentTransactionBody,
   ) => Promise<void>;
@@ -74,12 +105,36 @@ export class TransactionModule
 {
   private readonly baseUrl = "/api/v1/transactions";
 
-  async listSellerTransactions(): Promise<Transaction[]> {
+  async listSellerTransactions(
+    params: IListSellerTransactionsParams = {},
+  ): Promise<IListSellerTransactionsResult> {
     const response = await this.getClient().get<
-      IApiEnvelope<ITransactionDto[]>
-    >(this.baseUrl);
-    const rows = Array.isArray(response.data) ? response.data : [];
-    return rows.map(TransactionMapper.toDomain);
+      IApiEnvelope<IListSellerTransactionsDto<ITransactionDto>>
+    >(this.baseUrl, {
+      params: compactQueryParams({
+        page: params.page,
+        limit: params.limit,
+        kind: params.kind,
+        q: params.q,
+        status: params.status,
+        method: params.method,
+        from: params.from,
+        to: params.to,
+      }),
+    });
+    const payload = response.data;
+    const rows = Array.isArray(payload.items) ? payload.items : [];
+    return {
+      items: rows.map(TransactionMapper.toDomain),
+      page: payload.page,
+      limit: payload.limit,
+      total: payload.total,
+      totalPages: payload.totalPages,
+      approvedCount: payload.approvedCount,
+      approvedAmount: payload.approvedAmount,
+      pendingWithdrawalAmount: payload.pendingWithdrawalAmount,
+      completedWithdrawalAmount: payload.completedWithdrawalAmount,
+    };
   }
 
   async insertAdjustmentTransaction(

@@ -1,4 +1,9 @@
-import type { IApiEnvelope } from "../api-types";
+import {
+  compactQueryParams,
+  type IAdminTransactionListStatsDto,
+  type IApiEnvelope,
+  type IListAdminTransactionsDto,
+} from "../api-types";
 import { BaseApiModule } from "./base-api.module";
 
 export interface IAdminTransactionDto {
@@ -143,8 +148,32 @@ export function mapAdminRefundRequestToView(dto: IAdminRefundRequestDto) {
   };
 }
 
+export interface IListAdminTransactionsParams {
+  page?: number;
+  limit?: number;
+  id?: string;
+  customer?: string;
+  method?: string;
+  acquirer?: string;
+  status?: string;
+  from?: string;
+  to?: string;
+}
+
+export interface IListAdminTransactionsResult {
+  items: ReturnType<typeof mapAdminTransactionToView>[];
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  stats: IAdminTransactionListStatsDto;
+  statsTotal: number;
+}
+
 export interface IAdminFinanceModule {
-  listTransactions(): Promise<ReturnType<typeof mapAdminTransactionToView>[]>;
+  listTransactions(
+    params?: IListAdminTransactionsParams,
+  ): Promise<IListAdminTransactionsResult>;
   getTransactionSellerInfo(
     sellerId: number,
   ): Promise<IAdminTransactionSellerInfoDto | null>;
@@ -191,11 +220,32 @@ export class AdminFinanceModule
 {
   private readonly baseUrl = "/api/v1/admin";
 
-  async listTransactions() {
+  async listTransactions(params: IListAdminTransactionsParams = {}) {
     const response = await this.getClient().get<
-      IApiEnvelope<IAdminTransactionDto[]>
-    >(`${this.baseUrl}/transactions`);
-    return response.data.map(mapAdminTransactionToView);
+      IApiEnvelope<IListAdminTransactionsDto<IAdminTransactionDto>>
+    >(`${this.baseUrl}/transactions`, {
+      params: compactQueryParams({
+        page: params.page,
+        limit: params.limit,
+        id: params.id,
+        customer: params.customer,
+        method: params.method,
+        acquirer: params.acquirer,
+        status: params.status,
+        from: params.from,
+        to: params.to,
+      }),
+    });
+    const payload = response.data;
+    return {
+      items: payload.items.map(mapAdminTransactionToView),
+      page: payload.page,
+      limit: payload.limit,
+      total: payload.total,
+      totalPages: payload.totalPages,
+      stats: payload.stats,
+      statsTotal: payload.statsTotal,
+    };
   }
 
   async getTransactionSellerInfo(sellerId: number) {

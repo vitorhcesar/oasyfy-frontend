@@ -34,7 +34,7 @@ import AdminTransactionsPage from "./presentation/pages/AdminTransactionsPage";
 import AdminWithdrawalsPage from "./presentation/pages/AdminWithdrawalsPage";
 import Seller2FA from "./presentation/pages/seller/Seller2FA";
 import SellerApi from "./presentation/pages/seller/SellerApi";
-import SellerApiDocs from "./presentation/pages/seller/SellerApiDocs";
+import PublicApiDocs from "./presentation/pages/docs/PublicApiDocs";
 import SellerApps from "./presentation/pages/seller/SellerApps";
 import SellerDeposit from "./presentation/pages/seller/SellerDeposit";
 import SellerPartners from "./presentation/pages/seller/SellerPartners";
@@ -95,6 +95,12 @@ export default function App() {
                 />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
                 <Route path="/termos" element={<TermsOfUsePage />} />
+                <Route path="/docs" element={<PublicApiDocs />} />
+                <Route path="/docs/*" element={<PublicApiDocs />} />
+                <Route
+                  path="/seller/api-docs"
+                  element={<Navigate to="/docs" replace />}
+                />
                 <Route path="/c/__health" element={<CheckoutHealthPage />} />
                 <Route path="/c/:publicId" element={<PublicCheckoutEntry />} />
                 <Route
@@ -142,14 +148,6 @@ export default function App() {
                   element={
                     <ProtectedRoute requiredRole="seller">
                       <SellerApi />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/seller/api-docs"
-                  element={
-                    <ProtectedRoute requiredRole="seller">
-                      <SellerApiDocs />
                     </ProtectedRoute>
                   }
                 />

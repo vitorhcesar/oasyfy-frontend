@@ -6,6 +6,7 @@ import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import { Button } from "@/presentation/components/ui/button";
 import { useAuthContext } from "@/presentation/context/AuthContext";
 import { useApiService } from "@/presentation/hooks/use-api-service";
+import { useSellerKycSubmissionQuery } from "@/presentation/hooks/use-seller-kyc-submission-query";
 import { usePracaLiveSocket } from "@/presentation/hooks/use-praca-live-socket";
 import { getErrorMessageOrDefault } from "@/presentation/utils/get-error-message-or-default";
 import type {
@@ -14,11 +15,13 @@ import type {
 } from "@/infra/http/services/api/modules/types/praca.types";
 import { Loader2, MessagesSquare } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 
 export default function SellerPraca() {
   const apiService = useApiService();
   const { user } = useAuthContext();
+  const { canSell, isLoading: kycLoading } = useSellerKycSubmissionQuery();
   const currentUserId = Number(user?.id);
   const [access, setAccess] = useState<IPracaAccessDto | null>(null);
   const [loading, setLoading] = useState(true);
@@ -43,6 +46,7 @@ export default function SellerPraca() {
   }, [apiService]);
 
   useEffect(() => {
+    if (kycLoading || !canSell) return;
     let cancelled = false;
     (async () => {
       try {
@@ -64,10 +68,10 @@ export default function SellerPraca() {
     return () => {
       cancelled = true;
     };
-  }, [loadAccess, mergeLatest]);
+  }, [canSell, kycLoading, loadAccess, mergeLatest]);
 
   usePracaLiveSocket({
-    enabled: access?.status === "enabled",
+    enabled: canSell && access?.status === "enabled",
     onEvent: (event) => {
       setMessages((current) => applyPracaRealtimeEvent(current, event));
     },
@@ -135,6 +139,34 @@ export default function SellerPraca() {
       setLoadingOlder(false);
     }
   };
+
+  if (kycLoading) {
+    return (
+      <SellerLayout>
+        <div className="flex h-full min-h-0 flex-col overflow-hidden px-5 py-6 md:px-8">
+          <div className="flex flex-1 items-center justify-center">
+            <Loader2 className="animate-spin text-primary" size={28} />
+          </div>
+        </div>
+      </SellerLayout>
+    );
+  }
+
+  if (!canSell) {
+    return (
+      <SellerLayout>
+        <div className="mx-auto w-full max-w-3xl px-5 py-20 text-center md:px-8">
+          <h2 className="text-xl font-semibold">KYC pendente</h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Complete ou aguarde a aprovação dos documentos para acessar A Praça.
+          </p>
+          <Button asChild className="mt-6">
+            <Link to="/seller/kyc">Ir para documentos</Link>
+          </Button>
+        </div>
+      </SellerLayout>
+    );
+  }
 
   return (
     <SellerLayout>

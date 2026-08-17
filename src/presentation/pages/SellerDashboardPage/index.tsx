@@ -40,7 +40,11 @@ export default function SellerDashboardPage() {
     data: transactions,
     isLoading: transactionsLoading,
     invalidateQuery: invalidateSellerTransactionsQuery,
-  } = useSellerTransactionsQuery();
+  } = useSellerTransactionsQuery({
+    page: 1,
+    limit: 1000,
+    kind: "all",
+  });
 
   const {
     data: fees,

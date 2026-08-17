@@ -127,7 +127,7 @@ export function SellerSidebar({ mobileOpen, onClose }: ISellerSidebarProps) {
       title: "A Praça",
       url: "/seller/praca",
       icon: MessagesSquare,
-      locked: false,
+      locked: isKycLocked,
     },
   ];
 
