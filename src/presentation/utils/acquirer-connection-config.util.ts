@@ -40,13 +40,7 @@ export function isAcquirerConfigured(conn: IPixAcquirerConnectionLike): boolean 
     );
   }
 
-  return Boolean(
-    conn.client_id?.trim() &&
-      conn.access_token?.trim() &&
-      conn.hmac_key?.trim() &&
-      conn.branch_id?.trim() &&
-      conn.account_number?.trim(),
-  );
+  return false;
 }
 
 export function hasAcquirerCredentialsToSave(
@@ -69,14 +63,7 @@ export function hasAcquirerCredentialsToSave(
     );
   }
 
-  return Boolean(
-    form.apiUrl.trim() &&
-      form.clientId.trim() &&
-      form.accessToken.trim() &&
-      form.hmacKey.trim() &&
-      form.branchId.trim() &&
-      form.accountNumber.trim(),
-  );
+  return false;
 }
 
 export function buildAcquirerFormFromConnection(

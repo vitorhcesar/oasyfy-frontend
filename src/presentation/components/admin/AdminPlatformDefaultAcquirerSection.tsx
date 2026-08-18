@@ -10,7 +10,6 @@ import {
 import useAdminAcquirerPreferenceQuery from "@/presentation/hooks/use-admin-acquirer-preference-query";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import { getErrorMessageOrDefault } from "@/presentation/utils/get-error-message-or-default";
-import { isAdminListedPixAcquirer } from "@/presentation/utils/pix-acquirer-provider";
 import { AlertTriangle, Loader2, Save } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -139,17 +138,7 @@ export function AdminPlatformDefaultAcquirerSection() {
               <SelectItem value={CLEAR_VALUE}>
                 Sem padrão (usar roteamento)
               </SelectItem>
-              {data.availableAcquirers
-                .filter(
-                  (acq) =>
-                    acq.id === data.platformDefault.acquirerId ||
-                    isAdminListedPixAcquirer({
-                      api_url: "",
-                      name: acq.name,
-                      logo_key: acq.logoKey,
-                    }),
-                )
-                .map((acq) => (
+              {data.availableAcquirers.map((acq) => (
                   <SelectItem key={acq.id} value={String(acq.id)}>
                     {acq.name}
                   </SelectItem>

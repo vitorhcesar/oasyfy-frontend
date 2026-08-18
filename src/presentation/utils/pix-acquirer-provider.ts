@@ -1,4 +1,4 @@
-export type TPixAcquirerProvider = "cartwave" | "woovi" | "onlyup";
+export type TPixAcquirerProvider = "woovi" | "onlyup";
 
 export type TOnlyUpCredentialsView = {
   cash_in_client_id: string;
@@ -27,6 +27,21 @@ export interface IPixAcquirerConnectionLike {
   onlyup?: TOnlyUpCredentialsView | null;
 }
 
+export function isRetiredCartwaveAcquirer(
+  conn: Pick<IPixAcquirerConnectionLike, "api_url" | "logo_key" | "name">,
+): boolean {
+  const logoKey = conn.logo_key?.trim().toLowerCase();
+  if (logoKey === "cartwave") {
+    return true;
+  }
+  const host = conn.api_url?.trim().toLowerCase() ?? "";
+  if (host.includes("cartwave")) {
+    return true;
+  }
+  const name = conn.name?.trim().toLowerCase() ?? "";
+  return name.includes("cartwave");
+}
+
 export function inferPixAcquirerProvider(
   conn: IPixAcquirerConnectionLike,
 ): TPixAcquirerProvider {
@@ -37,9 +52,6 @@ export function inferPixAcquirerProvider(
   if (logoKey === "woovi" || logoKey === "openpix") {
     return "woovi";
   }
-  if (logoKey === "cartwave") {
-    return "cartwave";
-  }
 
   const host = conn.api_url?.trim().toLowerCase() ?? "";
   if (host.includes("onlyup")) {
@@ -49,19 +61,9 @@ export function inferPixAcquirerProvider(
     return "woovi";
   }
 
-  const hasCartwaveAccount =
-    Boolean(conn.branch_id?.trim()) && Boolean(conn.account_number?.trim());
-  const hasCartwaveHmac = Boolean(conn.hmac_key?.trim());
-  if (hasCartwaveAccount && hasCartwaveHmac) {
-    return "cartwave";
-  }
-
   const name = conn.name?.trim().toLowerCase() ?? "";
   if (name.includes("onlyup") || name.includes("only up")) {
     return "onlyup";
-  }
-  if (name.includes("cartwave")) {
-    return "cartwave";
   }
   if (name.includes("woovi") || name.includes("openpix")) {
     return "woovi";
@@ -71,28 +73,18 @@ export function inferPixAcquirerProvider(
 }
 
 export function getPixAcquirerProviderLabel(provider: TPixAcquirerProvider) {
-  if (provider === "woovi") {
-    return "Woovi";
-  }
   if (provider === "onlyup") {
     return "OnlyUp";
   }
-  return "Cartwave";
+  return "Woovi";
 }
 
 export function isPixAcquirerProviderSlug(
   slug: string | undefined,
 ): slug is TPixAcquirerProvider {
-  return slug === "woovi" || slug === "cartwave" || slug === "onlyup";
+  return slug === "woovi" || slug === "onlyup";
 }
 
 export function getAcquirerConfigPath(provider: TPixAcquirerProvider) {
   return `/admin/acquirer/${provider}`;
-}
-
-/** Cartwave permanece no backend; só some da tela admin de adquirentes. */
-export function isAdminListedPixAcquirer(
-  conn: IPixAcquirerConnectionLike,
-): boolean {
-  return inferPixAcquirerProvider(conn) !== "cartwave";
 }

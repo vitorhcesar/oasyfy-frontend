@@ -1,7 +1,6 @@
 import type { IApiEnvelope } from "../api-types";
 import { BaseApiModule } from "./base-api.module";
 import type {
-  ICartwaveCreatePixBody,
   ICreatePixChargeBody,
   IPixChargeResponse,
   TPixSearchTransactionRow,
@@ -15,10 +14,8 @@ export interface IPixAmountLimitsDto {
 export interface IPixModule {
   searchTransactions: (pixCode: string) => Promise<TPixSearchTransactionRow[]>;
   getAmountLimits: () => Promise<IPixAmountLimitsDto>;
-  /** Failover Woovi/Cartwave via roteamento admin (POST /pix/woovi/create). */
+  /** Failover Woovi/OnlyUp via roteamento admin (POST /pix/woovi/create). */
   createPixCharge: (body: ICreatePixChargeBody) => Promise<IPixChargeResponse>;
-  /** @deprecated Prefer createPixCharge */
-  createCartwavePix: (body: ICartwaveCreatePixBody) => Promise<IPixChargeResponse>;
 }
 
 export class PixModule extends BaseApiModule implements IPixModule {
@@ -54,15 +51,6 @@ export class PixModule extends BaseApiModule implements IPixModule {
         ...(body.comment ? { comment: body.comment } : {}),
         ...(body.expires_in ? { expires_in: body.expires_in } : {}),
       },
-    );
-  }
-
-  async createCartwavePix(
-    body: ICartwaveCreatePixBody,
-  ): Promise<IPixChargeResponse> {
-    return this.getClient().post<IPixChargeResponse>(
-      `${this.baseUrl}/cartwave/create`,
-      body,
     );
   }
 }

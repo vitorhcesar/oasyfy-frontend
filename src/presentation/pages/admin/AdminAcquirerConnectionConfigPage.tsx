@@ -56,7 +56,7 @@ export default function AdminAcquirerConnectionConfigPage() {
     }
   }, [isError]);
 
-  if (!provider || provider === "cartwave") {
+  if (!provider) {
     return <Navigate to="/admin/acquirer?tab=conexoes" replace />;
   }
 

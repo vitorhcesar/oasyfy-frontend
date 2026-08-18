@@ -33,7 +33,6 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 const DEFAULT_WOOVI_API = "https://api.woovi-sandbox.com";
-const DEFAULT_CARTWAVE_API = "https://api.cartwavehub.com.br";
 const DEFAULT_ONLYUP_API = "https://api.pix.onlyup.com.br";
 
 const ONLYUP_VERIFY_CHECKS: Array<{
@@ -135,11 +134,9 @@ export function AcquirerConnectionConfigForm({
   const configured = isAcquirerConfigured(connection);
   const apiBase = getApiBaseUrl();
   const webhookUrl =
-    provider === "woovi"
-      ? `${apiBase}/api/v1/webhooks/woovi/pix`
-      : provider === "onlyup"
-        ? `${apiBase}/api/v1/webhooks/onlyup/pix`
-        : `${apiBase}/api/v1/webhooks/cartwave/pix`;
+    provider === "onlyup"
+      ? `${apiBase}/api/v1/webhooks/onlyup/pix`
+      : `${apiBase}/api/v1/webhooks/woovi/pix`;
 
   useEffect(() => {
     setFormData(buildAcquirerFormFromConnection(connection, configured));
@@ -172,9 +169,7 @@ export function AcquirerConnectionConfigForm({
           <p className="mt-1 text-sm text-muted-foreground">
             {provider === "woovi"
               ? "Cadastre esta URL no painel Woovi (um webhook por evento). Use o mesmo valor de Authorization do webhook no campo Secret abaixo."
-              : provider === "onlyup"
-                ? "A Oasyfy registra esta URL na OnlyUp (PUT /webhook/{chave}). Quem tiver a URL pode simular POST — o pagamento só é confirmado com GET /cob."
-                : "Cadastre esta URL no painel Cartwave para notificações de pagamento PIX."}
+              : "A Oasyfy registra esta URL na OnlyUp (PUT /webhook/{chave}). Quem tiver a URL pode simular POST — o pagamento só é confirmado com GET /cob."}
           </p>
         </div>
 
@@ -204,15 +199,6 @@ export function AcquirerConnectionConfigForm({
               </li>
             ))}
           </ul>
-        )}
-
-        {provider === "cartwave" && (
-          <p className="text-sm text-muted-foreground">
-            Evento principal:{" "}
-            <code className="text-foreground">QR_CODE_COPY_AND_PASTE_PAID</code>.
-            A Cartwave envia headers <code>ci</code> e <code>hmac</code> para
-            validação.
-          </p>
         )}
 
         {provider === "onlyup" && (
@@ -340,11 +326,7 @@ export function AcquirerConnectionConfigForm({
               <Label className="text-sm">URL da API</Label>
               <Input
                 placeholder={
-                  provider === "woovi"
-                    ? DEFAULT_WOOVI_API
-                    : provider === "onlyup"
-                      ? DEFAULT_ONLYUP_API
-                      : DEFAULT_CARTWAVE_API
+                  provider === "onlyup" ? DEFAULT_ONLYUP_API : DEFAULT_WOOVI_API
                 }
                 value={formData.apiUrl}
                 onChange={(e) =>
@@ -714,106 +696,7 @@ export function AcquirerConnectionConfigForm({
                   </div>
                 </div>
               </>
-            ) : (
-              <>
-                <div className="space-y-2">
-                  <Label className="text-sm">ID do Cliente (Client ID)</Label>
-                  <Input
-                    placeholder="9E54779D..."
-                    value={formData.clientId}
-                    onChange={(e) =>
-                      setFormData((prev) => ({
-                        ...prev,
-                        clientId: e.target.value,
-                      }))
-                    }
-                    className="font-mono text-sm"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm">Chave Secreta (Access Token)</Label>
-                  <div className="relative">
-                    <Input
-                      type={showToken ? "text" : "password"}
-                      placeholder="eyJhbGciOiJIUzI1NiIs..."
-                      value={formData.accessToken}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          accessToken: e.target.value,
-                        }))
-                      }
-                      className="pr-10 font-mono text-sm"
-                    />
-                    <button
-                      type="button"
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      onClick={() => setShowToken(!showToken)}
-                    >
-                      {showToken ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm">Chave HMAC</Label>
-                  <div className="relative">
-                    <Input
-                      type={showHmac ? "text" : "password"}
-                      placeholder="57373705c83bc5efe..."
-                      value={formData.hmacKey}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          hmacKey: e.target.value,
-                        }))
-                      }
-                      className="pr-10 font-mono text-sm"
-                    />
-                    <button
-                      type="button"
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      onClick={() => setShowHmac(!showHmac)}
-                    >
-                      {showHmac ? <EyeOff size={16} /> : <Eye size={16} />}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label className="text-sm">Agência (Branch)</Label>
-                    <Input
-                      placeholder="0001"
-                      value={formData.branchId}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          branchId: e.target.value,
-                        }))
-                      }
-                      className="font-mono text-sm"
-                      maxLength={4}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-sm">Nº da Conta</Label>
-                    <Input
-                      placeholder="401050"
-                      value={formData.accountNumber}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          accountNumber: e.target.value,
-                        }))
-                      }
-                      className="font-mono text-sm"
-                    />
-                  </div>
-                </div>
-              </>
-            )}
+            ) : null}
 
             <div className="flex flex-wrap justify-end gap-2 pt-2">
               {reconfiguring && (

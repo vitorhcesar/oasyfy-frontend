@@ -1,6 +1,6 @@
 /**
  * Resolve the QR image to show on PIX screens.
- * Woovi/Cartwave may return an image; OnlyUp only returns the EMV string.
+ * Woovi may return an image; OnlyUp only returns the EMV string.
  */
 export function resolvePixQrCodeSrc(input: {
   qrCodeImage?: string | null;

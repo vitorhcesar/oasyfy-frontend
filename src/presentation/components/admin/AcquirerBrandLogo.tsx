@@ -1,4 +1,3 @@
-import cartwaveLogo from "@/assets/cartwave-logo.png";
 import onlyupLogo from "@/assets/only-up-logo.png";
 import wooviLogo from "@/assets/woovi-logo.svg";
 import {
@@ -9,7 +8,6 @@ import {
 import { cn } from "@/presentation/utils/cn";
 
 const logoMap: Record<string, string> = {
-  cartwave: cartwaveLogo,
   woovi: wooviLogo,
   openpix: wooviLogo,
   onlyup: onlyupLogo,

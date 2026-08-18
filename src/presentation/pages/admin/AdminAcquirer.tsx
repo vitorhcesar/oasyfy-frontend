@@ -4,7 +4,7 @@ import { AcquirerBrandLogo, getAcquirerLogoSrc } from "@/presentation/components
 import {
   getAcquirerConfigPath,
   inferPixAcquirerProvider,
-  isAdminListedPixAcquirer,
+  isRetiredCartwaveAcquirer,
 } from "@/presentation/utils/pix-acquirer-provider";
 import useAdminAcquirerConnectionsQuery, {
   type TAcquirerConnectionView,
@@ -126,10 +126,12 @@ export default function AdminAcquirer() {
     setCosts(costsFromQuery);
   }, [costsFromQuery]);
 
-  const listedConnections = connections.filter(isAdminListedPixAcquirer);
+  const listedConnections = connections.filter(
+    (conn) => !isRetiredCartwaveAcquirer(conn),
+  );
   const hiddenAcquirerIds = new Set(
     connections
-      .filter((conn) => !isAdminListedPixAcquirer(conn))
+      .filter((conn) => isRetiredCartwaveAcquirer(conn))
       .map((conn) => conn.id),
   );
   const activeConnections = listedConnections.filter(

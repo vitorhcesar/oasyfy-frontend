@@ -11,7 +11,6 @@ import {
 } from "@/presentation/components/ui/card";
 import { cn } from "@/presentation/utils/cn";
 import {
-  AlertTriangle,
   BookOpen,
   CheckCircle2,
   Copy,
@@ -87,7 +86,6 @@ function ExternalDocLink({ href, label }: { href: string; label: string }) {
 export function AcquirerGuideTab() {
   const apiBase = getApiBaseUrl();
   const wooviWebhookUrl = `${apiBase}/api/v1/webhooks/woovi/pix`;
-  const cartwaveWebhookUrl = `${apiBase}/api/v1/webhooks/cartwave/pix`;
   const onlyupWebhookUrl = `${apiBase}/api/v1/webhooks/onlyup/pix`;
 
   return (
@@ -118,7 +116,7 @@ export function AcquirerGuideTab() {
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-muted-foreground">
           {[
-            "Aba Conexões → Carregar adquirentes padrão (Woovi + Cartwave + OnlyUp)",
+            "Aba Conexões → Carregar adquirentes padrão (Woovi + OnlyUp)",
             "Configurar credenciais de cada provedor → status Conectada",
             "Ativar o switch da adquirente que será usada",
             "Aba Depósito → adicionar adquirente(s) em PIX com prioridade (failover)",
@@ -291,7 +289,7 @@ export function AcquirerGuideTab() {
                 <p>
                   Aba <strong>Roteamento inteligente (Depósito)</strong> →
                   método <strong>PIX</strong> → adicionar <strong>Woovi</strong>{" "}
-                  com prioridade 1. Se Cartwave também estiver ativa, ordem
+                  com prioridade 1. Se OnlyUp também estiver ativa, a ordem
                   define failover (1ª falha → tenta 2ª).
                 </p>
               </GuideStep>
@@ -335,158 +333,6 @@ export function AcquirerGuideTab() {
                 </ul>
               </GuideStep>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* CARTWAVE */}
-      <Card className="border-border/40">
-        <CardHeader className="pb-3">
-          <div className="flex items-center gap-2">
-            <CardTitle className="text-base">Cartwave Hub</CardTitle>
-            <Badge variant="outline" className="text-sm">
-              PIX entrada (cobrança)
-            </Badge>
-          </div>
-          <CardDescription className="text-sm">
-            API base padrão:{" "}
-            <code className="text-foreground">https://api.cartwavehub.com.br</code>
-            . Integração focada em QR Code PIX cópia e cola.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-8">
-          <div>
-            <h3 className="text-sm font-bold uppercase tracking-wide text-muted-foreground mb-4">
-              Parte A — No painel Cartwave
-            </h3>
-            <div className="space-y-0">
-              <GuideStep number={1} title="Obter credenciais de API">
-                <p>No painel Cartwave Hub, localize ou solicite:</p>
-                <ul className="list-disc pl-4 space-y-1">
-                  <li>
-                    <strong>Client ID (ci)</strong> — identificador do cliente
-                    nas requisições
-                  </li>
-                  <li>
-                    <strong>Access Token</strong> — Bearer token da API
-                  </li>
-                  <li>
-                    <strong>Chave HMAC</strong> — secret para assinar o body das
-                    requisições POST e validar webhooks
-                  </li>
-                  <li>
-                    <strong>Agência (branch)</strong> e{" "}
-                    <strong>Número da conta</strong> — conta origem PIX na
-                    Cartwave
-                  </li>
-                </ul>
-              </GuideStep>
-
-              <GuideStep number={2} title="Configurar webhook de PIX">
-                <p>
-                  Cadastre a URL de notificação de pagamento PIX apontando para
-                  o Oasyfy:
-                </p>
-                <CopyBlock label="URL do webhook" value={cartwaveWebhookUrl} />
-                <p>
-                  A Cartwave envia POST com JSON (<code>type</code> +{" "}
-                  <code>data</code>) e headers:
-                </p>
-                <ul className="list-disc pl-4 space-y-1">
-                  <li>
-                    <code>ci</code> — Client ID
-                  </li>
-                  <li>
-                    <code>hmac</code> — HMAC-SHA512 do corpo bruto usando a
-                    chave HMAC
-                  </li>
-                </ul>
-                <p>
-                  Evento principal de pagamento:{" "}
-                  <code>QR_CODE_COPY_AND_PASTE_PAID</code>. O Oasyfy valida
-                  assinatura antes de atualizar a transação.
-                </p>
-              </GuideStep>
-
-              <GuideStep number={3} title="Ambiente e IP (se aplicável)">
-                <p>
-                  Confirme com a Cartwave se há whitelist de IP ou URLs
-                  específicas para sandbox vs produção. Use a URL de API
-                  fornecida por eles se diferir do padrão.
-                </p>
-              </GuideStep>
-            </div>
-          </div>
-
-          <div>
-            <h3 className="text-sm font-bold uppercase tracking-wide text-muted-foreground mb-4">
-              Parte B — No Oasyfy (aba Conexões)
-            </h3>
-            <div className="space-y-0">
-              <GuideStep number={1} title="Abrir Cartwave e preencher todos os campos">
-                <p>
-                  Aba <strong>Conexões</strong> → <strong>Configurar</strong>{" "}
-                  na linha Cartwave. Todos os campos são obrigatórios para
-                  status Conectada:
-                </p>
-                <ul className="list-disc pl-4 space-y-1">
-                  <li>URL da API (padrão Cartwave Hub)</li>
-                  <li>Client ID</li>
-                  <li>Access Token (chave secreta)</li>
-                  <li>Chave HMAC</li>
-                  <li>Agência (branch)</li>
-                  <li>Número da conta</li>
-                </ul>
-                <p>Salve, ative o switch.</p>
-              </GuideStep>
-
-              <GuideStep number={2} title="Roteamento PIX">
-                <p>
-                  Aba <strong>Depósito</strong> → PIX → adicionar Cartwave na
-                  ordem desejada. Com Woovi + Cartwave, a 2ª só é usada se a 1ª
-                  falhar (failover).
-                </p>
-              </GuideStep>
-
-              <GuideStep number={3} title="Como a API assina requisições">
-                <p>
-                  POSTs para Cartwave (<code>/v2/finance/create-pix-copy-and-paste</code>
-                  ) enviam:
-                </p>
-                <CopyBlock value={`Authorization: Bearer {accessToken}
-ci: {clientId}
-hmac: HMAC-SHA512(hmacKey, bodyJSON)
-Content-Type: application/json`} />
-              </GuideStep>
-
-              <GuideStep number={4} title="Testar Cartwave">
-                <ul className="list-disc pl-4 space-y-1">
-                  <li>
-                    Proxy direto: <code>POST /api/v1/pix/cartwave/create</code>{" "}
-                    (seller/admin logado)
-                  </li>
-                  <li>
-                    Ou roteamento: depósito seller / gateway PIX (se Cartwave for
-                    prioridade 1 no roteamento)
-                  </li>
-                  <li>Pagar QR e verificar webhook + status paid</li>
-                </ul>
-              </GuideStep>
-            </div>
-          </div>
-
-          <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 flex gap-2">
-            <AlertTriangle
-              size={18}
-              className="text-amber-600 shrink-0 mt-0.5"
-            />
-            <p className="text-sm text-muted-foreground">
-              <strong className="text-foreground">Saques:</strong> Cartwave nesta
-              integração é usada para <strong>receber PIX</strong>. Saques
-              automáticos via API usam <strong>Woovi PIX Out</strong>. A aba
-              &quot;Roteamento Saque&quot; é para métodos futuros (TED/crypto);
-              PIX Out Woovi segue roteamento de depósito PIX.
-            </p>
           </div>
         </CardContent>
       </Card>
@@ -623,9 +469,6 @@ Content-Type: application/json`} />
                     Woovi
                   </th>
                   <th className="py-2 font-medium text-foreground">
-                    Cartwave
-                  </th>
-                  <th className="py-2 font-medium text-foreground">
                     OnlyUp
                   </th>
                 </tr>
@@ -635,22 +478,20 @@ Content-Type: application/json`} />
                   [
                     "URL da API",
                     "api.woovi.com / sandbox",
-                    "api.cartwavehub.com.br",
                     "api.pix.onlyup.com.br",
                   ],
-                  ["Access Token / Secret", "App ID", "Bearer token", "OAuth 5 min + Client Secret"],
-                  ["HMAC / Auth webhook", "Secret webhook", "Chave HMAC", "Sem HMAC; GET /cob"],
-                  ["Client ID", "Opcional (webhook)", "Obrigatório (header ci)", "OAuth cash-in"],
-                  ["Extra", "Não usa", "Agência / Conta", "PFX + senha + Chave Pix"],
-                  ["Webhook URL", wooviWebhookUrl, cartwaveWebhookUrl, onlyupWebhookUrl],
-                  ["Saques PIX", "Sim (PAYMENT_POST)", "Não", "API Conta (DICT + webhook TRANSFER)"],
-                ].map(([label, woovi, cartwave, onlyup]) => (
+                  ["Access Token / Secret", "App ID", "OAuth 5 min + Client Secret"],
+                  ["HMAC / Auth webhook", "Secret webhook", "Sem HMAC; GET /cob"],
+                  ["Client ID", "Opcional (webhook)", "OAuth cash-in"],
+                  ["Extra", "Não usa", "PFX + senha + Chave Pix"],
+                  ["Webhook URL", wooviWebhookUrl, onlyupWebhookUrl],
+                  ["Saques PIX", "Sim (PAYMENT_POST)", "API Conta (DICT + webhook TRANSFER)"],
+                ].map(([label, woovi, onlyup]) => (
                   <tr key={label}>
                     <td className="py-2 pr-3 font-medium text-foreground">
                       {label}
                     </td>
                     <td className="py-2 pr-3">{woovi}</td>
-                    <td className="py-2 pr-3">{cartwave}</td>
                     <td className="py-2">{onlyup}</td>
                   </tr>
                 ))}
@@ -661,7 +502,7 @@ Content-Type: application/json`} />
           <p>
             <strong className="text-foreground">Failover:</strong> na aba Depósito
             → PIX, arraste prioridades (1 = primeira tentativa). Se Woovi está
-            em 1 e falhar, Cartwave em 2 é tentada automaticamente.
+            em 1 e falhar, OnlyUp em 2 é tentada automaticamente.
           </p>
         </CardContent>
       </Card>
@@ -688,10 +529,6 @@ Content-Type: application/json`} />
             {
               q: "Saque retorna 502",
               a: "App Woovi sem PAYMENT_POST, saldo insuficiente no sandbox, ou chave PIX inválida no KYC.",
-            },
-            {
-              q: "Cartwave não conecta",
-              a: "Todos os 5 campos obrigatórios + URL API. Verifique agência/conta com suporte Cartwave.",
             },
             {
               q: "Webhook OnlyUp não marca pago",

@@ -7,7 +7,7 @@ export interface ICreatePixChargeBody {
   expires_in?: number;
 }
 
-/** Resposta bruta do failover PIX (Woovi/Cartwave). */
+/** Resposta bruta do failover PIX (Woovi/OnlyUp). */
 export interface IPixChargeResponse {
   error?: string;
   pix_copy_and_paste?: string;
@@ -42,15 +42,5 @@ export interface IPixChargeResponse {
   };
   [key: string]: unknown;
 }
-
-export interface ICartwaveCreatePixBody {
-  amount: number;
-  debtor_name: string;
-  debtor_document?: string;
-  type_document?: string;
-}
-
-/** @deprecated Use IPixChargeResponse */
-export type ICartwavePixResponse = IPixChargeResponse;
 
 export type TPixSearchTransactionRow = Record<string, unknown>;
