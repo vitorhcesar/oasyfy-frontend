@@ -586,11 +586,13 @@ Content-Type: application/json`} />
                   ). Não misture com o par do cash-in.
                 </p>
               </GuideStep>
-              <GuideStep number={2} title="Configurar webhook de transferência">
+              <GuideStep number={2} title="Configurar webhooks da API Conta">
                 <p>
-                  Use o botão <strong>Configurar webhook de saque</strong>. A
-                  Oasyfy registra{" "}
-                  <code>POST /api/v2/webhooks/transfer</code> apontando para o
+                  Use o botão <strong>Configurar webhooks da API Conta</strong>.
+                  A Oasyfy registra os cinco tipos da aba WEBHOOKS do Finance
+                  (transferência, recebimento, estorno, fila de saída e
+                  infrações) em{" "}
+                  <code>POST /api/v2/webhooks/{"{tipo}"}</code> apontando para o
                   alias{" "}
                   <code>/api/v1/gateway/webhook/only_up/:acquirerId</code>. O
                   body <code>type: TRANSFER</code> só liquida o saque após{" "}

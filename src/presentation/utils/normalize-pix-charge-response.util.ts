@@ -25,7 +25,8 @@ export function normalizePixChargeResponse(
 ): INormalizedPixChargeResponse {
   const root = readRecord(data) ?? {};
   const wooviCharge = readRecord(root.woovi_charge);
-  const charge = readRecord(root.charge) ?? wooviCharge;
+  const onlyupCharge = readRecord(root.onlyup_charge);
+  const charge = readRecord(root.charge) ?? wooviCharge ?? onlyupCharge;
   const qrCode = readRecord(root.qr_code);
   const routing = readRecord(root._routing);
 
@@ -33,7 +34,10 @@ export function normalizePixChargeResponse(
     readString(root.pix_copy_and_paste) ||
     readString(root.pix_copy_paste) ||
     readString(root.copy_and_paste) ||
+    readString(root.pixCopiaECola) ||
+    readString(onlyupCharge?.pixCopiaECola) ||
     readString(charge?.brCode) ||
+    readString(charge?.pixCopiaECola) ||
     readString(wooviCharge?.brCode) ||
     readString(qrCode?.emv) ||
     readString(root.emv) ||

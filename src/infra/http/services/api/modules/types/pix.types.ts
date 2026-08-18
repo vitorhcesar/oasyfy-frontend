@@ -17,13 +17,19 @@ export interface IPixChargeResponse {
   brCode?: string;
   brcode?: string;
   base_64_image?: string;
+  pixCopiaECola?: string;
   woovi_charge?: {
     brCode?: string;
     qrCodeImage?: string;
   };
+  onlyup_charge?: {
+    pixCopiaECola?: string;
+    brCode?: string;
+  };
   charge?: {
     brCode?: string;
     qrCodeImage?: string;
+    pixCopiaECola?: string;
   };
   qr_code?: {
     emv?: string;

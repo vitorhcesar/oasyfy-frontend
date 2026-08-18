@@ -16,6 +16,7 @@ import {
   getPixAmountLimitError,
 } from "@/presentation/utils/pix-amount-limits.util";
 import { normalizePixChargeResponse } from "@/presentation/utils/normalize-pix-charge-response.util";
+import { resolvePixQrCodeSrc } from "@/presentation/utils/resolve-pix-qr-code-src.util";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   AlertCircle,
@@ -289,7 +290,10 @@ export default function SellerDeposit() {
   };
 
   const pixCode = pixData?.pixCode ?? "";
-  const qrCodeImage = pixData?.qrCodeImage ?? "";
+  const qrCodeSrc = resolvePixQrCodeSrc({
+    qrCodeImage: pixData?.qrCodeImage,
+    pixCode,
+  });
 
   const reset = () => {
     setPixData(null);
@@ -403,17 +407,11 @@ export default function SellerDeposit() {
               </div>
             </div>
 
-            {qrCodeImage && (
+            {qrCodeSrc && (
               <div className="flex justify-center">
                 <div className="w-full max-w-[13.5rem] rounded-xl border border-border/60 bg-white p-3 sm:max-w-[15.5rem] sm:p-4">
                   <img
-                    src={
-                      qrCodeImage.startsWith("data:")
-                        ? qrCodeImage
-                        : qrCodeImage.startsWith("http")
-                          ? qrCodeImage
-                          : `data:image/png;base64,${qrCodeImage}`
-                    }
+                    src={qrCodeSrc}
                     alt="QR Code PIX"
                     className="aspect-square h-auto w-full"
                     loading="lazy"

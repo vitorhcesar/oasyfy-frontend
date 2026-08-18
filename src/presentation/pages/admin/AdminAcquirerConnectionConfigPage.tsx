@@ -140,9 +140,11 @@ export default function AdminAcquirerConnectionConfigPage() {
       await apiService.modules.adminConfig.registerOnlyUpCashOutWebhook(
         Number(connection.id),
       );
-      toast.success("Webhook de saque OnlyUp configurado");
+      toast.success(
+        "Webhooks da API Conta configurados (transferência, recebimento, estorno, fila e infrações)",
+      );
     } catch (error) {
-      toast.error("Falha ao configurar webhook de saque na OnlyUp");
+      toast.error("Falha ao configurar webhooks da API Conta na OnlyUp");
       console.error(error);
     }
     setRegisteringCashOutWebhook(false);

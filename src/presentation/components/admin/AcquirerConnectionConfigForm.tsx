@@ -254,8 +254,15 @@ export function AcquirerConnectionConfigForm({
                 {registeringCashOutWebhook && (
                   <Loader2 size={15} className="animate-spin" />
                 )}
-                Configurar webhook de saque
+                Configurar webhooks da API Conta
               </button>
+            )}
+            {onRegisterCashOutWebhook && (
+              <p className="text-sm text-muted-foreground">
+                Cadastra na OnlyUp os 5 webhooks da API Conta (transferência,
+                recebimento, estorno, fila de saída e infrações) apontando para
+                esta Oasyfy.
+              </p>
             )}
           </div>
         )}

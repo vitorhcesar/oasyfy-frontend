@@ -12,6 +12,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { getErrorMessageOrDefault } from "@/presentation/utils/get-error-message-or-default";
+import { resolvePixQrCodeSrc } from "@/presentation/utils/resolve-pix-qr-code-src.util";
 
 type TStep = "form" | "pix" | "success" | "unavailable";
 
@@ -86,10 +87,11 @@ export default function PublicCheckoutPage() {
   }, [apiService, payment, publicId, step]);
 
   const qrUrl = useMemo(() => {
-    if (!payment?.pixCode) return null;
-    return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(
-      payment.pixCode,
-    )}`;
+    const src = resolvePixQrCodeSrc({
+      pixCode: payment?.pixCode,
+      size: 220,
+    });
+    return src || null;
   }, [payment?.pixCode]);
 
   const handlePay = async () => {
