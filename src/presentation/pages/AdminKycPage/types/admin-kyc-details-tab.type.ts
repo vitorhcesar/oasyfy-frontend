@@ -3,4 +3,5 @@ export type TAdminKycDetailsTab =
   | "documents"
   | "bank"
   | "fees"
-  | "balance";
+  | "balance"
+  | "acquirer";

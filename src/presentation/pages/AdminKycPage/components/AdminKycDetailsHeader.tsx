@@ -1,4 +1,8 @@
+import DeleteSellerAccountModal from "@/presentation/components/admin/DeleteSellerAccountModal";
+import { ConfirmationModal } from "@/presentation/components/ConfirmationModal";
+import { Textarea } from "@/presentation/components/ui/textarea";
 import { useApiService } from "@/presentation/hooks/use-api-service";
+import { getErrorMessageOrDefault } from "@/presentation/utils/get-error-message-or-default";
 import { tryOrToastError } from "@/presentation/utils/try-or-toast-error";
 import {
   Ban,
@@ -15,6 +19,7 @@ import {
   ShieldAlert,
   ShieldCheck,
   MessagesSquare,
+  Trash2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -29,20 +34,17 @@ import { statusText } from "../utils/status-text.util";
 interface IAdminKycDetailsHeaderProps {
   submission: IKycSubmissionView;
   onUpdate: () => void;
+  onDeleted: () => void;
 }
 
 export function AdminKycDetailsHeader({
   submission,
   onUpdate,
+  onDeleted,
 }: IAdminKycDetailsHeaderProps) {
   const apiService = useApiService();
 
-  const {
-    actionsOpen,
-    setActionsOpen,
-    setBlockReason,
-    setShowBlockReasonModal,
-  } = useAdminKycDetailsStore();
+  const { actionsOpen, setActionsOpen } = useAdminKycDetailsStore();
 
   const [manualEmailApprovalLoading, setManualEmailApprovalLoading] =
     useState(false);
@@ -52,6 +54,9 @@ export function AdminKycDetailsHeader({
   const [apiAccessLoading, setApiAccessLoading] = useState(false);
   const [pracaAccessEnabled, setPracaAccessEnabled] = useState(false);
   const [pracaAccessLoading, setPracaAccessLoading] = useState(false);
+  const [showBlockReasonModal, setShowBlockReasonModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [blockReason, setBlockReason] = useState("");
 
   const overallStatus = effectiveKycStatus(submission);
 
@@ -164,6 +169,21 @@ export function AdminKycDetailsHeader({
 
     setBlockReason("");
     setShowBlockReasonModal(true);
+  };
+
+  const handleBlockWithdrawals = async () => {
+    const reason = blockReason.trim();
+    if (reason.length < 5) {
+      throw new Error("Informe um motivo com pelo menos 5 caracteres");
+    }
+
+    await apiService.modules.adminSellers.blockWithdrawals(
+      Number(submission.user_id),
+      { reason },
+    );
+    toast.success("Saque travado");
+    setBlockReason("");
+    onUpdate();
   };
 
   const handleToggleApiAccess = async () => {
@@ -387,6 +407,17 @@ export function AdminKycDetailsHeader({
                   )}
                   Enviar código OTP
                 </button>
+                <button
+                  onClick={() => {
+                    setActionsOpen(false);
+                    setShowDeleteModal(true);
+                  }}
+                  disabled={!submission.user_id}
+                  className="flex w-full items-center gap-2 border-t border-[color:var(--glass-border)] px-3.5 py-2.5 text-sm text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50"
+                >
+                  <Trash2 size={15} />
+                  Excluir seller
+                </button>
               </div>
             </>
           )}
@@ -500,6 +531,44 @@ export function AdminKycDetailsHeader({
         </button>
       </div>
     )}
+    <ConfirmationModal
+      open={showBlockReasonModal}
+      onOpenChange={(open) => {
+        setShowBlockReasonModal(open);
+        if (!open) setBlockReason("");
+      }}
+      title="Travar saque"
+      description="Informe o motivo do bloqueio. Novos envios serão impedidos; saques já liquidados não são revertidos."
+      confirmLabel="Confirmar bloqueio"
+      confirmDisabled={blockReason.trim().length < 5}
+      onConfirm={async () => {
+        try {
+          await handleBlockWithdrawals();
+        } catch (error) {
+          toast.error(
+            getErrorMessageOrDefault(error, "Erro ao travar saque"),
+          );
+          throw error;
+        }
+      }}
+    >
+      <Textarea
+        value={blockReason}
+        onChange={(event) => setBlockReason(event.target.value)}
+        placeholder="Motivo do bloqueio de saque..."
+        className="min-h-24 resize-none"
+      />
+    </ConfirmationModal>
+    <DeleteSellerAccountModal
+      seller={{
+        userId: Number(submission.user_id),
+        fullName: submission.full_name,
+        email: submission.email,
+      }}
+      open={showDeleteModal}
+      onOpenChange={setShowDeleteModal}
+      onDeleted={onDeleted}
+    />
     </>
   );
 }

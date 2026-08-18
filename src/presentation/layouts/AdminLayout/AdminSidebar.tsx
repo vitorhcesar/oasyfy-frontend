@@ -46,7 +46,6 @@ import {
   Sun,
   Target,
   UserCog,
-  Users,
   MessagesSquare,
   Link2,
   X,
@@ -61,7 +60,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 const menuItems = [
   { title: "Dashboard", url: "/admin", icon: LayoutDashboard },
-  { title: "Sellers", url: "/admin/sellers", icon: Users },
   { title: "A Praça", url: "/admin/praca", icon: MessagesSquare },
   { title: "Produtores", url: "/admin/kyc", icon: FileCheck },
 ];

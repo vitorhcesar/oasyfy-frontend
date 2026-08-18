@@ -16,7 +16,13 @@ export default function AdminKycPageHeader({
         KYC
       </h1>
       <p className="mt-1.5 text-sm text-muted-foreground">
-        {totalCount} cadastro{totalCount !== 1 ? "s" : ""}
+        Gerencie KYC, adquirente e contas dos sellers
+        {totalCount > 0 && (
+          <>
+            {" "}
+            · {totalCount} seller{totalCount !== 1 ? "s" : ""}
+          </>
+        )}
         {pendingCount > 0 && (
           <span className="text-warning">
             {" "}

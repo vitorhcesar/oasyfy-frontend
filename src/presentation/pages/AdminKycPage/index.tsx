@@ -1,7 +1,8 @@
 import { AdminLayout } from "@/presentation/layouts/AdminLayout";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import { Loader2 } from "lucide-react";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
+import { useSearchParams } from "react-router-dom";
 import { AdminKycDetails } from "./components/AdminKycDetails";
 import AdminKycPageContent from "./components/AdminKycPageContent";
 import AdminKycPageHeader from "./components/AdminKycPageHeader";
@@ -17,7 +18,8 @@ import {
 
 export default function AdminKycPage() {
   const apiService = useApiService();
-  const { filter, search, selectedSeller, setSelectedSeller } =
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { filter, search, selectedSeller, setFilter, setSelectedSeller } =
     useAdminKycPageStore();
 
   const { data, isLoading, refetch, invalidateQuery } =
@@ -41,7 +43,8 @@ export default function AdminKycPage() {
           submission.full_name.toLowerCase().includes(search.toLowerCase()) ||
           submission.cpf?.includes(search) ||
           submission.cnpj?.includes(search) ||
-          submission.account_id?.toLowerCase().includes(search.toLowerCase()),
+          submission.account_id?.toLowerCase().includes(search.toLowerCase()) ||
+          submission.user_id.includes(search),
       ),
     [search, submissions],
   );
@@ -69,6 +72,49 @@ export default function AdminKycPage() {
     (submission) =>
       submission.status === "pending" || submission.status === "under_review",
   ).length;
+
+  useEffect(() => {
+    const sellerIdParam = searchParams.get("sellerId");
+    if (!sellerIdParam || selectedSeller) return;
+
+    if (filter !== "all") {
+      setFilter("all");
+      return;
+    }
+
+    if (isLoading) return;
+
+    const fromSubmission = submissions.find(
+      (submission) => submission.user_id === sellerIdParam,
+    );
+    if (fromSubmission) {
+      setSelectedSeller(fromSubmission);
+      const nextParams = new URLSearchParams(searchParams);
+      nextParams.delete("sellerId");
+      setSearchParams(nextParams, { replace: true });
+      return;
+    }
+
+    const fromRegistered = registeredOnly.find(
+      (seller) => seller.user_id === sellerIdParam,
+    );
+    if (fromRegistered) {
+      setSelectedSeller(mapRegisteredSellerToKycView(fromRegistered));
+      const nextParams = new URLSearchParams(searchParams);
+      nextParams.delete("sellerId");
+      setSearchParams(nextParams, { replace: true });
+    }
+  }, [
+    filter,
+    isLoading,
+    registeredOnly,
+    searchParams,
+    selectedSeller,
+    setFilter,
+    setSearchParams,
+    setSelectedSeller,
+    submissions,
+  ]);
 
   const syncSelectedSeller = async () => {
     const result = await refetch();

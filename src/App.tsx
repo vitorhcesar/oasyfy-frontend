@@ -7,14 +7,12 @@ import { TooltipProvider } from "@/presentation/components/ui/tooltip";
 import { AuthContextProvider } from "@/presentation/context/AuthContext";
 import { ThemeProvider } from "@/presentation/hooks/use-theme";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useParams } from "react-router-dom";
 import useGatewayTheme from "./presentation/hooks/use-gateway-theme";
 import AdminBanners from "./presentation/pages/AdminBannersPage";
 import AdminDashboardPage from "./presentation/pages/AdminDashboardPage";
 import AdminGeneralPage from "./presentation/pages/AdminGeneralPage";
 import AdminKycPage from "./presentation/pages/AdminKycPage";
-import AdminSellersPage from "./presentation/pages/AdminSellersPage";
-import AdminSellerProfilePage from "./presentation/pages/AdminSellerProfilePage";
 import LoginSellerPage from "./presentation/pages/LoginSellerPage";
 import ResetPasswordPage from "./presentation/pages/ResetPasswordPage";
 import TermsOfUsePage from "./presentation/pages/TermsOfUsePage";
@@ -63,6 +61,16 @@ const queryClient = new QueryClient({
 function ThemeLoader() {
   useGatewayTheme();
   return null;
+}
+
+function RedirectSellerToKyc() {
+  const { sellerId } = useParams();
+  return (
+    <Navigate
+      to={sellerId ? `/admin/kyc?sellerId=${sellerId}` : "/admin/kyc"}
+      replace
+    />
+  );
 }
 
 export default function App() {
@@ -241,19 +249,11 @@ export default function App() {
                 />
                 <Route
                   path="/admin/sellers"
-                  element={
-                    <ProtectedRoute requiredRole="admin">
-                      <AdminSellersPage />
-                    </ProtectedRoute>
-                  }
+                  element={<Navigate to="/admin/kyc" replace />}
                 />
                 <Route
                   path="/admin/sellers/:sellerId"
-                  element={
-                    <ProtectedRoute requiredRole="admin">
-                      <AdminSellerProfilePage />
-                    </ProtectedRoute>
-                  }
+                  element={<RedirectSellerToKyc />}
                 />
                 <Route
                   path="/admin/praca"

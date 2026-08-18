@@ -10,13 +10,13 @@ import { IKycSubmissionView } from "../types/kyc-submission-view.type";
 import { statusDot } from "../utils/status-dot.util";
 import { statusText } from "../utils/status-text.util";
 import { ActionButton } from "./ActionButton";
+import { AdminKycDetailsAcquirerTab } from "./AdminKycDetailsAcquirerTab";
 import { AdminKycDetailsBalanceTab } from "./AdminKycDetailsBalanceTab";
 import AdminKycDetailsBankTab from "./AdminKycDetailsBankTab";
 import { AdminKycDetailsFeesTab } from "./AdminKycDetailsFeesTab";
 import { AdminKycDetailsHeader } from "./AdminKycDetailsHeader";
 import AdminKycDetailsKycTab from "./AdminKycDetailsKycTab";
 import AdminKycDetailsTabs from "./AdminKycDetailsTabs";
-import BlockReasonModal from "./BlockReasonModal";
 import { SectionLabel } from "./SectionLabel";
 import { StatusPill } from "./StatusPill";
 
@@ -33,7 +33,7 @@ export function AdminKycDetails({
 }: IAdminKycDetailsProps) {
   const apiService = useApiService();
 
-  const { tab, showBlockReasonModal } = useAdminKycDetailsStore();
+  const { tab } = useAdminKycDetailsStore();
 
   const [docRejectingKey, setDocRejectingKey] = useState<string | null>(null);
   const [docRejectReason, setDocRejectReason] = useState("");
@@ -147,7 +147,11 @@ export function AdminKycDetails({
         Voltar
       </button>
 
-      <AdminKycDetailsHeader submission={submission} onUpdate={onUpdate} />
+      <AdminKycDetailsHeader
+        submission={submission}
+        onUpdate={onUpdate}
+        onDeleted={onBack}
+      />
       <AdminKycDetailsTabs submission={submission} />
 
       {tab === "kyc" && (
@@ -347,12 +351,8 @@ export function AdminKycDetails({
       {/* Balance Tab */}
       {tab === "balance" && <AdminKycDetailsBalanceTab seller={submission} />}
 
-      {/* Block Reason Modal */}
-      {showBlockReasonModal && (
-        <BlockReasonModal
-          sellerId={Number(submission.user_id)}
-          onUpdate={onUpdate}
-        />
+      {tab === "acquirer" && (
+        <AdminKycDetailsAcquirerTab sellerId={Number(submission.user_id)} />
       )}
 
       <KycDocumentPreviewModal

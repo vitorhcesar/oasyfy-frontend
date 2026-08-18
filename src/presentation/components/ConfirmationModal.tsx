@@ -8,9 +8,11 @@ interface IConfirmationModalProps {
   onOpenChange: (open: boolean) => void;
   title: string;
   description: ReactNode;
+  children?: ReactNode;
   confirmLabel?: string;
   cancelLabel?: string;
   confirmVariant?: "destructive" | "default";
+  confirmDisabled?: boolean;
   onConfirm: () => void | Promise<void>;
 }
 
@@ -19,9 +21,11 @@ export function ConfirmationModal({
   onOpenChange,
   title,
   description,
+  children,
   confirmLabel = "Confirmar",
   cancelLabel = "Cancelar",
   confirmVariant = "destructive",
+  confirmDisabled = false,
   onConfirm,
 }: IConfirmationModalProps) {
   const [confirming, setConfirming] = useState(false);
@@ -29,10 +33,14 @@ export function ConfirmationModal({
   if (!open) return null;
 
   const handleConfirm = async () => {
+    if (confirmDisabled) return;
+
     setConfirming(true);
     try {
       await onConfirm();
       onOpenChange(false);
+    } catch {
+      // Keep the modal open so the user can retry after an error toast.
     } finally {
       setConfirming(false);
     }
@@ -59,9 +67,14 @@ export function ConfirmationModal({
           >
             {title}
           </h3>
-          <p className="mb-5 text-sm leading-relaxed text-muted-foreground">
+          <p
+            className={`text-sm leading-relaxed text-muted-foreground ${
+              children ? "mb-4" : "mb-5"
+            }`}
+          >
             {description}
           </p>
+          {children ? <div className="mb-5">{children}</div> : null}
           <div className="flex justify-end gap-2">
             <Button
               type="button"
@@ -74,7 +87,7 @@ export function ConfirmationModal({
             <Button
               type="button"
               variant={confirmVariant}
-              disabled={confirming}
+              disabled={confirming || confirmDisabled}
               onClick={() => void handleConfirm()}
             >
               {confirming ? (

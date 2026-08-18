@@ -74,7 +74,7 @@ export default function StatusCards({ metrics }: IStatusCardsProps) {
       link: "/admin/kyc",
     },
     {
-      label: "KYC Aprovados",
+      label: "Sellers",
       value: approvedKyc,
       icon: ShieldCheck,
       accent: "bg-success/10 text-success",
@@ -92,7 +92,7 @@ export default function StatusCards({ metrics }: IStatusCardsProps) {
       value: bannedSellers,
       icon: Ban,
       accent: "bg-destructive/10 text-destructive",
-      link: "/admin/sellers",
+      link: "/admin/kyc",
     },
     {
       label: "Saques Pendentes",

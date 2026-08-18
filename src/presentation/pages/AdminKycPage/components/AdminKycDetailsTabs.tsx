@@ -48,6 +48,7 @@ export default function AdminKycDetailsTabs({
     { key: "bank", label: "Banco (saques)", pending: pendingBank },
     { key: "fees", label: "Taxas", pending: 0 },
     { key: "balance", label: "Saldo", pending: 0 },
+    { key: "acquirer", label: "Adquirente", pending: 0 },
   ];
 
   return (
