@@ -1,4 +1,5 @@
 import cartwaveLogo from "@/assets/cartwave-logo.png";
+import onlyupLogo from "@/assets/only-up-logo.png";
 import wooviLogo from "@/assets/woovi-logo.svg";
 import {
   getPixAcquirerProviderLabel,
@@ -11,6 +12,8 @@ const logoMap: Record<string, string> = {
   cartwave: cartwaveLogo,
   woovi: wooviLogo,
   openpix: wooviLogo,
+  onlyup: onlyupLogo,
+  "only-up": onlyupLogo,
 };
 
 interface IAcquirerBrandLogoProps {
