@@ -1,4 +1,13 @@
-export type TPixAcquirerProvider = "cartwave" | "woovi";
+export type TPixAcquirerProvider = "cartwave" | "woovi" | "onlyup";
+
+export type TOnlyUpCredentialsView = {
+  cash_in_client_id: string;
+  cash_in_client_secret_masked: string;
+  has_cash_in_client_secret: boolean;
+  has_cash_in_pfx: boolean;
+  has_cash_in_pfx_password: boolean;
+  pix_key: string;
+};
 
 export interface IPixAcquirerConnectionLike {
   api_url: string;
@@ -9,12 +18,16 @@ export interface IPixAcquirerConnectionLike {
   hmac_key?: string;
   branch_id?: string;
   account_number?: string;
+  onlyup?: TOnlyUpCredentialsView | null;
 }
 
 export function inferPixAcquirerProvider(
   conn: IPixAcquirerConnectionLike,
 ): TPixAcquirerProvider {
   const logoKey = conn.logo_key?.trim().toLowerCase();
+  if (logoKey === "onlyup") {
+    return "onlyup";
+  }
   if (logoKey === "woovi" || logoKey === "openpix") {
     return "woovi";
   }
@@ -23,6 +36,9 @@ export function inferPixAcquirerProvider(
   }
 
   const host = conn.api_url?.trim().toLowerCase() ?? "";
+  if (host.includes("onlyup")) {
+    return "onlyup";
+  }
   if (host.includes("woovi") || host.includes("openpix")) {
     return "woovi";
   }
@@ -35,6 +51,9 @@ export function inferPixAcquirerProvider(
   }
 
   const name = conn.name?.trim().toLowerCase() ?? "";
+  if (name.includes("onlyup") || name.includes("only up")) {
+    return "onlyup";
+  }
   if (name.includes("cartwave")) {
     return "cartwave";
   }
@@ -46,13 +65,19 @@ export function inferPixAcquirerProvider(
 }
 
 export function getPixAcquirerProviderLabel(provider: TPixAcquirerProvider) {
-  return provider === "woovi" ? "Woovi" : "Cartwave";
+  if (provider === "woovi") {
+    return "Woovi";
+  }
+  if (provider === "onlyup") {
+    return "OnlyUp";
+  }
+  return "Cartwave";
 }
 
 export function isPixAcquirerProviderSlug(
   slug: string | undefined,
 ): slug is TPixAcquirerProvider {
-  return slug === "woovi" || slug === "cartwave";
+  return slug === "woovi" || slug === "cartwave" || slug === "onlyup";
 }
 
 export function getAcquirerConfigPath(provider: TPixAcquirerProvider) {

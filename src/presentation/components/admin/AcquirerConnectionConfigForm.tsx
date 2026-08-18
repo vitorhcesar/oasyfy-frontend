@@ -19,10 +19,12 @@ import { toast } from "sonner";
 
 const DEFAULT_WOOVI_API = "https://api.woovi-sandbox.com";
 const DEFAULT_CARTWAVE_API = "https://api.cartwavehub.com.br";
+const DEFAULT_ONLYUP_API = "https://api.pix.onlyup.com.br";
 
 interface IAcquirerConnectionConfigFormProps {
   connection: TAcquirerConnectionView;
   saving: boolean;
+  registeringWebhook?: boolean;
   onSave: (
     connectionId: number,
     payload: IAcquirerCredentialsForm & {
@@ -30,15 +32,20 @@ interface IAcquirerConnectionConfigFormProps {
       isActive: boolean;
     },
   ) => Promise<void>;
+  onRegisterWebhook?: () => Promise<void>;
 }
 
 export function AcquirerConnectionConfigForm({
   connection,
   saving,
+  registeringWebhook = false,
   onSave,
+  onRegisterWebhook,
 }: IAcquirerConnectionConfigFormProps) {
   const [showToken, setShowToken] = useState(false);
   const [showHmac, setShowHmac] = useState(false);
+  const [showSecret, setShowSecret] = useState(false);
+  const [showPfxPassword, setShowPfxPassword] = useState(false);
   const [reconfiguring, setReconfiguring] = useState(false);
   const [formData, setFormData] = useState<IAcquirerCredentialsForm>({
     apiUrl: "",
@@ -47,6 +54,10 @@ export function AcquirerConnectionConfigForm({
     hmacKey: "",
     branchId: "",
     accountNumber: "",
+    cashInClientSecret: "",
+    cashInPfx: "",
+    cashInPfxPassword: "",
+    pixKey: "",
   });
 
   const provider = useMemo(
@@ -59,7 +70,9 @@ export function AcquirerConnectionConfigForm({
   const webhookUrl =
     provider === "woovi"
       ? `${apiBase}/api/v1/webhooks/woovi/pix`
-      : `${apiBase}/api/v1/webhooks/cartwave/pix`;
+      : provider === "onlyup"
+        ? `${apiBase}/api/v1/webhooks/onlyup/pix`
+        : `${apiBase}/api/v1/webhooks/cartwave/pix`;
 
   useEffect(() => {
     setFormData(buildAcquirerFormFromConnection(connection, configured));
@@ -69,7 +82,11 @@ export function AcquirerConnectionConfigForm({
   }, [connection, configured]);
 
   const handleSave = async () => {
-    const hasCredentials = hasAcquirerCredentialsToSave(provider, formData);
+    const hasCredentials = hasAcquirerCredentialsToSave(
+      provider,
+      formData,
+      configured,
+    );
     await onSave(Number(connection.id), {
       ...formData,
       status: hasCredentials ? "connected" : "disconnected",
@@ -88,7 +105,9 @@ export function AcquirerConnectionConfigForm({
           <p className="mt-1 text-sm text-muted-foreground">
             {provider === "woovi"
               ? "Cadastre esta URL no painel Woovi (um webhook por evento). Use o mesmo valor de Authorization do webhook no campo Secret abaixo."
-              : "Cadastre esta URL no painel Cartwave para notificações de pagamento PIX."}
+              : provider === "onlyup"
+                ? "A Oasyfy registra esta URL na OnlyUp (PUT /webhook/{chave}). Quem tiver a URL pode simular POST — o pagamento só é confirmado com GET /cob."
+                : "Cadastre esta URL no painel Cartwave para notificações de pagamento PIX."}
           </p>
         </div>
 
@@ -127,6 +146,33 @@ export function AcquirerConnectionConfigForm({
             A Cartwave envia headers <code>ci</code> e <code>hmac</code> para
             validação.
           </p>
+        )}
+
+        {provider === "onlyup" && (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Cash-in não usa HMAC. Alias legado:{" "}
+              <code className="text-foreground">
+                {apiBase}/api/v1/gateway/webhook/only_up
+              </code>
+              .
+            </p>
+            {onRegisterWebhook && (
+              <button
+                type="button"
+                onClick={() => {
+                  void onRegisterWebhook();
+                }}
+                disabled={registeringWebhook || !configured}
+                className="inline-flex h-10 items-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-[#111827] transition-opacity hover:opacity-90 disabled:opacity-50"
+              >
+                {registeringWebhook && (
+                  <Loader2 size={15} className="animate-spin" />
+                )}
+                Configurar webhook
+              </button>
+            )}
+          </div>
         )}
       </div>
 
@@ -172,7 +218,11 @@ export function AcquirerConnectionConfigForm({
               <Label className="text-sm">URL da API</Label>
               <Input
                 placeholder={
-                  provider === "woovi" ? DEFAULT_WOOVI_API : DEFAULT_CARTWAVE_API
+                  provider === "woovi"
+                    ? DEFAULT_WOOVI_API
+                    : provider === "onlyup"
+                      ? DEFAULT_ONLYUP_API
+                      : DEFAULT_CARTWAVE_API
                 }
                 value={formData.apiUrl}
                 onChange={(e) =>
@@ -184,6 +234,12 @@ export function AcquirerConnectionConfigForm({
                 <p className="text-sm text-muted-foreground">
                   Sandbox: <code>https://api.woovi-sandbox.com</code> — Produção:{" "}
                   <code>https://api.woovi.com</code>
+                </p>
+              )}
+              {provider === "onlyup" && (
+                <p className="text-sm text-muted-foreground">
+                  Cash-in: <code>https://api.pix.onlyup.com.br</code> (sem
+                  sandbox público).
                 </p>
               )}
             </div>
@@ -263,6 +319,140 @@ export function AcquirerConnectionConfigForm({
                   Saques PIX Out exigem scope <code>PAYMENT_POST</code> no app
                   Woovi.
                 </p>
+              </>
+            ) : provider === "onlyup" ? (
+              <>
+                <div className="space-y-2">
+                  <Label className="text-sm">Client ID (API Pix / cash-in)</Label>
+                  <Input
+                    placeholder="Client ID da aba API QRCODES"
+                    value={formData.clientId}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        clientId: e.target.value,
+                      }))
+                    }
+                    className="font-mono text-sm"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm">Client Secret</Label>
+                  <div className="relative">
+                    <Input
+                      type={showSecret ? "text" : "password"}
+                      placeholder={
+                        configured
+                          ? "Deixe em branco para manter o secret atual"
+                          : "Client Secret OAuth"
+                      }
+                      value={formData.cashInClientSecret}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          cashInClientSecret: e.target.value,
+                        }))
+                      }
+                      className="pr-10 font-mono text-sm"
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      onClick={() => setShowSecret(!showSecret)}
+                    >
+                      {showSecret ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm">Certificado PFX</Label>
+                  <Input
+                    type="file"
+                    accept=".pfx,.p12"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) {
+                        return;
+                      }
+                      const reader = new FileReader();
+                      reader.onload = () => {
+                        const result = reader.result;
+                        if (typeof result !== "string") {
+                          return;
+                        }
+                        const base64 = result.includes(",")
+                          ? result.slice(result.indexOf(",") + 1)
+                          : result;
+                        setFormData((prev) => ({ ...prev, cashInPfx: base64 }));
+                      };
+                      reader.readAsDataURL(file);
+                    }}
+                    className="text-sm"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    {formData.cashInPfx
+                      ? "Novo certificado selecionado."
+                      : connection.onlyup?.has_cash_in_pfx
+                        ? "Certificado já carregado. Envie outro arquivo só se quiser substituir."
+                        : "Arquivo .pfx da API QRCODES (mTLS)."}
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm">Senha do PFX</Label>
+                  <div className="relative">
+                    <Input
+                      type={showPfxPassword ? "text" : "password"}
+                      placeholder={
+                        configured
+                          ? "Deixe em branco para manter a senha atual"
+                          : "Senha do certificado"
+                      }
+                      value={formData.cashInPfxPassword}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          cashInPfxPassword: e.target.value,
+                        }))
+                      }
+                      className="pr-10 font-mono text-sm"
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      onClick={() => setShowPfxPassword(!showPfxPassword)}
+                    >
+                      {showPfxPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm">Chave Pix</Label>
+                  <Input
+                    placeholder="Chave DICT recebedora"
+                    value={formData.pixKey}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        pixKey: e.target.value,
+                      }))
+                    }
+                    className="font-mono text-sm"
+                  />
+                </div>
+
+                <div className="rounded-xl border border-border/50 bg-muted/30 p-4 space-y-2">
+                  <p className="text-sm font-semibold text-foreground">
+                    API Conta (cash-out)
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Saques via OnlyUp entram na próxima versão. Não é necessário
+                    preencher agora.
+                  </p>
+                </div>
               </>
             ) : (
               <>

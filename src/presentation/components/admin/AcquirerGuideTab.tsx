@@ -88,6 +88,7 @@ export function AcquirerGuideTab() {
   const apiBase = getApiBaseUrl();
   const wooviWebhookUrl = `${apiBase}/api/v1/webhooks/woovi/pix`;
   const cartwaveWebhookUrl = `${apiBase}/api/v1/webhooks/cartwave/pix`;
+  const onlyupWebhookUrl = `${apiBase}/api/v1/webhooks/onlyup/pix`;
 
   return (
     <div className="space-y-6">
@@ -117,7 +118,7 @@ export function AcquirerGuideTab() {
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-muted-foreground">
           {[
-            "Aba Conexões → Carregar adquirentes padrão (Woovi + Cartwave)",
+            "Aba Conexões → Carregar adquirentes padrão (Woovi + Cartwave + OnlyUp)",
             "Configurar credenciais de cada provedor → status Conectada",
             "Ativar o switch da adquirente que será usada",
             "Aba Depósito → adicionar adquirente(s) em PIX com prioridade (failover)",
@@ -490,6 +491,90 @@ Content-Type: application/json`} />
         </CardContent>
       </Card>
 
+      {/* ONLYUP */}
+      <Card className="border-border/40">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-2">
+            <CardTitle className="text-base">OnlyUp</CardTitle>
+            <Badge variant="outline" className="text-sm">
+              PIX entrada (cash-in)
+            </Badge>
+          </div>
+          <CardDescription className="text-sm">
+            Host cash-in:{" "}
+            <code className="text-foreground">https://api.pix.onlyup.com.br</code>
+            . OAuth curto + mTLS (PFX). Sem HMAC no webhook — confirme com{" "}
+            <code>GET /cob</code>. Documentação:{" "}
+            <ExternalDocLink
+              href="https://onlyu.readme.io"
+              label="onlyu.readme.io"
+            />
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-8">
+          <div>
+            <h3 className="text-sm font-bold uppercase tracking-wide text-muted-foreground mb-4">
+              Parte A — No Finance OnlyUp
+            </h3>
+            <div className="space-y-0">
+              <GuideStep number={1} title="Gerar credenciais da API QRCODES">
+                <p>
+                  Na aba <strong>Finance → API QRCODES</strong>, gere Client ID
+                  e Client Secret. Não use as credenciais da API CONTAS no
+                  cash-in.
+                </p>
+              </GuideStep>
+              <GuideStep number={2} title="Certificado mTLS (PFX)">
+                <p>
+                  Baixe o <strong>.pfx</strong> e a senha. A Oasyfy usa esse
+                  par em todas as chamadas cash-in (token, cobrança, webhook,
+                  estorno).
+                </p>
+              </GuideStep>
+              <GuideStep number={3} title="Chave Pix recebedora">
+                <p>
+                  Informe a chave DICT cadastrada na conta OnlyUp. Ela vai no
+                  body de <code>PUT /cob</code> e no path{" "}
+                  <code>PUT /webhook/{"{chave}"}</code>.
+                </p>
+              </GuideStep>
+            </div>
+          </div>
+          <div>
+            <h3 className="text-sm font-bold uppercase tracking-wide text-muted-foreground mb-4">
+              Parte B — No Oasyfy (aba Conexões)
+            </h3>
+            <div className="space-y-0">
+              <GuideStep number={1} title="Preencher cash-in e salvar">
+                <p>
+                  Aba <strong>Conexões</strong> → Configurar OnlyUp: URL da API,
+                  Client ID, Client Secret, PFX, senha do PFX e Chave Pix.
+                </p>
+              </GuideStep>
+              <GuideStep number={2} title="Configurar webhook pela Oasyfy">
+                <p>
+                  Use o botão <strong>Configurar webhook</strong>. A Oasyfy
+                  registra:
+                </p>
+                <CopyBlock label="URL do webhook" value={onlyupWebhookUrl} />
+                <p>
+                  Cash-in <strong>não tem HMAC</strong>. Quem tiver a URL pode
+                  POSTAR; o pagamento só vira pago após{" "}
+                  <code>GET /cob</code> = <code>CONCLUIDA</code>.
+                </p>
+              </GuideStep>
+              <GuideStep number={3} title="Roteamento e teste">
+                <p>
+                  Aba Depósito → PIX → incluir OnlyUp na ordem de failover.
+                  Homologação é produção com valor baixo (não há sandbox
+                  público).
+                </p>
+              </GuideStep>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Failover + mapeamento */}
       <Card className="border-border/40">
         <CardHeader className="pb-3">
@@ -511,24 +596,33 @@ Content-Type: application/json`} />
                   <th className="py-2 font-medium text-foreground">
                     Cartwave
                   </th>
+                  <th className="py-2 font-medium text-foreground">
+                    OnlyUp
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/30">
                 {[
-                  ["URL da API", "api.woovi.com / sandbox", "api.cartwavehub.com.br"],
-                  ["Access Token", "App ID", "Bearer token"],
-                  ["HMAC / Secret", "Secret webhook (Authorization)", "Chave HMAC"],
-                  ["Client ID", "Opcional (webhook)", "Obrigatório (header ci)"],
-                  ["Agência / Conta", "Não usa", "Obrigatório"],
-                  ["Webhook URL", wooviWebhookUrl, cartwaveWebhookUrl],
-                  ["Saques PIX", "Sim (PAYMENT_POST)", "Não"],
-                ].map(([label, woovi, cartwave]) => (
+                  [
+                    "URL da API",
+                    "api.woovi.com / sandbox",
+                    "api.cartwavehub.com.br",
+                    "api.pix.onlyup.com.br",
+                  ],
+                  ["Access Token / Secret", "App ID", "Bearer token", "OAuth 5 min + Client Secret"],
+                  ["HMAC / Auth webhook", "Secret webhook", "Chave HMAC", "Sem HMAC; GET /cob"],
+                  ["Client ID", "Opcional (webhook)", "Obrigatório (header ci)", "OAuth cash-in"],
+                  ["Extra", "Não usa", "Agência / Conta", "PFX + senha + Chave Pix"],
+                  ["Webhook URL", wooviWebhookUrl, cartwaveWebhookUrl, onlyupWebhookUrl],
+                  ["Saques PIX", "Sim (PAYMENT_POST)", "Não", "v1.1 (API Conta)"],
+                ].map(([label, woovi, cartwave, onlyup]) => (
                   <tr key={label}>
                     <td className="py-2 pr-3 font-medium text-foreground">
                       {label}
                     </td>
                     <td className="py-2 pr-3">{woovi}</td>
-                    <td className="py-2">{cartwave}</td>
+                    <td className="py-2 pr-3">{cartwave}</td>
+                    <td className="py-2">{onlyup}</td>
                   </tr>
                 ))}
               </tbody>
@@ -569,6 +663,10 @@ Content-Type: application/json`} />
             {
               q: "Cartwave não conecta",
               a: "Todos os 5 campos obrigatórios + URL API. Verifique agência/conta com suporte Cartwave.",
+            },
+            {
+              q: "Webhook OnlyUp não marca pago",
+              a: "Cash-in não usa HMAC. Confirme PFX/mTLS, chave Pix e que GET /cob retorna CONCLUIDA. A URL do webhook é segredo de operação.",
             },
             {
               q: "PIX não usa Woovi mesmo configurada",

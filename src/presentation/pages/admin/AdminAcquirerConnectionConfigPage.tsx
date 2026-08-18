@@ -27,6 +27,7 @@ export default function AdminAcquirerConnectionConfigPage() {
     invalidateQuery,
   } = useAdminAcquirerConnectionsQuery();
   const [saving, setSaving] = useState(false);
+  const [registeringWebhook, setRegisteringWebhook] = useState(false);
 
   const provider = isPixAcquirerProviderSlug(providerSlug)
     ? providerSlug
@@ -73,6 +74,21 @@ export default function AdminAcquirerConnectionConfigPage() {
           accountNumber: payload.accountNumber,
           status: payload.status,
           isActive: payload.isActive,
+          ...(inferPixAcquirerProvider({
+            api_url: payload.apiUrl,
+            logo_key: connection?.logo_key,
+            name: connection?.name,
+          }) === "onlyup"
+            ? {
+                onlyup: {
+                  cashInClientId: payload.clientId,
+                  cashInClientSecret: payload.cashInClientSecret,
+                  cashInPfx: payload.cashInPfx,
+                  cashInPfxPassword: payload.cashInPfxPassword,
+                  pixKey: payload.pixKey,
+                },
+              }
+            : {}),
         },
       );
       toast.success("Credenciais salvas com sucesso!");
@@ -83,6 +99,23 @@ export default function AdminAcquirerConnectionConfigPage() {
     }
 
     setSaving(false);
+  };
+
+  const registerOnlyUpWebhook = async () => {
+    if (!connection) {
+      return;
+    }
+    setRegisteringWebhook(true);
+    try {
+      await apiService.modules.adminConfig.registerOnlyUpWebhook(
+        Number(connection.id),
+      );
+      toast.success("Webhook OnlyUp configurado");
+    } catch (error) {
+      toast.error("Falha ao configurar webhook na OnlyUp");
+      console.error(error);
+    }
+    setRegisteringWebhook(false);
   };
 
   const toggleActive = async () => {
@@ -217,7 +250,13 @@ export default function AdminAcquirerConnectionConfigPage() {
             <AcquirerConnectionConfigForm
               connection={connection}
               saving={saving}
+              registeringWebhook={registeringWebhook}
               onSave={saveConfig}
+              onRegisterWebhook={
+                inferPixAcquirerProvider(connection) === "onlyup"
+                  ? registerOnlyUpWebhook
+                  : undefined
+              }
             />
           </div>
         )}

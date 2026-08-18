@@ -11,6 +11,10 @@ export interface IAcquirerCredentialsForm {
   hmacKey: string;
   branchId: string;
   accountNumber: string;
+  cashInClientSecret: string;
+  cashInPfx: string;
+  cashInPfxPassword: string;
+  pixKey: string;
 }
 
 export function isAcquirerConfigured(conn: IPixAcquirerConnectionLike): boolean {
@@ -18,6 +22,17 @@ export function isAcquirerConfigured(conn: IPixAcquirerConnectionLike): boolean 
 
   if (provider === "woovi") {
     return Boolean(conn.access_token?.trim() && conn.hmac_key?.trim());
+  }
+
+  if (provider === "onlyup") {
+    const onlyup = conn.onlyup;
+    return Boolean(
+      onlyup?.has_cash_in_client_secret &&
+        onlyup.has_cash_in_pfx &&
+        onlyup.has_cash_in_pfx_password &&
+        onlyup.pix_key?.trim() &&
+        (onlyup.cash_in_client_id?.trim() || conn.client_id?.trim()),
+    );
   }
 
   return Boolean(
@@ -32,9 +47,21 @@ export function isAcquirerConfigured(conn: IPixAcquirerConnectionLike): boolean 
 export function hasAcquirerCredentialsToSave(
   provider: TPixAcquirerProvider,
   form: IAcquirerCredentialsForm,
+  configured = false,
 ): boolean {
   if (provider === "woovi") {
     return Boolean(form.apiUrl.trim() && form.accessToken.trim() && form.hmacKey.trim());
+  }
+
+  if (provider === "onlyup") {
+    return Boolean(
+      form.apiUrl.trim() &&
+        form.clientId.trim() &&
+        form.pixKey.trim() &&
+        (form.cashInClientSecret.trim() || configured) &&
+        (form.cashInPfx.trim() || configured) &&
+        (form.cashInPfxPassword.trim() || configured),
+    );
   }
 
   return Boolean(
@@ -57,12 +84,19 @@ export function buildAcquirerFormFromConnection(
   },
   configured: boolean,
 ): IAcquirerCredentialsForm {
+  const onlyup = conn.onlyup;
   return {
     apiUrl: conn.api_url ?? "",
-    clientId: configured ? "" : conn.client_id || "",
+    clientId: configured
+      ? onlyup?.cash_in_client_id || conn.client_id || ""
+      : conn.client_id || onlyup?.cash_in_client_id || "",
     accessToken: configured ? "" : conn.access_token || "",
     hmacKey: configured ? "" : conn.hmac_key || "",
     branchId: configured ? "" : conn.branch_id || "",
     accountNumber: configured ? "" : conn.account_number || "",
+    cashInClientSecret: "",
+    cashInPfx: "",
+    cashInPfxPassword: "",
+    pixKey: onlyup?.pix_key || "",
   };
 }

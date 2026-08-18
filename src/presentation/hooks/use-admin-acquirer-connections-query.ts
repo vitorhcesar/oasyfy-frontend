@@ -15,6 +15,14 @@ export type TAcquirerConnectionView = {
   branch_id: string;
   account_number: string;
   is_active: boolean;
+  onlyup: {
+    cash_in_client_id: string;
+    cash_in_client_secret_masked: string;
+    has_cash_in_client_secret: boolean;
+    has_cash_in_pfx: boolean;
+    has_cash_in_pfx_password: boolean;
+    pix_key: string;
+  } | null;
 };
 
 const DEFAULT_RETURN: TAcquirerConnectionView[] = [];
@@ -29,6 +37,7 @@ function mapConnection(row: Record<string, unknown>): TAcquirerConnectionView {
     hmac_key: conn.hmac_key ?? "",
     branch_id: conn.branch_id ?? "",
     account_number: conn.account_number ?? "",
+    onlyup: conn.onlyup ?? null,
   };
 }
 
