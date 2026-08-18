@@ -212,6 +212,7 @@ Content-Type: application/json`}</Code>
           <li>401 — API key inválida ou ausente</li>
           <li>403 — permissão, IP ou API não liberada</li>
           <li>404 — recurso não encontrado</li>
+          <li>410 — recurso removido (ex.: POST /gateway/refunds)</li>
           <li>500 — erro interno</li>
         </ul>
         <Code>{`{
@@ -264,8 +265,8 @@ Content-Type: application/json`}</Code>
         <H id="lock">O que é lock?</H>
         <p>
           <code>POST /gateway/lock</code> trava uma transação para impedir
-          reembolso até destrave. Endpoint avançado, fora da navegação
-          principal.
+          reembolso pelo admin até destrave. Endpoint avançado, fora da
+          navegação principal. A API pública não reembolsa.
         </p>
       </div>
     ),
@@ -383,7 +384,9 @@ Content-Type: application/json`}</Code>
         </p>
         <p>
           Não dispara na criação em <code>pending</code>, nem em saque,
-          depósito interno, split_credit ou ajuste admin.
+          depósito interno, split_credit ou ajuste admin. Reembolso{" "}
+          <strong>não</strong> é feito pela API: o aviso de{" "}
+          <code>paid → refunded</code> é o único canal de “foi reembolsado”.
         </p>
         <H id="transitions">Transições típicas</H>
         <ParamTable
@@ -405,7 +408,8 @@ Content-Type: application/json`}</Code>
               name: "paid → refunded",
               type: "evento",
               required: false,
-              description: "Reembolso concluído",
+              description:
+                "Reembolso concluído (admin ou adquirente). Único aviso de estorno — a API não tem POST de reembolso.",
             },
             {
               name: "paid → chargeback",
@@ -994,48 +998,61 @@ x-api-key: sk_live_OAS_...`}</Code>
     ),
   },
   reembolso: {
-    title: "Reembolsar",
-    summary: "POST /gateway/refunds",
+    title: "Reembolsos (webhook)",
+    summary: "A API não reembolsa — escute sale.status_changed",
     toc: [
-      { id: "req", label: "Request" },
-      { id: "body", label: "Body" },
+      { id: "how", label: "Como funciona" },
+      { id: "event", label: "Evento" },
+      { id: "gone", label: "POST antigo" },
     ],
     body: (
       <div className="space-y-8">
-        <H id="req">Request</H>
+        <H id="how">Como funciona</H>
         <p>
-          Permissão <code>venda</code>.
+          A API pública <strong>não reembolsa</strong>. Estorno é feito pelo
+          admin da Oasyfy ou pela adquirente. O seu servidor só{" "}
+          <strong>recebe o aviso</strong> quando a venda muda para{" "}
+          <code>refunded</code>.
         </p>
-        <Code>{`POST ${apiRoot()}/gateway/refunds
-x-api-key: sk_live_OAS_...
-Content-Type: application/json
-
-{ "transaction_id": 1042, "reason": "Desistência" }`}</Code>
-        <H id="body">Body</H>
-        <ParamTable
-          title="Campos"
-          params={[
-            {
-              name: "transaction_id",
-              type: "integer",
-              required: true,
-              description: "ID numérico da transação",
-            },
-            {
-              name: "reason",
-              type: "string",
-              required: false,
-              description: "Motivo do reembolso",
-            },
-            {
-              name: "fake",
-              type: "boolean",
-              required: false,
-              description:
-                "Default false. true marca reembolso interno sem chamar a adquirente.",
-            },
-          ]}
-        />
+        <p>
+          Cadastre a URL no portal (API → Webhooks) ou envie{" "}
+          <code>webhook_url</code> na criação da venda/PIX. O evento é o mesmo
+          de pagamento e expiração:{" "}
+          <Link
+            className="text-emerald-400 hover:underline"
+            to="/docs/webhooks/status-da-venda"
+          >
+            sale.status_changed
+          </Link>
+          .
+        </p>
+        <H id="event">Quando foi reembolsado</H>
+        <p>
+          Trate <code>data.status === &quot;refunded&quot;</code>. Idempotência
+          pelo campo <code>id</code> (
+          <code>evt_&lt;transactionId&gt;_refunded</code>
+          ). GET de transação/rastreio também mostra o status, se precisar
+          conferir.
+        </p>
+        <Code>{`{
+  "id": "evt_1042_refunded",
+  "type": "sale.status_changed",
+  "data": {
+    "transaction_id": 1042,
+    "previous_status": "paid",
+    "status": "refunded"
+  }
+}`}</Code>
+        <H id="gone">POST antigo</H>
+        <p>
+          Chamadas antigas a <code>POST /gateway/refunds</code> (com API key
+          válida) respondem <code>410</code> com{" "}
+          <code>refunds_via_webhook_only</code>. Sem chave: <code>401</code>.
+        </p>
+        <Code>{`{
+  "error": "refunds_via_webhook_only",
+  "message": "Reembolso não é mais feito pela API. Escute sale.status_changed com data.status=refunded."
+}`}</Code>
       </div>
     ),
   },

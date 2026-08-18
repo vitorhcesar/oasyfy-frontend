@@ -131,6 +131,7 @@ Códigos HTTP do gateway Oasyfy. Endpoints do gateway devolvem JSON plano.
 - 401 — API key inválida ou ausente
 - 403 — permissão, IP ou API não liberada
 - 404 — recurso não encontrado
+- 410 — recurso removido (refunds_via_webhook_only)
 - 500 / 502 — erro interno ou falha na adquirente
 
 ## Exemplo
@@ -174,7 +175,7 @@ ${numbered([
 Não é obrigatório se você cadastrar um webhook de status da venda (sale.status_changed). Consulta e rastreio continuam disponíveis.
 
 ## Lock
-POST /gateway/lock trava uma transação para impedir reembolso até destrave. Endpoint avançado.
+POST /gateway/lock trava uma transação para impedir reembolso pelo admin até destrave. Endpoint avançado. A API pública não reembolsa.
 
 ## Instruções para Implementação
 ${numbered([
@@ -215,7 +216,7 @@ Evento \`sale.status_changed\`. Dispara quando o status persistido de uma venda 
 ## Transições típicas
 - pending → paid (PIX pago)
 - pending → failed (PIX expirado)
-- paid → refunded
+- paid → refunded (reembolso pelo admin ou adquirente — único aviso de estorno; a API não tem POST de reembolso)
 - paid → chargeback
 
 ## Exemplo de payload
@@ -628,38 +629,36 @@ ${numbered([
 \`\`\``,
   }),
 
-  reembolso: endpointPrompt({
-    title: "Reembolsar",
-    description:
-      "Reembolsa uma transação paga. Por padrão chama a adquirente. fake: true marca reembolso interno sem chamar a adquirente.",
-    method: "POST",
-    path: "/gateway/refunds",
-    auth: true,
-    permission: "venda",
-    body: `JSON:
-- transaction_id (integer, obrigatório)
-- reason (string, opcional)
-- fake (boolean, opcional, default false)
+  reembolso: `# Integração com API - Reembolsos (webhook)
+
+## Descrição
+A API pública **não reembolsa**. Não chame nenhum endpoint de estorno. O admin da Oasyfy ou a adquirente reembolsam; o seu servidor recebe \`sale.status_changed\` com \`data.status = refunded\`.
+
+## Como tratar
+- Cadastre a URL no portal (API → Webhooks) ou envie \`webhook_url\` na criação da venda/PIX
+- \`if (payload.data.status === "refunded")\` atualize o pedido
+- Idempotência pelo campo \`id\` (\`evt_<transactionId>_refunded\`)
+- GET /gateway/transactions e GET /gateway/tracking ainda mostram \`status: refunded\`
+
+## Chamada antiga
+POST /gateway/refunds com API key válida responde 410:
 
 \`\`\`json
 {
-  "transaction_id": 1042,
-  "reason": "Desistência"
+  "error": "refunds_via_webhook_only",
+  "message": "Reembolso não é mais feito pela API. Escute sale.status_changed com data.status=refunded."
 }
-\`\`\``,
-    responses: `### 200 OK
-- transação atualizada para refunded
-### 400 / 404
-- id inválido ou transação não reembolsável`,
-    example: `### 200 OK
-\`\`\`json
-{
-  "message": "Reembolso realizado",
-  "transaction_id": 1042,
-  "is_fake": false
-}
-\`\`\``,
-  }),
+\`\`\`
+
+Sem chave: 401.
+
+## Instruções para Implementação
+${numbered([
+  "Não implemente POST de reembolso contra a API Oasyfy",
+  "Escute sale.status_changed e trate data.status === refunded",
+  "Use o campo id para não processar o mesmo estorno duas vezes",
+])}
+`,
 };
 
 export function getFullDocsAiPrompt(): string {
@@ -673,7 +672,7 @@ export function getFullDocsAiPrompt(): string {
     `Base URL: ${API}`,
     "Autenticação: header `x-api-key: sk_live_OAS_...` (ou `Authorization: Bearer sk_live_OAS_...`).",
     "Content-Type: application/json. Valores em centavos. transaction_id é inteiro positivo, não UUID.",
-    "A liquidação operacional atual é PIX. Para status de venda, use o webhook `sale.status_changed`.",
+    "A liquidação operacional atual é PIX. Para status de venda, use o webhook `sale.status_changed`. A API não reembolsa: trate `data.status === refunded`.",
     "",
     "---",
     "",

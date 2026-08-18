@@ -29,4 +29,13 @@ describe("docs AI prompts", () => {
     expect(prompt).toContain("amount");
     expect(prompt).toContain("webhook_url");
   });
+
+  test("refund prompt is webhook-only", () => {
+    const prompt = getDocsAiPrompt("reembolso") ?? "";
+    expect(prompt).toContain("sale.status_changed");
+    expect(prompt).toContain("refunded");
+    expect(prompt).toContain("refunds_via_webhook_only");
+    expect(prompt).not.toContain("fake: true");
+    expect(prompt).not.toContain("Reembolsa uma transação paga");
+  });
 });

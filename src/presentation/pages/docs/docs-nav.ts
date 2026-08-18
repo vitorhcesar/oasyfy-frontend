@@ -191,9 +191,8 @@ export const DOCS_NAV: IDocsNavGroup[] = [
     items: [
       {
         slug: "reembolso",
-        title: "Reembolsar",
-        method: "POST",
-        keywords: "gateway refunds reembolso",
+        title: "Reembolsos (webhook)",
+        keywords: "reembolso refunded webhook sale.status_changed",
       },
     ],
   },
