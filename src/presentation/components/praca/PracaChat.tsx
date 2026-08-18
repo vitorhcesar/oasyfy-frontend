@@ -1,4 +1,5 @@
 import { ConfirmationModal } from "@/presentation/components/ConfirmationModal";
+import { AuthBrandMark } from "@/presentation/components/auth/AuthBrandMark";
 import { Badge } from "@/presentation/components/ui/badge";
 import { Button } from "@/presentation/components/ui/button";
 import {
@@ -12,6 +13,7 @@ import type {
   IPracaQuotedMessageDto,
 } from "@/infra/http/services/api/modules/types/praca.types";
 import { cn } from "@/presentation/utils/cn";
+import { useThemeContext } from "@/presentation/hooks/use-theme";
 import { Loader2, Reply, Send, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -103,7 +105,7 @@ function QuotedPreview({
               color.text,
             )}
           >
-            {shortDisplayName(quoted.author.displayName)}
+            {quoted.author.displayName}
           </span>
           <span
             className={cn(
@@ -135,11 +137,27 @@ function MessageAvatar({
   name,
   avatarUrl,
   mine,
+  isAdmin,
 }: {
   name: string;
   avatarUrl: string | null;
   mine?: boolean;
+  isAdmin?: boolean;
 }) {
+  const { theme } = useThemeContext();
+  if (isAdmin) {
+    return (
+      <div className="mb-0.5 flex h-8 w-8 items-center justify-center overflow-hidden rounded-full bg-muted ring-1 ring-border/50">
+        <AuthBrandMark
+          mark="icon"
+          size="sm"
+          variant={theme === "dark" ? "white" : "black"}
+          className="[&_img]:h-6 [&_img]:w-6"
+        />
+      </div>
+    );
+  }
+
   return (
     <Avatar className="mb-0.5 h-8 w-8">
       {avatarUrl ? <AvatarImage src={avatarUrl} alt={name} /> : null}
@@ -242,6 +260,7 @@ export function PracaChat({
                     <MessageAvatar
                       name={message.author.displayName}
                       avatarUrl={message.author.avatarUrl}
+                      isAdmin={message.author.role === "admin"}
                     />
                   ) : null}
 
@@ -272,7 +291,7 @@ export function PracaChat({
                             color.text,
                           )}
                         >
-                          {shortDisplayName(message.author.displayName)}
+                          {message.author.displayName}
                         </span>
                         {message.author.role === "admin" ? (
                           <Badge
@@ -323,6 +342,7 @@ export function PracaChat({
                       name={message.author.displayName}
                       avatarUrl={message.author.avatarUrl}
                       mine
+                      isAdmin={message.author.role === "admin"}
                     />
                   ) : (
                     <button
