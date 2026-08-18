@@ -188,6 +188,8 @@ ${numbered([
 ## Descrição
 A Oasyfy faz POST HTTPS na URL cadastrada no portal (API → Webhooks) quando o status de uma venda muda. Evento v1: \`sale.status_changed\`. Até 3 URLs HTTPS. O secret (\`whsec_...\`) aparece só na criação.
 
+Também é possível passar \`webhook_url\` em POST /gateway/sales e POST /gateway/pix: notifica só aquela cobrança, além das URLs da conta. A mesma URL é idempotente (um destino e um secret). Secret só no 201 da primeira vez. Checkout público não aceita o campo.
+
 ## Headers enviados
 - Content-Type: application/json
 - User-Agent: Oasyfy-Webhooks/1.0
@@ -199,7 +201,7 @@ Responda HTTP 2xx em até 5 segundos. URLs como /api/v1/webhooks/woovi/pix são 
 
 ## Instruções para Implementação
 ${numbered([
-  "Cadastre a URL HTTPS no portal e guarde o secret",
+  "Cadastre a URL HTTPS no portal e guarde o secret, ou envie webhook_url na criação da venda/PIX",
   "Valide X-Oasyfy-Signature em tempo constante",
   "Responda 2xx rápido e processe o pedido de forma idempotente pelo campo id",
 ])}
@@ -428,6 +430,7 @@ ${numbered([
 - method (enum, obrigatório) — pix | card | boleto | crypto
 - description (string, opcional)
 - metadata (object, opcional)
+- webhook_url (string, opcional) — HTTPS. Notifica só esta venda (além dos webhooks da conta). Mesma URL reutiliza o destino e o secret. Secret só no 201 da 1ª vez. 400 invalid_webhook_url se a URL for insegura.
 - split (array, opcional)
 
 \`\`\`json
@@ -438,14 +441,16 @@ ${numbered([
   "amount": 15000,
   "method": "pix",
   "description": "Pedido #1234",
-  "metadata": { "order_id": "1234" }
+  "metadata": { "order_id": "1234" },
+  "webhook_url": "https://api.loja.com/oasyfy/orders/1234"
 }
 \`\`\``,
     responses: `### 201 Created
 - message
 - transaction (objeto com id inteiro, status pending)
+- webhook (opcional) — { url, secret? }. secret só na 1ª vez da URL
 ### 400
-- error — campos inválidos (customer_name e amount são obrigatórios)
+- error — campos inválidos (customer_name e amount são obrigatórios) ou invalid_webhook_url
 ### 403
 - KYC não aprovado ou api_access_denied`,
     example: `### 201 Created
@@ -478,6 +483,7 @@ ${numbered([
 - amount (integer, obrigatório) — centavos. Aceita também string numérica ("5990")
 - description (string, opcional)
 - metadata (object, opcional)
+- webhook_url (string, opcional) — HTTPS. Callback só desta cobrança. Idempotente se a URL for a mesma. Secret só no 201 da 1ª vez. URL inválida → 400 invalid_webhook_url, sem gerar PIX.
 - split (array, opcional)
 
 \`\`\`json
@@ -487,15 +493,17 @@ ${numbered([
   "customer_document": "52998224725",
   "amount": 5990,
   "description": "Assinatura mensal",
-  "metadata": { "order_id": "A-100" }
+  "metadata": { "order_id": "A-100" },
+  "webhook_url": "https://api.loja.com/oasyfy/hooks"
 }
 \`\`\``,
     responses: `### 201 Created
 - message
 - transaction
 - pix.transaction_id, pix.amount, pix.pix_code, pix.expiration, pix.status (awaiting_payment)
+- webhook (opcional) — { url, secret? }. secret só na 1ª vez daquela URL; omitido se a URL já for a da conta
 ### 400
-- error — se faltar customer_name ou amount
+- error — se faltar customer_name ou amount, ou invalid_webhook_url
 ### 403
 - KYC / api_access_denied
 ### 502
@@ -517,6 +525,10 @@ ${numbered([
     "pix_code": "00020126...",
     "expiration": "2026-08-17T15:00:00.000Z",
     "status": "awaiting_payment"
+  },
+  "webhook": {
+    "url": "https://api.loja.com/oasyfy/hooks",
+    "secret": "whsec_..."
   }
 }
 \`\`\``,

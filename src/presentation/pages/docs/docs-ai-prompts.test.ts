@@ -27,5 +27,6 @@ describe("docs AI prompts", () => {
     expect(prompt).toContain("customer_name");
     expect(prompt).toContain("customer_document");
     expect(prompt).toContain("amount");
+    expect(prompt).toContain("webhook_url");
   });
 });

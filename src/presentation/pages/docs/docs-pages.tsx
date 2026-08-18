@@ -276,6 +276,7 @@ Content-Type: application/json`}</Code>
     toc: [
       { id: "how", label: "Como funciona" },
       { id: "setup", label: "Cadastro" },
+      { id: "sale", label: "Por venda" },
       { id: "headers", label: "Headers" },
       { id: "not", label: "O que não é" },
     ],
@@ -305,6 +306,20 @@ Content-Type: application/json`}</Code>
           signing secret (<code>whsec_...</code>) aparece só na criação; copie
           na hora. Use o botão Testar para receber um payload com{" "}
           <code>test: true</code>.
+        </p>
+        <H id="sale">Webhook por venda</H>
+        <p>
+          Além do cadastro no portal, <code>POST /gateway/sales</code> e{" "}
+          <code>POST /gateway/pix</code> aceitam <code>webhook_url</code>{" "}
+          opcional. O evento é o mesmo (<code>sale.status_changed</code>) e
+          dispara <strong>só nessa cobrança</strong>, além das URLs da conta.
+        </p>
+        <p>
+          Pode ser sempre a mesma URL (idempotente: um destino e um secret) ou
+          um path por pedido (<code>/hooks/orders/1234</code>). O secret (
+          <code>whsec_...</code>) vem só no 201 da primeira vez daquela URL.
+          GET de transação nunca devolve o secret. Checkout público não aceita
+          o campo.
         </p>
         <H id="headers">Headers enviados</H>
         <ParamTable
@@ -418,6 +433,7 @@ Content-Type: application/json`}</Code>
     "customer_document": "52998224725",
     "description": "Pedido #1234",
     "metadata": { "order_id": "1234" },
+    "webhook_scope": "gateway",
     "created_at": "2026-08-17T14:20:00.000Z",
     "updated_at": "2026-08-17T14:22:01.000Z"
   }
@@ -463,6 +479,13 @@ Content-Type: application/json`}</Code>
               required: false,
               description:
                 "CPF (11) ou CNPJ (14), só dígitos, se enviado na venda",
+            },
+            {
+              name: "data.webhook_scope",
+              type: "string",
+              required: false,
+              description:
+                "account (portal) ou gateway (webhook_url da request)",
             },
           ]}
         />
@@ -672,7 +695,8 @@ Content-Type: application/json
   "amount": 15000,
   "method": "pix",
   "description": "Pedido #1234",
-  "metadata": { "order_id": "1234" }
+  "metadata": { "order_id": "1234" },
+  "webhook_url": "https://api.loja.com/oasyfy/orders/1234"
 }`}</Code>
         <H id="body">Body</H>
         <ParamTable
@@ -722,6 +746,13 @@ Content-Type: application/json
               description: "JSON livre (order_id, etc.)",
             },
             {
+              name: "webhook_url",
+              type: "string",
+              required: false,
+              description:
+                "HTTPS. Notifica só esta venda. Mesma URL = mesmo secret (idempotente). Secret só no 201 da 1ª vez.",
+            },
+            {
               name: "split",
               type: "array",
               required: false,
@@ -765,7 +796,8 @@ Content-Type: application/json
   "customer_document": "52998224725",
   "amount": 5990,
   "description": "Assinatura mensal",
-  "metadata": { "order_id": "A-100" }
+  "metadata": { "order_id": "A-100" },
+  "webhook_url": "https://api.loja.com/oasyfy/hooks"
 }`}</Code>
         <H id="body">Body</H>
         <ParamTable
@@ -810,6 +842,13 @@ Content-Type: application/json
               description: "JSON livre. customer_document também é gravado aqui.",
             },
             {
+              name: "webhook_url",
+              type: "string",
+              required: false,
+              description:
+                "HTTPS. Callback só desta cobrança, além dos webhooks da conta. URL inválida → 400 invalid_webhook_url, sem gerar PIX.",
+            },
+            {
               name: "split",
               type: "array",
               required: false,
@@ -841,8 +880,17 @@ Content-Type: application/json
     "pix_code": "00020126...",
     "expiration": "2026-08-17T15:00:00.000Z",
     "status": "awaiting_payment"
+  },
+  "webhook": {
+    "url": "https://api.loja.com/oasyfy/hooks",
+    "secret": "whsec_..."
   }
 }`}</Code>
+        <p>
+          <code>webhook.secret</code> aparece só na primeira vez daquela URL.
+          Nas seguintes o 201 traz só <code>webhook.url</code>. Se a URL já
+          estiver cadastrada na conta, a chave <code>webhook</code> é omitida.
+        </p>
       </div>
     ),
   },
