@@ -4,6 +4,7 @@ import { AcquirerBrandLogo, getAcquirerLogoSrc } from "@/presentation/components
 import {
   getAcquirerConfigPath,
   inferPixAcquirerProvider,
+  isAdminListedPixAcquirer,
 } from "@/presentation/utils/pix-acquirer-provider";
 import useAdminAcquirerConnectionsQuery, {
   type TAcquirerConnectionView,
@@ -125,7 +126,13 @@ export default function AdminAcquirer() {
     setCosts(costsFromQuery);
   }, [costsFromQuery]);
 
-  const activeConnections = connections.filter(
+  const listedConnections = connections.filter(isAdminListedPixAcquirer);
+  const hiddenAcquirerIds = new Set(
+    connections
+      .filter((conn) => !isAdminListedPixAcquirer(conn))
+      .map((conn) => conn.id),
+  );
+  const activeConnections = listedConnections.filter(
     (c) => c.is_active && c.status === "connected",
   );
 
@@ -133,7 +140,7 @@ export default function AdminAcquirer() {
     setBootstrapping(true);
     try {
       await apiService.modules.adminConfig.ensureDefaultAcquirerConnections();
-      toast.success("Adquirentes Woovi e Cartwave carregadas.");
+      toast.success("Adquirentes padrão carregadas.");
       await invalidateConnections();
     } catch (error) {
       toast.error("Erro ao carregar adquirentes padrão");
@@ -177,7 +184,7 @@ export default function AdminAcquirer() {
         <div className="flex items-center justify-center py-12">
           <Loader2 className="animate-spin text-muted-foreground" size={24} />
         </div>
-      ) : connections.length === 0 ? (
+      ) : listedConnections.length === 0 ? (
         <div className="admin-surface space-y-4 px-6 py-12 text-center">
           <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
             <Link2 size={22} className="text-primary" />
@@ -187,7 +194,7 @@ export default function AdminAcquirer() {
               Nenhuma adquirente cadastrada
             </p>
             <p className="mx-auto max-w-md text-sm text-muted-foreground">
-              Carregue Woovi e Cartwave para habilitar o botão{" "}
+              Carregue Woovi e OnlyUp para habilitar o botão{" "}
               <strong>Configurar</strong> e definir credenciais + roteamento PIX.
             </p>
           </div>
@@ -207,7 +214,7 @@ export default function AdminAcquirer() {
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
-          {connections.map((conn) => (
+          {listedConnections.map((conn) => (
             <div
               key={conn.id}
               className="admin-surface flex flex-col gap-4 p-5"
@@ -289,7 +296,9 @@ export default function AdminAcquirer() {
   // --- Routing helpers ---
   const getRulesForMethod = (method: string) =>
     routingRules
-      .filter((r) => r.method === method)
+      .filter(
+        (r) => r.method === method && !hiddenAcquirerIds.has(r.acquirer_id),
+      )
       .sort((a, b) => a.priority - b.priority);
 
   const addRoutingRule = async (method: string, acquirerId: string) => {
@@ -885,7 +894,7 @@ export default function AdminAcquirer() {
         </div>
       );
 
-    const connectedAcquirers = connections.filter((c) => c.is_active);
+    const connectedAcquirers = listedConnections.filter((c) => c.is_active);
 
     if (connectedAcquirers.length === 0) {
       return (

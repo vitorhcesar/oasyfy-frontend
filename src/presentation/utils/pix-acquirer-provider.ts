@@ -89,3 +89,10 @@ export function isPixAcquirerProviderSlug(
 export function getAcquirerConfigPath(provider: TPixAcquirerProvider) {
   return `/admin/acquirer/${provider}`;
 }
+
+/** Cartwave permanece no backend; só some da tela admin de adquirentes. */
+export function isAdminListedPixAcquirer(
+  conn: IPixAcquirerConnectionLike,
+): boolean {
+  return inferPixAcquirerProvider(conn) !== "cartwave";
+}
