@@ -572,6 +572,33 @@ Content-Type: application/json`} />
               </GuideStep>
             </div>
           </div>
+          <div>
+            <h3 className="text-sm font-bold uppercase tracking-wide text-muted-foreground mb-4">
+              Parte C — Saques (API Conta)
+            </h3>
+            <div className="space-y-0">
+              <GuideStep number={1} title="Credenciais da API CONTAS">
+                <p>
+                  Na aba <strong>Finance → API CONTAS</strong>, gere Client ID e
+                  Client Secret. Use o <strong>outro</strong> certificado PFX
+                  (host{" "}
+                  <code>https://accounts.onlyup.com.br</code>
+                  ). Não misture com o par do cash-in.
+                </p>
+              </GuideStep>
+              <GuideStep number={2} title="Configurar webhook de transferência">
+                <p>
+                  Use o botão <strong>Configurar webhook de saque</strong>. A
+                  Oasyfy registra{" "}
+                  <code>POST /api/v2/webhooks/transfer</code> apontando para o
+                  alias{" "}
+                  <code>/api/v1/gateway/webhook/only_up/:acquirerId</code>. O
+                  body <code>type: TRANSFER</code> só liquida o saque após{" "}
+                  <code>GET .../idempotencyKey/{"{key}"}</code>.
+                </p>
+              </GuideStep>
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -614,7 +641,7 @@ Content-Type: application/json`} />
                   ["Client ID", "Opcional (webhook)", "Obrigatório (header ci)", "OAuth cash-in"],
                   ["Extra", "Não usa", "Agência / Conta", "PFX + senha + Chave Pix"],
                   ["Webhook URL", wooviWebhookUrl, cartwaveWebhookUrl, onlyupWebhookUrl],
-                  ["Saques PIX", "Sim (PAYMENT_POST)", "Não", "v1.1 (API Conta)"],
+                  ["Saques PIX", "Sim (PAYMENT_POST)", "Não", "API Conta (DICT + webhook TRANSFER)"],
                 ].map(([label, woovi, cartwave, onlyup]) => (
                   <tr key={label}>
                     <td className="py-2 pr-3 font-medium text-foreground">

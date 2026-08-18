@@ -15,6 +15,11 @@ export interface IAcquirerCredentialsForm {
   cashInPfx: string;
   cashInPfxPassword: string;
   pixKey: string;
+  cashOutClientId: string;
+  cashOutClientSecret: string;
+  cashOutPfx: string;
+  cashOutPfxPassword: string;
+  cashOutApiUrl: string;
 }
 
 export function isAcquirerConfigured(conn: IPixAcquirerConnectionLike): boolean {
@@ -98,5 +103,10 @@ export function buildAcquirerFormFromConnection(
     cashInPfx: "",
     cashInPfxPassword: "",
     pixKey: onlyup?.pix_key || "",
+    cashOutClientId: onlyup?.cash_out_client_id || "",
+    cashOutClientSecret: "",
+    cashOutPfx: "",
+    cashOutPfxPassword: "",
+    cashOutApiUrl: onlyup?.cash_out_api_url || "https://accounts.onlyup.com.br",
   };
 }

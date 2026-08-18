@@ -25,6 +25,7 @@ interface IAcquirerConnectionConfigFormProps {
   connection: TAcquirerConnectionView;
   saving: boolean;
   registeringWebhook?: boolean;
+  registeringCashOutWebhook?: boolean;
   onSave: (
     connectionId: number,
     payload: IAcquirerCredentialsForm & {
@@ -33,19 +34,24 @@ interface IAcquirerConnectionConfigFormProps {
     },
   ) => Promise<void>;
   onRegisterWebhook?: () => Promise<void>;
+  onRegisterCashOutWebhook?: () => Promise<void>;
 }
 
 export function AcquirerConnectionConfigForm({
   connection,
   saving,
   registeringWebhook = false,
+  registeringCashOutWebhook = false,
   onSave,
   onRegisterWebhook,
+  onRegisterCashOutWebhook,
 }: IAcquirerConnectionConfigFormProps) {
   const [showToken, setShowToken] = useState(false);
   const [showHmac, setShowHmac] = useState(false);
   const [showSecret, setShowSecret] = useState(false);
   const [showPfxPassword, setShowPfxPassword] = useState(false);
+  const [showCashOutSecret, setShowCashOutSecret] = useState(false);
+  const [showCashOutPfxPassword, setShowCashOutPfxPassword] = useState(false);
   const [reconfiguring, setReconfiguring] = useState(false);
   const [formData, setFormData] = useState<IAcquirerCredentialsForm>({
     apiUrl: "",
@@ -58,6 +64,11 @@ export function AcquirerConnectionConfigForm({
     cashInPfx: "",
     cashInPfxPassword: "",
     pixKey: "",
+    cashOutClientId: "",
+    cashOutClientSecret: "",
+    cashOutPfx: "",
+    cashOutPfxPassword: "",
+    cashOutApiUrl: "https://accounts.onlyup.com.br",
   });
 
   const provider = useMemo(
@@ -170,6 +181,24 @@ export function AcquirerConnectionConfigForm({
                   <Loader2 size={15} className="animate-spin" />
                 )}
                 Configurar webhook
+              </button>
+            )}
+            {onRegisterCashOutWebhook && (
+              <button
+                type="button"
+                onClick={() => {
+                  void onRegisterCashOutWebhook();
+                }}
+                disabled={
+                  registeringCashOutWebhook ||
+                  !connection.onlyup?.has_cash_out_pfx
+                }
+                className="inline-flex h-10 items-center gap-2 rounded-xl border border-border bg-background px-4 text-sm font-semibold text-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+              >
+                {registeringCashOutWebhook && (
+                  <Loader2 size={15} className="animate-spin" />
+                )}
+                Configurar webhook de saque
               </button>
             )}
           </div>
@@ -444,14 +473,152 @@ export function AcquirerConnectionConfigForm({
                   />
                 </div>
 
-                <div className="rounded-xl border border-border/50 bg-muted/30 p-4 space-y-2">
-                  <p className="text-sm font-semibold text-foreground">
-                    API Conta (cash-out)
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    Saques via OnlyUp entram na próxima versão. Não é necessário
-                    preencher agora.
-                  </p>
+                <div className="rounded-xl border border-border/50 bg-muted/30 p-4 space-y-4">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">
+                      API Conta (cash-out)
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Credenciais da aba Finance → API CONTAS. Outro certificado
+                      mTLS — não reutilize o PFX do cash-in. Opcional: sem este
+                      bloco, saques fazem failover para a Woovi.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm">URL da API Conta</Label>
+                    <Input
+                      placeholder="https://accounts.onlyup.com.br"
+                      value={formData.cashOutApiUrl}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          cashOutApiUrl: e.target.value,
+                        }))
+                      }
+                      className="font-mono text-sm"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm">Client ID (API Contas)</Label>
+                    <Input
+                      placeholder="Client ID da aba API CONTAS"
+                      value={formData.cashOutClientId}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          cashOutClientId: e.target.value,
+                        }))
+                      }
+                      className="font-mono text-sm"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm">Client Secret (API Contas)</Label>
+                    <div className="relative">
+                      <Input
+                        type={showCashOutSecret ? "text" : "password"}
+                        placeholder={
+                          connection.onlyup?.has_cash_out_client_secret
+                            ? "Deixe em branco para manter o secret atual"
+                            : "Client Secret OAuth cash-out"
+                        }
+                        value={formData.cashOutClientSecret}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            cashOutClientSecret: e.target.value,
+                          }))
+                        }
+                        className="pr-10 font-mono text-sm"
+                      />
+                      <button
+                        type="button"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        onClick={() => setShowCashOutSecret(!showCashOutSecret)}
+                      >
+                        {showCashOutSecret ? (
+                          <EyeOff size={16} />
+                        ) : (
+                          <Eye size={16} />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm">Certificado PFX (cash-out)</Label>
+                    <Input
+                      type="file"
+                      accept=".pfx,.p12"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) {
+                          return;
+                        }
+                        const reader = new FileReader();
+                        reader.onload = () => {
+                          const result = reader.result;
+                          if (typeof result !== "string") {
+                            return;
+                          }
+                          const base64 = result.includes(",")
+                            ? result.slice(result.indexOf(",") + 1)
+                            : result;
+                          setFormData((prev) => ({
+                            ...prev,
+                            cashOutPfx: base64,
+                          }));
+                        };
+                        reader.readAsDataURL(file);
+                      }}
+                      className="text-sm"
+                    />
+                    <p className="text-sm text-muted-foreground">
+                      {formData.cashOutPfx
+                        ? "Novo certificado selecionado."
+                        : connection.onlyup?.has_cash_out_pfx
+                          ? "Certificado já carregado. Envie outro arquivo só se quiser substituir."
+                          : "Arquivo .pfx da API CONTAS (mTLS)."}
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm">Senha do PFX (cash-out)</Label>
+                    <div className="relative">
+                      <Input
+                        type={showCashOutPfxPassword ? "text" : "password"}
+                        placeholder={
+                          connection.onlyup?.has_cash_out_pfx_password
+                            ? "Deixe em branco para manter a senha atual"
+                            : "Senha do certificado cash-out"
+                        }
+                        value={formData.cashOutPfxPassword}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            cashOutPfxPassword: e.target.value,
+                          }))
+                        }
+                        className="pr-10 font-mono text-sm"
+                      />
+                      <button
+                        type="button"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                        onClick={() =>
+                          setShowCashOutPfxPassword(!showCashOutPfxPassword)
+                        }
+                      >
+                        {showCashOutPfxPassword ? (
+                          <EyeOff size={16} />
+                        ) : (
+                          <Eye size={16} />
+                        )}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </>
             ) : (

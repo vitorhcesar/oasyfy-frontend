@@ -70,6 +70,7 @@ export interface IAdminConfigModule {
   ): Promise<void>;
   setAcquirerConnectionActive(id: number, isActive: boolean): Promise<void>;
   registerOnlyUpWebhook(id: number): Promise<void>;
+  registerOnlyUpCashOutWebhook(id: number): Promise<void>;
   listRoutingRules(): Promise<Record<string, unknown>[]>;
   createRoutingRule(payload: Record<string, unknown>): Promise<void>;
   updateRoutingRule(
@@ -257,6 +258,12 @@ export class AdminConfigModule
   async registerOnlyUpWebhook(id: number) {
     await this.getClient().post(
       `${this.baseUrl}/acquirer-connections/${id}/onlyup-webhook`,
+    );
+  }
+
+  async registerOnlyUpCashOutWebhook(id: number) {
+    await this.getClient().post(
+      `${this.baseUrl}/acquirer-connections/${id}/onlyup-cash-out-webhook`,
     );
   }
 

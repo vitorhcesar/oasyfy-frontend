@@ -28,6 +28,8 @@ export default function AdminAcquirerConnectionConfigPage() {
   } = useAdminAcquirerConnectionsQuery();
   const [saving, setSaving] = useState(false);
   const [registeringWebhook, setRegisteringWebhook] = useState(false);
+  const [registeringCashOutWebhook, setRegisteringCashOutWebhook] =
+    useState(false);
 
   const provider = isPixAcquirerProviderSlug(providerSlug)
     ? providerSlug
@@ -86,6 +88,11 @@ export default function AdminAcquirerConnectionConfigPage() {
                   cashInPfx: payload.cashInPfx,
                   cashInPfxPassword: payload.cashInPfxPassword,
                   pixKey: payload.pixKey,
+                  cashOutClientId: payload.cashOutClientId,
+                  cashOutClientSecret: payload.cashOutClientSecret,
+                  cashOutPfx: payload.cashOutPfx,
+                  cashOutPfxPassword: payload.cashOutPfxPassword,
+                  cashOutApiUrl: payload.cashOutApiUrl,
                 },
               }
             : {}),
@@ -116,6 +123,23 @@ export default function AdminAcquirerConnectionConfigPage() {
       console.error(error);
     }
     setRegisteringWebhook(false);
+  };
+
+  const registerOnlyUpCashOutWebhook = async () => {
+    if (!connection) {
+      return;
+    }
+    setRegisteringCashOutWebhook(true);
+    try {
+      await apiService.modules.adminConfig.registerOnlyUpCashOutWebhook(
+        Number(connection.id),
+      );
+      toast.success("Webhook de saque OnlyUp configurado");
+    } catch (error) {
+      toast.error("Falha ao configurar webhook de saque na OnlyUp");
+      console.error(error);
+    }
+    setRegisteringCashOutWebhook(false);
   };
 
   const toggleActive = async () => {
@@ -251,10 +275,16 @@ export default function AdminAcquirerConnectionConfigPage() {
               connection={connection}
               saving={saving}
               registeringWebhook={registeringWebhook}
+              registeringCashOutWebhook={registeringCashOutWebhook}
               onSave={saveConfig}
               onRegisterWebhook={
                 inferPixAcquirerProvider(connection) === "onlyup"
                   ? registerOnlyUpWebhook
+                  : undefined
+              }
+              onRegisterCashOutWebhook={
+                inferPixAcquirerProvider(connection) === "onlyup"
+                  ? registerOnlyUpCashOutWebhook
                   : undefined
               }
             />

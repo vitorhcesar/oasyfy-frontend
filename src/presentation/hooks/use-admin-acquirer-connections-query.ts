@@ -22,6 +22,12 @@ export type TAcquirerConnectionView = {
     has_cash_in_pfx: boolean;
     has_cash_in_pfx_password: boolean;
     pix_key: string;
+    cash_out_client_id?: string;
+    cash_out_client_secret_masked?: string;
+    has_cash_out_client_secret?: boolean;
+    has_cash_out_pfx?: boolean;
+    has_cash_out_pfx_password?: boolean;
+    cash_out_api_url?: string;
   } | null;
 };
 
