@@ -65,6 +65,8 @@ function parseUserAgent(ua: string | null) {
   };
 }
 
+const VISIBLE_SESSIONS_LIMIT = 3;
+
 function SecurityTab() {
   const apiService = useApiService();
   const [sessions, setSessions] = useState<
@@ -82,6 +84,7 @@ function SecurityTab() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [logoutAll, setLogoutAll] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
+  const [showAllSessions, setShowAllSessions] = useState(false);
 
   useEffect(() => {
     apiService.modules.sellerPortal
@@ -382,7 +385,10 @@ function SecurityTab() {
           </p>
         ) : (
           <div className="space-y-1">
-            {sessions.map((session, idx) => {
+            {(showAllSessions
+              ? sessions
+              : sessions.slice(0, VISIBLE_SESSIONS_LIMIT)
+            ).map((session, idx) => {
               const parsed = parseUserAgent(session.user_agent);
               const active = idx === 0 && isActive(session.created_at);
               return (
@@ -439,6 +445,15 @@ function SecurityTab() {
                 </div>
               );
             })}
+            {sessions.length > VISIBLE_SESSIONS_LIMIT && (
+              <button
+                type="button"
+                onClick={() => setShowAllSessions((prev) => !prev)}
+                className="w-full py-2.5 text-xs text-primary font-medium hover:text-primary/80 transition-colors"
+              >
+                {showAllSessions ? "Ver menos" : "Ver mais"}
+              </button>
+            )}
           </div>
         )}
       </div>
