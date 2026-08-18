@@ -1,4 +1,8 @@
 import type { TAcquirerConnectionView } from "@/presentation/hooks/use-admin-acquirer-connections-query";
+import type {
+  IOnlyUpVerifyCredentialsDto,
+  TOnlyUpCredentialCheckDto,
+} from "@/infra/http/services/api/modules/admin-config.module";
 import { WOOVI_WEBHOOK_EVENTS } from "@/presentation/constants/woovi-webhook-events";
 import { Input } from "@/presentation/components/ui/input";
 import { Label } from "@/presentation/components/ui/label";
@@ -13,7 +17,18 @@ import {
   getPixAcquirerProviderLabel,
   inferPixAcquirerProvider,
 } from "@/presentation/utils/pix-acquirer-provider";
-import { Copy, Eye, EyeOff, ExternalLink, Loader2, Settings2 } from "lucide-react";
+import {
+  CheckCircle2,
+  Copy,
+  Eye,
+  EyeOff,
+  ExternalLink,
+  Loader2,
+  MinusCircle,
+  Settings2,
+  ShieldCheck,
+  XCircle,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -21,11 +36,48 @@ const DEFAULT_WOOVI_API = "https://api.woovi-sandbox.com";
 const DEFAULT_CARTWAVE_API = "https://api.cartwavehub.com.br";
 const DEFAULT_ONLYUP_API = "https://api.pix.onlyup.com.br";
 
+const ONLYUP_VERIFY_CHECKS: Array<{
+  key: keyof Omit<IOnlyUpVerifyCredentialsDto, "ok">;
+  label: string;
+}> = [
+  { key: "cash_in_oauth", label: "OAuth + mTLS (API Pix)" },
+  { key: "cash_in_api", label: "API Pix (GET /cob)" },
+  { key: "pix_key", label: "Chave Pix" },
+  { key: "cash_out_oauth", label: "OAuth + mTLS (API Conta)" },
+  { key: "cash_out_balance", label: "Saldo da API Conta" },
+];
+
+function OnlyUpCheckRow({
+  label,
+  check,
+}: {
+  label: string;
+  check: TOnlyUpCredentialCheckDto;
+}) {
+  const Icon = check.skipped ? MinusCircle : check.ok ? CheckCircle2 : XCircle;
+  const color = check.skipped
+    ? "text-muted-foreground"
+    : check.ok
+      ? "text-success"
+      : "text-destructive";
+  return (
+    <li className="flex gap-2 text-sm">
+      <Icon size={16} className={`mt-0.5 shrink-0 ${color}`} />
+      <div className="min-w-0">
+        <p className="font-medium text-foreground">{label}</p>
+        <p className="text-muted-foreground">{check.detail}</p>
+      </div>
+    </li>
+  );
+}
+
 interface IAcquirerConnectionConfigFormProps {
   connection: TAcquirerConnectionView;
   saving: boolean;
   registeringWebhook?: boolean;
   registeringCashOutWebhook?: boolean;
+  verifyingCredentials?: boolean;
+  credentialCheck?: IOnlyUpVerifyCredentialsDto | null;
   onSave: (
     connectionId: number,
     payload: IAcquirerCredentialsForm & {
@@ -35,6 +87,7 @@ interface IAcquirerConnectionConfigFormProps {
   ) => Promise<void>;
   onRegisterWebhook?: () => Promise<void>;
   onRegisterCashOutWebhook?: () => Promise<void>;
+  onVerifyCredentials?: () => Promise<void>;
 }
 
 export function AcquirerConnectionConfigForm({
@@ -42,9 +95,12 @@ export function AcquirerConnectionConfigForm({
   saving,
   registeringWebhook = false,
   registeringCashOutWebhook = false,
+  verifyingCredentials = false,
+  credentialCheck = null,
   onSave,
   onRegisterWebhook,
   onRegisterCashOutWebhook,
+  onVerifyCredentials,
 }: IAcquirerConnectionConfigFormProps) {
   const [showToken, setShowToken] = useState(false);
   const [showHmac, setShowHmac] = useState(false);
@@ -232,6 +288,36 @@ export function AcquirerConnectionConfigForm({
                 Por segurança, os secrets não são exibidos após salvar.
               </p>
             </div>
+            {onVerifyCredentials && (
+              <div className="space-y-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    void onVerifyCredentials();
+                  }}
+                  disabled={verifyingCredentials}
+                  className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-[#111827] transition-opacity hover:opacity-90 disabled:opacity-50 sm:w-auto"
+                >
+                  {verifyingCredentials ? (
+                    <Loader2 size={15} className="animate-spin" />
+                  ) : (
+                    <ShieldCheck size={15} />
+                  )}
+                  Verificar credenciais
+                </button>
+                {credentialCheck && (
+                  <ul className="space-y-2 rounded-xl border border-border/50 bg-background/40 p-3">
+                    {ONLYUP_VERIFY_CHECKS.map((item) => (
+                      <OnlyUpCheckRow
+                        key={item.key}
+                        label={item.label}
+                        check={credentialCheck[item.key]}
+                      />
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
             <button
               type="button"
               onClick={() => setReconfiguring(true)}

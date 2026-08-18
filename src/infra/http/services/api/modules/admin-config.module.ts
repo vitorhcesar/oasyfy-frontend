@@ -42,6 +42,22 @@ export interface IAdminFinancialSettingsUpdateBody {
   pixMaxAmount: number;
 }
 
+export type TOnlyUpCredentialCheckDto = {
+  ok: boolean;
+  skipped: boolean;
+  detail: string;
+  available_reais?: number;
+};
+
+export type IOnlyUpVerifyCredentialsDto = {
+  ok: boolean;
+  cash_in_oauth: TOnlyUpCredentialCheckDto;
+  cash_in_api: TOnlyUpCredentialCheckDto;
+  pix_key: TOnlyUpCredentialCheckDto;
+  cash_out_oauth: TOnlyUpCredentialCheckDto;
+  cash_out_balance: TOnlyUpCredentialCheckDto;
+};
+
 export interface IAdminConfigModule {
   listSellerGoals(): Promise<Record<string, unknown>[]>;
   createSellerGoal(payload: Record<string, unknown>): Promise<void>;
@@ -71,6 +87,7 @@ export interface IAdminConfigModule {
   setAcquirerConnectionActive(id: number, isActive: boolean): Promise<void>;
   registerOnlyUpWebhook(id: number): Promise<void>;
   registerOnlyUpCashOutWebhook(id: number): Promise<void>;
+  verifyOnlyUpCredentials(id: number): Promise<IOnlyUpVerifyCredentialsDto>;
   listRoutingRules(): Promise<Record<string, unknown>[]>;
   createRoutingRule(payload: Record<string, unknown>): Promise<void>;
   updateRoutingRule(
@@ -265,6 +282,13 @@ export class AdminConfigModule
     await this.getClient().post(
       `${this.baseUrl}/acquirer-connections/${id}/onlyup-cash-out-webhook`,
     );
+  }
+
+  async verifyOnlyUpCredentials(id: number) {
+    const response = await this.getClient().post<
+      IApiEnvelope<IOnlyUpVerifyCredentialsDto>
+    >(`${this.baseUrl}/acquirer-connections/${id}/onlyup-verify`);
+    return response.data;
   }
 
   async setAcquirerConnectionActive(id: number, isActive: boolean) {

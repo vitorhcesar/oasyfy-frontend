@@ -2,8 +2,10 @@ import { AcquirerBrandLogo } from "@/presentation/components/admin/AcquirerBrand
 import { AcquirerConnectionConfigForm } from "@/presentation/components/admin/AcquirerConnectionConfigForm";
 import PageHeader from "@/presentation/components/PageHeader";
 import type { IAcquirerCredentialsForm } from "@/presentation/utils/acquirer-connection-config.util";
+import type { IOnlyUpVerifyCredentialsDto } from "@/infra/http/services/api/modules/admin-config.module";
 import useAdminAcquirerConnectionsQuery from "@/presentation/hooks/use-admin-acquirer-connections-query";
 import { useApiService } from "@/presentation/hooks/use-api-service";
+import { getErrorMessageOrDefault } from "@/presentation/utils/get-error-message-or-default";
 import { AdminLayout } from "@/presentation/layouts/AdminLayout";
 import { Switch } from "@/presentation/components/ui/switch";
 import { cn } from "@/presentation/utils/cn";
@@ -30,6 +32,9 @@ export default function AdminAcquirerConnectionConfigPage() {
   const [registeringWebhook, setRegisteringWebhook] = useState(false);
   const [registeringCashOutWebhook, setRegisteringCashOutWebhook] =
     useState(false);
+  const [verifyingCredentials, setVerifyingCredentials] = useState(false);
+  const [credentialCheck, setCredentialCheck] =
+    useState<IOnlyUpVerifyCredentialsDto | null>(null);
 
   const provider = isPixAcquirerProviderSlug(providerSlug)
     ? providerSlug
@@ -100,6 +105,7 @@ export default function AdminAcquirerConnectionConfigPage() {
       );
       toast.success("Credenciais salvas com sucesso!");
       await invalidateQuery();
+      setCredentialCheck(null);
     } catch (error) {
       toast.error("Erro ao salvar credenciais");
       console.error(error);
@@ -140,6 +146,30 @@ export default function AdminAcquirerConnectionConfigPage() {
       console.error(error);
     }
     setRegisteringCashOutWebhook(false);
+  };
+
+  const verifyOnlyUpCredentials = async () => {
+    if (!connection) {
+      return;
+    }
+    setVerifyingCredentials(true);
+    try {
+      const result = await apiService.modules.adminConfig.verifyOnlyUpCredentials(
+        Number(connection.id),
+      );
+      setCredentialCheck(result);
+      if (result.ok) {
+        toast.success("Credenciais OnlyUp conferidas");
+      } else {
+        toast.error("Alguma verificação falhou. Veja o detalhe abaixo.");
+      }
+    } catch (error) {
+      setCredentialCheck(null);
+      toast.error(
+        getErrorMessageOrDefault(error, "Falha ao verificar credenciais na OnlyUp"),
+      );
+    }
+    setVerifyingCredentials(false);
   };
 
   const toggleActive = async () => {
@@ -276,6 +306,8 @@ export default function AdminAcquirerConnectionConfigPage() {
               saving={saving}
               registeringWebhook={registeringWebhook}
               registeringCashOutWebhook={registeringCashOutWebhook}
+              verifyingCredentials={verifyingCredentials}
+              credentialCheck={credentialCheck}
               onSave={saveConfig}
               onRegisterWebhook={
                 inferPixAcquirerProvider(connection) === "onlyup"
@@ -285,6 +317,11 @@ export default function AdminAcquirerConnectionConfigPage() {
               onRegisterCashOutWebhook={
                 inferPixAcquirerProvider(connection) === "onlyup"
                   ? registerOnlyUpCashOutWebhook
+                  : undefined
+              }
+              onVerifyCredentials={
+                inferPixAcquirerProvider(connection) === "onlyup"
+                  ? verifyOnlyUpCredentials
                   : undefined
               }
             />
