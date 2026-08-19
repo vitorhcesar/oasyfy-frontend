@@ -10,6 +10,10 @@ import {
   IAdminFinanceModule,
 } from "./modules/admin-finance.module";
 import {
+  AdminWebhooksModule,
+  IAdminWebhooksModule,
+} from "./modules/admin-webhooks.module";
+import {
   AdminBannerModule,
   IAdminBannerModule,
 } from "./modules/admin-banner.module";
@@ -85,6 +89,7 @@ export interface IApiServiceModules {
   adminKycSubmissions: IAdminKycSubmissionsModule;
   adminBanners: IAdminBannerModule;
   adminFinance: IAdminFinanceModule;
+  adminWebhooks: IAdminWebhooksModule;
   adminConfig: IAdminConfigModule;
   adminPraca: IAdminPracaModule;
 
@@ -119,6 +124,7 @@ function attachModules(httpClient: IHttpClient): IApiServiceModules {
     adminKycSubmissions: new AdminKycSubmissionsModule(httpClient),
     adminBanners: new AdminBannerModule(httpClient),
     adminFinance: new AdminFinanceModule(httpClient),
+    adminWebhooks: new AdminWebhooksModule(httpClient),
     adminConfig: new AdminConfigModule(httpClient),
     adminPraca: new AdminPracaModule(httpClient),
 

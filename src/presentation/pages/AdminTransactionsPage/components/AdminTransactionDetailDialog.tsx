@@ -14,6 +14,7 @@ import { cn } from "@/presentation/utils/cn";
 import useAdminSellersByAccountIdsQuery from "@/presentation/hooks/use-admin-sellers-by-account-ids-query";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { Link } from "react-router-dom";
 import {
   AlertTriangle,
   Copy,
@@ -21,6 +22,7 @@ import {
   Lock,
   RotateCcw,
   Unlock,
+  Webhook,
 } from "lucide-react";
 import { type ReactNode, useMemo } from "react";
 import { toast } from "sonner";
@@ -239,6 +241,14 @@ export default function AdminTransactionDetailDialog({
                 </div>
                 {statusBadge(selectedTx.status)}
               </div>
+
+              <Link
+                to={`/admin/webhooks?transactionId=${selectedTx.id}`}
+                className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+              >
+                <Webhook size={14} />
+                Webhooks desta venda
+              </Link>
 
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <SectionCard title="Seller / Produtor">

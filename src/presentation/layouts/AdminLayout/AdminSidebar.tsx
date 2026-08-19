@@ -48,6 +48,7 @@ import {
   UserCog,
   MessagesSquare,
   Link2,
+  Webhook,
   X,
   type LucideIcon,
 } from "lucide-react";
@@ -66,6 +67,7 @@ const menuItems = [
 
 const financialSubItems = [
   { title: "Vendas", url: "/admin/transactions", icon: Receipt },
+  { title: "Webhooks", url: "/admin/webhooks", icon: Webhook },
   { title: "Saques", url: "/admin/withdrawals", icon: ArrowLeftRight },
   { title: "Metas", url: "/admin/goals", icon: Target },
   { title: "Reembolsos", url: "/admin/refunds", icon: RotateCcw },

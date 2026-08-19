@@ -29,6 +29,7 @@ import AdminManagers from "./presentation/pages/admin/AdminManagers";
 import AdminRefunds from "./presentation/pages/admin/AdminRefunds";
 import AdminSubscriptions from "./presentation/pages/admin/AdminSubscriptions";
 import AdminTransactionsPage from "./presentation/pages/AdminTransactionsPage";
+import AdminWebhooksPage from "./presentation/pages/AdminWebhooksPage";
 import AdminWithdrawalsPage from "./presentation/pages/AdminWithdrawalsPage";
 import Seller2FA from "./presentation/pages/seller/Seller2FA";
 import SellerApi from "./presentation/pages/seller/SellerApi";
@@ -268,6 +269,14 @@ export default function App() {
                   element={
                     <ProtectedRoute requiredRole="admin">
                       <AdminTransactionsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/webhooks"
+                  element={
+                    <ProtectedRoute requiredRole="admin">
+                      <AdminWebhooksPage />
                     </ProtectedRoute>
                   }
                 />
