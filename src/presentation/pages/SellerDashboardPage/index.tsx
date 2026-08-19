@@ -12,7 +12,6 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import KycOnboarding from "../../components/KycOnboarding";
 import Banners from "./components/Banners";
-import Conversion from "./components/Conversion";
 import RecentTransactions from "./components/RecentTransactions";
 import RevenueChart from "./components/RevenueChart";
 import RevenueRanking from "./components/RevenueRanking";
@@ -121,15 +120,6 @@ export default function SellerDashboardPage() {
     }
   }, [kycLoading, showKycPending, showDocResubmit, navigate]);
 
-  const filteredTx = useMemo(
-    () =>
-      transactions.filter((t) => {
-        const d = new Date(t.createdAt);
-        return d >= rangeStart && d <= rangeEnd && t.method !== "withdrawal";
-      }),
-    [transactions, rangeEnd, rangeStart],
-  );
-
   const allPositiveTx = useMemo(
     () => transactions.filter((t) => t.amount > 0),
     [transactions],
@@ -203,11 +193,6 @@ export default function SellerDashboardPage() {
     grossTotal > 0 ? Math.round(finalAvailable * (cardGross / grossTotal)) : 0;
   const pixBoletoBalance = grossTotal > 0 ? finalAvailable - cardBalance : 0;
 
-  const pixTx = filteredTx.filter((t) => t.method === "pix");
-  const pixPaid = pixTx.filter((t) => t.isPaid()).length;
-  const pixRate =
-    pixTx.length > 0 ? Math.round((pixPaid / pixTx.length) * 100) : 0;
-
   if (kycLoading) {
     return (
       <SellerLayout>
@@ -259,14 +244,6 @@ export default function SellerDashboardPage() {
         <Stats />
 
         <RevenueRanking />
-
-        {stats.transactionsCount > 0 && (
-          <Conversion
-            pixRate={pixRate}
-            pixPaid={pixPaid}
-            pixTotal={pixTx.length}
-          />
-        )}
 
         <RevenueChart
           rangeStart={rangeStart}
