@@ -1,11 +1,8 @@
 import { AcquirerGuideTab } from "@/presentation/components/admin/AcquirerGuideTab";
+import { AcquirerConnectionsTab } from "@/presentation/components/admin/AcquirerConnectionsTab";
 import { AdminPlatformDefaultAcquirerSection } from "@/presentation/components/admin/AdminPlatformDefaultAcquirerSection";
 import { AcquirerBrandLogo, getAcquirerLogoSrc } from "@/presentation/components/admin/AcquirerBrandLogo";
-import {
-  getAcquirerConfigPath,
-  inferPixAcquirerProvider,
-  isRetiredCartwaveAcquirer,
-} from "@/presentation/utils/pix-acquirer-provider";
+import { isRetiredCartwaveAcquirer } from "@/presentation/utils/pix-acquirer-provider";
 import useAdminAcquirerConnectionsQuery, {
   type TAcquirerConnectionView,
 } from "@/presentation/hooks/use-admin-acquirer-connections-query";
@@ -41,12 +38,11 @@ import {
   Plus,
   RotateCcw,
   Save,
-  Settings2,
   Trash2,
   Wallet,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 
 const tabs = [
@@ -71,8 +67,6 @@ const METHODS_DEPOSIT = ["pix", "card", "boleto", "crypto"] as const;
 const METHODS_WITHDRAWAL = ["pix", "ted", "crypto"] as const;
 
 interface IRoutingRule extends TRoutingRuleView {}
-
-interface IAcquirerConnection extends TAcquirerConnectionView {}
 
 interface IAcquirerCost extends TAcquirerCostView {}
 
@@ -151,7 +145,7 @@ export default function AdminAcquirer() {
     setBootstrapping(false);
   };
 
-  const toggleActive = async (conn: IAcquirerConnection) => {
+  const toggleActive = async (conn: TAcquirerConnectionView) => {
     if (conn.status !== "connected") {
       toast.error("Configure as credenciais antes de ativar.");
       return;
@@ -170,130 +164,6 @@ export default function AdminAcquirer() {
       console.error(error);
     }
   };
-
-  const renderConnections = () => (
-    <div className="space-y-4">
-      <div className="mb-2">
-        <h2 className="text-base font-semibold text-foreground">
-          Adquirentes conectadas
-        </h2>
-        <p className="mt-0.5 text-sm text-muted-foreground">
-          Gerencie as conexões com provedores de pagamento.
-        </p>
-      </div>
-
-      {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="animate-spin text-muted-foreground" size={24} />
-        </div>
-      ) : listedConnections.length === 0 ? (
-        <div className="admin-surface space-y-4 px-6 py-12 text-center">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-            <Link2 size={22} className="text-primary" />
-          </div>
-          <div className="space-y-1">
-            <p className="text-base font-semibold text-foreground">
-              Nenhuma adquirente cadastrada
-            </p>
-            <p className="mx-auto max-w-md text-sm text-muted-foreground">
-              Carregue Woovi e OnlyUp para habilitar o botão{" "}
-              <strong>Configurar</strong> e definir credenciais + roteamento PIX.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={ensureDefaultConnections}
-            disabled={bootstrapping}
-            className="inline-flex h-10 items-center gap-2 rounded-xl bg-white px-4 text-sm font-semibold text-[#111827] transition-opacity hover:opacity-90 disabled:opacity-50"
-          >
-            {bootstrapping ? (
-              <Loader2 size={14} className="animate-spin" />
-            ) : (
-              <Plus size={14} />
-            )}
-            Carregar adquirentes padrão
-          </button>
-        </div>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
-          {listedConnections.map((conn) => (
-            <div
-              key={conn.id}
-              className="admin-surface flex flex-col gap-4 p-5"
-            >
-              <div className="flex items-start gap-4">
-                <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-border/50 bg-background shadow-sm">
-                  <AcquirerBrandLogo
-                    connection={conn}
-                    imageClassName="h-14 w-14 object-contain"
-                  />
-                </div>
-
-                <div className="min-w-0 flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-base font-semibold text-foreground">
-                      {conn.name}
-                    </span>
-                    <span
-                      className={cn(
-                        "inline-flex items-center rounded-lg border px-2.5 py-1 text-xs font-semibold",
-                        conn.status === "connected" &&
-                          "border-success/25 bg-success/10 text-success",
-                        conn.status === "error" &&
-                          "border-destructive/25 bg-destructive/10 text-destructive",
-                        conn.status !== "connected" &&
-                          conn.status !== "error" &&
-                          "border-border bg-muted text-muted-foreground",
-                      )}
-                    >
-                      {conn.status === "connected"
-                        ? "Conectada"
-                        : conn.status === "error"
-                          ? "Erro"
-                          : "Desconectada"}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-                    {conn.description}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-1.5">
-                {conn.methods.map((m) => (
-                  <span
-                    key={m}
-                    className="rounded-lg border border-border bg-muted/60 px-2 py-0.5 text-xs font-semibold uppercase text-foreground"
-                  >
-                    {m}
-                  </span>
-                ))}
-              </div>
-
-              <div className="flex items-center justify-between gap-3 border-t border-border/40 pt-4">
-                <div className="flex items-center gap-2">
-                  <Switch
-                    checked={conn.is_active}
-                    onCheckedChange={() => toggleActive(conn)}
-                  />
-                  <span className="text-sm font-medium text-muted-foreground">
-                    {conn.is_active ? "Ativa" : "Inativa"}
-                  </span>
-                </div>
-                <Link
-                  to={getAcquirerConfigPath(inferPixAcquirerProvider(conn))}
-                  className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-white px-4 text-sm font-semibold text-[#111827] transition-opacity hover:opacity-90"
-                >
-                  <Settings2 size={15} />
-                  Configurar
-                </Link>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
 
   // --- Routing helpers ---
   const getRulesForMethod = (method: string) =>
@@ -1164,7 +1034,15 @@ export default function AdminAcquirer() {
   const renderTab = () => {
     switch (activeTab) {
       case "conexoes":
-        return renderConnections();
+        return (
+          <AcquirerConnectionsTab
+            connections={listedConnections}
+            loading={loading}
+            bootstrapping={bootstrapping}
+            onEnsureDefaults={ensureDefaultConnections}
+            onToggleActive={toggleActive}
+          />
+        );
       case "roteamento-deposito":
         return renderRoutingDeposit();
       case "roteamento-saque":
@@ -1180,7 +1058,7 @@ export default function AdminAcquirer() {
 
   return (
     <AdminLayout>
-      <div className="mx-auto w-full max-w-5xl px-5 py-6 md:px-8 md:py-9">
+      <div className="mx-auto w-full max-w-6xl px-5 py-6 md:px-8 md:py-9">
         <header className="mb-7 animate-fade-in">
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
             Sistema

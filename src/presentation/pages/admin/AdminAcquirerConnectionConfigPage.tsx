@@ -12,6 +12,7 @@ import { cn } from "@/presentation/utils/cn";
 import {
   getPixAcquirerProviderLabel,
   inferPixAcquirerProvider,
+  isOnzPixAcquirer,
   isPixAcquirerProviderSlug,
 } from "@/presentation/utils/pix-acquirer-provider";
 import { ArrowLeft, Loader2 } from "lucide-react";
@@ -81,11 +82,13 @@ export default function AdminAcquirerConnectionConfigPage() {
           accountNumber: payload.accountNumber,
           status: payload.status,
           isActive: payload.isActive,
-          ...(inferPixAcquirerProvider({
-            api_url: payload.apiUrl,
-            logo_key: connection?.logo_key,
-            name: connection?.name,
-          }) === "onlyup"
+          ...(isOnzPixAcquirer(
+            inferPixAcquirerProvider({
+              api_url: payload.apiUrl,
+              logo_key: connection?.logo_key,
+              name: connection?.name,
+            }),
+          )
             ? {
                 onlyup: {
                   cashInClientId: payload.clientId,
@@ -123,9 +126,13 @@ export default function AdminAcquirerConnectionConfigPage() {
       await apiService.modules.adminConfig.registerOnlyUpWebhook(
         Number(connection.id),
       );
-      toast.success("Webhook OnlyUp configurado");
+      toast.success(
+        `Webhook ${getPixAcquirerProviderLabel(inferPixAcquirerProvider(connection))} configurado`,
+      );
     } catch (error) {
-      toast.error("Falha ao configurar webhook na OnlyUp");
+      toast.error(
+        `Falha ao configurar webhook na ${getPixAcquirerProviderLabel(inferPixAcquirerProvider(connection))}`,
+      );
       console.error(error);
     }
     setRegisteringWebhook(false);
@@ -144,7 +151,9 @@ export default function AdminAcquirerConnectionConfigPage() {
         "Webhooks da API Conta configurados (transferência, recebimento, estorno, fila e infrações)",
       );
     } catch (error) {
-      toast.error("Falha ao configurar webhooks da API Conta na OnlyUp");
+      toast.error(
+        `Falha ao configurar webhooks da API Conta na ${getPixAcquirerProviderLabel(inferPixAcquirerProvider(connection))}`,
+      );
       console.error(error);
     }
     setRegisteringCashOutWebhook(false);
@@ -161,14 +170,19 @@ export default function AdminAcquirerConnectionConfigPage() {
       );
       setCredentialCheck(result);
       if (result.ok) {
-        toast.success("Credenciais OnlyUp conferidas");
+        toast.success(
+          `Credenciais ${getPixAcquirerProviderLabel(inferPixAcquirerProvider(connection))} conferidas`,
+        );
       } else {
         toast.error("Alguma verificação falhou. Veja o detalhe abaixo.");
       }
     } catch (error) {
       setCredentialCheck(null);
       toast.error(
-        getErrorMessageOrDefault(error, "Falha ao verificar credenciais na OnlyUp"),
+        getErrorMessageOrDefault(
+          error,
+          `Falha ao verificar credenciais na ${getPixAcquirerProviderLabel(inferPixAcquirerProvider(connection))}`,
+        ),
       );
     }
     setVerifyingCredentials(false);
@@ -312,17 +326,17 @@ export default function AdminAcquirerConnectionConfigPage() {
               credentialCheck={credentialCheck}
               onSave={saveConfig}
               onRegisterWebhook={
-                inferPixAcquirerProvider(connection) === "onlyup"
+                isOnzPixAcquirer(inferPixAcquirerProvider(connection))
                   ? registerOnlyUpWebhook
                   : undefined
               }
               onRegisterCashOutWebhook={
-                inferPixAcquirerProvider(connection) === "onlyup"
+                isOnzPixAcquirer(inferPixAcquirerProvider(connection))
                   ? registerOnlyUpCashOutWebhook
                   : undefined
               }
               onVerifyCredentials={
-                inferPixAcquirerProvider(connection) === "onlyup"
+                isOnzPixAcquirer(inferPixAcquirerProvider(connection))
                   ? verifyOnlyUpCredentials
                   : undefined
               }

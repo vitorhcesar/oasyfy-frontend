@@ -526,7 +526,7 @@ export function AdminSidebar({ mobileOpen, onClose }: AdminSidebarProps) {
             className="fixed inset-0 z-40 bg-background/80 md:hidden"
             onClick={onClose}
           />
-          <aside className="liquid-glass !fixed top-4 bottom-4 left-3 z-50 flex w-[min(20rem,calc(100vw-1.5rem))] flex-col rounded-[2rem] md:hidden animate-in slide-in-from-left duration-200">
+          <aside className="liquid-glass !fixed top-4 bottom-4 left-3 z-50 flex w-[min(16.5rem,calc(100vw-6.5rem))] flex-col rounded-[2rem] md:hidden animate-in slide-in-from-left duration-200">
             {renderSidebarContent(false, true)}
           </aside>
         </>

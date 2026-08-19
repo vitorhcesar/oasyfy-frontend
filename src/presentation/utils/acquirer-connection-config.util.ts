@@ -1,5 +1,7 @@
 import {
   inferPixAcquirerProvider,
+  isOnzPixAcquirer,
+  ONZ_CASH_OUT_API,
   type IPixAcquirerConnectionLike,
   type TPixAcquirerProvider,
 } from "./pix-acquirer-provider";
@@ -29,7 +31,7 @@ export function isAcquirerConfigured(conn: IPixAcquirerConnectionLike): boolean 
     return Boolean(conn.access_token?.trim() && conn.hmac_key?.trim());
   }
 
-  if (provider === "onlyup") {
+  if (isOnzPixAcquirer(provider)) {
     const onlyup = conn.onlyup;
     return Boolean(
       onlyup?.has_cash_in_client_secret &&
@@ -52,7 +54,7 @@ export function hasAcquirerCredentialsToSave(
     return Boolean(form.apiUrl.trim() && form.accessToken.trim() && form.hmacKey.trim());
   }
 
-  if (provider === "onlyup") {
+  if (isOnzPixAcquirer(provider)) {
     return Boolean(
       form.apiUrl.trim() &&
         form.clientId.trim() &&
@@ -77,6 +79,10 @@ export function buildAcquirerFormFromConnection(
   configured: boolean,
 ): IAcquirerCredentialsForm {
   const onlyup = conn.onlyup;
+  const provider = inferPixAcquirerProvider(conn);
+  const cashOutDefault = isOnzPixAcquirer(provider)
+    ? ONZ_CASH_OUT_API[provider]
+    : ONZ_CASH_OUT_API.onlyup;
   return {
     apiUrl: conn.api_url ?? "",
     clientId: configured
@@ -94,6 +100,6 @@ export function buildAcquirerFormFromConnection(
     cashOutClientSecret: "",
     cashOutPfx: "",
     cashOutPfxPassword: "",
-    cashOutApiUrl: onlyup?.cash_out_api_url || "https://accounts.onlyup.com.br",
+    cashOutApiUrl: onlyup?.cash_out_api_url || cashOutDefault,
   };
 }

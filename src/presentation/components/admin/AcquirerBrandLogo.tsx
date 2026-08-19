@@ -1,3 +1,4 @@
+import basspagoLogo from "@/assets/basspago-logo.png";
 import onlyupLogo from "@/assets/only-up-logo.png";
 import wooviLogo from "@/assets/woovi-logo.svg";
 import {
@@ -12,6 +13,8 @@ const logoMap: Record<string, string> = {
   openpix: wooviLogo,
   onlyup: onlyupLogo,
   "only-up": onlyupLogo,
+  basspago: basspagoLogo,
+  "bass-pago": basspagoLogo,
 };
 
 interface IAcquirerBrandLogoProps {

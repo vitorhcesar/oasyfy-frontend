@@ -16,6 +16,9 @@ import { getApiBaseUrl } from "@/infra/http/services/api/api-env";
 import {
   getPixAcquirerProviderLabel,
   inferPixAcquirerProvider,
+  isOnzPixAcquirer,
+  ONZ_CASH_IN_API,
+  ONZ_CASH_OUT_API,
 } from "@/presentation/utils/pix-acquirer-provider";
 import {
   CheckCircle2,
@@ -33,7 +36,6 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 const DEFAULT_WOOVI_API = "https://api.woovi-sandbox.com";
-const DEFAULT_ONLYUP_API = "https://api.pix.onlyup.com.br";
 
 const ONLYUP_VERIFY_CHECKS: Array<{
   key: keyof Omit<IOnlyUpVerifyCredentialsDto, "ok">;
@@ -123,7 +125,7 @@ export function AcquirerConnectionConfigForm({
     cashOutClientSecret: "",
     cashOutPfx: "",
     cashOutPfxPassword: "",
-    cashOutApiUrl: "https://accounts.onlyup.com.br",
+    cashOutApiUrl: ONZ_CASH_OUT_API.onlyup,
   });
 
   const provider = useMemo(
@@ -131,12 +133,13 @@ export function AcquirerConnectionConfigForm({
     [connection],
   );
 
+  const isOnz = isOnzPixAcquirer(provider);
   const configured = isAcquirerConfigured(connection);
   const apiBase = getApiBaseUrl();
-  const webhookUrl =
-    provider === "onlyup"
-      ? `${apiBase}/api/v1/webhooks/onlyup/pix`
-      : `${apiBase}/api/v1/webhooks/woovi/pix`;
+  const webhookUrl = isOnz
+    ? `${apiBase}/api/v1/webhooks/${provider}/pix`
+    : `${apiBase}/api/v1/webhooks/woovi/pix`;
+  const cashOutAlias = provider === "basspago" ? "bass_pago" : "only_up";
 
   useEffect(() => {
     setFormData(buildAcquirerFormFromConnection(connection, configured));
@@ -169,7 +172,7 @@ export function AcquirerConnectionConfigForm({
           <p className="mt-1 text-sm text-muted-foreground">
             {provider === "woovi"
               ? "Cadastre esta URL no painel Woovi (um webhook por evento). Use o mesmo valor de Authorization do webhook no campo Secret abaixo."
-              : "A Oasyfy registra esta URL na OnlyUp (PUT /webhook/{chave}). Quem tiver a URL pode simular POST — o pagamento só é confirmado com GET /cob."}
+              : `A Oasyfy registra esta URL na ${getPixAcquirerProviderLabel(provider)} (PUT /webhook/{chave}). Quem tiver a URL pode simular POST — o pagamento só é confirmado com GET /cob.`}
           </p>
         </div>
 
@@ -201,12 +204,12 @@ export function AcquirerConnectionConfigForm({
           </ul>
         )}
 
-        {provider === "onlyup" && (
+        {isOnz && (
           <div className="space-y-3">
             <p className="text-sm text-muted-foreground">
               Cash-in não usa HMAC. Alias legado:{" "}
               <code className="text-foreground">
-                {apiBase}/api/v1/gateway/webhook/only_up
+                {apiBase}/api/v1/gateway/webhook/{cashOutAlias}
               </code>
               .
             </p>
@@ -245,9 +248,9 @@ export function AcquirerConnectionConfigForm({
             )}
             {onRegisterCashOutWebhook && (
               <p className="text-sm text-muted-foreground">
-                Cadastra na OnlyUp os 5 webhooks da API Conta (transferência,
-                recebimento, estorno, fila de saída e infrações) apontando para
-                esta Oasyfy.
+                Cadastra na {getPixAcquirerProviderLabel(provider)} os 5
+                webhooks da API Conta (transferência, recebimento, estorno, fila
+                de saída e infrações) apontando para esta Oasyfy.
               </p>
             )}
           </div>
@@ -326,7 +329,7 @@ export function AcquirerConnectionConfigForm({
               <Label className="text-sm">URL da API</Label>
               <Input
                 placeholder={
-                  provider === "onlyup" ? DEFAULT_ONLYUP_API : DEFAULT_WOOVI_API
+                  isOnz ? ONZ_CASH_IN_API[provider] : DEFAULT_WOOVI_API
                 }
                 value={formData.apiUrl}
                 onChange={(e) =>
@@ -340,9 +343,9 @@ export function AcquirerConnectionConfigForm({
                   <code>https://api.woovi.com</code>
                 </p>
               )}
-              {provider === "onlyup" && (
+              {isOnz && (
                 <p className="text-sm text-muted-foreground">
-                  Cash-in: <code>https://api.pix.onlyup.com.br</code> (sem
+                  Cash-in: <code>{ONZ_CASH_IN_API[provider]}</code> (sem
                   sandbox público).
                 </p>
               )}
@@ -424,7 +427,7 @@ export function AcquirerConnectionConfigForm({
                   Woovi.
                 </p>
               </>
-            ) : provider === "onlyup" ? (
+            ) : isOnz ? (
               <>
                 <div className="space-y-2">
                   <Label className="text-sm">Client ID (API Pix / cash-in)</Label>
@@ -563,7 +566,7 @@ export function AcquirerConnectionConfigForm({
                   <div className="space-y-2">
                     <Label className="text-sm">URL da API Conta</Label>
                     <Input
-                      placeholder="https://accounts.onlyup.com.br"
+                      placeholder={ONZ_CASH_OUT_API[provider]}
                       value={formData.cashOutApiUrl}
                       onChange={(e) =>
                         setFormData((prev) => ({

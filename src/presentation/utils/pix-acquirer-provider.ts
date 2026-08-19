@@ -1,4 +1,20 @@
-export type TPixAcquirerProvider = "woovi" | "onlyup";
+export type TPixAcquirerProvider = "woovi" | "onlyup" | "basspago";
+
+export const ONZ_CASH_IN_API: Record<"onlyup" | "basspago", string> = {
+  onlyup: "https://api.pix.onlyup.com.br",
+  basspago: "https://api.pix.basspago.com.br",
+};
+
+export const ONZ_CASH_OUT_API: Record<"onlyup" | "basspago", string> = {
+  onlyup: "https://accounts.onlyup.com.br",
+  basspago: "https://pagamentos.basspago.com.br",
+};
+
+export function isOnzPixAcquirer(
+  provider: string | null | undefined,
+): provider is "onlyup" | "basspago" {
+  return provider === "onlyup" || provider === "basspago";
+}
 
 export type TOnlyUpCredentialsView = {
   cash_in_client_id: string;
@@ -46,6 +62,9 @@ export function inferPixAcquirerProvider(
   conn: IPixAcquirerConnectionLike,
 ): TPixAcquirerProvider {
   const logoKey = conn.logo_key?.trim().toLowerCase();
+  if (logoKey === "basspago" || logoKey === "bass-pago") {
+    return "basspago";
+  }
   if (logoKey === "onlyup") {
     return "onlyup";
   }
@@ -54,6 +73,9 @@ export function inferPixAcquirerProvider(
   }
 
   const host = conn.api_url?.trim().toLowerCase() ?? "";
+  if (host.includes("basspago") || host.includes("versell")) {
+    return "basspago";
+  }
   if (host.includes("onlyup")) {
     return "onlyup";
   }
@@ -62,6 +84,9 @@ export function inferPixAcquirerProvider(
   }
 
   const name = conn.name?.trim().toLowerCase() ?? "";
+  if (name.includes("basspago") || name.includes("bass pago")) {
+    return "basspago";
+  }
   if (name.includes("onlyup") || name.includes("only up")) {
     return "onlyup";
   }
@@ -73,6 +98,9 @@ export function inferPixAcquirerProvider(
 }
 
 export function getPixAcquirerProviderLabel(provider: TPixAcquirerProvider) {
+  if (provider === "basspago") {
+    return "Bass Pago";
+  }
   if (provider === "onlyup") {
     return "OnlyUp";
   }
@@ -82,7 +110,7 @@ export function getPixAcquirerProviderLabel(provider: TPixAcquirerProvider) {
 export function isPixAcquirerProviderSlug(
   slug: string | undefined,
 ): slug is TPixAcquirerProvider {
-  return slug === "woovi" || slug === "onlyup";
+  return slug === "woovi" || slug === "onlyup" || slug === "basspago";
 }
 
 export function getAcquirerConfigPath(provider: TPixAcquirerProvider) {

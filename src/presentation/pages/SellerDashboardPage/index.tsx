@@ -208,13 +208,6 @@ export default function SellerDashboardPage() {
   const pixRate =
     pixTx.length > 0 ? Math.round((pixPaid / pixTx.length) * 100) : 0;
 
-  const boletoTx = filteredTx.filter((t) => t.method === "boleto");
-  const boletoPaid = boletoTx.filter((t) => t.isPaid()).length;
-  const boletoRate =
-    boletoTx.length > 0
-      ? Math.round((boletoPaid / boletoTx.length) * 100)
-      : 0;
-
   if (kycLoading) {
     return (
       <SellerLayout>
@@ -270,11 +263,8 @@ export default function SellerDashboardPage() {
         {stats.transactionsCount > 0 && (
           <Conversion
             pixRate={pixRate}
-            boletoRate={boletoRate}
             pixPaid={pixPaid}
             pixTotal={pixTx.length}
-            boletoPaid={boletoPaid}
-            boletoTotal={boletoTx.length}
           />
         )}
 

@@ -87,6 +87,7 @@ export function AcquirerGuideTab() {
   const apiBase = getApiBaseUrl();
   const wooviWebhookUrl = `${apiBase}/api/v1/webhooks/woovi/pix`;
   const onlyupWebhookUrl = `${apiBase}/api/v1/webhooks/onlyup/pix`;
+  const basspagoWebhookUrl = `${apiBase}/api/v1/webhooks/basspago/pix`;
 
   return (
     <div className="space-y-6">
@@ -116,7 +117,7 @@ export function AcquirerGuideTab() {
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-muted-foreground">
           {[
-            "Aba Conexões → Carregar adquirentes padrão (Woovi + OnlyUp)",
+            "Aba Conexões → Carregar adquirentes padrão (Woovi + OnlyUp + Bass Pago)",
             "Configurar credenciais de cada provedor → status Conectada",
             "Ativar o switch da adquirente que será usada",
             "Aba Depósito → adicionar adquirente(s) em PIX com prioridade (failover)",
@@ -450,6 +451,99 @@ export function AcquirerGuideTab() {
         </CardContent>
       </Card>
 
+      {/* BASS PAGO */}
+      <Card className="border-border/40">
+        <CardHeader className="pb-3">
+          <div className="flex items-center gap-2">
+            <CardTitle className="text-base">Bass Pago</CardTitle>
+            <Badge variant="outline" className="text-sm">
+              PIX entrada + PIX saída (ONZ)
+            </Badge>
+          </div>
+          <CardDescription className="text-sm">
+            Mesmo stack ONZ da OnlyUp, conta e certificados próprios. Hosts:{" "}
+            <code className="text-foreground">
+              https://api.pix.basspago.com.br
+            </code>{" "}
+            (cash-in),{" "}
+            <code className="text-foreground">
+              https://pagamentos.basspago.com.br
+            </code>{" "}
+            (cash-out) e painel{" "}
+            <code className="text-foreground">
+              https://finance.versell.com.br
+            </code>
+            . Sem HMAC no webhook — confirme com <code>GET /cob</code>.
+            Documentação:{" "}
+            <ExternalDocLink
+              href="https://dev.docs.basspago.com/#QrcodeBillings"
+              label="dev.docs.basspago.com"
+            />
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-8">
+          <div>
+            <h3 className="text-sm font-bold uppercase tracking-wide text-muted-foreground mb-4">
+              Parte A — No Finance Versell / Bass Pago
+            </h3>
+            <div className="space-y-0">
+              <GuideStep number={1} title="API QRCODES ≠ API CONTAS">
+                <p>
+                  Na aba <strong>Finance → API QRCODES</strong>, gere Client ID e
+                  Secret do cash-in. Na aba <strong>API CONTAS</strong>, gere o
+                  par do saque. Não misture com as credenciais da OnlyUp nem
+                  entre as duas abas.
+                </p>
+              </GuideStep>
+              <GuideStep number={2} title="Dois certificados PFX">
+                <p>
+                  Cash-in e cash-out usam PFX diferentes. A Oasyfy converte o
+                  PKCS#12 internamente (mTLS). Sem HMAC.
+                </p>
+              </GuideStep>
+              <GuideStep number={3} title="Chave Pix recebedora">
+                <p>
+                  Informe a chave DICT da conta Bass Pago. Ela vai no body de{" "}
+                  <code>PUT /cob</code> e em <code>PUT /webhook/{"{chave}"}</code>
+                  .
+                </p>
+              </GuideStep>
+            </div>
+          </div>
+          <div>
+            <h3 className="text-sm font-bold uppercase tracking-wide text-muted-foreground mb-4">
+              Parte B — No Oasyfy (aba Conexões)
+            </h3>
+            <div className="space-y-0">
+              <GuideStep number={1} title="Preencher cash-in e salvar">
+                <p>
+                  Aba <strong>Conexões</strong> → Configurar Bass Pago. Depois de
+                  salvar, use <strong>Verificar credenciais</strong>.
+                </p>
+              </GuideStep>
+              <GuideStep number={2} title="Configurar webhooks">
+                <p>
+                  Botão <strong>Configurar webhook</strong> registra o cash-in:
+                </p>
+                <CopyBlock label="URL do webhook" value={basspagoWebhookUrl} />
+                <p>
+                  Botão <strong>Configurar webhooks da API Conta</strong>{" "}
+                  cadastra os 5 tipos em{" "}
+                  <code>/api/v1/gateway/webhook/bass_pago/:acquirerId</code>.
+                </p>
+              </GuideStep>
+              <GuideStep number={3} title="Roteamento e teste">
+                <p>
+                  Aba Depósito → PIX → incluir Bass Pago na ordem de failover.
+                  Homologação é produção com valor baixo. Não reutilize o PFX da
+                  OnlyUp.
+                </p>
+              </GuideStep>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Failover + mapeamento */}
       <Card className="border-border/40">
         <CardHeader className="pb-3">
@@ -468,8 +562,11 @@ export function AcquirerGuideTab() {
                   <th className="py-2 pr-3 font-medium text-foreground">
                     Woovi
                   </th>
-                  <th className="py-2 font-medium text-foreground">
+                  <th className="py-2 pr-3 font-medium text-foreground">
                     OnlyUp
+                  </th>
+                  <th className="py-2 font-medium text-foreground">
+                    Bass Pago
                   </th>
                 </tr>
               </thead>
@@ -479,20 +576,47 @@ export function AcquirerGuideTab() {
                     "URL da API",
                     "api.woovi.com / sandbox",
                     "api.pix.onlyup.com.br",
+                    "api.pix.basspago.com.br",
                   ],
-                  ["Access Token / Secret", "App ID", "OAuth 5 min + Client Secret"],
-                  ["HMAC / Auth webhook", "Secret webhook", "Sem HMAC; GET /cob"],
-                  ["Client ID", "Opcional (webhook)", "OAuth cash-in"],
-                  ["Extra", "Não usa", "PFX + senha + Chave Pix"],
-                  ["Webhook URL", wooviWebhookUrl, onlyupWebhookUrl],
-                  ["Saques PIX", "Sim (PAYMENT_POST)", "API Conta (DICT + webhook TRANSFER)"],
-                ].map(([label, woovi, onlyup]) => (
+                  [
+                    "Access Token / Secret",
+                    "App ID",
+                    "OAuth 5 min + Client Secret",
+                    "OAuth 5 min + Client Secret",
+                  ],
+                  [
+                    "HMAC / Auth webhook",
+                    "Secret webhook",
+                    "Sem HMAC; GET /cob",
+                    "Sem HMAC; GET /cob",
+                  ],
+                  ["Client ID", "Opcional (webhook)", "OAuth cash-in", "OAuth cash-in"],
+                  [
+                    "Extra",
+                    "Não usa",
+                    "PFX + senha + Chave Pix",
+                    "PFX próprio + senha + Chave Pix",
+                  ],
+                  [
+                    "Webhook URL",
+                    wooviWebhookUrl,
+                    onlyupWebhookUrl,
+                    basspagoWebhookUrl,
+                  ],
+                  [
+                    "Saques PIX",
+                    "Sim (PAYMENT_POST)",
+                    "API Conta (DICT + webhook TRANSFER)",
+                    "pagamentos.basspago.com.br",
+                  ],
+                ].map(([label, woovi, onlyup, basspago]) => (
                   <tr key={label}>
                     <td className="py-2 pr-3 font-medium text-foreground">
                       {label}
                     </td>
                     <td className="py-2 pr-3">{woovi}</td>
-                    <td className="py-2">{onlyup}</td>
+                    <td className="py-2 pr-3">{onlyup}</td>
+                    <td className="py-2">{basspago}</td>
                   </tr>
                 ))}
               </tbody>
@@ -502,7 +626,7 @@ export function AcquirerGuideTab() {
           <p>
             <strong className="text-foreground">Failover:</strong> na aba Depósito
             → PIX, arraste prioridades (1 = primeira tentativa). Se Woovi está
-            em 1 e falhar, OnlyUp em 2 é tentada automaticamente.
+            em 1 e falhar, OnlyUp ou Bass Pago em 2 é tentada automaticamente.
           </p>
         </CardContent>
       </Card>
@@ -531,8 +655,8 @@ export function AcquirerGuideTab() {
               a: "App Woovi sem PAYMENT_POST, saldo insuficiente no sandbox, ou chave PIX inválida no KYC.",
             },
             {
-              q: "Webhook OnlyUp não marca pago",
-              a: "Cash-in não usa HMAC. Confirme PFX/mTLS, chave Pix e que GET /cob retorna CONCLUIDA. A URL do webhook é segredo de operação.",
+              q: "Webhook OnlyUp ou Bass Pago não marca pago",
+              a: "Cash-in não usa HMAC. Confirme PFX/mTLS da conta certa (não misture OnlyUp e Bass Pago), chave Pix e que GET /cob retorna CONCLUIDA.",
             },
             {
               q: "PIX não usa Woovi mesmo configurada",
