@@ -45,28 +45,64 @@ function copy(value: string, label: string) {
   toast.success(`${label} copiado`);
 }
 
-function JsonBlock({ value }: { value: unknown }) {
-  const text = JSON.stringify(value, null, 2);
+function ScrollField({
+  value,
+  copyLabel,
+  maxHeightClass = "",
+}: {
+  value: string;
+  copyLabel: string;
+  maxHeightClass?: string;
+}) {
   return (
-    <div className="relative">
+    <div className="relative min-w-0">
       <button
         type="button"
-        onClick={() => copy(text, "JSON")}
-        className="absolute right-2 top-2 rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+        onClick={() => copy(value, copyLabel)}
+        className="absolute right-1.5 top-1.5 z-10 rounded-lg bg-background/80 p-1.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         title="Copiar"
       >
         <Copy size={13} />
       </button>
-      <pre className="max-h-72 overflow-auto rounded-xl bg-muted/40 p-3 pr-10 text-xs leading-relaxed text-foreground">
-        {text}
-      </pre>
+      <div
+        className={cn(
+          "max-w-full min-w-0 overflow-x-auto rounded-xl bg-muted/40",
+          maxHeightClass,
+        )}
+      >
+        <pre className="w-max min-w-full whitespace-pre px-3 py-2 pr-10 font-mono text-xs leading-relaxed text-foreground">
+          {value}
+        </pre>
+      </div>
+    </div>
+  );
+}
+
+function HeadersList({ headers }: { headers: Record<string, string> }) {
+  const entries = Object.entries(headers);
+  if (entries.length === 0) {
+    return <p className="text-sm text-muted-foreground">Sem headers.</p>;
+  }
+  return (
+    <div className="min-w-0 space-y-2">
+      {entries.map(([name, value]) => (
+        <div key={name} className="min-w-0">
+          <p className="mb-1 font-mono text-[11px] text-muted-foreground">
+            {name}
+          </p>
+          <ScrollField value={value} copyLabel={name} />
+        </div>
+      ))}
     </div>
   );
 }
 
 function AttemptRow({ attempt }: { attempt: IAdminWebhookDeliveryAttemptDto }) {
+  const responseBody = attempt.response_body
+    ? `${attempt.response_body}${attempt.response_body_truncated ? "\n… (truncado)" : ""}`
+    : null;
   return (
-    <div className="rounded-xl border border-border/50 p-3">
+    <div className="min-w-0 rounded-xl border border-border/50 p-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm font-semibold text-foreground">
           Tentativa {attempt.attempt_number}
@@ -82,12 +118,15 @@ function AttemptRow({ attempt }: { attempt: IAdminWebhookDeliveryAttemptDto }) {
         HTTP {attempt.response_status_code ?? "—"}
         {attempt.error ? ` · ${attempt.error}` : ""}
       </p>
-      {attempt.response_body && (
-        <pre className="mt-2 max-h-40 overflow-auto rounded-lg bg-muted/40 p-2 text-xs text-foreground">
-          {attempt.response_body}
-          {attempt.response_body_truncated ? "\n… (truncado)" : ""}
-        </pre>
-      )}
+      {responseBody ? (
+        <div className="mt-2 min-w-0">
+          <ScrollField
+            value={responseBody}
+            copyLabel="Resposta"
+            maxHeightClass="max-h-40 overflow-y-auto"
+          />
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -117,8 +156,8 @@ export default function AdminWebhookDetailDialog({
         if (!open) onClose();
       }}
     >
-      <DialogContent className="max-h-[90vh] w-[calc(100%-2rem)] max-w-2xl min-w-0 overflow-x-hidden overflow-y-auto border-border/60 bg-background">
-        <DialogHeader>
+      <DialogContent className="flex max-h-[90vh] w-[calc(100%-2rem)] min-w-0 max-w-2xl flex-col overflow-x-hidden overflow-y-auto border-border/60 bg-background">
+        <DialogHeader className="min-w-0 pr-8">
           <DialogTitle className="text-xl font-bold tracking-tight">
             Detalhes do webhook
           </DialogTitle>
@@ -129,33 +168,37 @@ export default function AdminWebhookDetailDialog({
             <Loader2 size={22} className="animate-spin text-muted-foreground" />
           </div>
         ) : (
-          <div className="mt-2 space-y-4">
+          <div className="mt-2 min-w-0 space-y-4">
             <SectionCard title="Resumo">
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <div>
+                <div className="min-w-0">
                   <p className="text-xs text-muted-foreground">Evento</p>
-                  <p className="font-mono text-sm text-foreground">
-                    {detail.event_id}
-                  </p>
+                  <div className="overflow-x-auto">
+                    <p className="w-max font-mono text-sm whitespace-nowrap text-foreground">
+                      {detail.event_id}
+                    </p>
+                  </div>
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-xs text-muted-foreground">Delivery</p>
-                  <button
-                    type="button"
-                    className="font-mono text-sm text-foreground hover:underline"
-                    onClick={() => copy(detail.delivery_id, "Delivery ID")}
-                  >
-                    {detail.delivery_id}
-                  </button>
+                  <div className="max-w-full overflow-x-auto">
+                    <button
+                      type="button"
+                      className="font-mono text-sm whitespace-nowrap text-foreground hover:underline"
+                      onClick={() => copy(detail.delivery_id, "Delivery ID")}
+                    >
+                      {detail.delivery_id}
+                    </button>
+                  </div>
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-xs text-muted-foreground">Origem</p>
                   <p className="text-sm text-foreground">
                     {detail.source}
                     {detail.test ? " · teste" : ""}
                   </p>
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="text-xs text-muted-foreground">Tentativas</p>
                   <p className="text-sm text-foreground">
                     {detail.attempts}/5
@@ -166,29 +209,27 @@ export default function AdminWebhookDetailDialog({
                 </div>
               </div>
               {detail.last_error && (
-                <p className="mt-3 text-sm text-destructive">
+                <p className="mt-3 break-all text-sm text-destructive">
                   {detail.last_error}
                 </p>
               )}
             </SectionCard>
 
             <SectionCard title="Request">
-              <p className="text-xs text-muted-foreground">POST</p>
-              <button
-                type="button"
-                className="mt-1 break-all text-left text-sm text-foreground hover:underline"
-                onClick={() => copy(detail.request.url, "URL")}
-              >
-                {detail.request.url}
-              </button>
+              <p className="mb-1 text-xs text-muted-foreground">POST</p>
+              <ScrollField value={detail.request.url} copyLabel="URL" />
               <p className="mb-2 mt-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Headers
               </p>
-              <JsonBlock value={detail.request.headers} />
+              <HeadersList headers={detail.request.headers} />
               <p className="mb-2 mt-4 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Payload
               </p>
-              <JsonBlock value={detail.payload} />
+              <ScrollField
+                value={JSON.stringify(detail.payload, null, 2)}
+                copyLabel="Payload"
+                maxHeightClass="max-h-72 overflow-y-auto"
+              />
             </SectionCard>
 
             <SectionCard title="Tentativas">
@@ -237,9 +278,7 @@ export default function AdminWebhookDetailDialog({
             </SectionCard>
 
             <SectionCard title="Endpoint">
-              <p className="break-all text-sm text-foreground">
-                {detail.endpoint_url}
-              </p>
+              <ScrollField value={detail.endpoint_url} copyLabel="URL" />
               <p className="mt-1 text-sm text-muted-foreground">
                 {detail.endpoint_scope === "gateway" ? "Por venda" : "Conta"}
                 {detail.endpoint_is_active ? "" : " · inativo"}
