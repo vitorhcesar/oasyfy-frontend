@@ -5,6 +5,7 @@ import { useUserContext } from "@/presentation/context/UserContext";
 import useAdminManagersQuery from "@/presentation/hooks/use-admin-managers-query";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import { AdminLayout } from "@/presentation/layouts/AdminLayout";
+import { getErrorMessageOrDefault } from "@/presentation/utils/get-error-message-or-default";
 import { Loader2, Mail, Shield, Trash2, UserPlus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -21,7 +22,7 @@ export default function AdminManagers() {
 
   useEffect(() => {
     if (isError) {
-      toast.error("Erro ao carregar administradores");
+      toast.error("Não foi possível carregar a lista de administradores");
     }
   }, [isError]);
   const [email, setEmail] = useState("");
@@ -43,11 +44,12 @@ export default function AdminManagers() {
 
     setAdding(true);
     try {
+      const trimmedName = fullName.trim();
       await apiService.modules.manageAdmins.execute({
         action: "add",
-        email,
+        email: email.trim(),
         password,
-        full_name: fullName || null,
+        ...(trimmedName ? { full_name: trimmedName } : {}),
       });
 
       toast.success("Administrador adicionado com sucesso");
@@ -56,13 +58,12 @@ export default function AdminManagers() {
       setFullName("");
       await invalidateQuery();
     } catch (err) {
-      console.error(err);
-
-      if (err instanceof Error) {
-        toast.error(err.message || "Erro inesperado");
-      } else {
-        toast.error("Erro inesperado");
-      }
+      toast.error(
+        getErrorMessageOrDefault(
+          err,
+          "Não foi possível adicionar o administrador",
+        ),
+      );
     } finally {
       setAdding(false);
     }
@@ -84,13 +85,12 @@ export default function AdminManagers() {
       toast.success("Administrador removido com sucesso");
       await invalidateQuery();
     } catch (err) {
-      console.error(err);
-
-      if (err instanceof Error) {
-        toast.error(err.message || "Erro inesperado");
-      } else {
-        toast.error("Erro inesperado");
-      }
+      toast.error(
+        getErrorMessageOrDefault(
+          err,
+          "Não foi possível remover o administrador",
+        ),
+      );
     } finally {
       setRemoving(null);
     }
