@@ -189,7 +189,7 @@ ${numbered([
 ## Descrição
 A Oasyfy faz POST HTTPS na URL cadastrada no portal (API → Webhooks) quando o status de uma venda muda. Evento v1: \`sale.status_changed\`. Até 3 URLs HTTPS. O secret (\`whsec_...\`) aparece só na criação.
 
-Também é possível passar \`webhook_url\` em POST /gateway/sales e POST /gateway/pix: notifica só aquela cobrança, além das URLs da conta. A mesma URL é idempotente (um destino e um secret). Secret só no 201 da primeira vez. Checkout público não aceita o campo.
+Também é possível passar \`webhook_url\` em POST /gateway/sales e POST /gateway/pix: notifica só aquela cobrança, além das URLs da conta. A mesma URL é idempotente (um destino e um secret). Secret no 201 por padrão (também nas URLs já existentes); o seller pode desligar no portal. Checkout público não aceita o campo.
 
 ## Headers enviados
 - Content-Type: application/json
@@ -449,7 +449,7 @@ ${numbered([
     responses: `### 201 Created
 - message
 - transaction (objeto com id inteiro, status pending)
-- webhook (opcional) — { url, secret? }. secret só na 1ª vez da URL
+- webhook (opcional) — { url, secret? }. secret no 201 por padrão; só some nas URLs já existentes se o seller desligar no portal
 ### 400
 - error — campos inválidos (customer_name e amount são obrigatórios) ou invalid_webhook_url
 ### 403
@@ -502,7 +502,7 @@ ${numbered([
 - message
 - transaction
 - pix.transaction_id, pix.amount, pix.pix_code, pix.expiration, pix.status (awaiting_payment)
-- webhook (opcional) — { url, secret? }. secret só na 1ª vez daquela URL; omitido se a URL já for a da conta
+- webhook (opcional) — { url, secret? }. secret no 201 por padrão; omitido se a URL já for a da conta e o seller desligar a opção no portal
 ### 400
 - error — se faltar customer_name ou amount, ou invalid_webhook_url
 ### 403

@@ -113,6 +113,10 @@ export interface ISellerWebhookEndpointDto {
   last_delivery_at: string | null;
 }
 
+export interface ISellerWebhookSettingsDto {
+  reveal_secret_on_sale_create: boolean;
+}
+
 export interface IListSellerWebhookDeliveriesParams {
   page?: number;
   limit?: number;
@@ -217,6 +221,10 @@ export interface ISellerPortalModule {
     params?: IListSellerWebhookDeliveriesParams,
   ) => Promise<IListSellerWebhookDeliveriesDto>;
   getWebhookDelivery: (id: number) => Promise<IAdminWebhookDeliveryDetailDto>;
+  getWebhookSettings: () => Promise<ISellerWebhookSettingsDto>;
+  updateWebhookSettings: (
+    body: ISellerWebhookSettingsDto,
+  ) => Promise<ISellerWebhookSettingsDto>;
   listAuthorizedIps: () => Promise<ISellerAuthorizedIpDto[]>;
   createAuthorizedIp: (ipAddress: string) => Promise<ISellerAuthorizedIpDto>;
   deleteAuthorizedIp: (id: number) => Promise<void>;
@@ -415,6 +423,22 @@ export class SellerPortalModule
     const response = await this.getClient().get<
       IApiEnvelope<IAdminWebhookDeliveryDetailDto>
     >(`${this.baseUrl}/webhooks/deliveries/${id}`);
+    return response.data;
+  }
+
+  async getWebhookSettings(): Promise<ISellerWebhookSettingsDto> {
+    const response = await this.getClient().get<
+      IApiEnvelope<ISellerWebhookSettingsDto>
+    >(`${this.baseUrl}/webhooks/settings`);
+    return response.data;
+  }
+
+  async updateWebhookSettings(
+    body: ISellerWebhookSettingsDto,
+  ): Promise<ISellerWebhookSettingsDto> {
+    const response = await this.getClient().patch<
+      IApiEnvelope<ISellerWebhookSettingsDto>
+    >(`${this.baseUrl}/webhooks/settings`, body);
     return response.data;
   }
 

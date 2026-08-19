@@ -318,9 +318,10 @@ Content-Type: application/json`}</Code>
         <p>
           Pode ser sempre a mesma URL (idempotente: um destino e um secret) ou
           um path por pedido (<code>/hooks/orders/1234</code>). O secret (
-          <code>whsec_...</code>) vem só no 201 da primeira vez daquela URL.
-          GET de transação nunca devolve o secret. Checkout público não aceita
-          o campo.
+          <code>whsec_...</code>) vem no 201 por padrão, inclusive quando a URL
+          já existir. O seller pode desligar “devolver o signing secret na
+          criação” no portal. GET de transação nunca devolve o secret. Checkout
+          público não aceita o campo.
         </p>
         <H id="headers">Headers enviados</H>
         <ParamTable
@@ -891,9 +892,11 @@ Content-Type: application/json
   }
 }`}</Code>
         <p>
-          <code>webhook.secret</code> aparece só na primeira vez daquela URL.
-          Nas seguintes o 201 traz só <code>webhook.url</code>. Se a URL já
-          estiver cadastrada na conta, a chave <code>webhook</code> é omitida.
+          <code>webhook.secret</code> vem no 201 por padrão, inclusive quando a
+          URL já existir. O seller pode desligar isso no portal; aí as criações
+          seguintes trazem só <code>webhook.url</code>. Se a URL já estiver
+          cadastrada na conta e a opção estiver desligada, a chave{" "}
+          <code>webhook</code> é omitida.
         </p>
       </div>
     ),

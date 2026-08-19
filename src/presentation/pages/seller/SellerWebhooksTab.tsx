@@ -88,6 +88,8 @@ export function SellerWebhooksTab() {
     null,
   );
   const [detailLoading, setDetailLoading] = useState(false);
+  const [revealSecret, setRevealSecret] = useState(true);
+  const [revealSecretBusy, setRevealSecretBusy] = useState(false);
 
   const reload = useCallback(
     () =>
@@ -121,7 +123,13 @@ export function SellerWebhooksTab() {
 
   useEffect(() => {
     reload().finally(() => setLoading(false));
-  }, [reload]);
+    apiService.modules.sellerPortal
+      .getWebhookSettings()
+      .then((settings) =>
+        setRevealSecret(settings.reveal_secret_on_sale_create),
+      )
+      .catch(() => undefined);
+  }, [reload, apiService]);
 
   useEffect(() => {
     void reloadDeliveries();
@@ -202,6 +210,25 @@ export function SellerWebhooksTab() {
       toast.error("Não foi possível abrir o envio");
     } finally {
       setDetailLoading(false);
+    }
+  };
+
+  const handleRevealSecretChange = async (checked: boolean) => {
+    setRevealSecretBusy(true);
+    try {
+      const settings = await apiService.modules.sellerPortal.updateWebhookSettings({
+        reveal_secret_on_sale_create: checked,
+      });
+      setRevealSecret(settings.reveal_secret_on_sale_create);
+      toast.success(
+        checked
+          ? "O secret volta no 201 quando a URL já existir"
+          : "O secret continua só na primeira vez da URL",
+      );
+    } catch {
+      toast.error("Não foi possível salvar a configuração");
+    } finally {
+      setRevealSecretBusy(false);
     }
   };
 
@@ -295,6 +322,27 @@ export function SellerWebhooksTab() {
             ))}
           </ul>
         )}
+
+        <label className="mt-5 flex cursor-pointer items-start gap-2.5 border-t border-border/40 pt-4">
+          <input
+            type="checkbox"
+            checked={revealSecret}
+            disabled={revealSecretBusy}
+            onChange={(e) => void handleRevealSecretChange(e.target.checked)}
+            className="mt-0.5 rounded border-border accent-primary"
+          />
+          <div>
+            <p className="text-xs font-medium leading-tight text-foreground">
+              Devolver o signing secret na criação da venda/PIX
+            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Se a <code>webhook_url</code> já existir, o 201 de{" "}
+              <code>POST /gateway/pix</code> e <code>/sales</code> inclui de
+              novo o <code>whsec_...</code>. A chave da API passa a poder ler o
+              secret. Ligado por padrão; desative se não quiser devolver.
+            </p>
+          </div>
+        </label>
       </div>
 
       <div className="admin-surface p-6">
