@@ -95,18 +95,21 @@ function AttemptRow({ attempt }: { attempt: IAdminWebhookDeliveryAttemptDto }) {
 interface IAdminWebhookDetailDialogProps {
   detail: IAdminWebhookDeliveryDetailDto | null;
   loading: boolean;
-  resending: boolean;
+  resending?: boolean;
+  mode?: "admin" | "seller";
   onClose: () => void;
-  onResend: () => void;
+  onResend?: () => void;
 }
 
 export default function AdminWebhookDetailDialog({
   detail,
   loading,
-  resending,
+  resending = false,
+  mode = "admin",
   onClose,
   onResend,
 }: IAdminWebhookDetailDialogProps) {
+  const isAdmin = mode === "admin";
   return (
     <Dialog
       open={!!detail || loading}
@@ -220,7 +223,7 @@ export default function AdminWebhookDetailDialog({
                       : ""}
                   </p>
                   <Link
-                    to={`/admin/transactions`}
+                    to={isAdmin ? "/admin/transactions" : "/seller/transactions"}
                     className="text-sm font-medium text-primary hover:underline"
                   >
                     Abrir nas vendas
@@ -241,33 +244,37 @@ export default function AdminWebhookDetailDialog({
                 {detail.endpoint_scope === "gateway" ? "Por venda" : "Conta"}
                 {detail.endpoint_is_active ? "" : " · inativo"}
               </p>
-              <Link
-                to={`/admin/kyc?sellerId=${detail.seller_id}`}
-                className="mt-2 inline-block text-sm font-medium text-primary hover:underline"
-              >
-                {detail.seller_name}
-                {detail.seller_account_id
-                  ? ` · ${detail.seller_account_id}`
-                  : ""}
-              </Link>
+              {isAdmin ? (
+                <Link
+                  to={`/admin/kyc?sellerId=${detail.seller_id}`}
+                  className="mt-2 inline-block text-sm font-medium text-primary hover:underline"
+                >
+                  {detail.seller_name}
+                  {detail.seller_account_id
+                    ? ` · ${detail.seller_account_id}`
+                    : ""}
+                </Link>
+              ) : null}
             </SectionCard>
 
-            <button
-              type="button"
-              disabled={resending}
-              onClick={onResend}
-              className={cn(
-                "flex w-full items-center justify-center gap-2 rounded-2xl border border-primary/25 bg-primary/10 px-4 py-3 text-sm font-semibold text-primary transition-colors hover:bg-primary/15",
-                resending && "opacity-70",
-              )}
-            >
-              {resending ? (
-                <Loader2 size={16} className="animate-spin" />
-              ) : (
-                <RotateCw size={16} />
-              )}
-              Reenviar webhook
-            </button>
+            {isAdmin && onResend ? (
+              <button
+                type="button"
+                disabled={resending}
+                onClick={onResend}
+                className={cn(
+                  "flex w-full items-center justify-center gap-2 rounded-2xl border border-primary/25 bg-primary/10 px-4 py-3 text-sm font-semibold text-primary transition-colors hover:bg-primary/15",
+                  resending && "opacity-70",
+                )}
+              >
+                {resending ? (
+                  <Loader2 size={16} className="animate-spin" />
+                ) : (
+                  <RotateCw size={16} />
+                )}
+                Reenviar webhook
+              </button>
+            ) : null}
           </div>
         )}
       </DialogContent>

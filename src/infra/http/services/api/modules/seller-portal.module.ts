@@ -1,4 +1,14 @@
-import type { IApiEnvelope } from "../api-types";
+import {
+  compactQueryParams,
+  type IApiEnvelope,
+  type IPaginatedListDto,
+  unwrapPaginatedList,
+} from "../api-types";
+import type {
+  IAdminWebhookDeliveryDetailDto,
+  IAdminWebhookDeliveryListItemDto,
+  IAdminWebhookDeliveryStatsDto,
+} from "./admin-webhooks.module";
 import { BaseApiModule } from "./base-api.module";
 
 export interface ISellerProfileDto {
@@ -103,6 +113,18 @@ export interface ISellerWebhookEndpointDto {
   last_delivery_at: string | null;
 }
 
+export interface IListSellerWebhookDeliveriesParams {
+  page?: number;
+  limit?: number;
+  status?: string;
+  endpointId?: number;
+}
+
+export interface IListSellerWebhookDeliveriesDto
+  extends IPaginatedListDto<IAdminWebhookDeliveryListItemDto> {
+  stats: IAdminWebhookDeliveryStatsDto;
+}
+
 export interface ISellerApiKeyDto {
   id: number;
   name: string;
@@ -191,6 +213,10 @@ export interface ISellerPortalModule {
   ) => Promise<ISellerWebhookEndpointDto>;
   deleteWebhook: (id: number) => Promise<void>;
   testWebhook: (id: number) => Promise<{ delivery_id: string }>;
+  listWebhookDeliveries: (
+    params?: IListSellerWebhookDeliveriesParams,
+  ) => Promise<IListSellerWebhookDeliveriesDto>;
+  getWebhookDelivery: (id: number) => Promise<IAdminWebhookDeliveryDetailDto>;
   listAuthorizedIps: () => Promise<ISellerAuthorizedIpDto[]>;
   createAuthorizedIp: (ipAddress: string) => Promise<ISellerAuthorizedIpDto>;
   deleteAuthorizedIp: (id: number) => Promise<void>;
@@ -356,6 +382,39 @@ export class SellerPortalModule
     const response = await this.getClient().post<
       IApiEnvelope<{ delivery_id: string }>
     >(`${this.baseUrl}/webhooks/${id}/test`, {});
+    return response.data;
+  }
+
+  async listWebhookDeliveries(
+    params: IListSellerWebhookDeliveriesParams = {},
+  ): Promise<IListSellerWebhookDeliveriesDto> {
+    const response = await this.getClient().get<
+      IApiEnvelope<IListSellerWebhookDeliveriesDto>
+    >(`${this.baseUrl}/webhooks/deliveries`, {
+      params: compactQueryParams({
+        page: params.page,
+        limit: params.limit,
+        status: params.status,
+        endpointId: params.endpointId,
+      }),
+    });
+    const payload = unwrapPaginatedList(response.data);
+    const stats =
+      response.data &&
+      typeof response.data === "object" &&
+      "stats" in response.data
+        ? (response.data as IListSellerWebhookDeliveriesDto).stats
+        : { pending: 0, success: 0, failed: 0 };
+    return {
+      ...payload,
+      stats: stats ?? { pending: 0, success: 0, failed: 0 },
+    };
+  }
+
+  async getWebhookDelivery(id: number): Promise<IAdminWebhookDeliveryDetailDto> {
+    const response = await this.getClient().get<
+      IApiEnvelope<IAdminWebhookDeliveryDetailDto>
+    >(`${this.baseUrl}/webhooks/deliveries/${id}`);
     return response.data;
   }
 
