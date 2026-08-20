@@ -39,12 +39,12 @@ describe("getErrorMessageOrDefault", () => {
       getErrorMessageOrDefault(
         axiosError({
           status: 400,
-          message: "Este email já está cadastrado",
-          error: { message: "Este email já está cadastrado", statusCode: 400 },
+          message: "Este e-mail já é administrador",
+          error: { message: "Este e-mail já é administrador", statusCode: 400 },
         }),
         "Erro inesperado",
       ),
-    ).toBe("Este email já está cadastrado");
+    ).toBe("Este e-mail já é administrador");
   });
 
   it("does not show the generic Axios status message", () => {
