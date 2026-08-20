@@ -8,9 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/presentation/components/Select";
-import {
-  isExpiredUnpaidTransaction,
-} from "@/presentation/utils/transaction-status";
+import { displayedTransactionStatus } from "@/presentation/utils/transaction-status";
 import { PixIcon } from "@/presentation/components/PixIcon";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import SellerTransactionDetailDialog from "@/presentation/pages/seller/components/SellerTransactionDetailDialog";
@@ -304,14 +302,12 @@ export default function SellerTransactions() {
   const paidCount = approvedCount;
 
   const StatusBadge = ({ tx }: { tx: TransactionView }) => {
-    const s = isExpiredUnpaidTransaction(tx)
-      ? statusConfig.expired
-      : statusConfig[tx.status] || {
-          label: tx.status,
-          bg: "bg-muted",
-          text: "text-muted-foreground",
-          dot: "bg-muted-foreground/40",
-        };
+    const s = statusConfig[displayedTransactionStatus(tx)] || {
+      label: tx.status,
+      bg: "bg-muted",
+      text: "text-muted-foreground",
+      dot: "bg-muted-foreground/40",
+    };
     return (
       <span
         className={cn(

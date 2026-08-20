@@ -237,8 +237,8 @@ export function SellerWebhooksTab() {
 
   return (
     <div className="space-y-6">
-      <div className="admin-surface p-6">
-        <div className="mb-4 flex items-center justify-between">
+      <div className="admin-surface overflow-hidden p-4 md:p-6">
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-2">
           <div>
             <h2 className="text-base font-semibold text-foreground">Webhooks</h2>
             <p className="mt-1 text-xs text-muted-foreground">
@@ -345,7 +345,7 @@ export function SellerWebhooksTab() {
         </label>
       </div>
 
-      <div className="admin-surface p-6">
+      <div className="admin-surface overflow-hidden p-4 md:p-6">
         <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 className="text-base font-semibold text-foreground">Envios</h2>

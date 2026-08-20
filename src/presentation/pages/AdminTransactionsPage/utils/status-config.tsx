@@ -1,3 +1,5 @@
+import { displayedTransactionStatus } from "@/presentation/utils/transaction-status";
+
 export const statusConfig: Record<
   string,
   { label: string; cls: string; dot: string }
@@ -19,6 +21,11 @@ export const statusConfig: Record<
   },
   failed: {
     label: "Falhou",
+    cls: "border-destructive/25 bg-destructive/10 text-destructive",
+    dot: "bg-destructive",
+  },
+  expired: {
+    label: "Expirado",
     cls: "border-destructive/25 bg-destructive/10 text-destructive",
     dot: "bg-destructive",
   },
@@ -53,4 +60,12 @@ export function statusBadge(status: string) {
       {s.label}
     </span>
   );
+}
+
+export function transactionStatusBadge(tx: {
+  status: string;
+  method?: string;
+  metadata?: Record<string, unknown> | null;
+}) {
+  return statusBadge(displayedTransactionStatus(tx));
 }

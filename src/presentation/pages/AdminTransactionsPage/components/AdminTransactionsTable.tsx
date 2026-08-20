@@ -4,6 +4,7 @@ import { ptBR } from "date-fns/locale";
 import { CreditCard, Eye, Lock } from "lucide-react";
 import type { Transaction } from "../types/admin-transaction.type";
 import { formatCurrency } from "../utils/format-currency";
+import { displayedTransactionStatus } from "@/presentation/utils/transaction-status";
 import { statusConfig } from "../utils/status-config";
 import { hasSaleSplitMetadata } from "../utils/transaction-split";
 
@@ -71,7 +72,7 @@ export default function AdminTransactionsTable({
         </thead>
         <tbody>
           {rows.map((tx) => {
-            const s = statusConfig[tx.status] || {
+            const s = statusConfig[displayedTransactionStatus(tx)] || {
               label: tx.status,
               cls: "border-border bg-muted text-muted-foreground",
               dot: "bg-muted-foreground",

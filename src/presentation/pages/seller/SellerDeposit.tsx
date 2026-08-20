@@ -29,7 +29,7 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
-const DEPOSIT_EXPIRES_IN_SECONDS = 5 * 60;
+const DEPOSIT_EXPIRES_IN_SECONDS = 30 * 60;
 const POLL_INTERVAL_MS = 2500;
 /** CPF válido usado quando o seller não cadastrou documento. */
 const DEFAULT_DEPOSIT_CPF = "52998224725";
@@ -317,7 +317,7 @@ export default function SellerDeposit() {
           className="mb-0"
           eyebrow="Financeiro"
           title="Depósito via PIX"
-          description="Gere um QR Code PIX para depositar na sua conta. O código expira em 5 minutos."
+          description="Gere um QR Code PIX para depositar na sua conta. O código expira em 30 minutos."
         />
 
         {step === "form" ? (
@@ -494,7 +494,7 @@ export default function SellerDeposit() {
                 PIX expirado
               </h2>
               <p className="text-sm text-muted-foreground">
-                Este código valia por 5 minutos. Gere um novo depósito para
+                Este código valia por 30 minutos. Gere um novo depósito para
                 continuar.
               </p>
             </div>

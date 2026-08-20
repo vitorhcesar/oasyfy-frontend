@@ -33,7 +33,7 @@ import type {
 } from "../types/admin-transaction.type";
 import { formatCurrency } from "../utils/format-currency";
 import { methodLabel } from "../utils/method-label";
-import { statusBadge } from "../utils/status-config";
+import { transactionStatusBadge } from "../utils/status-config";
 import { isAdminBalanceAdjustment } from "../utils/is-admin-balance-adjustment";
 import { getSaleSplitDetails } from "../utils/transaction-split";
 
@@ -239,7 +239,7 @@ export default function AdminTransactionDetailDialog({
                     </button>
                   </div>
                 </div>
-                {statusBadge(selectedTx.status)}
+                {transactionStatusBadge(selectedTx)}
               </div>
 
               <Link

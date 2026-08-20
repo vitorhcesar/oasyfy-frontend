@@ -106,7 +106,7 @@ export default function SellerApi() {
   if (!apiAccessEnabled && !kycLoading && !kycQueryLoading) {
     return (
       <SellerLayout>
-        <div className="mx-auto w-full max-w-5xl px-5 py-6 md:px-8 md:py-9">
+        <div className="mx-auto w-full min-w-0 max-w-5xl overflow-x-hidden px-4 py-6 sm:px-5 md:px-8 md:py-9">
           <div className="mx-auto max-w-lg py-20 text-center">
             <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
               <Key size={24} className="text-primary" />
@@ -135,7 +135,7 @@ export default function SellerApi() {
   if (kycApproved === false && !kycLoading) {
     return (
       <SellerLayout>
-        <div className="mx-auto w-full max-w-5xl px-5 py-6 md:px-8 md:py-9">
+        <div className="mx-auto w-full min-w-0 max-w-5xl overflow-x-hidden px-4 py-6 sm:px-5 md:px-8 md:py-9">
           <div className="mx-auto max-w-lg py-20 text-center">
             <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-destructive/10">
               <AlertTriangle size={24} className="text-destructive" />
@@ -155,21 +155,21 @@ export default function SellerApi() {
 
   return (
     <SellerLayout>
-      <div className="mx-auto w-full max-w-5xl px-5 py-6 md:px-8 md:py-9">
+      <div className="mx-auto w-full min-w-0 max-w-5xl overflow-x-hidden px-4 py-6 sm:px-5 md:px-8 md:py-9">
         <PageHeader
           eyebrow="Integração"
           title="API"
           description="Gerencie chaves, webhooks e restrições de IP"
         />
 
-        <div className="liquid-glass-control mb-6 flex flex-wrap items-center gap-0.5 rounded-2xl p-1">
+        <div className="liquid-glass-control mb-6 flex items-center gap-0.5 overflow-x-auto rounded-2xl p-1 scrollbar-hide">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                "inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-semibold transition-all",
+                "inline-flex shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 text-sm font-semibold transition-all",
                 activeTab === tab.id
                   ? "bg-white text-[#111827] shadow-sm"
                   : "text-muted-foreground hover:bg-white/10 hover:text-foreground",
@@ -260,8 +260,8 @@ function ApiKeysTab() {
   };
 
   return (
-    <div className="admin-surface p-6">
-      <div className="flex items-center justify-between mb-4">
+    <div className="admin-surface overflow-hidden p-4 md:p-6">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-base font-semibold text-foreground">Suas chaves</h2>
         <button
           onClick={() => setShowCreateModal(true)}
@@ -285,10 +285,10 @@ function ApiKeysTab() {
           {keys.map((key) => (
             <div
               key={key.id}
-              className="flex items-center justify-between py-3 px-4 rounded-lg bg-muted/20 border border-border/30"
+              className="min-w-0 overflow-hidden rounded-lg border border-border/30 bg-muted/20 p-3 sm:px-4 sm:py-3"
             >
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 mb-0.5">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-0.5">
                   <span className="text-xs px-1.5 py-px rounded bg-success/15 text-success font-medium uppercase tracking-wide">
                     Live
                   </span>
@@ -299,55 +299,55 @@ function ApiKeysTab() {
                     {new Date(key.created_at).toLocaleDateString("pt-BR")}
                   </span>
                 </div>
-                <p
-                  className={`text-sm font-mono text-foreground transition-all ${
-                    !visibleKeys[key.id] ? "blur-sm select-none" : ""
-                  }`}
-                >
-                  {key.api_key}
-                </p>
-                <div className="flex gap-1 mt-1">
-                  {(key.permissions || []).map((p: string) => (
-                    <span
-                      key={p}
-                      className="text-sm md:text-xs px-1.5 py-px rounded bg-muted text-muted-foreground uppercase tracking-wide"
-                    >
-                      {p}
-                    </span>
-                  ))}
+                <div className="flex shrink-0 items-center gap-0.5">
+                  <button
+                    onClick={() =>
+                      setVisibleKeys((prev) => ({
+                        ...prev,
+                        [key.id]: !prev[key.id],
+                      }))
+                    }
+                    className="p-1.5 rounded text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {visibleKeys[key.id] ? (
+                      <EyeOff size={14} />
+                    ) : (
+                      <Eye size={14} />
+                    )}
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(key.api_key);
+                      toast.success("Chave copiada");
+                    }}
+                    className="p-1.5 rounded text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <Copy size={14} />
+                  </button>
+                  <button
+                    onClick={() => setShowDeleteModal(key.id)}
+                    className="p-1.5 rounded text-muted-foreground hover:text-destructive transition-colors"
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 </div>
               </div>
-              <div className="flex items-center gap-2 ml-3">
-                <button
-                  onClick={() =>
-                    setVisibleKeys((prev) => ({
-                      ...prev,
-                      [key.id]: !prev[key.id],
-                    }))
-                  }
-                  className="p-1.5 rounded text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {visibleKeys[key.id] ? (
-                    <EyeOff size={14} />
-                  ) : (
-                    <Eye size={14} />
-                  )}
-                </button>
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(key.api_key);
-                    toast.success("Chave copiada");
-                  }}
-                  className="p-1.5 rounded text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <Copy size={14} />
-                </button>
-                <button
-                  onClick={() => setShowDeleteModal(key.id)}
-                  className="p-1.5 rounded text-muted-foreground hover:text-destructive transition-colors"
-                >
-                  <Trash2 size={14} />
-                </button>
+              <p
+                className={`mt-1.5 break-all font-mono text-xs leading-relaxed text-foreground sm:text-sm transition-all ${
+                  !visibleKeys[key.id] ? "blur-sm select-none" : ""
+                }`}
+              >
+                {key.api_key}
+              </p>
+              <div className="mt-1.5 flex flex-wrap gap-1">
+                {(key.permissions || []).map((p: string) => (
+                  <span
+                    key={p}
+                    className="rounded bg-muted px-1.5 py-px text-[10px] uppercase tracking-wide text-muted-foreground sm:text-xs"
+                  >
+                    {p}
+                  </span>
+                ))}
               </div>
             </div>
           ))}
@@ -371,11 +371,11 @@ function ApiKeysTab() {
       {showDeleteModal && (
         <ModalPortal>
           <div
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4"
             onClick={() => setShowDeleteModal(null)}
           >
             <div
-              className="w-full max-w-sm rounded-2xl border border-border bg-card p-6"
+              className="w-full max-w-sm rounded-2xl border border-border bg-card p-5 sm:p-6"
               onClick={(e) => e.stopPropagation()}
             >
               <h2 className="mb-2 text-base font-semibold text-foreground">
@@ -436,11 +436,11 @@ function CreateKeyModal({
   return (
     <ModalPortal>
       <div
-        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60"
+        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4"
         onClick={onClose}
       >
         <div
-          className="w-full max-w-md rounded-2xl border border-border bg-card p-6"
+          className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl border border-border bg-card p-5 sm:p-6"
           onClick={(e) => e.stopPropagation()}
         >
         <div className="flex items-center justify-between mb-5">
@@ -473,7 +473,7 @@ function CreateKeyModal({
             <label className="text-xs md:text-sm font-medium text-muted-foreground mb-2 block">
               Permissões de acesso
             </label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {PERMISSIONS.map((perm) => {
                 const selected = permissions.includes(perm.id);
                 return (
@@ -486,12 +486,16 @@ function CreateKeyModal({
                         : "border-border/40 bg-muted/10 text-muted-foreground hover:border-border"
                     }`}
                   >
-                    <perm.icon size={16} strokeWidth={1.8} />
+                    <perm.icon
+                      size={16}
+                      strokeWidth={1.8}
+                      className="shrink-0"
+                    />
                     <div className="min-w-0">
-                      <span className="text-xs md:text-sm font-medium block">
+                      <span className="block text-xs font-medium sm:text-sm">
                         {perm.label}
                       </span>
-                      <span className="text-sm md:text-xs opacity-70 block">
+                      <span className="block text-[11px] leading-snug opacity-70 sm:text-xs">
                         {perm.description}
                       </span>
                     </div>
@@ -503,7 +507,7 @@ function CreateKeyModal({
 
           {permissions.length > 0 && (
             <div>
-              <label className="text-xs md:text-sm font-medium text-muted-foreground mb-2 block flex items-center gap-1">
+              <label className="mb-2 flex items-center gap-1 text-xs font-medium text-muted-foreground md:text-sm">
                 <ExternalLink size={10} />
                 Endpoints habilitados
               </label>
@@ -513,9 +517,9 @@ function CreateKeyModal({
                     p.endpoints.map((ep) => (
                       <div
                         key={ep}
-                        className="flex items-center justify-between"
+                        className="flex min-w-0 items-center justify-between gap-2"
                       >
-                        <code className="text-xs font-mono text-foreground">
+                        <code className="min-w-0 break-all font-mono text-xs text-foreground">
                           {ep}
                         </code>
                         <button
@@ -528,7 +532,7 @@ function CreateKeyModal({
                             );
                             toast.success("URL copiada");
                           }}
-                          className="text-muted-foreground hover:text-foreground transition-colors"
+                          className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
                         >
                           <Copy size={10} />
                         </button>
@@ -635,31 +639,29 @@ function AuthorizedIpsTab() {
   };
 
   return (
-    <div className="admin-surface p-6">
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h2 className="text-base font-semibold text-foreground">
-            IPs Autorizados
-          </h2>
-          <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
-            Restrinja o acesso à API apenas para IPs específicos
-          </p>
-        </div>
+    <div className="admin-surface overflow-hidden p-4 md:p-6">
+      <div className="mb-4">
+        <h2 className="text-base font-semibold text-foreground">
+          IPs Autorizados
+        </h2>
+        <p className="mt-0.5 text-xs text-muted-foreground md:text-sm">
+          Restrinja o acesso à API apenas para IPs específicos
+        </p>
       </div>
 
-      <div className="flex gap-2 mb-4">
+      <div className="mb-4 flex min-w-0 flex-col gap-2 sm:flex-row">
         <input
           type="text"
           placeholder="Ex: 192.168.1.100"
           value={newIp}
           onChange={(e) => setNewIp(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-          className="flex-1 px-3 py-2 rounded-lg bg-muted/20 border border-border/40 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 transition-colors"
+          className="min-w-0 flex-1 rounded-lg border border-border/40 bg-muted/20 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-colors focus:border-primary/40 focus:outline-none"
         />
         <button
           onClick={handleAdd}
           disabled={adding}
-          className="px-4 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-medium hover:opacity-90 transition-opacity disabled:opacity-40 flex items-center gap-1.5"
+          className="flex shrink-0 items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-xs font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-40"
         >
           {adding && <Loader2 size={12} className="animate-spin" />}
           Adicionar
@@ -679,10 +681,10 @@ function AuthorizedIpsTab() {
           {ips.map((ip) => (
             <div
               key={ip.id}
-              className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-muted/20 border border-border/30"
+              className="flex min-w-0 items-center justify-between gap-2 rounded-lg border border-border/30 bg-muted/20 px-3 py-2.5"
             >
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-mono text-foreground">
+              <div className="flex min-w-0 flex-wrap items-center gap-2">
+                <span className="break-all font-mono text-sm text-foreground">
                   {ip.ip_address}
                 </span>
                 <span className="text-xs text-muted-foreground">
@@ -708,11 +710,11 @@ function AuthorizedIpsTab() {
       {showDeleteModal && (
         <ModalPortal>
           <div
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 p-4"
             onClick={() => setShowDeleteModal(null)}
           >
             <div
-              className="w-full max-w-sm rounded-2xl border border-border bg-card p-6"
+              className="w-full max-w-sm rounded-2xl border border-border bg-card p-5 sm:p-6"
               onClick={(e) => e.stopPropagation()}
             >
               <h2 className="mb-2 text-base font-semibold text-foreground">
