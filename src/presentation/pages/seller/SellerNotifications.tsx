@@ -38,6 +38,7 @@ export default function SellerNotifications() {
   const [refund, setRefund] = useState(true);
   const [withdrawal, setWithdrawal] = useState(true);
   const [hasLocalSubscription, setHasLocalSubscription] = useState(false);
+  const [testingType, setTestingType] = useState<string | null>(null);
   const [installContext, setInstallContext] = useState<TPwaInstallContext>(
     getDefaultPwaInstallContext,
   );
@@ -178,6 +179,30 @@ export default function SellerNotifications() {
       );
     } finally {
       setActivating(false);
+    }
+  };
+
+  const sendTestNotification = async (
+    key: "sale" | "refund" | "withdrawal",
+  ) => {
+    if (!hasLocalSubscription) {
+      toast.error("Ative as notificações neste dispositivo primeiro");
+      return;
+    }
+
+    setTestingType(key);
+    try {
+      const result =
+        await apiService.modules.sellerNotifications.sendTest(key);
+      toast.success(
+        `Teste enviado para ${result.devices} dispositivo(s). ${result.remaining} restantes neste minuto.`,
+      );
+    } catch (err) {
+      toast.error(
+        getErrorMessageOrDefault(err, "Não foi possível enviar o teste"),
+      );
+    } finally {
+      setTestingType(null);
     }
   };
 
@@ -326,16 +351,36 @@ export default function SellerNotifications() {
                         {item.description}
                       </p>
                     </div>
-                    <Switch
-                      checked={item.value}
-                      disabled={savingType === item.key}
-                      onCheckedChange={(checked) =>
-                        updatePreference(item.key, checked)
-                      }
-                    />
+                    <div className="flex shrink-0 items-center gap-3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => sendTestNotification(item.key)}
+                        disabled={
+                          testingType !== null || !hasLocalSubscription
+                        }
+                      >
+                        {testingType === item.key ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : null}
+                        Testar
+                      </Button>
+                      <Switch
+                        checked={item.value}
+                        disabled={savingType === item.key}
+                        onCheckedChange={(checked) =>
+                          updatePreference(item.key, checked)
+                        }
+                      />
+                    </div>
                   </div>
                 ))}
               </div>
+              <p className="mt-3 text-xs text-muted-foreground">
+                Os testes enviam um aviso de exemplo mesmo com o tipo
+                desligado. Limite: 20 por minuto.
+              </p>
             </section>
 
             <p className="text-xs text-muted-foreground">

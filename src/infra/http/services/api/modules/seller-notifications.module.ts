@@ -23,6 +23,11 @@ export interface ISellerNotificationsModule {
     userAgent?: string | null;
   }) => Promise<{ id: number; endpoint: string }>;
   revokeSubscription: (endpoint: string) => Promise<{ revoked: boolean }>;
+  sendTest: (type: "sale" | "refund" | "withdrawal") => Promise<{
+    type: "sale" | "refund" | "withdrawal";
+    devices: number;
+    remaining: number;
+  }>;
 }
 
 export class SellerNotificationsModule
@@ -71,6 +76,21 @@ export class SellerNotificationsModule
     const response = await this.getClient().delete<
       IApiEnvelope<{ revoked: boolean }>
     >(`${this.baseUrl}/subscriptions`, { data: { endpoint } });
+    return response.data;
+  }
+
+  async sendTest(type: "sale" | "refund" | "withdrawal"): Promise<{
+    type: "sale" | "refund" | "withdrawal";
+    devices: number;
+    remaining: number;
+  }> {
+    const response = await this.getClient().post<
+      IApiEnvelope<{
+        type: "sale" | "refund" | "withdrawal";
+        devices: number;
+        remaining: number;
+      }>
+    >(`${this.baseUrl}/test`, { type });
     return response.data;
   }
 }
