@@ -495,7 +495,8 @@ export default function AdminTransactionDetailDialog({
                     Ações
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {!isAdminBalanceAdjustment(selectedTx) && (
+                    {!isAdminBalanceAdjustment(selectedTx) &&
+                    selectedTx.method !== "minigame" && (
                       <>
                     <button
                       onClick={onShowRefundForm}

@@ -44,6 +44,7 @@ import {
   ShieldCheck,
   Sliders,
   Sun,
+  Swords,
   Target,
   UserCog,
   MessagesSquare,
@@ -69,6 +70,7 @@ const financialSubItems = [
   { title: "Vendas", url: "/admin/transactions", icon: Receipt },
   { title: "Webhooks", url: "/admin/webhooks", icon: Webhook },
   { title: "Saques", url: "/admin/withdrawals", icon: ArrowLeftRight },
+  { title: "Minigames", url: "/admin/minigames", icon: Swords },
   { title: "Metas", url: "/admin/goals", icon: Target },
   { title: "Reembolsos", url: "/admin/refunds", icon: RotateCcw },
 ];

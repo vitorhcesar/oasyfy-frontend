@@ -34,12 +34,16 @@ export interface IAdminFinancialSettingsDto {
   autoWithdrawalEnabled: boolean;
   pixMinAmount: number;
   pixMaxAmount: number;
+  minigameFeePercent: number;
+  minigameFeeFixedReais: number;
 }
 
 export interface IAdminFinancialSettingsUpdateBody {
   autoWithdrawalEnabled: boolean;
   pixMinAmount: number;
   pixMaxAmount: number;
+  minigameFeePercent: number;
+  minigameFeeFixedReais: number;
 }
 
 export type TOnlyUpCredentialCheckDto = {

@@ -26,6 +26,7 @@ import AdminFeeTemplates from "./presentation/pages/admin/AdminFeeTemplates";
 import AdminFeeTemplateFormPage from "./presentation/pages/admin/AdminFeeTemplateFormPage";
 import AdminGoals from "./presentation/pages/admin/AdminGoals";
 import AdminManagers from "./presentation/pages/admin/AdminManagers";
+import AdminMinigames from "./presentation/pages/admin/AdminMinigames";
 import AdminRefunds from "./presentation/pages/admin/AdminRefunds";
 import AdminSubscriptions from "./presentation/pages/admin/AdminSubscriptions";
 import AdminTransactionsPage from "./presentation/pages/AdminTransactionsPage";
@@ -48,6 +49,7 @@ import SellerKyc from "./presentation/pages/seller/SellerKyc";
 import SellerSettings from "./presentation/pages/seller/SellerSettings";
 import SellerNotifications from "./presentation/pages/seller/SellerNotifications";
 import SellerPraca from "./presentation/pages/seller/SellerPraca";
+import SellerMinigamePage from "./presentation/pages/seller/SellerMinigame";
 import SellerTransactions from "./presentation/pages/seller/SellerTransactions";
 import SellerTransfers from "./presentation/pages/seller/SellerTransfers";
 
@@ -149,6 +151,14 @@ export default function App() {
                   element={
                     <ProtectedRoute requiredRole="seller">
                       <SellerPraca />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/seller/minigames/:minigameId"
+                  element={
+                    <ProtectedRoute requiredRole="seller">
+                      <SellerMinigamePage />
                     </ProtectedRoute>
                   }
                 />
@@ -269,6 +279,22 @@ export default function App() {
                   element={
                     <ProtectedRoute requiredRole="admin">
                       <AdminTransactionsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/minigames/:minigameId"
+                  element={
+                    <ProtectedRoute requiredRole="admin">
+                      <AdminMinigames />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/minigames"
+                  element={
+                    <ProtectedRoute requiredRole="admin">
+                      <AdminMinigames />
                     </ProtectedRoute>
                   }
                 />

@@ -4,4 +4,5 @@ export const methodLabel: Record<string, string> = {
   boleto: "Boleto",
   crypto: "Crypto",
   withdrawal: "Saque",
+  minigame: "Minigame",
 };

@@ -77,7 +77,7 @@ type StatusFilter =
   | "failed"
   | "refunded"
   | "cancelled";
-type MethodFilter = "all" | "pix" | "card" | "boleto" | "crypto";
+type MethodFilter = "all" | "pix" | "card" | "boleto" | "crypto" | "minigame";
 type SplitFilter = "all" | "with_split" | "split_credit";
 
 const PER_PAGE = 15;
@@ -170,6 +170,7 @@ const methodLabels: Record<string, string> = {
   boleto: "Boleto",
   crypto: "Crypto",
   withdrawal: "Saque",
+  minigame: "Minigame",
 };
 
 const filterSelectTriggerClass =
@@ -190,6 +191,7 @@ const methodFilterOptions: { value: MethodFilter; label: string }[] = [
   { value: "card", label: "Cartão" },
   { value: "boleto", label: "Boleto" },
   { value: "crypto", label: "Crypto" },
+  { value: "minigame", label: "Minigame" },
 ];
 
 const splitFilterOptions: { value: SplitFilter; label: string }[] = [

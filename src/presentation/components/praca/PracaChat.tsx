@@ -1,5 +1,6 @@
 import { ConfirmationModal } from "@/presentation/components/ConfirmationModal";
 import { AuthBrandMark } from "@/presentation/components/auth/AuthBrandMark";
+import { PracaSettingsModal } from "@/presentation/components/praca/PracaSettingsModal";
 import { Badge } from "@/presentation/components/ui/badge";
 import { Button } from "@/presentation/components/ui/button";
 import {
@@ -14,7 +15,7 @@ import type {
 } from "@/infra/http/services/api/modules/types/praca.types";
 import { cn } from "@/presentation/utils/cn";
 import { useThemeContext } from "@/presentation/hooks/use-theme";
-import { Loader2, Reply, Send, Trash2, X } from "lucide-react";
+import { Loader2, Reply, Send, Settings, Swords, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
 interface IPracaChatProps {
@@ -26,6 +27,9 @@ interface IPracaChatProps {
   onSend: (body: string, quotedMessageId?: number | null) => Promise<void>;
   onLoadOlder?: () => void;
   onDelete?: (messageId: number) => Promise<void>;
+  onChallenge?: (message: IPracaMessageDto) => void;
+  challengesEnabled?: boolean;
+  onChallengesEnabledChange?: (enabled: boolean) => void;
 }
 
 const NAME_PALETTE = [
@@ -182,8 +186,12 @@ export function PracaChat({
   onSend,
   onLoadOlder,
   onDelete,
+  onChallenge,
+  challengesEnabled,
+  onChallengesEnabledChange,
 }: IPracaChatProps) {
   const [draft, setDraft] = useState("");
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
   const [replyTo, setReplyTo] = useState<IPracaMessageDto | null>(null);
@@ -213,6 +221,18 @@ export function PracaChat({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-2xl border border-white/10 bg-background/70">
+      {onChallengesEnabledChange ? (
+        <div className="flex items-center justify-end border-b border-white/10 px-2 py-1.5">
+          <button
+            type="button"
+            className="rounded-full p-2 text-muted-foreground transition-colors hover:bg-white/10 hover:text-foreground"
+            aria-label="Configurações"
+            onClick={() => setSettingsOpen(true)}
+          >
+            <Settings size={18} />
+          </button>
+        </div>
+      ) : null}
       <div
         className="flex min-h-0 flex-1 flex-col overflow-y-auto px-3 py-4 sm:px-4"
         style={{
@@ -345,14 +365,32 @@ export function PracaChat({
                       isAdmin={message.author.role === "admin"}
                     />
                   ) : (
-                    <button
-                      type="button"
-                      className="mb-1 shrink-0 rounded-full p-1.5 text-muted-foreground opacity-70 transition-opacity hover:bg-white/10 hover:text-foreground md:opacity-0 md:group-hover:opacity-100"
-                      aria-label="Responder"
-                      onClick={() => setReplyTo(message)}
-                    >
-                      <Reply size={16} />
-                    </button>
+                    <div className="mb-1 flex shrink-0 items-center gap-1">
+                      {onChallenge && message.author.role === "seller" ? (
+                        <button
+                          type="button"
+                          className="rounded-full p-1.5 text-muted-foreground opacity-70 transition-opacity hover:bg-white/10 hover:text-foreground md:opacity-0 md:group-hover:opacity-100 disabled:opacity-40"
+                          aria-label="Desafiar"
+                          disabled={message.author.challengesEnabled === false}
+                          title={
+                            message.author.challengesEnabled === false
+                              ? "Este seller não está aceitando desafios"
+                              : "Desafiar"
+                          }
+                          onClick={() => onChallenge(message)}
+                        >
+                          <Swords size={16} />
+                        </button>
+                      ) : null}
+                      <button
+                        type="button"
+                        className="rounded-full p-1.5 text-muted-foreground opacity-70 transition-opacity hover:bg-white/10 hover:text-foreground md:opacity-0 md:group-hover:opacity-100"
+                        aria-label="Responder"
+                        onClick={() => setReplyTo(message)}
+                      >
+                        <Reply size={16} />
+                      </button>
+                    </div>
                   )}
                 </div>
               );
@@ -403,6 +441,15 @@ export function PracaChat({
           </Button>
         </div>
       </div>
+
+      {onChallengesEnabledChange ? (
+        <PracaSettingsModal
+          open={settingsOpen}
+          challengesEnabled={challengesEnabled !== false}
+          onOpenChange={setSettingsOpen}
+          onChallengesEnabledChange={onChallengesEnabledChange}
+        />
+      ) : null}
 
       {onDelete ? (
         <ConfirmationModal

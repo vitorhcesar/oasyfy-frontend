@@ -136,6 +136,26 @@ export default {
           "0%": { opacity: "0", transform: "translateX(-12px)" },
           "100%": { opacity: "1", transform: "translateX(0)" },
         },
+        "rps-timer-pulse": {
+          "0%, 100%": { transform: "scale(1)" },
+          "50%": { transform: "scale(1.06)" },
+        },
+        "rps-timer-urgent": {
+          "0%, 100%": { transform: "scale(1)" },
+          "50%": { transform: "scale(1.1)" },
+        },
+        "rps-emoji-in": {
+          "0%": { opacity: "0", transform: "scale(0.55) translateY(18px)" },
+          "100%": { opacity: "1", transform: "scale(1) translateY(0)" },
+        },
+        "rps-locked": {
+          "0%, 100%": { opacity: "0.6", transform: "scale(1)" },
+          "50%": { opacity: "1", transform: "scale(1.03)" },
+        },
+        "rps-winner-in": {
+          "0%": { opacity: "0", transform: "scale(0.86) translateY(10px)" },
+          "100%": { opacity: "1", transform: "scale(1) translateY(0)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -145,6 +165,11 @@ export default {
         "fade-in": "fade-in 0.35s ease-out both",
         "fade-in-scale": "fade-in-scale 0.3s ease-out both",
         "slide-in-left": "slide-in-left 0.3s ease-out both",
+        "rps-timer-pulse": "rps-timer-pulse 1.4s ease-in-out infinite",
+        "rps-timer-urgent": "rps-timer-urgent 0.55s ease-in-out infinite",
+        "rps-emoji-in": "rps-emoji-in 0.45s cubic-bezier(0.16, 1, 0.3, 1) both",
+        "rps-locked": "rps-locked 1.2s ease-in-out infinite",
+        "rps-winner-in": "rps-winner-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both",
         "deposit-confirm-pop":
           "deposit-confirm-pop 0.55s cubic-bezier(0.16, 1, 0.3, 1) both",
         "deposit-check-draw": "deposit-check-draw 0.4s 0.28s ease-out both",

@@ -5,6 +5,7 @@ export const methodOptions = [
   { value: "boleto", label: "Boleto" },
   { value: "crypto", label: "Crypto" },
   { value: "withdrawal", label: "Saque" },
+  { value: "minigame", label: "Minigame" },
 ];
 
 export const acquirerOptions = [

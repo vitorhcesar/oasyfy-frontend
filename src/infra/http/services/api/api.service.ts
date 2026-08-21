@@ -62,6 +62,14 @@ import {
   SellerPracaModule,
 } from "./modules/seller-praca.module";
 import {
+  ISellerMinigameModule,
+  SellerMinigameModule,
+} from "./modules/seller-minigame.module";
+import {
+  IAdminMinigameModule,
+  AdminMinigameModule,
+} from "./modules/admin-minigame.module";
+import {
   IAdminPracaModule,
   AdminPracaModule,
 } from "./modules/admin-praca.module";
@@ -92,6 +100,7 @@ export interface IApiServiceModules {
   adminWebhooks: IAdminWebhooksModule;
   adminConfig: IAdminConfigModule;
   adminPraca: IAdminPracaModule;
+  adminMinigame: IAdminMinigameModule;
 
   account: IAccountModule;
   balance: IBalanceModule;
@@ -106,6 +115,7 @@ export interface IApiServiceModules {
   sellerPortal: ISellerPortalModule;
   sellerNotifications: ISellerNotificationsModule;
   sellerPraca: ISellerPracaModule;
+  sellerMinigame: ISellerMinigameModule;
   sellerAcquirer: ISellerAcquirerModule;
   sellerCheckouts: ISellerCheckoutModule;
   publicCheckouts: IPublicCheckoutModule;
@@ -127,6 +137,7 @@ function attachModules(httpClient: IHttpClient): IApiServiceModules {
     adminWebhooks: new AdminWebhooksModule(httpClient),
     adminConfig: new AdminConfigModule(httpClient),
     adminPraca: new AdminPracaModule(httpClient),
+    adminMinigame: new AdminMinigameModule(httpClient),
 
     account: new AccountModule(httpClient),
     balance: new BalanceModule(httpClient),
@@ -142,6 +153,7 @@ function attachModules(httpClient: IHttpClient): IApiServiceModules {
     sellerPortal: new SellerPortalModule(httpClient),
     sellerNotifications: new SellerNotificationsModule(httpClient),
     sellerPraca: new SellerPracaModule(httpClient),
+    sellerMinigame: new SellerMinigameModule(httpClient),
     sellerAcquirer: new SellerAcquirerModule(httpClient),
     sellerCheckouts: new SellerCheckoutModule(httpClient),
     publicCheckouts: new PublicCheckoutModule(httpClient),

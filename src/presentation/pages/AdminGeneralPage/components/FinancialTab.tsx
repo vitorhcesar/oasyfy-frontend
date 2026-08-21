@@ -3,7 +3,7 @@ import { Switch } from "@/presentation/components/ui/switch";
 import useAdminFinancialSettingsQuery from "@/presentation/hooks/use-admin-financial-settings-query";
 import { useApiService } from "@/presentation/hooks/use-api-service";
 import { getErrorMessageOrDefault } from "@/presentation/utils/get-error-message-or-default";
-import { Loader2, Save, Tag, Wallet } from "lucide-react";
+import { Loader2, Save, Swords, Tag, Wallet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -19,20 +19,27 @@ export function FinancialTab() {
   const [autoWithdrawalEnabled, setAutoWithdrawalEnabled] = useState(false);
   const [pixMinAmount, setPixMinAmount] = useState(0);
   const [pixMaxAmount, setPixMaxAmount] = useState(0);
+  const [minigameFeePercent, setMinigameFeePercent] = useState(0);
+  const [minigameFeeFixedReais, setMinigameFeeFixedReais] = useState(0);
   const [savingToggle, setSavingToggle] = useState(false);
   const [savingLimits, setSavingLimits] = useState(false);
+  const [savingMinigameFee, setSavingMinigameFee] = useState(false);
 
   useEffect(() => {
     if (!data) return;
     setAutoWithdrawalEnabled(data.autoWithdrawalEnabled);
     setPixMinAmount(data.pixMinAmount ?? 0);
     setPixMaxAmount(data.pixMaxAmount ?? 0);
+    setMinigameFeePercent(data.minigameFeePercent ?? 0);
+    setMinigameFeeFixedReais(data.minigameFeeFixedReais ?? 0);
   }, [data]);
 
   const persist = async (payload: {
     autoWithdrawalEnabled: boolean;
     pixMinAmount: number;
     pixMaxAmount: number;
+    minigameFeePercent: number;
+    minigameFeeFixedReais: number;
   }) => {
     const saved = await apiService.modules.adminConfig.updateFinancialSettings(
       payload,
@@ -40,6 +47,8 @@ export function FinancialTab() {
     setAutoWithdrawalEnabled(saved.autoWithdrawalEnabled);
     setPixMinAmount(saved.pixMinAmount);
     setPixMaxAmount(saved.pixMaxAmount);
+    setMinigameFeePercent(saved.minigameFeePercent ?? 0);
+    setMinigameFeeFixedReais(saved.minigameFeeFixedReais ?? 0);
     await invalidateQuery();
     return saved;
   };
@@ -53,6 +62,8 @@ export function FinancialTab() {
         autoWithdrawalEnabled: enabled,
         pixMinAmount: data?.pixMinAmount ?? 0,
         pixMaxAmount: data?.pixMaxAmount ?? 0,
+        minigameFeePercent: data?.minigameFeePercent ?? 0,
+        minigameFeeFixedReais: data?.minigameFeeFixedReais ?? 0,
       });
       toast.success(
         saved.autoWithdrawalEnabled
@@ -78,6 +89,8 @@ export function FinancialTab() {
         autoWithdrawalEnabled,
         pixMinAmount,
         pixMaxAmount,
+        minigameFeePercent,
+        minigameFeeFixedReais,
       });
       toast.success("Limites de preço salvos");
     } catch (err) {
@@ -85,6 +98,37 @@ export function FinancialTab() {
     }
     setSavingLimits(false);
   };
+
+  const handleSaveMinigameFee = async () => {
+    setSavingMinigameFee(true);
+    try {
+      await persist({
+        autoWithdrawalEnabled,
+        pixMinAmount,
+        pixMaxAmount,
+        minigameFeePercent,
+        minigameFeeFixedReais,
+      });
+      toast.success("Taxa de minigames salva");
+    } catch (err) {
+      toast.error(getErrorMessageOrDefault(err, "Erro ao salvar"));
+    }
+    setSavingMinigameFee(false);
+  };
+
+  function previewFee(potCents: number) {
+    const fee = Math.min(
+      potCents,
+      Math.max(
+        0,
+        Math.round((potCents * minigameFeePercent) / 100 + minigameFeeFixedReais * 100),
+      ),
+    );
+    return { fee, winner: potCents - fee };
+  }
+
+  const minPreview = previewFee(4000);
+  const maxPreview = previewFee(1_000_000);
 
   if (isLoading) {
     return (
@@ -207,6 +251,88 @@ export function FinancialTab() {
               <Save size={16} />
             )}
             {savingLimits ? "Salvando..." : "Salvar"}
+          </Button>
+        </div>
+      </div>
+
+      <div className="admin-surface space-y-5 p-4 md:p-5">
+        <div className="flex items-start gap-3">
+          <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+            <Swords size={18} className="text-primary" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-foreground">
+              Taxa de minigames na Praça
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Incide sobre o pote (soma das duas apostas). Os dois campos podem
+              ser zero.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <label
+              htmlFor="minigame-fee-percent"
+              className="text-sm font-medium text-foreground"
+            >
+              Percentual (%)
+            </label>
+            <input
+              id="minigame-fee-percent"
+              type="number"
+              min={0}
+              max={100}
+              step={0.01}
+              value={minigameFeePercent}
+              onChange={(e) =>
+                setMinigameFeePercent(Math.max(0, Number(e.target.value) || 0))
+              }
+              className="h-10 w-full rounded-xl border border-border/50 bg-background px-3 text-sm font-medium text-foreground"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label
+              htmlFor="minigame-fee-fixed"
+              className="text-sm font-medium text-foreground"
+            >
+              Valor fixo (R$)
+            </label>
+            <input
+              id="minigame-fee-fixed"
+              type="number"
+              min={0}
+              step={0.01}
+              value={minigameFeeFixedReais}
+              onChange={(e) =>
+                setMinigameFeeFixedReais(Math.max(0, Number(e.target.value) || 0))
+              }
+              className="h-10 w-full rounded-xl border border-border/50 bg-background px-3 text-sm font-medium text-foreground"
+            />
+          </div>
+        </div>
+
+        <p className="text-xs text-muted-foreground">
+          Pote mínimo R$ 40: taxa R$ {(minPreview.fee / 100).toFixed(2)},
+          ganhador R$ {(minPreview.winner / 100).toFixed(2)}. Pote máximo R$
+          10.000: taxa R$ {(maxPreview.fee / 100).toFixed(2)}, ganhador R${" "}
+          {(maxPreview.winner / 100).toFixed(2)}.
+        </p>
+
+        <div className="flex justify-end">
+          <Button
+            type="button"
+            onClick={() => void handleSaveMinigameFee()}
+            disabled={savingMinigameFee}
+            className="gap-2"
+          >
+            {savingMinigameFee ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <Save size={16} />
+            )}
+            {savingMinigameFee ? "Salvando..." : "Salvar"}
           </Button>
         </div>
       </div>

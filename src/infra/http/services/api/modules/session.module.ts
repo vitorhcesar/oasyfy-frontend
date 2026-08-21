@@ -7,6 +7,8 @@ export interface ISessionContextDto {
   emailManuallyApproved: boolean;
   apiAccessEnabled: boolean;
   pracaAccessEnabled: boolean;
+  minigameChallengesEnabled?: boolean;
+  activeMinigameId?: number | null;
 }
 
 export interface ISessionModule {

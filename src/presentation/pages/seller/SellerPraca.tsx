@@ -2,6 +2,7 @@ import PageHeader from "@/presentation/components/PageHeader";
 import { PracaChat } from "@/presentation/components/praca/PracaChat";
 import { applyPracaRealtimeEvent } from "@/presentation/components/praca/praca-realtime";
 import { mergePracaLivePage } from "@/presentation/components/praca/merge-praca-messages";
+import { CreateMinigameChallengeSheet } from "@/presentation/components/praca/CreateMinigameChallengeSheet";
 import { SellerLayout } from "@/presentation/components/seller/SellerLayout";
 import { Button } from "@/presentation/components/ui/button";
 import { useAuthContext } from "@/presentation/context/AuthContext";
@@ -31,6 +32,12 @@ export default function SellerPraca() {
   const [nextCursor, setNextCursor] = useState<number | null>(null);
   const [sending, setSending] = useState(false);
   const [loadingOlder, setLoadingOlder] = useState(false);
+  const [challengesEnabled, setChallengesEnabled] = useState(true);
+  const [challengeTarget, setChallengeTarget] = useState<{
+    id: number;
+    name: string;
+  } | null>(null);
+  const [availableCents, setAvailableCents] = useState(0);
 
   const loadAccess = useCallback(async () => {
     const data = await apiService.modules.sellerPraca.getAccess();
@@ -70,6 +77,18 @@ export default function SellerPraca() {
       cancelled = true;
     };
   }, [documentsApproved, kycLoading, loadAccess, mergeLatest]);
+
+  useEffect(() => {
+    if (access?.status !== "enabled") return;
+    void apiService.modules.sellerMinigame
+      .getPreferences()
+      .then((data) => setChallengesEnabled(data.challengesEnabled))
+      .catch(() => undefined);
+    void apiService.modules.balance
+      .get()
+      .then((data) => setAvailableCents(data.available))
+      .catch(() => undefined);
+  }, [access?.status, apiService]);
 
   usePracaLiveSocket({
     enabled: documentsApproved && access?.status === "enabled",
@@ -173,15 +192,50 @@ export default function SellerPraca() {
             <Loader2 className="animate-spin text-primary" size={28} />
           </div>
         ) : access?.status === "enabled" ? (
-          <PracaChat
-            currentUserId={Number.isFinite(currentUserId) ? currentUserId : 0}
-            messages={messages}
-            sending={sending}
-            loadingOlder={loadingOlder}
-            hasOlder={nextCursor != null}
-            onSend={handleSend}
-            onLoadOlder={handleLoadOlder}
-          />
+          <>
+            <PracaChat
+              currentUserId={Number.isFinite(currentUserId) ? currentUserId : 0}
+              messages={messages}
+              sending={sending}
+              loadingOlder={loadingOlder}
+              hasOlder={nextCursor != null}
+              onSend={handleSend}
+              onLoadOlder={handleLoadOlder}
+              challengesEnabled={challengesEnabled}
+              onChallengesEnabledChange={(enabled) => {
+                setChallengesEnabled(enabled);
+                void apiService.modules.sellerMinigame
+                  .setPreferences(enabled)
+                  .then((data) => setChallengesEnabled(data.challengesEnabled))
+                  .catch((error) => {
+                    setChallengesEnabled(!enabled);
+                    toast.error(
+                      getErrorMessageOrDefault(
+                        error,
+                        "Não foi possível atualizar",
+                      ),
+                    );
+                  });
+              }}
+              onChallenge={(message) =>
+                setChallengeTarget({
+                  id: message.author.id,
+                  name: message.author.displayName,
+                })
+              }
+            />
+            {challengeTarget ? (
+              <CreateMinigameChallengeSheet
+                open
+                targetSellerId={challengeTarget.id}
+                targetName={challengeTarget.name}
+                availableCents={availableCents}
+                onOpenChange={(open) => {
+                  if (!open) setChallengeTarget(null);
+                }}
+              />
+            ) : null}
+          </>
         ) : (
           <div className="rounded-2xl border border-white/10 bg-background/40 p-6 backdrop-blur-md md:p-8">
             <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">

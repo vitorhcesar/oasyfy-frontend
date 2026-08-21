@@ -32,6 +32,7 @@ export interface IPracaMessageDto {
     displayName: string;
     role: TPracaAuthorRole;
     avatarUrl: string | null;
+    challengesEnabled?: boolean;
   };
   quotedMessage: IPracaQuotedMessageDto | null;
 }

@@ -13,3 +13,18 @@ export function getPracaLiveWsUrl(): string {
   url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
   return url.toString();
 }
+
+export function getMinigameLobbyWsUrl(): string {
+  const url = new URL("/api/v1/praca/minigames/live", `${getApiBaseUrl()}/`);
+  url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
+  return url.toString();
+}
+
+export function getMinigameMatchWsUrl(minigameId: number): string {
+  const url = new URL(
+    `/api/v1/praca/minigames/${minigameId}/live`,
+    `${getApiBaseUrl()}/`,
+  );
+  url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
+  return url.toString();
+}

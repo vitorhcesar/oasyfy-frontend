@@ -1,4 +1,5 @@
 import { OfflineBanner } from "@/presentation/components/OfflineBanner";
+import { SellerMinigamePanels } from "@/presentation/components/seller/SellerMinigamePanels";
 import { PropsWithChildren, useState } from "react";
 import { SellerSidebar } from "./SellerSidebar";
 import { SellerTopbar } from "./SellerTopbar";
@@ -38,6 +39,7 @@ export function SellerLayout({ children }: PropsWithChildren) {
           <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
             {children}
           </div>
+          <SellerMinigamePanels />
         </main>
       </div>
     </div>
