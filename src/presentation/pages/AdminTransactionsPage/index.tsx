@@ -162,14 +162,10 @@ export default function AdminTransactionsPage() {
       (t) => !isSplitCreditMetadata(t.metadata),
     );
     if (!filterStatus) return source;
-    if (filterStatus === "completed") {
-      return source.filter(
-        (t) =>
-          matchesTransactionStatusFilter(t.status, "completed") &&
-          t.method !== "withdrawal",
-      );
-    }
-    return source.filter((t) => t.status === filterStatus);
+    return source.filter((t) => {
+      if (filterStatus === "completed" && t.method === "withdrawal") return false;
+      return matchesTransactionStatusFilter(t, filterStatus);
+    });
   }, [pixSearchResults, filterStatus]);
 
   const pixStats = useTransactionStats(pixFiltered ?? []);

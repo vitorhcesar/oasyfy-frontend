@@ -1,4 +1,7 @@
-import { isApprovedTransactionStatus } from "@/presentation/utils/transaction-status";
+import {
+  displayedTransactionStatus,
+  isApprovedTransactionStatus,
+} from "@/presentation/utils/transaction-status";
 import type { IAdminTransactionListStatsDto } from "@/infra/http/services/api/api-types";
 import {
   Clock,
@@ -85,8 +88,12 @@ export default function useTransactionStats(filtered: Transaction[]) {
     const paid = filtered.filter(
       (t) => isApprovedTransactionStatus(t.status) && t.method !== "withdrawal",
     );
-    const pending = filtered.filter((t) => t.status === "pending");
-    const failed = filtered.filter((t) => t.status === "failed");
+    const pending = filtered.filter(
+      (t) => displayedTransactionStatus(t) === "pending",
+    );
+    const failed = filtered.filter(
+      (t) => displayedTransactionStatus(t) === "failed",
+    );
     const refunded = filtered.filter((t) => t.status === "refunded");
     const chargeback = filtered.filter((t) => t.status === "chargeback");
     const total = filtered.length;

@@ -61,7 +61,7 @@ export default function useFilterTransactions({
         return false;
       if (
         filterStatus &&
-        !matchesTransactionStatusFilter(t.status, filterStatus)
+        !matchesTransactionStatusFilter(t, filterStatus)
       )
         return false;
       if (dateRange?.from) {

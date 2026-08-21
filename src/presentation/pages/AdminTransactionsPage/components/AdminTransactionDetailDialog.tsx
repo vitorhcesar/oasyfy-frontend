@@ -180,11 +180,6 @@ export default function AdminTransactionDetailDialog({
         <DialogHeader>
           <DialogTitle className="flex flex-wrap items-center gap-2 text-xl font-bold tracking-tight">
             Detalhes da Transação
-            {splitDetails && (
-              <span className="inline-flex items-center rounded-lg border border-primary/25 bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
-                Split
-              </span>
-            )}
             {selectedTx?.is_locked && (
               <span className="inline-flex items-center gap-1.5 rounded-lg border border-destructive/25 bg-destructive/10 px-2.5 py-1 text-xs font-semibold text-destructive">
                 <Lock size={12} />

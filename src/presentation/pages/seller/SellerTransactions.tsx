@@ -145,10 +145,10 @@ const statusConfig: Record<
     dot: "bg-destructive",
   },
   expired: {
-    label: "Expirado",
-    bg: "bg-destructive/10",
-    text: "text-destructive",
-    dot: "bg-destructive",
+    label: "Pendente",
+    bg: "bg-warning/10",
+    text: "text-warning",
+    dot: "bg-warning",
   },
   refunded: {
     label: "Estornada",
@@ -171,9 +171,6 @@ const methodLabels: Record<string, string> = {
   crypto: "Crypto",
   withdrawal: "Saque",
 };
-
-const saleSplitBadgeClass =
-  "inline-flex items-center rounded px-1 py-px text-[9px] font-semibold uppercase leading-tight tracking-wide bg-primary/10 text-primary";
 
 const filterSelectTriggerClass =
   "h-auto w-auto min-w-[9.5rem] cursor-pointer rounded-xl border-border/60 px-3.5 py-2.5 text-sm focus:border-primary/40 focus:ring-2 focus:ring-primary/20 focus:ring-offset-0";
@@ -427,7 +424,6 @@ export default function SellerTransactions() {
                 {filtered.map((tx) => {
                   const isWithdrawal = tx.method === "withdrawal";
                   const splitCredit = isSplitCredit(tx.metadata);
-                  const saleSplit = hasSaleSplit(tx.metadata);
                   return (
                     <div
                       key={tx.id}
@@ -456,11 +452,6 @@ export default function SellerTransactions() {
                             {splitCredit && (
                               <span className="rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-primary">
                                 Split recebido
-                              </span>
-                            )}
-                            {saleSplit && (
-                              <span className={saleSplitBadgeClass}>
-                                Com split
                               </span>
                             )}
                           </div>
@@ -505,7 +496,6 @@ export default function SellerTransactions() {
               {filtered.map((tx) => {
                 const isWithdrawal = tx.method === "withdrawal";
                 const splitCredit = isSplitCredit(tx.metadata);
-                const saleSplit = hasSaleSplit(tx.metadata);
                 return (
                   <div key={tx.id} className="admin-surface p-4">
                     <div className="mb-2 flex items-center justify-between">
@@ -532,11 +522,6 @@ export default function SellerTransactions() {
                             {splitCredit && (
                               <span className="rounded-md bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-primary">
                                 Split
-                              </span>
-                            )}
-                            {saleSplit && (
-                              <span className={saleSplitBadgeClass}>
-                                Com split
                               </span>
                             )}
                           </div>

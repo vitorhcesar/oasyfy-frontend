@@ -25,9 +25,9 @@ export const statusConfig: Record<
     dot: "bg-destructive",
   },
   expired: {
-    label: "Expirado",
-    cls: "border-destructive/25 bg-destructive/10 text-destructive",
-    dot: "bg-destructive",
+    label: "Pendente",
+    cls: "border-warning/25 bg-warning/10 text-warning",
+    dot: "bg-warning",
   },
   cancelled: {
     label: "Cancelada",

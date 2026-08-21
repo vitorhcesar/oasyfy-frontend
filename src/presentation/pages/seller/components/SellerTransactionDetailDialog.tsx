@@ -13,6 +13,7 @@ import {
 } from "@/presentation/components/ui/dialog";
 import { cn } from "@/presentation/utils/cn";
 import {
+  displayedTransactionStatus,
   isApprovedTransactionStatus,
   isExpiredUnpaidTransaction,
 } from "@/presentation/utils/transaction-status";
@@ -92,9 +93,9 @@ const statusUi: Record<
     icon: "x",
   },
   expired: {
-    label: "Expirado",
-    badge: "bg-destructive/15 text-destructive",
-    icon: "x",
+    label: "Pendente",
+    badge: "bg-warning/15 text-warning",
+    icon: "clock",
   },
   refunded: {
     label: "Estornada",
@@ -521,13 +522,11 @@ export default function SellerTransactionDetailDialog({
   const isWithdrawal = tx?.method === "withdrawal";
   const expired = tx ? isExpiredUnpaidTransaction(tx) : false;
   const status = tx
-    ? expired
-      ? statusUi.expired
-      : (statusUi[tx.status] ?? {
-          label: tx.status,
-          badge: "bg-muted text-muted-foreground",
-          icon: "clock" as const,
-        })
+    ? (statusUi[displayedTransactionStatus(tx)] ?? {
+        label: tx.status,
+        badge: "bg-muted text-muted-foreground",
+        icon: "clock" as const,
+      })
     : null;
   const amountLabel = isWithdrawal ? "Valor da saída" : "Valor da entrada";
   const methodLabel = tx ? methodLabels[tx.method] || tx.method : "";
@@ -603,11 +602,6 @@ export default function SellerTransactionDetailDialog({
                 <span className="text-right text-[11px] leading-snug tabular-nums text-muted-foreground">
                   {formatModalDate(tx.created_at)}
                 </span>
-                {(detail.splitCredit || detail.split.hasSplit) && (
-                  <span className="rounded bg-muted px-1.5 py-px text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-                    split
-                  </span>
-                )}
               </div>
             </div>
           </section>
